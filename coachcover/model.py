@@ -18,7 +18,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
 
 # What the engine may do by itself ("auto"), only suggest to a person ("propose") or never do ("off").
-AUTONOMY_ACTIONS = ("assign_cover", "plan_b", "merge_groups", "overtime")
+AUTONOMY_ACTIONS = ("assign_cover", "plan_b", "merge_groups", "overtime", "night_cover")
 AUTONOMY_MODES = ("auto", "propose", "off")
 REMEDIES = ("credit", "makeup")
 
@@ -64,6 +64,7 @@ class CertType:
     label: str
     validity_months: int
     match: tuple[str, ...] = ()  # words on a card title that name this type (upper case)
+    short: str = ""  # short label for screens ("CPR/AED"); the label when empty
 
     def __post_init__(self) -> None:
         _require_code(self.code, "cert type code")
@@ -77,6 +78,7 @@ class Role:
     label: str
     required_certs: tuple[str, ...]
     reserve: bool = False  # people with this role are kept out of the offer queue (plan B "senior steps in")
+    short: str = ""  # short label for screens; the label when empty
 
     def __post_init__(self) -> None:
         _require_code(self.code, "role code")
@@ -102,6 +104,7 @@ class Program:
     label: str
     renewal_months: int | None
     levels: Mapping[str, Level]
+    short: str = ""  # short code for screens ("LTS")
 
     def __post_init__(self) -> None:
         _require_code(self.code, "program code")
@@ -122,9 +125,16 @@ class Preset:
     cert_types: Mapping[str, CertType]
     programs: Mapping[str, Program]
     venue_term: Mapping[str, str] = field(default_factory=dict)  # language -> the word for a venue, e.g. "club"
+    young_age_max: int | None = None  # groups with children up to this age use young_max_per_instructor
+    young_max_per_instructor: int | None = None
+    copy: Mapping[str, str] = field(default_factory=dict)  # screen and prompt texts of this kind of business
 
     def __post_init__(self) -> None:
         _require_code(self.code, "preset code")
+        if (self.young_age_max is None) != (self.young_max_per_instructor is None):
+            raise ValueError(f"preset {self.code}: young_age_max and young_max_per_instructor go together")
+        if self.young_max_per_instructor is not None and not _positive_int(self.young_max_per_instructor):
+            raise ValueError(f"preset {self.code}: young_max_per_instructor must be a positive int")
         for kind, items in (("role", self.roles), ("cert type", self.cert_types), ("program", self.programs)):
             for key, item in items.items():
                 if key != item.code:
@@ -234,11 +244,14 @@ class GroupRef:
     program: str
     level: str
     size: int
+    age_min: int | None = None  # youngest participant, when known
 
     def __post_init__(self) -> None:
         _require_code(self.id, "group id")
         if not isinstance(self.size, int) or self.size < 0:
             raise ValueError(f"group {self.id}: size must be a non-negative int")
+        if self.age_min is not None and (not isinstance(self.age_min, int) or self.age_min < 0):
+            raise ValueError(f"group {self.id}: age_min must be a non-negative int")
 
 
 @dataclass(frozen=True)
@@ -253,6 +266,7 @@ class Shift:
     zone: str | None = None
     assignee: str | None = None  # who holds (or held, before the call-out) this shift
     merged_shift_ids: tuple[str, ...] = ()  # plan B: the shifts whose groups this shift takes over
+    extra_certs: tuple[str, ...] = ()  # certificates this shift needs on top of its role's
 
     def __post_init__(self) -> None:
         _require_code(self.id, "shift id")

@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "image_sha256": "396d73657d113ee651e1d6579edb106119e5a3900d17814b5cf123babbe2addd"
+ },
+ "input_sha256": "6b956be55b8677920e6c30ccbb75868fcbc78537aebaeda47f636ba243b69cf0",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h21 reader muse; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 1360,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Diego Ramirez\", \"id\": \"REG-1603-91\", \"issued\": \"2026-03-20\", \"exp\": \"2028-03-19\"}"
+    }
+   }
+  ]
+ }
+}

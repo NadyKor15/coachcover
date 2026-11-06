@@ -108,7 +108,6 @@ _PLACE = {
         "km": "{km} km away",
         "other_venue": "other {venue}",
         "venue": "venue",
-        "tenure": "{years} yr at this level",
     },
     "ru": {
         "ordinals": {},
@@ -121,7 +120,6 @@ _PLACE = {
         "km": "{km} км",
         "other_venue": "другой {venue}",
         "venue": "объект",
-        "tenure": "{years} г. на этом уровне",
     },
 }
 
@@ -133,7 +131,7 @@ def _level_text(program: str, level: str, preset: Preset | None) -> str:
 
 
 def describe_place(ranked: Ranked, name: str, lang: str = "en", preset: Preset | None = None) -> str:
-    """One line for a queue place, e.g. "Maria first: 12 h this week, Level 3, same venue"."""
+    """One line for a queue place, e.g. "Maria first: 12 h this week, Level 3, same venue". Tenure stays in place()."""
     if lang not in LANGUAGES:
         raise ValueError(f"unsupported language {lang!r}; use one of {LANGUAGES}")
     t = _PLACE[lang]
@@ -153,6 +151,4 @@ def describe_place(ranked: Ranked, name: str, lang: str = "en", preset: Preset |
         parts.append(t["km"].format(km=_number(place["distance_km"])))
     else:
         parts.append(t["other_venue"].format(venue=venue))
-    if place["level_tenure_days"] is not None:
-        parts.append(t["tenure"].format(years=round(place["level_tenure_days"] / 365.25, 1)))
     return t["head"].format(name=name, position=position) + ", ".join(parts)

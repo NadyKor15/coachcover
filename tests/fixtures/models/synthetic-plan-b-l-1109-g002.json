@@ -1,0 +1,71 @@
+{
+ "purpose": "plan_b_text",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "shift": {
+   "id": "L-1109-G002",
+   "label": "Mon 06:00-08:00 · Lifeguard · Level 3 · Riverside Aquatic Center",
+   "venue": "Riverside Aquatic Center",
+   "zone_id": "V1-LAP",
+   "start": "2026-11-09T11:00:00+00:00",
+   "end": "2026-11-09T13:00:00+00:00",
+   "role": "lifeguard"
+  },
+  "options": [
+   {
+    "kind": "lead",
+    "mode": "propose",
+    "staff_id": "S06",
+    "staff_name": "Liam Foster"
+   },
+   {
+    "kind": "overtime",
+    "mode": "propose",
+    "staff_id": "S11",
+    "staff_name": "Camila Herrera",
+    "hours_over": 1.5,
+    "cost_usd": 51.0
+   },
+   {
+    "kind": "reschedule",
+    "mode": "propose",
+    "groups": [
+     "G002"
+    ],
+    "families": 8,
+    "remedy": "makeup",
+    "valid_until": "2026-12-09"
+   },
+   {
+    "kind": "close",
+    "mode": "propose",
+    "zone_id": "V1-LAP",
+    "groups": [
+     "G002"
+    ],
+    "families": 8,
+    "remedy": "credit",
+    "valid_until": null
+   }
+  ]
+ },
+ "input_sha256": "2f2fe099508744c603706447b16ffffdbd67dbf364d00bd5d1cb716e268ed15b",
+ "synthetic": true,
+ "source": "synthetic: written by hand to the plan_b_text schema, only facts from input",
+ "duration_ms": 1600,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 560,
+   "completion_tokens": 120
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"headline\": \"Nobody took Monday 06:00 at Riverside Aquatic Center: 8 young kids need a lifeguard with WSI\", \"lines\": [\"Liam Foster, the head coach in reserve, takes the post.\", \"Camila Herrera covers it on overtime: 1.5 h over the week, about $51.\", \"Move the lesson: the 8 families book a makeup by December 9.\", \"Cancel the lesson: the 8 families get a lesson credit.\"]}"
+    }
+   }
+  ]
+ }
+}

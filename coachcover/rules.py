@@ -225,12 +225,20 @@ def _check_role(staff: Staff, shift: Shift) -> list[Reason]:
     return [Reason(Code.ROLE_MISSING, {"role": shift.role})]
 
 
+def required_certs(role: Role, shift: Shift, preset: Preset) -> tuple[str, ...]:
+    """The role's certificates, then the shift's extra ones, each once."""
+    for code in shift.extra_certs:
+        if code not in preset.cert_types:
+            raise ValueError(f"shift {shift.id}: unknown extra certificate {code!r}")
+    return tuple(dict.fromkeys((*role.required_certs, *shift.extra_certs)))
+
+
 def _check_certs(staff: Staff, role: Role, shift: Shift, at: datetime, tz: ZoneInfo, preset: Preset) -> list[Reason]:
     reasons: list[Reason] = []
     start, end = _utc(shift.start), _utc(shift.end)
     last_day = _last_local_day(shift.end, tz)
     today = _local_day(at, tz)
-    for code in role.required_certs:
+    for code in required_certs(role, shift, preset):
         cert_type = preset.cert_types[code]
         held = [c for c in staff.certs if c.cert_type == code]
         if not held:
@@ -364,14 +372,26 @@ def _check_overlaps(own: Sequence[Commitment], shift: Shift, tz: ZoneInfo) -> li
     return reasons
 
 
+def group_norm(group: GroupRef, preset: Preset) -> int:
+    """Participants per instructor for one group: its level's norm, stricter for young children."""
+    per = _level(preset, group).max_per_instructor
+    if (
+        preset.young_age_max is not None
+        and group.age_min is not None
+        and group.age_min <= preset.young_age_max
+    ):
+        per = min(per, preset.young_max_per_instructor)
+    return per
+
+
 def ratio_reason(groups: Sequence[GroupRef], instructors: int, preset: Preset) -> Reason | None:
-    """Participants per instructor for groups taught together. Mixed levels take the strictest norm."""
+    """Participants per instructor for groups taught together. Mixed groups take the strictest norm."""
     if not isinstance(instructors, int) or instructors < 1:
         raise ValueError("instructors must be an int >= 1")
     if not groups:
         return None
-    strictest = min(groups, key=lambda g: _level(preset, g).max_per_instructor)
-    per = _level(preset, strictest).max_per_instructor
+    strictest = min(groups, key=lambda g: group_norm(g, preset))
+    per = group_norm(strictest, preset)
     participants = sum(g.size for g in groups)
     capacity = per * instructors
     if participants <= capacity:

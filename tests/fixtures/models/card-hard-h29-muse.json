@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "image_sha256": "e68f28df5900eec6ea03a273691ddb02f8239d51f7640fa8054bc757ae7d9624"
+ },
+ "input_sha256": "2b1a9dccb47c7036c9f4aee587172922493d53c926e2f7bc91a511c4714d213e",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h29 reader muse; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 1360,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Jake Turner\", \"id\": null, \"issued\": \"2025-12-29\", \"exp\": \"2027-12-29\"}"
+    }
+   }
+  ]
+ }
+}

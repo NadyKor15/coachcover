@@ -15,6 +15,7 @@ from coachcover.model import WEEKDAYS, CertType, Level, Policy, Preset, Program,
 PRESET_DIR = Path(__file__).parent / "presets"
 
 _PRESET_KEYS = {"code", "label", "note", "venue_term", "cert_types", "roles", "programs", "policy_defaults"}
+_PRESET_OPTIONAL = {"note", "young_children", "copy"}
 _DEFAULT_KEYS = {
     "max_weekly_hours",
     "week_start",
@@ -68,13 +69,13 @@ def read_preset_file(code: str) -> dict:
 
 
 def preset_from_dict(data: dict) -> Preset:
-    _keys(data, _PRESET_KEYS - {"note"}, "preset", optional={"note"})
+    _keys(data, _PRESET_KEYS - {"note"}, "preset", optional=_PRESET_OPTIONAL)
     where = f"preset {data['code']}"
     cert_types = _unique(
         [
             CertType(
                 **{
-                    **_keys(c, {"code", "label", "validity_months"}, f"{where} cert type", optional={"match"}),
+                    **_keys(c, {"code", "label", "validity_months"}, f"{where} cert type", optional={"match", "short"}),
                     "match": tuple(m.upper() for m in _list(c.get("match", []), f"{where} cert type match")),
                 }
             )
@@ -89,13 +90,14 @@ def preset_from_dict(data: dict) -> Preset:
                 label=r["label"],
                 required_certs=tuple(
                     _list(
-                        _keys(r, {"code", "label", "required_certs"}, f"{where} role", optional={"reserve"})[
+                        _keys(r, {"code", "label", "required_certs"}, f"{where} role", optional={"reserve", "short"})[
                             "required_certs"
                         ],
                         f"{where} role required_certs",
                     )
                 ),
                 reserve=_bool(r.get("reserve", False), f"{where} role reserve"),
+                short=r.get("short", ""),
             )
             for r in _list(data["roles"], f"{where} roles")
         ],
@@ -103,7 +105,7 @@ def preset_from_dict(data: dict) -> Preset:
     )
     programs = []
     for p in _list(data["programs"], f"{where} programs"):
-        _keys(p, {"code", "label", "renewal_months", "levels"}, f"{where} program")
+        _keys(p, {"code", "label", "renewal_months", "levels"}, f"{where} program", optional={"short"})
         levels = _unique(
             [
                 Level(**_keys(lv, {"code", "label", "max_per_instructor"}, f"{where} program {p['code']} level"))
@@ -111,8 +113,13 @@ def preset_from_dict(data: dict) -> Preset:
             ],
             f"{where} program {p['code']} levels",
         )
-        programs.append(Program(code=p["code"], label=p["label"], renewal_months=p["renewal_months"], levels=levels))
+        programs.append(
+            Program(code=p["code"], label=p["label"], renewal_months=p["renewal_months"], levels=levels, short=p.get("short", ""))
+        )
     _policy_defaults(data)  # validate early
+    young = data.get("young_children")
+    if young is not None:
+        _keys(young, {"max_age", "max_per_instructor"}, f"{where} young_children")
     return Preset(
         code=data["code"],
         label=data["label"],
@@ -120,7 +127,17 @@ def preset_from_dict(data: dict) -> Preset:
         cert_types=cert_types,
         programs=_unique(programs, f"{where} programs"),
         venue_term=_venue_term(data),
+        young_age_max=young["max_age"] if young else None,
+        young_max_per_instructor=young["max_per_instructor"] if young else None,
+        copy=_copy(data),
     )
+
+
+def _copy(data: dict) -> dict[str, str]:
+    copy = data.get("copy", {})
+    if not isinstance(copy, dict) or not all(isinstance(v, str) for v in copy.values()):
+        raise ValueError(f"preset {data['code']}: copy must map names to strings")
+    return dict(copy)
 
 
 def _venue_term(data: dict) -> dict[str, str]:

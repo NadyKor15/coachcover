@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+ "input": {
+  "image_sha256": "1ec537b14c8babc4bdc5e42e5249064f731540794b3f501e5f85c1d6d99b4933"
+ },
+ "input_sha256": "fca482221853f08d889013abdeaa18ca51d8942ebf03f0cef085628ba7fb7790",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h14 reader omni; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 7720,
+ "response": {
+  "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Grace Okafor\", \"id\": \"BAT: 3175-56\", \"issued\": \"2024-01-04\", \"exp\": \"2026-01-03\"}"
+    }
+   }
+  ]
+ }
+}

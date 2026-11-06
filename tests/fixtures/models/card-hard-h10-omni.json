@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+ "input": {
+  "image_sha256": "bd67d6a4391b2b41e1051be04a9257f57400e746f19ad066922c89883004b111"
+ },
+ "input_sha256": "5b164eea384a9d3a9a3302f17774c92e424ad062e0da3e2b1828333883858f5d",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h10 reader omni; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 7720,
+ "response": {
+  "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Daniel Novak\", \"id\": \"COM-8602-29\", \"issued\": \"2026-02-25\", \"exp\": \"2026-02-25\"}"
+    }
+   }
+  ]
+ }
+}

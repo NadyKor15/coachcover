@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "image_sha256": "08d9550ca933d8136abce6ec45f80d5b9387b77915f80ab016fe730f095e8a46"
+ },
+ "input_sha256": "ef4d5af69fa2e199d9066d0bbb4d93b3d4eac22542aaf5ce0892246b74f0a09c",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h28 reader muse; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 1360,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Anna Kim\", \"id\": \"COH-1194-46\", \"issued\": \"2025-06-11\", \"exp\": \"2027-06-11\"}"
+    }
+   }
+  ]
+ }
+}

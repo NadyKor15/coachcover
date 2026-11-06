@@ -7,69 +7,23 @@ from datetime import timedelta
 
 import psycopg
 
-from coachcover.model import (
-    CertType,
-    Commitment,
-    Context,
-    GroupRef,
-    Level,
-    Policy,
-    Preset,
-    Program,
-    Role,
-    Shift,
-    Staff,
-    StaffCert,
-    StaffProgram,
-    Venue,
-)
+from coachcover.model import Commitment, Context, GroupRef, Policy, Shift, Staff, StaffCert, StaffProgram, Venue
+from coachcover.presets import preset_from_dict
 
 
 def load_policy(conn: psycopg.Connection, policy_id: str) -> Policy:
+    """The policy row on top of its preset; the preset is rebuilt from the installed preset file."""
     row = conn.execute(
-        "SELECT p.preset_code, s.label, p.max_weekly_hours, p.week_start, p.makeup_window_days, p.autonomy,"
-        " p.offer_timeout_minutes, p.overtime_cost_per_hour, p.default_remedy, s.source -> 'venue_term'"
+        "SELECT s.source, p.max_weekly_hours, p.week_start, p.makeup_window_days, p.autonomy,"
+        " p.offer_timeout_minutes, p.overtime_cost_per_hour, p.default_remedy"
         " FROM policy p JOIN preset s ON s.code = p.preset_code WHERE p.id = %s",
         (policy_id,),
     ).fetchone()
     if row is None:
         raise ValueError(f"unknown policy {policy_id!r}")
-    code, label, hours, week_start, makeup, autonomy, timeout, overtime_cost, remedy, venue_term = row
-    cert_types = {
-        c: CertType(c, lab, months, tuple(match))
-        for c, lab, months, match in conn.execute(
-            "SELECT code, label, validity_months, match FROM cert_type WHERE preset_code = %s ORDER BY id", (code,)
-        )
-    }
-    required: dict[str, list[str]] = defaultdict(list)
-    for role_code, cert_code in conn.execute(
-        "SELECT r.code, c.code FROM role_cert rc JOIN role r ON r.id = rc.role_id"
-        " JOIN cert_type c ON c.id = rc.cert_type_id WHERE r.preset_code = %s ORDER BY r.code, rc.ord",
-        (code,),
-    ):
-        required[role_code].append(cert_code)
-    roles = {
-        r: Role(r, lab, tuple(required[r]), reserve)
-        for r, lab, reserve in conn.execute(
-            "SELECT code, label, reserve FROM role WHERE preset_code = %s ORDER BY id", (code,)
-        )
-    }
-    levels: dict[int, dict[str, Level]] = defaultdict(dict)
-    for program_id, lv, lab, per in conn.execute(
-        "SELECT l.program_id, l.code, l.label, l.max_per_instructor FROM program_level l"
-        " JOIN program p ON p.id = l.program_id WHERE p.preset_code = %s ORDER BY l.program_id, l.ord",
-        (code,),
-    ):
-        levels[program_id][lv] = Level(lv, lab, per)
-    programs = {
-        p: Program(p, lab, months, levels[pid])
-        for pid, p, lab, months in conn.execute(
-            "SELECT id, code, label, renewal_months FROM program WHERE preset_code = %s ORDER BY id", (code,)
-        )
-    }
-    preset = Preset(code, label, roles, cert_types, programs, dict(venue_term or {}))
+    source, hours, week_start, makeup, autonomy, timeout, overtime_cost, remedy = row
     return Policy(
-        preset, float(hours), week_start, makeup, dict(autonomy), timeout, float(overtime_cost), remedy
+        preset_from_dict(source), float(hours), week_start, makeup, dict(autonomy), timeout, float(overtime_cost), remedy
     )
 
 
@@ -125,7 +79,7 @@ def load_staff(conn: psycopg.Connection, policy_id: str) -> list[Staff]:
 def load_shift(conn: psycopg.Connection, shift_id: str) -> Shift:
     # the assignee is the person on the shift, or, once it is open, the person who called out
     row = conn.execute(
-        "SELECT s.venue_id, r.code, s.starts_at, s.ends_at, s.instructors, s.zone_id,"
+        "SELECT s.venue_id, r.code, s.starts_at, s.ends_at, s.instructors, s.zone_id, s.extra_certs,"
         " coalesce(s.staff_id, (SELECT c.absent_staff_id FROM cover_case c WHERE c.shift_id = s.id"
         "  ORDER BY c.opened_at DESC, c.id DESC LIMIT 1))"
         " FROM shift s JOIN role r ON r.id = s.role_id WHERE s.id = %s",
@@ -133,17 +87,17 @@ def load_shift(conn: psycopg.Connection, shift_id: str) -> Shift:
     ).fetchone()
     if row is None:
         raise ValueError(f"unknown shift {shift_id!r}")
-    venue, role, start, end, instructors, zone, assignee = row
+    venue, role, start, end, instructors, zone, extra_certs, assignee = row
     groups = tuple(
-        GroupRef(gid, prog, lv, size)
-        for gid, prog, lv, size in conn.execute(
-            "SELECT g.id, p.code, l.code, g.size FROM shift_group sg JOIN lesson_group g ON g.id = sg.group_id"
+        GroupRef(gid, prog, lv, size, age_min)
+        for gid, prog, lv, size, age_min in conn.execute(
+            "SELECT g.id, p.code, l.code, g.size, g.age_min FROM shift_group sg JOIN lesson_group g ON g.id = sg.group_id"
             " JOIN program_level l ON l.id = g.level_id JOIN program p ON p.id = l.program_id"
             " WHERE sg.shift_id = %s ORDER BY g.id",
             (shift_id,),
         )
     )
-    return Shift(shift_id, venue, role, start, end, groups, instructors, zone, assignee)
+    return Shift(shift_id, venue, role, start, end, groups, instructors, zone, assignee, extra_certs=tuple(extra_certs))
 
 
 def load_context(conn: psycopg.Connection, policy_id: str, around: Shift) -> Context:

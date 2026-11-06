@@ -172,7 +172,7 @@ def test_seed_is_deterministic(new_database):
     load_school(second)
     a, b = _dump(first), _dump(second)
     assert a == b
-    assert len(a["shift"]) == 204 and len(a["staff_cert"]) == 87
+    assert len(a["shift"]) == 204 and len(a["staff_cert"]) == 107
 
 
 def test_loading_the_school_twice_fails(new_database):

@@ -4,12 +4,12 @@
  "input": {
   "event": "closure",
   "language": "es",
-  "venue": "Northside Aquatic Center",
+  "venue": "Riverside Aquatic Center",
   "date": "2026-11-09",
-  "reason": "clima",
+  "reason": "falla del equipo",
   "remedy": "Recibes un crédito por la clase."
  },
- "input_sha256": "7abee8b978abc3f8579f96886c404e8d512766ab72cdc71f7d82eb4299fccf81",
+ "input_sha256": "d1153d60d13880d6c207ac10f405768ed7d6589b1413f341e72d5b6e299e3485",
  "synthetic": true,
  "source": "synthetic: written by hand to the family_message schema, only facts from input",
  "duration_ms": 1300,
@@ -23,7 +23,7 @@
    {
     "message": {
      "role": "assistant",
-     "content": "{\"body\": \"Hola: por el clima, Northside Aquatic Center cierra hoy, 9 de noviembre. La clase {group} de las {time} se cancela. Recibes un crédito por la clase. Disculpa las molestias.\"}"
+     "content": "{\"body\": \"Hola: por una falla del equipo, Riverside Aquatic Center cierra hoy, 9 de noviembre. La clase {group} de las {time} se cancela. Recibes un crédito por la clase. Disculpa las molestias.\"}"
     }
    }
   ]

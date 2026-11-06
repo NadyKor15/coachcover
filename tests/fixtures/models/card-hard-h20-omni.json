@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+ "input": {
+  "image_sha256": "528dc09a90ce264a74d8c36352cf348edd81e86bbad1997b624236e4df2cc08d"
+ },
+ "input_sha256": "6e4162311305563fbd805e196c81e12f6f4ac1d4108a0742f723697a233b85d0",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h20 reader omni; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 7720,
+ "response": {
+  "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Jake Turner\", \"id\": \"AQU-8657-48\", \"issued\": \"2025-01-06\", \"exp\": null}"
+    }
+   }
+  ]
+ }
+}

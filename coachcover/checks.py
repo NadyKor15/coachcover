@@ -48,7 +48,13 @@ def night_report(conn: psycopg.Connection, policy_id: str, day: date, now: datet
             "staff_id": staff_id,
             "name": staff[staff_id].name,
             "start": shift.start,
-            "reasons": [{"code": r.code.value, "text": describe(r, "en", policy.preset)} for r in decision.reasons],
+            "reasons": [
+                {"code": r.code.value, "text": describe(r, "en", policy.preset),
+                 "params": {**dict(r.params), **({"cert_type_label": policy.preset.cert_types[r.params["cert_type"]].short
+                                                    or policy.preset.cert_types[r.params["cert_type"]].label}
+                                                   if "cert_type" in r.params else {})}}
+                for r in decision.reasons
+            ],
         }
         if not decision.ok:
             problems.append(entry)
