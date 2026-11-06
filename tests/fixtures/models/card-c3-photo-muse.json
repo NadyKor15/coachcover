@@ -1,0 +1,33 @@
+{
+ "purpose": "read_card",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "image_sha256": "db1a74f0d9021391786985d257acdd6af7249b38feda31cd22ddcf334089d635"
+ },
+ "input_sha256": "bc5302d6cdae7b5c8c9c070ce3a97016e044ed973aa5c441fc314a3fec7dd74c",
+ "synthetic": false,
+ "source": "model check 2026-11-06 (spike-result.json), muse-glimmer-30b|c3-photo",
+ "duration_ms": 1480,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 1073,
+   "completion_tokens": 486,
+   "total_tokens": 1559,
+   "prompt_tokens_details": {
+    "cached_tokens": 64
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 427
+   }
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Anna Petrova\", \"title\": \"CPR / AED FOR PROFESSIONAL RESCUERS\", \"issued\": \"12/01/2025\", \"exp\": \"12/01/2027\", \"id\": \"CFAI-PR-90412\"}"
+    }
+   }
+  ]
+ }
+}

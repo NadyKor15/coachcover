@@ -1,0 +1,26 @@
+{
+ "purpose": "extract_callout",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "transcript": "Привет, это Марина. У меня температура 38, я не выйду в 6. У меня в 6 дорожка и в 7 урок у малышей. Прости."
+ },
+ "input_sha256": "7f710ea7c4e1e93f6fcdab9c0bd8326474ce5399d2db98a3c7b832d4c68a9522",
+ "synthetic": true,
+ "source": "synthetic: written to the extract_callout schema for the recorded transcript",
+ "duration_ms": 1400,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 445,
+   "completion_tokens": 70
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"language\": \"ru\", \"absent\": true, \"start_times\": [\"06:00\", \"07:00\"], \"reason\": \"illness\", \"summary_en\": \"Marina has a 38 °C fever and will not come in: a lane at 6 and a lesson for little ones at 7.\"}"
+    }
+   }
+  ]
+ }
+}

@@ -1,0 +1,33 @@
+{
+ "purpose": "read_card",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "image_sha256": "fae2671cad6860899854a8ffed5822979513e98891a19bc6673a51e2b37cda89"
+ },
+ "input_sha256": "e13bc7ff573474511ed086038411a79aefe7da5fc4e64d2d860dadf5afadd0d1",
+ "synthetic": false,
+ "source": "model check 2026-11-06 (spike-result.json), muse-glimmer-30b|c2-photo",
+ "duration_ms": 1080,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 1073,
+   "completion_tokens": 310,
+   "total_tokens": 1383,
+   "prompt_tokens_details": {
+    "cached_tokens": 64
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 252
+   }
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Jake Turner\", \"title\": \"WATER SAFETY INSTRUCTOR (WSI)\", \"issued\": \"03/15/2024\", \"exp\": \"03/15/2026\", \"id\": \"NSIB-WSI-55109\"}"
+    }
+   }
+  ]
+ }
+}

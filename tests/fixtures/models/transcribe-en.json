@@ -1,0 +1,16 @@
+{
+ "purpose": "transcribe",
+ "model": "whisper-large-v3-turbo",
+ "input": {
+  "audio_sha256": "a579915ea1a8a08f38de03f839efc6a77da73d236c0cb31f03660b761bc576ea"
+ },
+ "input_sha256": "0de178883e1897c605c0792ce9a180ce9daf750821ec59716ed22532bbd09481",
+ "synthetic": false,
+ "source": "model check 2026-11-06 (spike-result.json), asr en-callout.ogg; the check kept only the text, \"model\" is added and must be verified live",
+ "duration_ms": 950,
+ "response": {
+  "text": " Hi, it's Jake. I woke up with a fever. I can't make the 6am shift today. Sorry for the short notice.",
+  "model": "whisper-large-v3-turbo",
+  "duration": 6.92
+ }
+}

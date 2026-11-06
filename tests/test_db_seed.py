@@ -24,9 +24,10 @@ DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 
 def test_migrations_apply_once(new_database):
     conn = new_database()
-    assert migrate(conn) == ["001_init", "002_pipeline", "003_review_fixes"]
+    versions = ["001_init", "002_pipeline", "003_review_fixes", "004_callouts_and_ops"]
+    assert migrate(conn) == versions
     assert migrate(conn) == []
-    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == ["001_init", "002_pipeline", "003_review_fixes"]
+    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == versions
 
 
 def test_preset_install_is_idempotent_and_refuses_a_different_copy(new_database):

@@ -342,7 +342,6 @@ class ModelClient:
         ref: dict,
         parse: Callable[[dict], Any],
         audio_seconds: Callable[[dict], float | None] = lambda body: None,
-        model_optional: bool = False,
     ) -> Answer:
         source = "recorded" if self.mode == "replay" else "live"
         returned = None
@@ -361,9 +360,9 @@ class ModelClient:
             else:
                 body, duration = self._transport(*request)
             returned = body.get("model")
-            if returned is None and model_optional:
-                call_ref["model_unverified"] = True  # the speech endpoint may not name the model
-            elif returned not in ALLOWED_MODELS or returned != model:
+            if returned is None:
+                raise BadAnswer("the answer does not name its model; thrown away")
+            if returned not in ALLOWED_MODELS or returned != model:
                 raise ModelSubstituted(f"asked {model!r}, answered by {returned!r}; answer thrown away")
             usage = body.get("usage") or {}
             tokens_in, tokens_out = usage.get("prompt_tokens"), usage.get("completion_tokens")
@@ -375,12 +374,14 @@ class ModelClient:
                            tokens_in, tokens_out, duration, cost, case_id, call_ref)
             )
             raise
-        record = CallRecord(at, purpose, model, returned if returned else None, source, True, None,
+        record = CallRecord(at, purpose, model, returned, source, True, None,
                             tokens_in, tokens_out, duration, cost, case_id, call_ref)
         self.ledger.record(record)
         return Answer(data=data, record=record, synthetic=synthetic)
 
-    def transcribe(self, audio: bytes, filename: str, *, at: datetime, case_id: int | None = None) -> Answer:
+    def transcribe(
+        self, audio: bytes, filename: str, *, at: datetime, case_id: int | None = None, ref: dict | None = None
+    ) -> Answer:
         """Speech to text. `data` = {"text": ..., "language": ... or None}."""
         mime = "audio/ogg" if filename.endswith((".ogg", ".oga", ".opus")) else "application/octet-stream"
         request = ("/audio/transcriptions", {"multipart": {
@@ -401,10 +402,9 @@ class ModelClient:
             request=request,
             at=at,
             case_id=case_id,
-            ref={"filename": filename},
+            ref={**(ref or {}), "filename": filename},
             parse=parse,
             audio_seconds=lambda body: body.get("duration"),
-            model_optional=True,
         )
 
     def chat_json(
@@ -448,7 +448,9 @@ class ModelClient:
             parse=parse,
         )
 
-    def read_card(self, image: bytes, mime: str, *, model: str, at: datetime, case_id: int | None = None) -> Answer:
+    def read_card(
+        self, image: bytes, mime: str, *, model: str, at: datetime, case_id: int | None = None, ref: dict | None = None
+    ) -> Answer:
         """Fields of a certificate card from a photo or scan."""
         b64 = base64.b64encode(image).decode()
         user = [
@@ -464,6 +466,7 @@ class ModelClient:
             at=at,
             model=model,
             case_id=case_id,
+            ref=ref,
         )
 
 

@@ -1,0 +1,33 @@
+{
+ "purpose": "read_card",
+ "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+ "input": {
+  "image_sha256": "1cbf16db8935b651c6178141cef30c8fcc72ab30371886b652cd180a75b85be1"
+ },
+ "input_sha256": "29d2562bd8fee704bd5e7d23cf6f4b497840d470aa7d462184d37da456fa9430",
+ "synthetic": false,
+ "source": "model check 2026-11-06 (spike-result.json), nemotron-3-nano-omni-30b-a3b-reasoning|c1-scan",
+ "duration_ms": 6730,
+ "response": {
+  "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+  "usage": {
+   "prompt_tokens": 760,
+   "completion_tokens": 924,
+   "total_tokens": 1684,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 840
+   }
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Maria Lopez\", \"title\": \"LIFEGUARDING / FIRST AID / CPR / AED\", \"issued\": \"11/02/2024\", \"exp\": \"11/02/2026\", \"id\": \"ASTC-7Q3K-2281\"}"
+    }
+   }
+  ]
+ }
+}
