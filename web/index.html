@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>CoachCover — Today</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/today.css">
+</head>
+<body data-state="loading">
+
+<div class="load-err" id="loadErr" role="alert" hidden></div>
+
+<header class="top">
+  <div class="logo" aria-label="CoachCover">CoachCover</div>
+  <div class="site"><span data-slot="site-name"></span>
+    <svg width="13" height="8" viewBox="0 0 13 8" fill="none" stroke="#1d232a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l5 5 5-5"/></svg>
+  </div>
+  <div class="top-right">
+    <span class="dt" data-slot="date-time"></span>
+    <span class="vdiv" style="margin-left:35px"></span>
+    <span class="lang" style="margin-left:35px"><span class="on">EN</span><span class="bar">|</span><span class="off">RU</span></span>
+    <span class="vdiv" style="margin-left:41px"></span>
+    <span data-slot="user" style="margin-left:31px;letter-spacing:-0.3px"></span>
+  </div>
+</header>
+
+<aside class="side">
+  <ul class="nav">
+    <li class="on">Today</li>
+    <li>Staff &amp; Certificates</li>
+    <li><a id="navCases" href="case.html">Cases</a></li>
+    <li>Groups</li>
+    <li>Closures</li>
+    <li>Reports</li>
+    <li>Schedule</li>
+    <li>Settings</li>
+  </ul>
+
+  <section class="judge" aria-label="Judge mode">
+    <div class="judge-h">Judge mode</div>
+    <div class="judge-btns">
+      <button class="jbtn primary" type="button" data-scenario="dangerous_morning">
+        <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor" aria-hidden="true"><path d="M2 1.6v12.8c0 .8.9 1.3 1.6.9l9.6-6.4c.6-.4.6-1.3 0-1.7L3.6.7C2.9.3 2 .8 2 1.6z"/></svg>
+        <span>Run a 5 a.m. call-out</span></button>
+      <button class="jbtn" type="button" data-scenario="nobody_accepts">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M3.5 12.5l9-9"/></svg>
+        <span>Nobody accepts</span></button>
+      <button class="jbtn" type="button" data-scenario="nightly_check">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M10.6 1.2a6.9 6.9 0 1 0 4.2 9.6A5.6 5.6 0 0 1 10.6 1.2z"/></svg>
+        <span>Night check</span></button>
+    </div>
+    <div class="judge-status" id="judgeStatus" data-slot="judge-status" aria-live="polite"></div>
+  </section>
+</aside>
+
+<main class="main">
+  <h1 data-slot="title"></h1>
+
+  <section class="band" aria-label="Call-out timeline">
+    <img class="band-photo" src="assets/pool-band.png" alt="">
+    <div class="tl-line"></div>
+    <div id="timeline" data-slot="timeline"></div>
+  </section>
+
+  <div class="grid">
+    <!-- call-out -->
+    <section class="card callout">
+      <div class="co-head">
+        <div class="co-title">Call-out · <span data-slot="callout-time"></span></div>
+        <div class="lang-pill" data-slot="callout-language"></div>
+      </div>
+      <div class="co-sub"><span data-slot="callout-staff"></span>
+        <span class="asr" id="asr" hidden>
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="#5f6164" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="6" y="1.5" width="6" height="10" rx="3"/><path d="M3 8.5a6 6 0 0 0 12 0M9 14.5v2.5"/></svg>
+          <span data-slot="callout-asr"></span>
+        </span>
+      </div>
+      <div class="voice">
+        <button class="play" id="play" type="button" aria-label="Play voice message">
+          <svg width="20" height="22" viewBox="0 0 20 22" fill="#fff"><path d="M3 2.2v17.6c0 .9 1 1.5 1.8 1L18 12c.8-.5.8-1.6 0-2.1L4.8 1.2C4 .7 3 1.3 3 2.2z"/></svg>
+        </button>
+        <svg class="wave" width="365" height="48" viewBox="0 0 365 48" aria-hidden="true"><rect x="5.4" y="19.6" width="3" height="8.9" rx="1.5"/><rect x="13.2" y="12.8" width="3" height="22.4" rx="1.5"/><rect x="20.5" y="17.9" width="3" height="12.3" rx="1.5"/><rect x="27.7" y="16.8" width="3" height="14.5" rx="1.5"/><rect x="35.6" y="12.8" width="3" height="22.4" rx="1.5"/><rect x="43.4" y="3.9" width="3" height="40.3" rx="1.5"/><rect x="50.7" y="9.4" width="3" height="29.1" rx="1.5"/><rect x="57.9" y="13.9" width="3" height="20.1" rx="1.5"/><rect x="65.8" y="18.9" width="3" height="10.1" rx="1.5"/><rect x="73.6" y="16.8" width="3" height="14.5" rx="1.5"/><rect x="81.4" y="16.1" width="3" height="15.7" rx="1.5"/><rect x="89.2" y="17.3" width="3" height="13.4" rx="1.5"/><rect x="96.0" y="11.2" width="3" height="25.7" rx="1.5"/><rect x="103.8" y="10.6" width="3" height="26.8" rx="1.5"/><rect x="111.6" y="1.1" width="3" height="45.8" rx="1.5"/><rect x="119.4" y="7.8" width="3" height="32.4" rx="1.5"/><rect x="127.3" y="11.2" width="3" height="25.7" rx="1.5"/><rect x="135.1" y="6.6" width="3" height="34.7" rx="1.5"/><rect x="142.4" y="12.8" width="3" height="22.4" rx="1.5"/><rect x="150.2" y="16.8" width="3" height="14.5" rx="1.5"/><rect x="157.5" y="18.9" width="3" height="10.1" rx="1.5"/><rect x="166.4" y="17.9" width="3" height="12.3" rx="1.5"/><rect x="174.2" y="17.9" width="3" height="12.3" rx="1.5"/><rect x="182.1" y="12.2" width="3" height="23.5" rx="1.5"/><rect x="189.9" y="8.9" width="3" height="30.2" rx="1.5"/><rect x="197.2" y="3.9" width="3" height="40.3" rx="1.5"/><rect x="204.4" y="10.0" width="3" height="28.0" rx="1.5"/><rect x="212.2" y="15.6" width="3" height="16.8" rx="1.5"/><rect x="220.1" y="17.3" width="3" height="13.4" rx="1.5"/><rect x="227.3" y="19.6" width="3" height="8.9" rx="1.5"/><rect x="234.6" y="17.9" width="3" height="12.3" rx="1.5" opacity="0.80"/><rect x="242.4" y="15.1" width="3" height="17.9" rx="1.5" opacity="0.78"/><rect x="250.8" y="15.1" width="3" height="17.9" rx="1.5" opacity="0.66"/><rect x="258.1" y="7.2" width="3" height="33.5" rx="1.5" opacity="0.66"/><rect x="265.9" y="9.4" width="3" height="29.1" rx="1.5" opacity="0.62"/><rect x="273.8" y="13.9" width="3" height="20.1" rx="1.5" opacity="0.55"/><rect x="281.6" y="10.6" width="3" height="26.8" rx="1.5" opacity="0.50"/><rect x="288.8" y="16.1" width="3" height="15.7" rx="1.5" opacity="0.56"/><rect x="295.6" y="18.9" width="3" height="10.1" rx="1.5" opacity="0.45"/><rect x="302.8" y="19.6" width="3" height="8.9" rx="1.5" opacity="0.46"/><rect x="310.1" y="16.1" width="3" height="15.7" rx="1.5" opacity="0.44"/><rect x="317.4" y="16.8" width="3" height="14.5" rx="1.5" opacity="0.48"/><rect x="324.1" y="11.2" width="3" height="25.7" rx="1.5" opacity="0.42"/><rect x="332.5" y="14.5" width="3" height="19.0" rx="1.5" opacity="0.40"/><rect x="339.7" y="18.9" width="3" height="10.1" rx="1.5" opacity="0.38"/><rect x="346.4" y="21.2" width="3" height="5.6" rx="1.5" opacity="0.33"/><rect x="351.5" y="21.8" width="3" height="4.5" rx="1.5" opacity="0.25"/><rect x="358.7" y="21.2" width="3" height="5.6" rx="1.5" opacity="0.30"/></svg>
+        <span class="dur" data-slot="callout-duration"></span>
+      </div>
+      <div class="tx">
+        <div class="tx-col">
+          <div class="tx-h"><span data-slot="callout-language-h"></span> · original</div>
+          <p class="tx-t" data-slot="callout-original"></p>
+        </div>
+        <div class="tx-div"></div>
+        <div class="tx-col">
+          <div class="tx-h">English · translation</div>
+          <p class="tx-t" data-slot="callout-transcript"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- who is allowed: eligibility funnel + first refusal -->
+    <section class="card staff">
+      <h2 class="st-title"><span data-slot="staff-total"></span> staff → <span data-slot="eligible-count"></span> eligible</h2>
+      <div class="tip" id="tip" hidden><span data-slot="highlight-name"></span> — Eligible</div>
+      <div class="dots" id="dots" data-slot="staff-grid"></div>
+      <div class="chips" id="chips"></div>
+      <div class="refusal" id="refusal" data-slot="first-refusal" hidden>
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="9" fill="#a83a2f"/><path d="M5.8 5.8l6.4 6.4M12.2 5.8l-6.4 6.4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <span id="refusalText"></span>
+      </div>
+      <p class="refusal-quote" id="refusalQuote" data-slot="first-refusal-quote" hidden></p>
+    </section>
+
+    <!-- shift -->
+    <section class="card shift">
+      <div class="tile">
+        <svg width="44" height="30" viewBox="0 0 44 30" fill="none" aria-hidden="true">
+          <circle cx="34.3" cy="8.7" r="5" fill="#035d55"/>
+          <path d="M17.6 6.2L30.6 17.6 8.3 19.6z" fill="#035d55" stroke="#035d55" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M7.3 7.2l11-2.6 12.6 13" stroke="#035d55" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3 24.6q4.7-3.6 9.5 0t9.5 0 9.5 0 9.5 0" stroke="#035d55" stroke-width="3.6" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="sh-body">
+        <div class="sh-title"><span class="nw" data-slot="shift-time"></span> · <span data-slot="shift-lanes"></span></div>
+        <div class="sh-needs">Needs: <span data-slot="shift-needs"></span><span data-slot="shift-program-sep"> · </span><span data-slot="shift-program"></span></div>
+      </div>
+    </section>
+
+    <!-- offer queue -->
+    <section class="card offers">
+      <div class="off-rail" id="offRail"></div>
+      <ol class="off-list" id="offers"></ol>
+      <div class="why-first" id="whyFirst" hidden><span class="k">why first</span><span data-slot="why-first"></span></div>
+    </section>
+
+    <!-- right column -->
+    <div class="side-cards" id="sideCards"></div>
+  </div>
+
+  <div class="covered" id="covered">
+    <span class="chk" id="coveredIco"></span>
+    <span class="txt" data-slot="covered"></span>
+  </div>
+
+  <div class="planb" id="planb">
+    <div class="zone"></div>
+    <svg class="ico" width="30" height="24" viewBox="0 0 30 24" fill="none" stroke="#55585c" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M2 3h8.5l15.5 16"/><path d="M19.5 19.5h7v-7"/><path d="M13.5 6.6C9 9.5 6.4 13.5 6 19"/><circle cx="6" cy="20" r="2.4" fill="#55585c"/>
+    </svg>
+    <p class="txt" data-slot="planb-text"><b id="planbHead"></b>: <span id="planbBody"></span></p>
+    <button class="btn" id="approve" type="button" disabled>Approve plan B</button>
+  </div>
+
+  <section class="card money" id="money" data-slot="money" hidden>
+    <div class="mh">Cost of this cover</div>
+    <div class="mv" id="moneyCase" hidden><span class="big" data-slot="money-case"></span><span class="unit">in model calls</span></div>
+    <div class="ml" id="moneyHour" hidden>vs <b data-slot="money-manager-hour"></b> for one manager hour</div>
+    <div class="ml" id="moneyUncovered" hidden>Uncovered morning: <b data-slot="money-uncovered"></b></div>
+  </section>
+</main>
+
+<div class="foot-line"></div>
+<footer class="foot" data-slot="model-log"></footer>
+<div class="tagline">Not who's free — who's allowed. Running on Vultr.</div>
+
+<script src="assets/api.js"></script>
+<script src="assets/today.js"></script>
+</body>
+</html>

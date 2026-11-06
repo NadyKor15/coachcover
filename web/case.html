@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoachCover — Case</title>
+<style>
+  /* Placeholder: the case page gets its own design after the screen picture is chosen. */
+  body { margin: 0; background: #f9f4ed; color: #121a22; font: 16px/1.45 system-ui, sans-serif; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+  .logo { font-weight: 700; font-size: 26px; color: #06625c; text-decoration: none; }
+  h1 { font-size: 26px; margin: 18px 0 6px; }
+  .note { color: #5f6164; margin: 0 0 16px; }
+  .err { padding: 10px 14px; border-radius: 10px; background: #fbe9e6; border: 1px solid #e7b9b1; color: #8f2a20; }
+  .err[hidden], .raw[hidden], .dl[hidden] { display: none; }
+  .dl { display: inline-block; margin: 0 0 12px; color: #06625c; font-weight: 600; }
+  pre { margin: 0; padding: 14px; border-radius: 12px; background: #fefefe; border: 1px solid #e2dace; overflow: auto; font-size: 13px; line-height: 1.4; white-space: pre-wrap; word-break: break-word; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="logo" id="home" href="index.html">CoachCover</a>
+  <h1>Case <span data-slot="case-id"></span></h1>
+  <p class="note">The case page is being designed. Until then this is the full case file as the API returns it.</p>
+  <p class="err" id="err" role="alert" hidden></p>
+  <a class="dl" id="dl" download hidden>Download JSON</a>
+  <pre class="raw" id="raw" data-slot="case-json" hidden></pre>
+</div>
+<script src="assets/api.js"></script>
+<script>
+(async function () {
+  const CC = window.CC;
+  const id = CC.params.get('id') || '';
+  document.querySelector('[data-slot="case-id"]').textContent = id;
+  if (CC.FIXTURE) document.getElementById('home').href = 'index.html?fixture=1';
+  const err = document.getElementById('err');
+  if (!id) { err.textContent = 'No case id in the link (case.html?id=…).'; err.hidden = false; return; }
+  const r = await CC.get('/api/cases/' + encodeURIComponent(id));
+  if (r.status !== 200) { err.textContent = 'Could not load this case — ' + CC.errorText(r); err.hidden = false; return; }
+  const text = JSON.stringify(r.body, null, 2);
+  const raw = document.getElementById('raw');
+  raw.textContent = text;
+  raw.hidden = false;
+  const dl = document.getElementById('dl');
+  dl.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  dl.download = 'case-' + id + '.json';
+  dl.hidden = false;
+})();
+</script>
+</body>
+</html>
