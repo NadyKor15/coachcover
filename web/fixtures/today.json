@@ -1,0 +1,450 @@
+{
+  "title": "Who is allowed on deck at 06:00",
+  "venue": {
+    "id": "V1",
+    "name": "Riverside Aquatic Center",
+    "term": "pool"
+  },
+  "now_label": "Mon, Nov 9 · 05:19",
+  "user_label": "Dana Ruiz · Manager",
+  "lang": "en",
+  "callout": {
+    "case_id": "C-1109-01",
+    "time_label": "05:12",
+    "staff": "Marina Petrova · Lifeguard + WSI",
+    "audio_url": "/media/callouts/C-1109-01.ogg",
+    "duration_label": "0:09",
+    "language": "Russian",
+    "transcript_original": "Привет, это Марина. У меня температура 38, я не выйду в 6. У меня в 6 дорожка и в 7 урок у малышей. Прости.",
+    "transcript_en": "Hi, it's Marina. I have a 38 fever, I can't come at 6. I have the 6:00 lane and the 7:00 little ones lesson. Sorry.",
+    "asr_label": "whisper on Vultr · 1.0 s"
+  },
+  "shift": {
+    "id": "L-1109-G002",
+    "time_label": "06:00–08:00",
+    "lanes_label": "Lanes 3–4 lap swim + Learn-to-Swim Level 3 (8 kids)",
+    "needs_label": "Lifeguard + WSI",
+    "program_label": "Program LTS-3"
+  },
+  "eligibility": {
+    "total": 40,
+    "eligible": 6,
+    "reasons": [
+      {
+        "code": "CERT_EXPIRED",
+        "label": "Certificate expired Nov 5",
+        "count": 3,
+        "tone": "red"
+      },
+      {
+        "code": "HOURS_LIMIT_EXCEEDED",
+        "label": "Over 40 h this week",
+        "count": 2,
+        "tone": "plain"
+      },
+      {
+        "code": "CERT_MISSING",
+        "label": "No WSI",
+        "count": 12,
+        "tone": "plain"
+      },
+      {
+        "code": "LEVEL_MISSING",
+        "label": "Not cleared for LTS-3",
+        "count": 4,
+        "tone": "plain"
+      },
+      {
+        "code": "OVERLAPS_COMMITMENT",
+        "label": "Teaching at 6:00",
+        "count": 9,
+        "tone": "plain"
+      },
+      {
+        "code": "CERT_NEEDS_REVIEW",
+        "label": "Readers disagree — review",
+        "count": 1,
+        "tone": "amber"
+      },
+      {
+        "code": "DAY_OFF",
+        "label": "Day off",
+        "count": 3,
+        "tone": "plain"
+      }
+    ],
+    "staff": [
+      {
+        "id": "S03",
+        "name": "Sofia Reyes",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S07",
+        "name": "Leo Martins",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S15",
+        "name": "",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S22",
+        "name": "",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S12",
+        "name": "Maria Lopez",
+        "eligible": true,
+        "highlight": true,
+        "reason_label": null
+      },
+      {
+        "id": "S30",
+        "name": "",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S09",
+        "name": "Anna Kim",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 5"
+      },
+      {
+        "id": "S01",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S02",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S04",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S05",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Over 40 h this week"
+      },
+      {
+        "id": "S06",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S08",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S10",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S11",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S13",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S14",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S16",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S17",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S18",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 5"
+      },
+      {
+        "id": "S19",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S20",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-3"
+      },
+      {
+        "id": "S21",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Day off"
+      },
+      {
+        "id": "S23",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-3"
+      },
+      {
+        "id": "S24",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-3"
+      },
+      {
+        "id": "S25",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-3"
+      },
+      {
+        "id": "S26",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Over 40 h this week"
+      },
+      {
+        "id": "S27",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S28",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S29",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S31",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S32",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S33",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 5"
+      },
+      {
+        "id": "S34",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S35",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S36",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S37",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S38",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Readers disagree — review"
+      },
+      {
+        "id": "S39",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Day off"
+      },
+      {
+        "id": "S40",
+        "name": "",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Day off"
+      }
+    ],
+    "first_refusal": {
+      "staff": "Anna Kim",
+      "label": "free and willing · BLOCKED: Lifeguard certificate expired Nov 5 · 8 kids · ratio 1:4",
+      "contrast_quote": "“An expired certificate does not block rostering.” — RosterElf help center"
+    }
+  },
+  "timeline": [
+    {
+      "time_label": "05:12",
+      "kind": "callout",
+      "label": "Call-out"
+    },
+    {
+      "time_label": "05:13",
+      "kind": "declined",
+      "label": "Sofia Reyes declined"
+    },
+    {
+      "time_label": "05:15",
+      "kind": "no_reply",
+      "label": "Leo Martins no reply in 5 min"
+    },
+    {
+      "time_label": "05:19",
+      "kind": "accepted",
+      "label": "Maria Lopez accepted"
+    },
+    {
+      "time_label": "06:00",
+      "kind": "shift_start"
+    }
+  ],
+  "offers": [
+    {
+      "id": "O-2",
+      "time_label": "05:13",
+      "staff": "Sofia Reyes",
+      "result": "declined",
+      "why_first": null
+    },
+    {
+      "id": "O-3",
+      "time_label": "05:15",
+      "staff": "Leo Martins",
+      "result": "no_reply",
+      "why_first": null
+    },
+    {
+      "id": "O-1",
+      "time_label": "05:19",
+      "staff": "Maria Lopez",
+      "result": "accepted",
+      "why_first": "Maria first: 12 h this week, Level 3, same pool"
+    }
+  ],
+  "outcome": {
+    "covered_by": "Maria Lopez",
+    "covered_time": "06:00",
+    "lessons_cancelled": 0
+  },
+  "plan_b": {
+    "id": "P-1",
+    "state": "standby",
+    "text": "merge Level 3 with Level 2 (ratio 1:8 ok) · senior guard on deck · message 8 families",
+    "hash": "e900e6fc4d37726c5623990b8b250be45a6c5167d136738e82d5b6627be610b8",
+    "autonomy": "propose"
+  },
+  "summary_cards": [
+    {
+      "title": "Tomorrow",
+      "value": "14 of 14 shifts covered"
+    },
+    {
+      "title": "Expiring in 30 days",
+      "value": "2 certificates"
+    },
+    {
+      "title": "Closures today",
+      "value": "none"
+    }
+  ],
+  "money": {
+    "uncovered_morning_usd": null,
+    "uncovered_morning_label": null,
+    "case_cost_cents": 0.3,
+    "manager_hour_usd": null
+  },
+  "model_log": {
+    "label": "Models: whisper · muse-glimmer-30b · nemotron-omni — 4 calls · $0.003 · running on Vultr",
+    "calls": 4,
+    "usd": 0.003
+  }
+}
