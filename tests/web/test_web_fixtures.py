@@ -49,6 +49,7 @@ def today_files() -> list[str]:
 def test_there_are_fixtures():
     assert today_files() == ["today.json", "today.nobody_accepts.json"]
     assert (FX / "offers" / "O-1.json").is_file() and (FX / "mocks.json").is_file()
+    assert sorted(p.name for p in (FX / "cases").glob("*.json")) == ["C-1109-01.json"]
 
 
 def test_today_fields_follow_the_contract():
@@ -158,6 +159,11 @@ def test_mocks_match_the_fixtures():
 
 
 def test_people_are_the_fictional_names_of_the_contract():
+    case = load("cases/C-1109-01.json")
+    for st in case["steps"]:
+        if st["kind"] == "offers":
+            assert {o["staff"] for o in st["offers"]} <= CONTRACT_NAMES
+    assert case["user_label"].split(" · ")[0] in CONTRACT_NAMES
     for name in today_files():
         d = load(name)
         names = {s["name"] for s in d["eligibility"]["staff"] if s["name"]}
@@ -198,3 +204,71 @@ def test_pages_declare_charset_first():
     for page in ("index.html", "offer.html", "case.html"):
         head = (WEB / page).read_text(encoding="utf-8").split("<head>", 1)[1].lstrip()
         assert head.startswith('<meta charset="UTF-8">'), page
+
+
+# ---- GET /api/cases/{id}: the contract names the steps; the fields below are what web/README.md proposes ----
+CASE_KEYS = {"case_id", "status", "status_label", "covered_time_label", "shift_label", "venue", "date_label", "user_label",
+             "opened_at", "closed_at", "steps", "proof", "model_calls", "model_cost_usd", "risk"}
+STEP_KEYS = {"kind", "at", "time_label", "title"}
+STEP_EXTRA = {
+    "callout": {"staff", "language", "audio_url", "transcript_original", "transcript_en", "model_tag"},
+    "shift": {"shift_id", "summary", "model_tag"},
+    "allowed": {"total", "allowed", "blocked", "reasons", "staff"},
+    "offers": {"offers"},
+    "covered": {"summary"},
+}
+CALL_KEYS = {"at", "purpose", "model", "model_label", "ms", "input_tokens", "output_tokens", "cost_usd", "source"}
+UTC_STAMP = re.compile(r"^2026-11-09T(\d\d:\d\d:\d\d)Z$")
+
+
+def test_case_fields_and_step_order():
+    d = load("cases/C-1109-01.json")
+    assert set(d) == CASE_KEYS
+    # contract order: voice (original + translation) → shift → filter → queue → outcome
+    assert [st["kind"] for st in d["steps"]] == ["callout", "shift", "allowed", "offers", "covered"]
+    for st in d["steps"]:
+        assert set(st) == STEP_KEYS | STEP_EXTRA[st["kind"]], st["kind"]
+        m = UTC_STAMP.match(st["at"])
+        assert m and st["time_label"] == m.group(1) + " UTC", st
+    stamps = [st["at"] for st in d["steps"]]
+    assert stamps == sorted(stamps) and d["opened_at"] == stamps[0] and d["closed_at"] == stamps[-1]
+    assert set(d["proof"]) == {"plan_id", "plan_hash", "policy_label"}
+    assert all(set(c) == CALL_KEYS for c in d["model_calls"])
+    assert set(d["risk"]) == {"kids", "refunds_usd", "overtime_usd", "total_usd"}
+
+
+def test_case_tells_the_same_morning_as_screen_c():
+    d, t = load("cases/C-1109-01.json"), load("today.json")
+    steps = {st["kind"]: st for st in d["steps"]}
+    assert d["case_id"] == t["callout"]["case_id"]
+    call = steps["callout"]
+    assert call["staff"].startswith("Marina Petrova")
+    assert (call["transcript_original"], call["transcript_en"]) == (t["callout"]["transcript_original"], t["callout"]["transcript_en"])
+    allowed = steps["allowed"]
+    assert (allowed["total"], allowed["allowed"]) == (t["eligibility"]["total"], t["eligibility"]["eligible"])
+    assert allowed["blocked"] == {"staff": "Anna Kim", "label": t["eligibility"]["first_refusal"]["label"]}
+    assert "BLOCKED" in allowed["blocked"]["label"]
+    assert sum(r["count"] for r in allowed["reasons"]) == allowed["total"] - allowed["allowed"]
+    assert len(allowed["staff"]) == 40 and sum(s["allowed"] for s in allowed["staff"]) == 6
+    assert [(o["staff"], o["result"]) for o in steps["offers"]["offers"]] == [(o["staff"], o["result"]) for o in t["offers"]]
+    maria = [o for o in steps["offers"]["offers"] if o["result"] == "accepted"]
+    assert len(maria) == 1 and maria[0]["staff"] == "Maria Lopez" and hours(maria[0]["why_first"]) == "12"
+    assert d["proof"]["plan_hash"] == t["plan_b"]["hash"]
+    assert len(d["model_calls"]) == t["model_log"]["calls"] and d["model_cost_usd"] == t["model_log"]["usd"]
+
+
+def test_case_money_is_never_made_up():
+    risk = load("cases/C-1109-01.json")["risk"]
+    assert risk["refunds_usd"] is None and risk["overtime_usd"] is None and risk["total_usd"] is None
+
+
+def test_case_model_calls_come_from_recorded_answers():
+    for c in load("cases/C-1109-01.json")["model_calls"]:
+        if c["source"].startswith("recorded answer "):
+            rec = json.loads((ROOT / c["source"].split()[2]).read_text(encoding="utf-8"))
+            assert rec["response"]["model"] == c["model"]
+            assert rec["duration_ms"] == c["ms"]
+            usage = rec["response"].get("usage") or {}
+            assert usage.get("prompt_tokens") == c["input_tokens"] and usage.get("completion_tokens") == c["output_tokens"]
+        else:
+            assert c["ms"] is None and c["input_tokens"] is None and c["cost_usd"] is None

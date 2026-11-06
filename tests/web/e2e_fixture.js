@@ -233,11 +233,68 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('P2 live: 409 reason from the server', await text(p, '#result') === 'You are no longer eligible for this shift: Lifeguard certificate expired Nov 5');
     await p.close();
 
-    /* case stub */
-    p = await newPage(browser, 1280, 800);
+    /* ---------- case page ---------- */
+    const caseFx = JSON.parse(fs.readFileSync(path.join(WEB, 'fixtures/cases/C-1109-01.json'), 'utf8'));
+    p = await newPage(browser, 1920, 1080);
     await p.goto(base + 'case.html?id=C-1109-01&fixture=1');
-    await p.waitForSelector('#err:not([hidden])');
-    check('case: stub says what is missing', (await text(p, '#err')).includes('no case fixture yet'));
+    await ready(p);
+    check('case: state ready', await p.evaluate(() => document.body.dataset.state) === 'ready');
+    check('case: title', await text(p, '.case-title') === 'Case C-1109-01 · 06:00 Lanes 3–4 + Learn-to-Swim Level 3', await text(p, '.case-title'));
+    check('case: pill', await text(p, '#pill') === 'Covered · 05:19', await text(p, '#pill'));
+    check('case: steps in order', JSON.stringify(await texts(p, '[data-slot="step-title"]')) === JSON.stringify(['Voice call-out', 'Shift identified', 'Who is allowed', 'Offers in order', 'Schedule covered']));
+    check('case: UTC stamps', JSON.stringify(await texts(p, '[data-slot="step-time"]')) === JSON.stringify(['10:12:04 UTC', '10:12:06 UTC', '10:12:07 UTC', '10:12:08 UTC', '10:19:31 UTC']));
+    check('case: voice note = screen C', await text(p, '[data-slot="callout-original"]') === '“' + today.callout.transcript_original + '”' &&
+      await text(p, '[data-slot="callout-translation"]') === '“' + today.callout.transcript_en + '”');
+    check('case: Anna Kim blocked', await text(p, '[data-slot="blocked-row"]') === 'Anna Kim · ' + today.eligibility.first_refusal.label);
+    check('case: 40 → 6', await text(p, '[data-slot="allowed-summary"]') === '40 staff → 6 allowed');
+    const caseCounts = await p.$$eval('[data-slot="reason-count"]', es => es.map(e => +e.textContent.replace('×', '')));
+    check('case: reasons add up to 34', caseCounts.reduce((a, b) => a + b, 0) === 34, caseCounts);
+    check('case: offers', JSON.stringify(await texts(p, '[data-slot="offer-row"]')) === JSON.stringify(['Sofia Reyes — declined', 'Leo Martins — no reply in 5 min', 'Maria Lopez — accepted · Maria first: 12 h this week, Level 3, same pool']), await texts(p, '[data-slot="offer-row"]'));
+    check('case: models line', await text(p, '.facts li:last-child') === 'Models: 4 calls · $0.003', await text(p, '.facts li:last-child'));
+    check('case: model table', JSON.stringify(await texts(p, '[data-slot="model-row"]')) === JSON.stringify(['whisper-large-v3-turbo 1 call', 'muse-glimmer-30b 2 calls', 'nemotron-omni 1 call']), await texts(p, '[data-slot="model-row"]'));
+    check('case: plan hash shortened from data', await text(p, '[data-slot="plan-hash"]') === caseFx.proof.plan_hash.slice(0, 4) + '…' + caseFx.proof.plan_hash.slice(-4));
+    check('case: risk block hidden without money', !(await visible(p, '#risk')));
+    check('case: tagline', await text(p, '.foot') === 'Not who’s free — who’s allowed. Running on Vultr.');
+    const dl = await p.evaluate(async () => { const a = document.getElementById('download'); return { name: a.download, body: await (await fetch(a.href)).text() }; });
+    check('case: download = the case JSON', dl.name === 'case-C-1109-01.json' && JSON.stringify(JSON.parse(dl.body)) === JSON.stringify(caseFx), dl.name);
+    const rail = await p.evaluate(() => { const r = document.getElementById('rail').getBoundingClientRect(), d = [...document.querySelectorAll('.s-dot')].map(x => x.getBoundingClientRect()); return [r.top, r.bottom, d[0].top + 10, d[d.length - 1].top + 10]; });
+    check('case: rail from first dot to last', Math.abs(rail[0] - rail[2]) < 1.5 && Math.abs(rail[1] - rail[3]) < 1.5, rail);
+    check('case: no console errors', p._errors.length === 0, p._errors);
+    await p.close();
+
+    /* risk block shows only the sums the data has (test-only numbers, never in fixtures) */
+    p = await newPage(browser, 1920, 1080);
+    const withMoney = JSON.parse(JSON.stringify(caseFx));
+    withMoney.risk = { kids: 8, refunds_usd: 111, overtime_usd: null, total_usd: 222 };
+    await p.route('**/fixtures/cases/C-1109-01.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(withMoney) }));
+    await p.goto(base + 'case.html?id=C-1109-01&fixture=1');
+    await ready(p);
+    check('case risk: only known sums', await visible(p, '#risk') && await p.$eval('#risk p', e => e.innerText) === '8 kids · refunds $111 · $222 at risk', await p.$eval('#risk p', e => e.innerText));
+    await p.close();
+
+    /* case: errors are shown */
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'case.html?id=C-0000&fixture=1');
+    await p.waitForFunction(() => document.body.dataset.state === 'error');
+    check('case: unknown id → error line', (await text(p, '#loadErr')).includes('HTTP 404'));
+    await p.goto(base + 'case.html?fixture=1');
+    await p.waitForFunction(() => document.body.dataset.state === 'error');
+    check('case: no id → error line', (await text(p, '#loadErr')).startsWith('No case id'));
+    await p.close();
+
+    /* screen C opens the case: covered line and timeline */
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'index.html?fixture=1');
+    await ready(p);
+    await Promise.all([p.waitForURL('**/case.html?id=C-1109-01&fixture=1'), p.click('#covered')]);
+    check('C → case: covered line opens the case', p.url().endsWith('case.html?id=C-1109-01&fixture=1'));
+    await p.goto(base + 'index.html?fixture=1');
+    await ready(p);
+    await Promise.all([p.waitForURL('**/case.html?id=C-1109-01&fixture=1'), p.click('.band', { position: { x: 1500, y: 150 } })]);
+    check('C → case: timeline opens the case', p.url().endsWith('case.html?id=C-1109-01&fixture=1'));
+    await ready(p);
+    await Promise.all([p.waitForURL('**/index.html?fixture=1'), p.click('.nav li[data-href]')]);
+    check('case → Today', p.url().endsWith('index.html?fixture=1'));
     await p.close();
   } finally {
     await browser.close();
