@@ -258,6 +258,12 @@ class Pipeline:
                     "total": summary["total"], "reserve": summary["reserve"], "eligible": summary["eligible"],
                     "filtered": summary["filtered"], "chips": summary["chips"],
                     "top": [q["line"] for q in summary["queue"][:5]],
+                    "grid": [
+                        {"staff_id": q["staff_id"], "name": q["name"], "position": q["position"], "eligible": q["eligible"],
+                         "code": next((r["code"] for r in q["reasons"] if r["severity"] == "block"), None),
+                         "warning": any(r["severity"] == "warn" for r in q["reasons"])}
+                        for q in summary["queue"]
+                    ],
                 })
             self._offer_next(case_id, now)
             result["cases"].append({"case_id": case_id, "shift_id": shift_id})
