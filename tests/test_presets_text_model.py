@@ -154,7 +154,15 @@ def test_other_invalid_inputs_are_rejected():
 # --- the logic stays free of one industry's words ---------------------------
 
 ROOT = Path(__file__).resolve().parents[1]
-LOGIC_FILES = ["coverage/model.py", "coverage/rules.py", "coverage/presets.py", "coverage/reasons_text.py"]
+LOGIC_FILES = [
+    "coverage/model.py",
+    "coverage/rules.py",
+    "coverage/presets.py",
+    "coverage/reasons_text.py",
+    "coverage/db.py",
+    "coverage/repo.py",
+    "coverage/migrations/001_init.sql",
+]
 INDUSTRY_WORDS = re.compile(r"swim|pool|lifeguard|aquatic|\bwsi\b|бассейн|плава|спасат", re.IGNORECASE)
 
 
