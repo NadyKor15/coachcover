@@ -70,7 +70,7 @@
     let m = p.match(/^\/api\/offers\/([^/]+)$/);
     if (m) return fixtureFile('offers/' + encodeURIComponent(decodeURIComponent(m[1])) + '.json');
     m = p.match(/^\/api\/cases\/([^/]+)$/);
-    if (m) return { status: 404, body: { error: 'no case fixture yet: the case page waits for its picture' } };
+    if (m) return fixtureFile('cases/' + encodeURIComponent(decodeURIComponent(m[1])) + '.json');
     return { status: 404, body: { error: 'no fixture for GET ' + p } };
   }
 

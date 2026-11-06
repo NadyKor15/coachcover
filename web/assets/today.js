@@ -105,8 +105,16 @@
     });
     setText('user', d.user_label);
     const caseId = d.callout && d.callout.case_id;
-    const nav = $('#navCases');
-    nav.href = 'case.html' + (caseId ? '?id=' + encodeURIComponent(caseId) + (CC.FIXTURE ? '&fixture=1' : '') : '');
+    const href = 'case.html' + (caseId ? '?id=' + encodeURIComponent(caseId) + (CC.FIXTURE ? '&fixture=1' : '') : '');
+    $('#navCases').href = href;
+    // the covered line and the timeline open the case of this morning
+    ui.caseHref = caseId ? href : null;
+    ['#covered', '.band'].forEach(sel => {
+      const box = $(sel);
+      box.classList.toggle('to-case', !!ui.caseHref);
+      if (ui.caseHref) { box.setAttribute('role', 'link'); box.tabIndex = 0; box.title = 'Open case ' + caseId; }
+      else { box.removeAttribute('role'); box.removeAttribute('tabindex'); box.removeAttribute('title'); }
+    });
   }
 
   function staffNames(d) {
@@ -524,6 +532,12 @@
   document.querySelectorAll('.jbtn').forEach(b => b.addEventListener('click', () => runScenario(b.dataset.scenario)));
   $('#approve').addEventListener('click', approve);
   $('#play').addEventListener('click', togglePlay);
+  ['#covered', '.band'].forEach(sel => {
+    const box = $(sel);
+    const go = () => { if (ui.caseHref) location.href = ui.caseHref; };
+    box.addEventListener('click', go);
+    box.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  });
   refresh();
   if (!CC.FIXTURE) setInterval(refresh, 5000);
 })();
