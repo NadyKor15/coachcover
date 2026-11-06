@@ -221,6 +221,9 @@ h1{height:79px;padding:16.9px 0 0 0;font-size:36px;line-height:44px;font-weight:
 .money .ml b{color:var(--text);font-weight:700}
 .money [hidden]{display:none}
 
+.to-case{cursor:pointer}
+.to-case:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+
 /* footer */
 .foot-line{position:absolute;left:16px;top:1032px;width:1884px;height:1px;background:#dfd8ce}
 .foot{position:absolute;left:31.5px;top:1043.5px;font-size:18px;line-height:22px;letter-spacing:-0.25px;color:var(--text-3);white-space:nowrap}
