@@ -1,0 +1,42 @@
+{
+  "_note": "Mock answers for ?fixture=1. Add &mock=plan_changed or &mock=not_eligible to get the 409 answers.",
+  "judge_run": {
+    "dangerous_morning": {
+      "case_id": "C-1109-01"
+    },
+    "nobody_accepts": {
+      "case_id": "C-1109-02"
+    },
+    "nightly_check": {
+      "case_id": "C-1109-N1"
+    }
+  },
+  "today_by_scenario": {
+    "nobody_accepts": "today.nobody_accepts.json"
+  },
+  "offers": {
+    "O-1": {
+      "accept": {
+        "state": "accepted"
+      },
+      "decline": {
+        "state": "declined"
+      },
+      "accept_conflict": {
+        "reason": "already booked 06:00–08:00"
+      }
+    }
+  },
+  "plans": {
+    "P-2": {
+      "current_hash": "0c5e183269c2b5be7e787d04f3c7a15856b5e6f8fe967d513b1261be6c77ea4a",
+      "approve": {
+        "state": "approved"
+      },
+      "conflict": {
+        "reason": "plan changed",
+        "current_hash": "04843db0e0734aaf201b9dd305e95521511f563626ce5511aca143ed7b070db3"
+      }
+    }
+  }
+}

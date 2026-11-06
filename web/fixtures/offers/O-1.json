@@ -1,0 +1,20 @@
+{
+  "offer_id": "O-1",
+  "shift_day": "today",
+  "shift_start": "06:00",
+  "shift_end": "08:00",
+  "venue": "Riverside Aquatic Center",
+  "shift_detail": "Lanes 3–4 + Learn-to-Swim Level 3 (8 kids)",
+  "why": [
+    "Lifeguard — valid to Mar 2027",
+    "WSI — valid",
+    "LTS-3 program — current",
+    "12 h this week"
+  ],
+  "expires_in_s": 252,
+  "window_s": 300,
+  "manager": {
+    "name": "Dana Ruiz",
+    "role": "Manager"
+  }
+}

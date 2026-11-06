@@ -1,0 +1,86 @@
+/* Screen P2: shift offer on the coach's phone. Geometry follows the approved variant-P2.html (430 wide). */
+:root {
+  --bg: #FAF5ED;
+  --card: #FEFEFE;
+  --card-line: #E2D9CD;
+  --rule-1: #D9D0C2;
+  --rule-2: #E2DACE;
+  --ink: #1C252A;
+  --brand-ink: #033F47;
+  --brand-mark: #06545A;
+  --teal: #0A6F71;
+  --pin: #066A6E;
+  --gold: #A8852A;
+  --gold-soft: #F2E9D8;
+  --track: #F1E9D9;
+  --bar: #FDF9F4;
+  --bar-line: #E4DDD3;
+  --decline-line: #D6C7AB;
+  --decline-fill: #FEFCF9;
+  --red: #A83A2F;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); }
+body {
+  position: relative; width: 430px; margin: 0;
+  font-family: "Figtree", system-ui, sans-serif; color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+.screen { width: 430px; height: 583.3px; display: flex; flex-direction: column; overflow: hidden; }
+body[data-state="loading"] .card, body[data-state="loading"] .actions { visibility: hidden; }
+
+/* header */
+.top { height: 46.1px; flex: none; display: flex; align-items: flex-start; }
+.brand { display: flex; align-items: flex-start; text-decoration: none; }
+.brand-mark { display: block; width: 34.34px; height: 15.17px; margin: 15.37px 0 0 28.55px; flex: none; }
+.brand-word { margin: 10.35px 0 0 4.2px; font: 700 20px/20px "Figtree", sans-serif; letter-spacing: .1px; color: var(--brand-ink); white-space: nowrap; }
+
+/* offer card */
+.card { flex: none; width: 403.6px; height: 437.6px; margin: 0 0 0 13px; background: var(--card); border: 1px solid var(--card-line); border-radius: 13px; display: flex; flex-direction: column; }
+.offer-head { display: flex; align-items: flex-start; padding-top: 18.8px; height: 90.2px; flex: none; }
+.badge { display: block; width: 52.7px; height: 52.7px; margin: 4.75px 0 0 11.95px; flex: none; overflow: visible; }
+.ask { margin-left: 11.95px; font: 800 34px/36.4px "Figtree", sans-serif; letter-spacing: -.57px; }
+.ask .line + .line { letter-spacing: -.8px; }
+.ask .time { letter-spacing: -1.6px; }
+.ask .dash { margin: 0 1.2px 0 .9px; }
+.ask .line { display: block; white-space: nowrap; height: 36.4px; }
+
+.where { display: flex; align-items: flex-start; margin-top: 10.2px; height: 38.4px; flex: none; }
+.pin { display: block; width: 13.18px; height: 16.77px; margin: 1.4px 0 0 21.5px; flex: none; }
+.where-text { width: 300px; margin-left: 15.5px; font: 500 16.6px/19.2px "Figtree", sans-serif; letter-spacing: -.15px; }
+
+.rule { height: 1px; margin: 0 13.9px 0 14.7px; flex: none; }
+.rule-1 { margin-top: 15.6px; background: var(--rule-1); }
+.rule-2 { margin-top: 9.05px; background: var(--rule-2); }
+
+.why-title { margin-top: 9.1px; padding-left: 14.9px; height: 22px; flex: none; font: 800 18.8px/22px "Figtree", sans-serif; letter-spacing: -.5px; white-space: nowrap; }
+.why-list { list-style: none; margin-top: 4.25px; flex: none; }
+.why-row { display: flex; align-items: center; height: 25.7px; }
+.why-row svg { display: block; width: 18px; height: 18px; margin-left: 20px; flex: none; }
+.why-text { position: relative; top: -1.2px; margin-left: 12.6px; font: 500 15.9px/25.7px "Figtree", sans-serif; letter-spacing: -.3px; white-space: nowrap; }
+
+.timer { position: relative; width: 114.2px; height: 114.2px; margin: 9.5px 0 0 143.1px; flex: none; }
+.timer svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.timer-label { position: absolute; left: 0; right: 0; top: 33.2px; text-align: center; font: 600 12.1px/14px "Figtree", sans-serif; letter-spacing: -.35px; white-space: nowrap; }
+.timer-value { position: absolute; left: 0; right: 0; top: 49.2px; text-align: center; font: 700 33.1px/34px "Figtree", sans-serif; letter-spacing: .19px; white-space: nowrap; }
+
+/* action bar */
+.actions { flex: none; margin-top: 14.4px; height: 85.2px; background: var(--bar); border-top: 1px solid var(--bar-line); padding-top: 11.8px; }
+.buttons { display: flex; padding-left: 17.8px; gap: 9.6px; height: 41.1px; }
+.buttons[hidden] { display: none; }
+.btn { height: 41.1px; border-radius: 8px; font: 700 18.8px/1 "Figtree", sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; white-space: nowrap; }
+.btn:disabled { opacity: .6; cursor: progress; }
+.btn-accept { width: 192.4px; background: var(--teal); color: #fff; border: 0; padding: .4px 0 0 7.6px; }
+.btn-decline { width: 191.8px; background: var(--decline-fill); color: var(--ink); border: 1px solid var(--decline-line); font-size: 19.9px; letter-spacing: -.1px; padding: .8px 0 0 4.2px; }
+.sent-by { margin-top: 6.7px; text-align: center; font: 500 12.1px/14px "Figtree", sans-serif; letter-spacing: 0; white-space: nowrap; }
+
+/* answer after Accept / Decline: same height as the buttons, so nothing below moves */
+.result { margin: 0 17.8px; min-height: 41.1px; border-radius: 8px; display: flex; align-items: center; gap: 10px; padding: 3px 12px; font: 600 15.5px/19px "Figtree", sans-serif; letter-spacing: -.2px; }
+.result[hidden] { display: none; }
+.result svg { flex: none; }
+.result.ok { background: #E3EFEC; color: #06545A; }
+.result.neutral { background: #F3EEE6; color: var(--ink); }
+.result.bad { background: #FBE9E6; color: #8F2A20; border: 1px solid #EBBDB5; }
+
+.load-err { position: absolute; left: 13px; right: 13px; top: 50px; z-index: 5; padding: 10px 14px; border-radius: 10px; background: #FBE9E6; border: 1px solid #E7B9B1; color: #8F2A20; font: 500 15px/19px "Figtree", sans-serif; }
+.load-err[hidden] { display: none; }
