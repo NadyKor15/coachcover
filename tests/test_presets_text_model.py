@@ -31,13 +31,26 @@ def test_both_presets_load_with_their_data():
 
 
 def test_autonomy_is_policy_data_with_partial_overrides():
-    assert SWIM.autonomy == {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "off"}
+    assert SWIM.autonomy == {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "propose"}
     bolder = default_policy("fitness_club", autonomy={"merge_groups": "auto"})
     assert bolder.autonomy["merge_groups"] == "auto" and bolder.autonomy["plan_b"] == "propose"
     with pytest.raises(ValueError, match="autonomy modes"):
         default_policy("swim_school", autonomy={"overtime": "sometimes"})
     with pytest.raises(ValueError, match="exactly"):
         default_policy("swim_school", autonomy={"fly": "auto"})
+    with pytest.raises(ValueError, match="never automatic"):
+        default_policy("swim_school", autonomy={"overtime": "auto"})
+
+
+def test_preset_extras_for_the_pipeline():
+    swim = load_preset("swim_school")
+    assert swim.venue_term == {"en": "pool", "ru": "бассейн"}
+    assert load_preset("fitness_club").venue_term["en"] == "club"
+    assert [r.code for r in swim.roles.values() if r.reserve] == ["head_coach"]
+    assert swim.cert_types["wsi"].match == ("WATER SAFETY INSTRUCTOR", "WSI")
+    assert (SWIM.offer_timeout_minutes, SWIM.overtime_cost_per_hour, SWIM.default_remedy) == (5, 34.0, "credit")
+    with pytest.raises(ValueError, match="default_remedy"):
+        default_policy("swim_school", default_remedy="refund")
 
 
 def test_policy_defaults_and_overrides():
@@ -64,6 +77,8 @@ def test_policy_defaults_and_overrides():
         (lambda d: d["policy_defaults"].update(week_start="funday"), "week_start"),
         (lambda d: d["roles"][0].update(required_certs="cpr_aed"), "expected a list"),
         (lambda d: d["policy_defaults"]["autonomy"].pop("overtime"), "autonomy must set exactly"),
+        (lambda d: d["roles"][0].update(reserve="yes"), "true or false"),
+        (lambda d: d["venue_term"].pop("ru"), "venue_term"),
     ],
 )
 def test_broken_preset_is_rejected(break_it, message):

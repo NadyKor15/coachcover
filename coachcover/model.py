@@ -20,6 +20,7 @@ WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", 
 # What the engine may do by itself ("auto"), only suggest to a person ("propose") or never do ("off").
 AUTONOMY_ACTIONS = ("assign_cover", "plan_b", "merge_groups", "overtime")
 AUTONOMY_MODES = ("auto", "propose", "off")
+REMEDIES = ("credit", "makeup")
 
 
 def check_autonomy(autonomy: Mapping[str, str]) -> None:
@@ -29,6 +30,8 @@ def check_autonomy(autonomy: Mapping[str, str]) -> None:
     bad = {k: v for k, v in autonomy.items() if v not in AUTONOMY_MODES}
     if bad:
         raise ValueError(f"autonomy modes must be one of {AUTONOMY_MODES}: {bad}")
+    if autonomy["overtime"] == "auto":
+        raise ValueError("autonomy: overtime is never automatic; use 'propose' or 'off'")
 
 
 def _require_aware(value: datetime, name: str) -> None:
@@ -60,6 +63,7 @@ class CertType:
     code: str
     label: str
     validity_months: int
+    match: tuple[str, ...] = ()  # words on a card title that name this type (upper case)
 
     def __post_init__(self) -> None:
         _require_code(self.code, "cert type code")
@@ -72,6 +76,7 @@ class Role:
     code: str
     label: str
     required_certs: tuple[str, ...]
+    reserve: bool = False  # people with this role are kept out of the offer queue (plan B "senior steps in")
 
     def __post_init__(self) -> None:
         _require_code(self.code, "role code")
@@ -116,6 +121,7 @@ class Preset:
     roles: Mapping[str, Role]
     cert_types: Mapping[str, CertType]
     programs: Mapping[str, Program]
+    venue_term: Mapping[str, str] = field(default_factory=dict)  # language -> the word for a venue, e.g. "club"
 
     def __post_init__(self) -> None:
         _require_code(self.code, "preset code")
@@ -138,8 +144,17 @@ class Policy:
     week_start: int  # 0 = Monday ... 6 = Sunday
     makeup_window_days: int
     autonomy: Mapping[str, str]  # action -> mode, see AUTONOMY_ACTIONS / AUTONOMY_MODES
+    offer_timeout_minutes: int  # how long one person has to answer an offer
+    overtime_cost_per_hour: float  # shown on an overtime proposal in plan B
+    default_remedy: str  # "credit" or "makeup" for families when a lesson is cancelled
 
     def __post_init__(self) -> None:
+        if not _positive_int(self.offer_timeout_minutes):
+            raise ValueError("offer_timeout_minutes must be a positive int")
+        if not (isinstance(self.overtime_cost_per_hour, (int, float)) and self.overtime_cost_per_hour >= 0):
+            raise ValueError("overtime_cost_per_hour must be a number >= 0")
+        if self.default_remedy not in REMEDIES:
+            raise ValueError(f"default_remedy must be one of {REMEDIES}")
         check_autonomy(self.autonomy)
         if not (0 < self.max_weekly_hours <= 168):
             raise ValueError("max_weekly_hours must be in (0, 168]")

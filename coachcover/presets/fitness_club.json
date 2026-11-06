@@ -1,13 +1,15 @@
 {
   "code": "fitness_club",
   "label": "Fitness club",
-  "note": "Example values, not legal advice. Class caps per instructor are an assumption (room size and class format), not a regulation.",
+  "note": "Example values, not legal advice. Class caps per instructor are an assumption (room size and class format), not a regulation. Overtime cost per hour is an example.",
+  "venue_term": {"en": "club", "ru": "клуб"},
   "cert_types": [
-    {"code": "cpr_aed", "label": "CPR/AED", "validity_months": 24},
-    {"code": "trainer_cert", "label": "Group fitness trainer certification", "validity_months": 24}
+    {"code": "cpr_aed", "label": "CPR/AED", "validity_months": 24, "match": ["CPR"]},
+    {"code": "trainer_cert", "label": "Group fitness trainer certification", "validity_months": 24, "match": ["GROUP FITNESS", "GROUP EXERCISE"]}
   ],
   "roles": [
-    {"code": "group_instructor", "label": "Group fitness instructor", "required_certs": ["trainer_cert", "cpr_aed"]}
+    {"code": "group_instructor", "label": "Group fitness instructor", "required_certs": ["trainer_cert", "cpr_aed"]},
+    {"code": "studio_lead", "label": "Studio lead", "required_certs": ["cpr_aed"], "reserve": true}
   ],
   "programs": [
     {
@@ -26,6 +28,9 @@
     "max_weekly_hours": 40,
     "week_start": "monday",
     "makeup_window_days": 14,
-    "autonomy": {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "off"}
+    "autonomy": {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "propose"},
+    "offer_timeout_minutes": 5,
+    "overtime_cost_per_hour": 34.0,
+    "default_remedy": "credit"
   }
 }

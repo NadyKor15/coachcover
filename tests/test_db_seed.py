@@ -15,7 +15,7 @@ from coachcover.seed import NOW, POLICY_ID, build_school, load_school
 
 pytestmark = pytest.mark.db
 
-DEMO_LESSON = "L-1109-G002"  # Olga's Monday 06:00 level-3 lesson at V1
+DEMO_LESSON = "L-1109-G001"  # Marina's Monday 06:00 level-3 lane group at V1
 DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 
 
@@ -24,9 +24,9 @@ DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 
 def test_migrations_apply_once(new_database):
     conn = new_database()
-    assert migrate(conn) == ["001_init"]
+    assert migrate(conn) == ["001_init", "002_pipeline"]
     assert migrate(conn) == []
-    assert conn.execute("SELECT version FROM schema_migrations").fetchall() == [("001_init",)]
+    assert conn.execute("SELECT version FROM schema_migrations ORDER BY 1").fetchall() == [("001_init",), ("002_pipeline",)]
 
 
 def test_preset_install_is_idempotent_and_refuses_a_different_copy(new_database):
@@ -128,7 +128,7 @@ def test_the_traps_meet_the_rules_at_the_morning_call_out(school):
     over = decide("S29", guard, guard_ctx)
     assert over.codes == [Code.HOURS_LIMIT_EXCEEDED] and over.reasons[0].params["hours_after"] == 42.5
     # the regular instructor of the group next door is busy at 06:00
-    neighbour = school.execute("SELECT staff_id FROM shift WHERE id = 'L-1109-G001'").fetchone()[0]
+    neighbour = school.execute("SELECT staff_id FROM shift WHERE id = 'L-1109-G002'").fetchone()[0]
     assert Code.OVERLAPS_COMMITMENT in decide(neighbour, lesson, lesson_ctx).codes
 
 

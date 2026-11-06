@@ -12,9 +12,12 @@ Traps, all aimed at Monday morning so the 05:12 call-out meets them:
   readings disagree:    S13 WSI (reader A 2027-03-14, reader B 2026-03-14), nobody confirmed it
   program overdue:      S14 Learn-to-Swim renewed 2025-10-01, due 2026-10-01
 
-Demo call-out: S05 Olga Petrova cannot come; her Monday 06:00 and 06:30 level-3
-lessons at V1 need cover. A level-3 group of another instructor runs next to
-each of them (06:00: 4 + 4 children, can merge at 1:8; 06:30: 5 + 4, cannot).
+Demo call-out (matches the recorded Russian voice note "это Марина... в 6
+дорожка и в 7 урок у малышей"): S05 Marina Petrova cannot come; her Monday
+06:00 level-3 lane group (L-1109-G001) and 07:00 level-1 group (L-1109-G004)
+at V1 need cover. Another instructor's group runs next to each (06:00: 4 + 4
+children, can merge at 1:8; 07:00: 3 + 2 beginners, cannot merge at 1:4).
+Head coaches S12, S06 and S23 hold the reserve role: no offers, plan B only.
 
 Every name is invented. Run: python -m coachcover.seed --dsn postgresql://...
 """
@@ -58,14 +61,14 @@ STAFF = [
     ("S02", "Sofía García", "es", "V2", "I", "1-4"),
     ("S03", "Valentina Castillo", "es", "V3", "I", "2-5"),
     ("S04", "Daniel Brooks", "en", "V1", "I", "3-6"),
-    ("S05", "Olga Petrova", "ru", "V1", "I", "2-4"),
-    ("S06", "Liam Foster", "en", "V2", "I", "1-6"),
+    ("S05", "Marina Petrova", "ru", "V1", "I", "1-4"),
+    ("S06", "Liam Foster", "en", "V2", "IH", "1-6"),
     ("S07", "Javier Morales", "es", "V1", "I", "2-4"),
     ("S08", "Grace Sullivan", "en", "V1", "I", "1-3"),
     ("S09", "Lucas Reed", "en", "V3", "I", "4-6"),
     ("S10", "Dmitri Volkov", "ru", "V1", "I", "3-5"),
     ("S11", "Camila Herrera", "es", "V1", "IL", "2-4"),
-    ("S12", "Noah Bennett", "en", "V1", "I", "1-6"),
+    ("S12", "Noah Bennett", "en", "V1", "IH", "1-6"),
     ("S13", "Anna Kuznetsova", "ru", "V2", "I", "3-6"),
     ("S14", "Irina Lebedeva", "ru", "V3", "I", "3-4"),
     ("S15", "Diego Navarro", "es", "V2", "I", "1-3"),
@@ -76,7 +79,7 @@ STAFF = [
     ("S20", "Mateo Romero", "es", "V2", "IL", "3-6"),
     ("S21", "Pavel Orlov", "ru", "V3", "IL", "1-4"),
     ("S22", "Ethan Price", "en", "V2", "IL", "2-6"),
-    ("S23", "Harper Hughes", "en", "V3", "IL", "1-6"),
+    ("S23", "Harper Hughes", "en", "V3", "ILH", "1-6"),
     ("S24", "Gabriela Vargas", "es", "V3", "IL", "4-6"),
     ("S25", "Olivia Grant", "en", "V1", "L", ""),
     ("S26", "Rafael Ortiz", "es", "V1", "L", ""),
@@ -96,8 +99,14 @@ STAFF = [
     ("S40", "Sofia Novikova", "ru", "V3", "L", ""),
 ]
 
-ROLE_CODES = {"I": ("instructor",), "L": ("lifeguard",), "IL": ("instructor", "lifeguard")}
-ROLE_CERTS = {"instructor": ("wsi", "cpr_aed"), "lifeguard": ("lifeguarding", "cpr_aed")}
+ROLE_CODES = {
+    "I": ("instructor",),
+    "L": ("lifeguard",),
+    "IL": ("instructor", "lifeguard"),
+    "IH": ("instructor", "head_coach"),
+    "ILH": ("instructor", "lifeguard", "head_coach"),
+}
+ROLE_CERTS = {"instructor": ("wsi", "cpr_aed"), "lifeguard": ("lifeguarding", "cpr_aed"), "head_coach": ("cpr_aed",)}
 
 # trap certificates: (staff, type) -> printed expiry
 TRAP_EXPIRY = {
@@ -135,17 +144,17 @@ EDGE_BLOCKS = {
     ],
 }
 
-MORNING_TIMES = (time(6, 0), time(6, 30))  # two groups side by side, 30 min
+MORNING_TIMES = (time(6, 0), time(7, 0))  # two groups side by side, 30 min
 AFTERNOON_TIMES = (time(16, 0), time(16, 45), time(17, 30), time(18, 15))  # one group, 45 min
 LEVEL_PATTERN = (1, 2, 3, 3, 4, 2, 5, 3, 6, 1, 4, 3)
 LANGUAGE_PATTERN = (["en"], ["en"], ["es"], ["en"], ["ru"], ["en"], ["es"], ["en", "es"], ["en"], ["ru", "en"])
 
 # demo groups at V1 on Monday: (time, zone) -> (level, size, instructor or None for the greedy pick)
 DEMO_GROUPS = {
-    (time(6, 0), "V1-TEACH"): (3, 4, DEMO_ABSENT),
-    (time(6, 0), "V1-LAP"): (3, 4, None),
-    (time(6, 30), "V1-TEACH"): (3, 5, DEMO_ABSENT),
-    (time(6, 30), "V1-LAP"): (3, 4, None),
+    (time(6, 0), "V1-LAP"): (3, 4, DEMO_ABSENT),
+    (time(6, 0), "V1-TEACH"): (3, 4, None),
+    (time(7, 0), "V1-TEACH"): (1, 3, DEMO_ABSENT),
+    (time(7, 0), "V1-LAP"): (1, 2, None),
 }
 
 READER_A_MODEL = "muse-glimmer-30b"

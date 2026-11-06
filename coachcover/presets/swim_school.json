@@ -1,15 +1,17 @@
 {
   "code": "swim_school",
   "label": "Swim school",
-  "note": "Example values, not legal advice. Ratios follow the Georgia DPH Model Aquatic Safety Plan: 1:4 for young or beginner swimmers, 1:8 for ages 6-17. Two-year certificate validity matches common US lifeguard and instructor cards. Check your state rules and certifying agency.",
+  "note": "Example values, not legal advice. Ratios follow the Georgia DPH Model Aquatic Safety Plan: 1:4 for young or beginner swimmers, 1:8 for ages 6-17. Two-year certificate validity matches common US lifeguard and instructor cards. Check your state rules and certifying agency. Overtime cost per hour is an example (1.5 x a typical instructor wage).",
+  "venue_term": {"en": "pool", "ru": "бассейн"},
   "cert_types": [
-    {"code": "lifeguarding", "label": "Lifeguarding", "validity_months": 24},
-    {"code": "cpr_aed", "label": "CPR/AED", "validity_months": 24},
-    {"code": "wsi", "label": "Water Safety Instructor (WSI)", "validity_months": 24}
+    {"code": "lifeguarding", "label": "Lifeguarding", "validity_months": 24, "match": ["LIFEGUARD"]},
+    {"code": "cpr_aed", "label": "CPR/AED", "validity_months": 24, "match": ["CPR"]},
+    {"code": "wsi", "label": "Water Safety Instructor (WSI)", "validity_months": 24, "match": ["WATER SAFETY INSTRUCTOR", "WSI"]}
   ],
   "roles": [
     {"code": "lifeguard", "label": "Lifeguard", "required_certs": ["lifeguarding", "cpr_aed"]},
-    {"code": "instructor", "label": "Swim instructor", "required_certs": ["wsi", "cpr_aed"]}
+    {"code": "instructor", "label": "Swim instructor", "required_certs": ["wsi", "cpr_aed"]},
+    {"code": "head_coach", "label": "Head coach", "required_certs": ["cpr_aed"], "reserve": true}
   ],
   "programs": [
     {
@@ -30,6 +32,9 @@
     "max_weekly_hours": 40,
     "week_start": "sunday",
     "makeup_window_days": 30,
-    "autonomy": {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "off"}
+    "autonomy": {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "propose"},
+    "offer_timeout_minutes": 5,
+    "overtime_cost_per_hour": 34.0,
+    "default_remedy": "credit"
   }
 }

@@ -102,9 +102,10 @@ _PLACE = {
         "not_eligible": "not eligible",
         "hours": "{hours} h this week",
         "not_cleared": "not cleared for {levels}",
-        "same_venue": "same venue",
+        "same_venue": "same {venue}",
         "km": "{km} km away",
-        "other_venue": "other venue",
+        "other_venue": "other {venue}",
+        "venue": "venue",
         "tenure": "{years} yr at this level",
     },
     "ru": {
@@ -114,9 +115,10 @@ _PLACE = {
         "not_eligible": "не допущен(а)",
         "hours": "{hours} ч на этой неделе",
         "not_cleared": "нет допуска к {levels}",
-        "same_venue": "та же площадка",
+        "same_venue": "тот же {venue}",
         "km": "{km} км",
-        "other_venue": "другая площадка",
+        "other_venue": "другой {venue}",
+        "venue": "объект",
         "tenure": "{years} г. на этом уровне",
     },
 }
@@ -142,12 +144,13 @@ def describe_place(ranked: Ranked, name: str, lang: str = "en", preset: Preset |
         parts.append(levels)
     elif place["level_match"] is False:
         parts.append(t["not_cleared"].format(levels=levels))
+    venue = (preset.venue_term.get(lang) if preset is not None else None) or t["venue"]
     if place["same_venue"]:
-        parts.append(t["same_venue"])
+        parts.append(t["same_venue"].format(venue=venue))
     elif place["distance_km"] is not None:
         parts.append(t["km"].format(km=_number(place["distance_km"])))
     else:
-        parts.append(t["other_venue"])
+        parts.append(t["other_venue"].format(venue=venue))
     if place["level_tenure_days"] is not None:
         parts.append(t["tenure"].format(years=round(place["level_tenure_days"] / 365.25, 1)))
     return t["head"].format(name=name, position=position) + ", ".join(parts)

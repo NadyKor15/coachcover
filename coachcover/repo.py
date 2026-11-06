@@ -27,17 +27,18 @@ from coachcover.model import (
 
 def load_policy(conn: psycopg.Connection, policy_id: str) -> Policy:
     row = conn.execute(
-        "SELECT p.preset_code, s.label, p.max_weekly_hours, p.week_start, p.makeup_window_days, p.autonomy"
+        "SELECT p.preset_code, s.label, p.max_weekly_hours, p.week_start, p.makeup_window_days, p.autonomy,"
+        " p.offer_timeout_minutes, p.overtime_cost_per_hour, p.default_remedy, s.source -> 'venue_term'"
         " FROM policy p JOIN preset s ON s.code = p.preset_code WHERE p.id = %s",
         (policy_id,),
     ).fetchone()
     if row is None:
         raise ValueError(f"unknown policy {policy_id!r}")
-    code, label, hours, week_start, makeup, autonomy = row
+    code, label, hours, week_start, makeup, autonomy, timeout, overtime_cost, remedy, venue_term = row
     cert_types = {
-        c: CertType(c, lab, months)
-        for c, lab, months in conn.execute(
-            "SELECT code, label, validity_months FROM cert_type WHERE preset_code = %s ORDER BY id", (code,)
+        c: CertType(c, lab, months, tuple(match))
+        for c, lab, months, match in conn.execute(
+            "SELECT code, label, validity_months, match FROM cert_type WHERE preset_code = %s ORDER BY id", (code,)
         )
     }
     required: dict[str, list[str]] = defaultdict(list)
@@ -48,8 +49,10 @@ def load_policy(conn: psycopg.Connection, policy_id: str) -> Policy:
     ):
         required[role_code].append(cert_code)
     roles = {
-        r: Role(r, lab, tuple(required[r]))
-        for r, lab in conn.execute("SELECT code, label FROM role WHERE preset_code = %s ORDER BY id", (code,))
+        r: Role(r, lab, tuple(required[r]), reserve)
+        for r, lab, reserve in conn.execute(
+            "SELECT code, label, reserve FROM role WHERE preset_code = %s ORDER BY id", (code,)
+        )
     }
     levels: dict[int, dict[str, Level]] = defaultdict(dict)
     for program_id, lv, lab, per in conn.execute(
@@ -64,8 +67,10 @@ def load_policy(conn: psycopg.Connection, policy_id: str) -> Policy:
             "SELECT id, code, label, renewal_months FROM program WHERE preset_code = %s ORDER BY id", (code,)
         )
     }
-    preset = Preset(code, label, roles, cert_types, programs)
-    return Policy(preset, float(hours), week_start, makeup, dict(autonomy))
+    preset = Preset(code, label, roles, cert_types, programs, dict(venue_term or {}))
+    return Policy(
+        preset, float(hours), week_start, makeup, dict(autonomy), timeout, float(overtime_cost), remedy
+    )
 
 
 def load_venues(conn: psycopg.Connection, policy_id: str) -> dict[str, Venue]:

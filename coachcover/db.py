@@ -51,13 +51,14 @@ def install_preset(conn: psycopg.Connection, code: str) -> None:
         cert_ids = {}
         for c in data["cert_types"]:
             cert_ids[c["code"]] = conn.execute(
-                "INSERT INTO cert_type (preset_code, code, label, validity_months) VALUES (%s, %s, %s, %s) RETURNING id",
-                (code, c["code"], c["label"], c["validity_months"]),
+                "INSERT INTO cert_type (preset_code, code, label, validity_months, match)"
+                " VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                (code, c["code"], c["label"], c["validity_months"], [m.upper() for m in c.get("match", [])]),
             ).fetchone()[0]
         for r in data["roles"]:
             role_id = conn.execute(
-                "INSERT INTO role (preset_code, code, label) VALUES (%s, %s, %s) RETURNING id",
-                (code, r["code"], r["label"]),
+                "INSERT INTO role (preset_code, code, label, reserve) VALUES (%s, %s, %s, %s) RETURNING id",
+                (code, r["code"], r["label"], r.get("reserve", False)),
             ).fetchone()[0]
             for ord_, cert in enumerate(r["required_certs"]):
                 conn.execute(
@@ -79,8 +80,9 @@ def install_preset(conn: psycopg.Connection, code: str) -> None:
 
 def insert_policy(conn: psycopg.Connection, policy_id: str, name: str, policy: Policy) -> None:
     conn.execute(
-        "INSERT INTO policy (id, name, preset_code, max_weekly_hours, week_start, makeup_window_days, autonomy)"
-        " VALUES (%s, %s, %s, %s, %s, %s, %s)",
+        "INSERT INTO policy (id, name, preset_code, max_weekly_hours, week_start, makeup_window_days, autonomy,"
+        " offer_timeout_minutes, overtime_cost_per_hour, default_remedy)"
+        " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             policy_id,
             name,
@@ -89,5 +91,8 @@ def insert_policy(conn: psycopg.Connection, policy_id: str, name: str, policy: P
             policy.week_start,
             policy.makeup_window_days,
             Jsonb(dict(policy.autonomy)),
+            policy.offer_timeout_minutes,
+            policy.overtime_cost_per_hour,
+            policy.default_remedy,
         ),
     )

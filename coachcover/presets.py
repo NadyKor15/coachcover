@@ -14,8 +14,16 @@ from coachcover.model import WEEKDAYS, CertType, Level, Policy, Preset, Program,
 
 PRESET_DIR = Path(__file__).parent / "presets"
 
-_PRESET_KEYS = {"code", "label", "note", "cert_types", "roles", "programs", "policy_defaults"}
-_DEFAULT_KEYS = {"max_weekly_hours", "week_start", "makeup_window_days", "autonomy"}
+_PRESET_KEYS = {"code", "label", "note", "venue_term", "cert_types", "roles", "programs", "policy_defaults"}
+_DEFAULT_KEYS = {
+    "max_weekly_hours",
+    "week_start",
+    "makeup_window_days",
+    "autonomy",
+    "offer_timeout_minutes",
+    "overtime_cost_per_hour",
+    "default_remedy",
+}
 
 
 def _keys(obj: Any, required: set[str], where: str, optional: set[str] = frozenset()) -> dict:
@@ -31,6 +39,12 @@ def _keys(obj: Any, required: set[str], where: str, optional: set[str] = frozens
 def _list(obj: Any, where: str) -> list:
     if not isinstance(obj, list):
         raise ValueError(f"{where}: expected a list")
+    return obj
+
+
+def _bool(obj: Any, where: str) -> bool:
+    if not isinstance(obj, bool):
+        raise ValueError(f"{where}: expected true or false")
     return obj
 
 
@@ -58,7 +72,12 @@ def preset_from_dict(data: dict) -> Preset:
     where = f"preset {data['code']}"
     cert_types = _unique(
         [
-            CertType(**_keys(c, {"code", "label", "validity_months"}, f"{where} cert type"))
+            CertType(
+                **{
+                    **_keys(c, {"code", "label", "validity_months"}, f"{where} cert type", optional={"match"}),
+                    "match": tuple(m.upper() for m in _list(c.get("match", []), f"{where} cert type match")),
+                }
+            )
             for c in _list(data["cert_types"], f"{where} cert_types")
         ],
         f"{where} cert types",
@@ -70,10 +89,13 @@ def preset_from_dict(data: dict) -> Preset:
                 label=r["label"],
                 required_certs=tuple(
                     _list(
-                        _keys(r, {"code", "label", "required_certs"}, f"{where} role")["required_certs"],
+                        _keys(r, {"code", "label", "required_certs"}, f"{where} role", optional={"reserve"})[
+                            "required_certs"
+                        ],
                         f"{where} role required_certs",
                     )
                 ),
+                reserve=_bool(r.get("reserve", False), f"{where} role reserve"),
             )
             for r in _list(data["roles"], f"{where} roles")
         ],
@@ -97,7 +119,15 @@ def preset_from_dict(data: dict) -> Preset:
         roles=roles,
         cert_types=cert_types,
         programs=_unique(programs, f"{where} programs"),
+        venue_term=_venue_term(data),
     )
+
+
+def _venue_term(data: dict) -> dict[str, str]:
+    term = _keys(data["venue_term"], {"en", "ru"}, f"preset {data['code']} venue_term")
+    if not all(isinstance(v, str) and v.strip() for v in term.values()):
+        raise ValueError(f"preset {data['code']}: venue_term values must be non-empty strings")
+    return dict(term)
 
 
 def _policy_defaults(data: dict) -> dict:
@@ -133,4 +163,7 @@ def default_policy(code: str, **overrides: Any) -> Policy:
         week_start=week_start,
         makeup_window_days=values["makeup_window_days"],
         autonomy=dict(values["autonomy"]),
+        offer_timeout_minutes=values["offer_timeout_minutes"],
+        overtime_cost_per_hour=values["overtime_cost_per_hour"],
+        default_remedy=values["default_remedy"],
     )
