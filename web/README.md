@@ -6,9 +6,9 @@ Static files, no build step. Three pages:
 |---|---|---|
 | `index.html` | C: manager's morning, "Who is allowed on deck at 06:00" (1920 × 1080) | `GET /api/today` |
 | `offer.html?id=O-1` | P2: shift offer on the coach's phone (430 wide) | `GET /api/offers/{id}` |
-| `case.html?id=C-…` | case page: placeholder until its design is approved; shows the case JSON and a download link | `GET /api/cases/{id}` |
+| `case.html?id=C-1109-01` | case page (proof record, variant B), 1920 wide, height follows the data | `GET /api/cases/{id}` |
 
-Scripts: `assets/api.js` (shared fetch layer + fixture mode), `assets/today.js`, `assets/offer.js`. Styles: `assets/today.css`, `assets/offer.css`. Fonts come from Google Fonts (Inter for C, Figtree for P2). All data strings are inserted as text, never as HTML.
+Scripts: `assets/api.js` (shared fetch layer + fixture mode), `assets/today.js`, `assets/offer.js`, `assets/case.js`. Styles: `assets/today.css`, `assets/offer.css`, `assets/case.css`. Fonts come from Google Fonts (Inter for C and the case page, Figtree for P2). On screen C the covered line and the timeline open the case of the morning; on the case page "Today" goes back. All data strings are inserted as text, never as HTML.
 
 ## Serving
 
@@ -48,6 +48,7 @@ python3 -m http.server 8080 --bind 127.0.0.1 -d web
 | `fixtures/today.json` | `GET /api/today` after the 5 a.m. call-out (default) |
 | `fixtures/today.nobody_accepts.json` | `GET /api/today` after the judge runs "Nobody accepts" |
 | `fixtures/offers/O-1.json` | `GET /api/offers/O-1` |
+| `fixtures/cases/C-1109-01.json` | `GET /api/cases/C-1109-01`, the case of the covered morning |
 | `fixtures/mocks.json` | answers of the POST calls |
 
 POST calls in fixture mode:
@@ -65,7 +66,7 @@ POST calls in fixture mode:
 | `POST /api/plans/{id}/approve {"hash"}` | "Approve plan B", sends `plan_b.hash` | 200; 409 → "Plan changed since you saw it — not approved" |
 | `GET /api/offers/{id}` | screen P2 | 200; anything else shows a red line |
 | `POST /api/offers/{id}/accept`, `/decline` | P2 buttons | 200 `{"state"}`; 409 `{"reason"}` → "You are no longer eligible for this shift: <reason>"; other errors keep the buttons |
-| `GET /api/cases/{id}` | case placeholder | 200 → JSON + download |
+| `GET /api/cases/{id}` | case page; "Download case (JSON)" saves exactly this answer | 200; anything else shows a red line |
 | `GET <callout.audio_url>` | play button of the voice note | audio file; if missing, the button does nothing |
 
 How fields are used, beyond the plain slots:
@@ -78,12 +79,28 @@ How fields are used, beyond the plain slots:
 - `money`: every value is optional. `null`, `0` and `"…"` count as unknown and are not shown; with no known value the block is hidden.
 - `summary_cards[]`: icon is picked by the title (tomorrow → calendar, expiring/certificate → certificate, closures → pool).
 
+## Case JSON (proposed shape for `GET /api/cases/{id}`)
+
+The contract lists the steps of a case but no fields. The page reads this shape (see `fixtures/cases/C-1109-01.json`):
+
+- top: `case_id`, `status` (`covered` gives the gold pill), `status_label`, `covered_time_label`, `shift_label`, `venue{id,name}`, `date_label`, `user_label`, `opened_at`, `closed_at` (UTC);
+- `steps[]` in time order, each `{kind, at (UTC ISO), time_label ("10:12:04 UTC"), title}` plus by kind:
+  - `callout`: `staff`, `language`, `audio_url`, `transcript_original`, `transcript_en`, `model_tag` ("whisper-large-v3-turbo · 1.0 s");
+  - `shift`: `shift_id`, `summary`, `model_tag`;
+  - `allowed`: `total`, `allowed`, `blocked{staff,label}`, `reasons[{code,label,count}]`, `staff[{id,name,allowed,reason_label}]` (all 40);
+  - `offers`: `offers[{id,time_label,staff,result,result_label,why_first}]`;
+  - `covered` / `plan_b`: `summary`;
+- `proof{plan_id, plan_hash, policy_label}`; the page shows the hash as `7f3a…c2e1` and the full hash on hover;
+- `model_calls[{at, purpose, model (id from the answer), model_label, ms, input_tokens, output_tokens, cost_usd, source}]`, `model_cost_usd`; the table counts calls per `model_label`;
+- `risk{kids, refunds_usd, overtime_usd, total_usd}`: the "If nobody had accepted" card shows only the sums that are numbers above 0 and is hidden when none is.
+
 ## Checks
 
 ```bash
 python3 -m pytest tests/web                      # fixtures follow the contract and tell one story
+python3 tests/web/make_fixtures.py web/fixtures   # rebuilds the fixtures from one script
 PLAYWRIGHT_MODULE=<…/node_modules/playwright> node tests/web/e2e_fixture.js --shots web/shots   # buttons, 200 and 409 paths
 python3 tests/web/compare_regions.py web/shots/ref-variant-C.png web/shots/C-fixture-1920.png  # region diff against the approved HTML
 ```
 
-Snapshots in `shots/`: `C-fixture-1920.png`, `P2-fixture-430.png`, the states after the buttons (`C-fixture-nobody-accepts.png`, `C-fixture-plan-changed-409.png`, `P2-fixture-accepted.png`, `P2-fixture-not-eligible-409.png`), renders of the approved HTML (`ref-variant-*.png`) and side-by-side pairs (`compare-*.png`).
+Snapshots in `shots/`: `C-fixture-1920.png`, `P2-fixture-430.png`, the states after the buttons (`C-fixture-nobody-accepts.png`, `C-fixture-plan-changed-409.png`, `P2-fixture-accepted.png`, `P2-fixture-not-eligible-409.png`), the case page `case-fixture-1920.png`, renders of the approved HTML (`ref-variant-*.png`) and side-by-side pairs (`compare-*.png`).
