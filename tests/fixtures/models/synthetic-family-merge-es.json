@@ -1,0 +1,31 @@
+{
+ "purpose": "family_message",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "event": "merge",
+  "language": "es",
+  "venue": "Northside Aquatic Center",
+  "date": "2026-11-09",
+  "reason": null,
+  "remedy": ""
+ },
+ "input_sha256": "167fb94e593124e5eb4c02a1b55c29613eea48dc90bffe657d4df5fe11712cc0",
+ "synthetic": true,
+ "source": "synthetic: written by hand to the family_message schema, only facts from input",
+ "duration_ms": 1300,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 260,
+   "completion_tokens": 90
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"body\": \"¡Hola! Hoy, 9 de noviembre, la clase {group} de las {time} en Northside Aquatic Center se une a otro grupo del mismo nivel. Misma hora, mismo lugar. ¡Gracias!\"}"
+    }
+   }
+  ]
+ }
+}

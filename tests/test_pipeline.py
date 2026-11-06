@@ -124,6 +124,13 @@ def test_nobody_accepts_then_plan_b_merge_approved_by_hash(school):
     assert school.execute("SELECT status FROM shift WHERE id = %s", (LANE_0600,)).fetchone() == ("cancelled",)
     assert [g for (g,) in school.execute("SELECT group_id FROM shift_group WHERE shift_id = %s ORDER BY 1", (NEXT_DOOR_0600,))] == ["G001", "G002"]
     assert school.execute("SELECT status FROM cover_case WHERE id = %s", (case,)).fetchone() == ("plan_b",)
+    assert snapshot["text_source"] == "model" and snapshot["text"]["lines"][0].startswith("Merge with Emma Carter")
+    notified = school.execute("SELECT data FROM case_event WHERE case_id = %s AND kind = 'families_notified'", (case,)).fetchone()[0]
+    assert set(notified["languages"]) == {"ru", "en", "es"} and set(notified["text_source"].values()) == {"model"}
+    bodies = dict(school.execute(
+        "SELECT language, body FROM message WHERE case_id = %s AND audience = 'family' AND group_id = 'G001' ORDER BY id", (case,)
+    ).fetchall())
+    assert bodies["ru"].startswith("Здравствуйте! Сегодня, 9 ноября, занятие Level 3, Mon 06:00 в 06:00")
     with pytest.raises(Conflict):
         p.approve_plan_b(plan_id, digest, minutes(31), by="manager:test")  # already approved
 
@@ -160,6 +167,7 @@ def test_closure_cancels_lessons_and_gives_credits(school):
     assert school.execute("SELECT count(*) FROM offer WHERE case_id = %s AND status = 'pending'", (cases[KIDS_0700],)).fetchone() == (0,)
     texts = school.execute("SELECT language, body FROM message WHERE closure_id = %s ORDER BY id", (result["closure_id"],)).fetchall()
     assert all("{group}" not in body and "{time}" not in body for _, body in texts)
+    assert {lang for lang, _ in texts} == {"es", "en"} and all("weather" in b or "clima" in b for _, b in texts)
     with pytest.raises(ValueError):
         p.closure("V1", None, "aliens", start, end, now=minutes(10), created_by="manager:test")
 

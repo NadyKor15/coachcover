@@ -1,0 +1,31 @@
+{
+ "purpose": "family_message",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "event": "closure",
+  "language": "es",
+  "venue": "Northside Aquatic Center",
+  "date": "2026-11-09",
+  "reason": "clima",
+  "remedy": "Recibes un crédito por la clase."
+ },
+ "input_sha256": "7abee8b978abc3f8579f96886c404e8d512766ab72cdc71f7d82eb4299fccf81",
+ "synthetic": true,
+ "source": "synthetic: written by hand to the family_message schema, only facts from input",
+ "duration_ms": 1300,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 260,
+   "completion_tokens": 90
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"body\": \"Hola: por el clima, Northside Aquatic Center cierra hoy, 9 de noviembre. La clase {group} de las {time} se cancela. Recibes un crédito por la clase. Disculpa las molestias.\"}"
+    }
+   }
+  ]
+ }
+}

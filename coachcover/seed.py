@@ -149,12 +149,12 @@ AFTERNOON_TIMES = (time(16, 0), time(16, 45), time(17, 30), time(18, 15))  # one
 LEVEL_PATTERN = (1, 2, 3, 3, 4, 2, 5, 3, 6, 1, 4, 3)
 LANGUAGE_PATTERN = (["en"], ["en"], ["es"], ["en"], ["ru"], ["en"], ["es"], ["en", "es"], ["en"], ["ru", "en"])
 
-# demo groups at V1 on Monday: (time, zone) -> (level, size, instructor or None for the greedy pick)
+# demo groups at V1 on Monday: (time, zone) -> (level, size, instructor or None for the greedy pick, family languages)
 DEMO_GROUPS = {
-    (time(6, 0), "V1-LAP"): (3, 4, DEMO_ABSENT),
-    (time(6, 0), "V1-TEACH"): (3, 4, None),
-    (time(7, 0), "V1-TEACH"): (1, 3, DEMO_ABSENT),
-    (time(7, 0), "V1-LAP"): (1, 2, None),
+    (time(6, 0), "V1-LAP"): (3, 4, DEMO_ABSENT, ["ru", "en"]),
+    (time(6, 0), "V1-TEACH"): (3, 4, None, ["es"]),
+    (time(7, 0), "V1-TEACH"): (1, 3, DEMO_ABSENT, ["es", "en"]),
+    (time(7, 0), "V1-LAP"): (1, 2, None, ["ru"]),
 }
 
 READER_A_MODEL = "muse-glimmer-30b"
@@ -278,9 +278,10 @@ def build_school() -> School:
                 slots.append((vid, zones[1][0], weekday, start, 45))
     for k, (vid, zid, weekday, start, minutes) in enumerate(slots):
         level, size, fixed = LEVEL_PATTERN[k % len(LEVEL_PATTERN)], None, None
+        languages = LANGUAGE_PATTERN[k % len(LANGUAGE_PATTERN)]
         demo = DEMO_GROUPS.get((start, zid)) if vid == "V1" and weekday == 0 else None
         if demo:
-            level, size, fixed = demo
+            level, size, fixed, languages = demo
         if size is None:
             size = 2 + k % 3 if level == 1 else 3 + (k * 5) % 6
         gid = f"G{k + 1:03d}"
@@ -311,7 +312,7 @@ def build_school() -> School:
                 "level": str(level),
                 "name": f"Level {level}, {day:%a} {start:%H:%M}",
                 "size": size,
-                "family_languages": LANGUAGE_PATTERN[k % len(LANGUAGE_PATTERN)],
+                "family_languages": languages,
                 "weekday": weekday,
                 "starts_local": start,
                 "minutes": minutes,
