@@ -1,0 +1,244 @@
+"""The API answers in the shape the screens read: the WEB lane's fixtures are the reference (web/fixtures/*.json).
+
+Shape rule: every key of the fixture is in the live answer, with a compatible type; null on either side is
+"unknown" and matches anything. The live answer may carry extra keys (night_check, judge, flagged, ...).
+"""
+
+import json
+from pathlib import Path
+
+import pytest
+from fastapi.testclient import TestClient
+from psycopg.conninfo import make_conninfo
+
+from coachcover.api import create_app
+from coachcover.demo import reset_school
+from tests.conftest import TEST_DSN
+
+pytestmark = pytest.mark.db
+
+ROOT = Path(__file__).resolve().parents[1]
+WEB_FIXTURES = ROOT / "web" / "fixtures"
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def load(name: str) -> dict:
+    return json.loads((WEB_FIXTURES / name).read_text(encoding="utf-8"))
+
+
+def _kind(value):
+    if isinstance(value, bool):
+        return "bool"
+    if isinstance(value, (int, float)):
+        return "number"
+    return type(value).__name__
+
+
+def shape_gaps(live, ref, path="$") -> list[str]:
+    if ref is None or live is None:
+        return []
+    if _kind(live) != _kind(ref):
+        return [f"{path}: {_kind(live)} instead of {_kind(ref)}"]
+    gaps = []
+    if isinstance(ref, dict):
+        for key, value in ref.items():
+            if key not in live:
+                gaps.append(f"{path}.{key}: missing")
+            else:
+                gaps += shape_gaps(live[key], value, f"{path}.{key}")
+    elif isinstance(ref, list) and ref:
+        if not live:
+            return [f"{path}: empty list"]
+        if all(isinstance(x, dict) and "kind" in x for x in ref):  # steps / timeline: compare by kind
+            by_kind = {x["kind"]: x for x in live if isinstance(x, dict)}
+            for item in ref:
+                if item["kind"] in by_kind:
+                    gaps += shape_gaps(by_kind[item["kind"]], item, f"{path}[{item['kind']}]")
+        else:
+            gaps += shape_gaps(live[0], ref[0], f"{path}[0]")
+    return gaps
+
+
+@pytest.fixture
+def api(new_database, monkeypatch):
+    conn = new_database()
+    reset_school(conn)
+    dbname = conn.execute("SELECT current_database()").fetchone()[0]
+    monkeypatch.setenv("COACHCOVER_JUDGE_RUNS_PER_HOUR", "20")
+    monkeypatch.delenv("COACHCOVER_MODEL_MODE", raising=False)
+    with TestClient(create_app(make_conninfo(TEST_DSN, dbname=dbname))) as client:
+        yield client, conn
+
+
+def test_shape_check_is_not_blind():
+    ref = load("today.json")
+    assert shape_gaps(ref, ref) == []
+    broken = json.loads(json.dumps(ref))
+    del broken["callout"]["transcript_en"]
+    broken["eligibility"]["total"] = "40"
+    assert shape_gaps(broken, ref) == ["$.callout.transcript_en: missing", "$.eligibility.total: str instead of number"]
+
+
+def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
+    client, _ = api
+    run = client.post("/api/judge/run", json={"scenario": "dangerous_morning"})
+    assert run.status_code == 200 and run.json()["case_id"] == "C-1109-01"
+    today = client.get("/api/today").json()
+    ref = load("today.json")
+    assert shape_gaps(today, ref) == []
+    # names and the story, from the data
+    assert today["title"] == "Who is allowed on deck at 06:00"
+    assert today["venue"] == {"id": "V1", "name": "Riverside Aquatic Center", "term": "pool"}
+    assert today["user_label"] == "Dana Ruiz · Manager" and today["now_label"] == "Mon, Nov 9 · 05:19"
+    callout = today["callout"]
+    assert callout["staff"] == "Marina Petrova · Lifeguard + WSI" and callout["case_id"] == "C-1109-01"
+    assert callout["transcript_original"] == ref["callout"]["transcript_original"]
+    assert callout["transcript_en"] == ref["callout"]["transcript_en"]
+    assert callout["language"] == "Russian" and callout["duration_label"] == "0:09"
+    assert callout["asr_label"].startswith("whisper on Vultr · 1.")
+    assert today["shift"] == {
+        "id": "L-1109-G002", "time_label": "06:00–08:00",
+        "lanes_label": "Lanes 3–4 lap swim + Learn-to-Swim Level 3 (8 kids)",
+        "needs_label": "Lifeguard + WSI", "program_label": "Program LTS-3",
+    }
+    elig = today["eligibility"]
+    assert (elig["total"], elig["eligible"]) == (40, 6)
+    assert elig["first_refusal"]["staff"] == "Anna Kim"
+    assert elig["first_refusal"]["label"] == "free and willing · BLOCKED: Lifeguard certificate expired Nov 5 · 8 kids · ratio 1:4"
+    assert elig["first_refusal"]["contrast_quote"] == ref["eligibility"]["first_refusal"]["contrast_quote"]
+    assert sum(r["count"] for r in elig["reasons"]) == 40 - 6
+    assert {r["tone"] for r in elig["reasons"]} <= {"red", "amber", "plain"}
+    assert [s["name"] for s in elig["staff"] if s["highlight"]] == ["Maria Lopez"]
+    assert [(o["staff"], o["result"]) for o in today["offers"]] == [
+        ("Sofia Reyes", "declined"), ("Leo Martins", "no_reply"), ("Maria Lopez", "accepted")]
+    maria = today["offers"][-1]
+    assert maria["why_first"] == "Maria first: 12 h this week, Level 3, same pool" and maria["time_label"] == "05:19"
+    assert [(t["time_label"], t["kind"]) for t in today["timeline"]] == [
+        ("05:12", "callout"), ("05:13", "declined"), ("05:18", "no_reply"), ("05:19", "accepted"), ("06:00", "shift_start")]
+    assert today["outcome"] == {"covered_by": "Maria Lopez", "covered_time": "06:00", "lessons_cancelled": 0}
+    assert today["plan_b"]["state"] == "standby" and today["plan_b"]["autonomy"] == "propose"
+    assert "merge refused" in today["plan_b"]["text"]  # the kids' norm refuses the merge, live
+    money = today["money"]
+    assert money["uncovered_morning_usd"] is None and money["manager_hour_usd"] is None  # unknown until the money model is in
+    assert money["case_cost_cents"] > 0 and today["model_log"]["calls"] >= 4 and today["model_log"]["usd"] > 0
+    assert today["flagged"][0]["staff"] == "Anna Kim"  # her "assign me anyway" message was flagged
+    assert today["judge"] == {"running": False, "case_id": "C-1109-01"}
+    # the same 12 hours on the phone
+    offer_id = maria_offer = next(o["id"] for o in today["offers"] if o["staff"] == "Maria Lopez")
+    phone = client.get(f"/api/offers/{maria_offer}").json()
+    assert "12 h this week" in phone["why"] and offer_id.startswith("O-")
+
+
+def test_offer_phone_matches_the_fixture(api):
+    client, conn = api
+    client.post("/api/judge/run", json={"scenario": "dangerous_morning"})
+    offer_id = conn.execute("SELECT id FROM offer WHERE staff_id = 'S17'").fetchone()[0]
+    phone = client.get(f"/api/offers/O-{offer_id}").json()
+    assert shape_gaps(phone, load("offers/O-1.json")) == []
+    assert (phone["shift_day"], phone["shift_start"], phone["shift_end"]) == ("today", "06:00", "08:00")
+    assert phone["venue"] == "Riverside Aquatic Center" and phone["manager"] == {"name": "Dana Ruiz", "role": "Manager"}
+    assert [w.split(" — ")[0] for w in phone["why"][:3]] == ["Lifeguard", "WSI", "CPR/AED"]
+    assert all(" — valid to " in w for w in phone["why"][:3])
+    assert phone["why"][3:] == ["LTS-3 program — current", "12 h this week"]
+    assert phone["window_s"] == 300
+
+
+def test_case_page_matches_the_fixture(api):
+    client, _ = api
+    client.post("/api/judge/run", json={"scenario": "dangerous_morning"})
+    page = client.get("/api/cases/C-1109-01").json()
+    assert shape_gaps(page, load("cases/C-1109-01.json")) == []
+    assert (page["status"], page["status_label"], page["covered_time_label"]) == ("covered", "Covered", "05:19")
+    kinds = [s["kind"] for s in page["steps"]]
+    assert kinds[0] == "callout" and kinds[-1] == "covered" and {"shift", "allowed", "offers", "flagged"} <= set(kinds)
+    allowed = next(s for s in page["steps"] if s["kind"] == "allowed")
+    assert (allowed["total"], allowed["allowed"], len(allowed["staff"])) == (40, 6, 40)
+    assert allowed["blocked"]["staff"] == "Anna Kim"
+    labels = {c["model_label"] for c in page["model_calls"]}
+    assert {"whisper-large-v3-turbo", "muse-glimmer-30b", "nemotron-safety"} <= labels
+    whisper = next(c for c in page["model_calls"] if c["purpose"] == "transcribe")
+    assert whisper["ms"] == 1050 and whisper["cost_usd"] > 0 and "transcribe-ru.json" in whisper["source"]
+    assert page["model_cost_usd"] == pytest.approx(sum(c["cost_usd"] or 0 for c in page["model_calls"]))
+    assert page["risk"]["kids"] == 8 and page["risk"]["total_usd"] is None
+    assert page["proof"]["policy_label"] == "cover = auto · plan B = propose"
+    download = client.get("/api/cases/C-1109-01?download=true")
+    assert "attachment" in download.headers["content-disposition"] and download.json() == page
+    assert client.get("/api/cases/C-0000-99").status_code == 404
+
+
+def test_today_after_nobody_accepts_matches_its_fixture_and_approval_is_by_hash(api):
+    client, _ = api
+    run = client.post("/api/judge/run", json={"scenario": "nobody_accepts"}).json()
+    assert run["conflict"]["reason"] == "plan changed"  # the shown plan was refused once the data changed
+    today = client.get("/api/today").json()
+    assert shape_gaps(today, load("today.nobody_accepts.json")) == []
+    plan = today["plan_b"]
+    assert plan["state"] == "proposed" and plan["id"] == run["conflict"]["plan_id"]
+    assert today["outcome"]["covered_by"] is None
+    stale = client.post(f"/api/plans/{plan['id']}/approve", json={"hash": "a" * 64})
+    assert stale.status_code == 409 and stale.json()["reason"] == "plan changed" and stale.json()["current_hash"] == plan["hash"]
+    ok = client.post(f"/api/plans/{plan['id']}/approve", json={"hash": plan["hash"]})
+    assert ok.status_code == 200 and ok.json()["state"] == "approved"
+    assert client.get("/api/today").json()["plan_b"]["state"] == "approved"
+
+
+def test_nightly_check_opens_a_case_for_the_manager(api):
+    client, conn = api
+    run = client.post("/api/judge/run", json={"scenario": "nightly_check"}).json()
+    today = client.get("/api/today").json()
+    night = today["night_check"]
+    assert night["case_id"] == run["case_id"]
+    assert night["label"].startswith("Night check 21:30: Javier Morales — CPR/AED card ends Nov 8, before Mon 16:00")
+    assert night["label"].endswith("replacement proposed to the manager")
+    approval = conn.execute("SELECT id, status FROM approval WHERE action = 'night_cover'").fetchone()
+    assert approval[1] == "pending"
+    assert conn.execute("SELECT count(*) FROM offer").fetchone() == (0,)  # nothing happens before the manager says yes
+    assert client.post(f"/api/approvals/{approval[0]}/approve", json={"by": "manager:Dana"}).status_code == 200
+    assert conn.execute("SELECT count(*) FROM offer WHERE status = 'pending'").fetchone() == (1,)
+
+
+def test_accept_rechecked_at_yes_answers_409_with_a_reason(api):
+    client, conn = api
+    with open(FIXTURES / "audio" / "ru-callout.ogg", "rb") as f:
+        client.post("/api/callouts", data={"staff_id": "S05"}, files={"audio": ("ru-callout.ogg", f, "audio/ogg")})
+    offer_id, staff_id = conn.execute("SELECT id, staff_id FROM offer WHERE status = 'pending'").fetchone()
+    conn.execute(
+        "INSERT INTO shift (id, venue_id, role_id, starts_at, ends_at, staff_id)"
+        " SELECT 'X-CLASH', 'V2', role_id, starts_at, ends_at, %s FROM shift WHERE id = 'L-1109-G002'", (staff_id,)
+    )
+    refused = client.post(f"/api/offers/O-{offer_id}/accept")
+    assert refused.status_code == 409 and "already booked" in refused.json()["reason"]
+    next_offer = conn.execute("SELECT id FROM offer WHERE status = 'pending'").fetchone()[0]
+    assert client.post(f"/api/offers/O-{next_offer}/decline").json() == {"state": "declined", "case_status": "open"}
+
+
+def test_voice_note_is_served_back(api):
+    client, _ = api
+    client.post("/api/judge/run", json={"scenario": "dangerous_morning"})
+    audio = client.get("/media/callouts/C-1109-01.ogg")
+    assert audio.status_code == 200 and audio.headers["content-type"] == "audio/ogg"
+    assert audio.content == (FIXTURES / "audio" / "ru-callout.ogg").read_bytes()
+    assert client.get("/media/callouts/C-0000-01.ogg").status_code == 404
+
+
+def test_stats_in_the_contract_shape(api):
+    client, _ = api
+    client.post("/api/judge/run", json={"scenario": "dangerous_morning"})
+    stats = client.get("/api/stats").json()
+    assert {"runs", "closed_without_human_pct", "median_minutes_to_cover", "eligibility_violations", "sim"} <= set(stats)
+    assert stats["runs"] == 1 and stats["eligibility_violations"] == 0 and stats["sim"] is None
+    assert stats["closed_without_human_pct"] == 100.0 and stats["median_minutes_to_cover"] == 7.0
+
+
+def test_static_screens_are_served(new_database, tmp_path):
+    conn = new_database()
+    reset_school(conn)
+    for page in ("index.html", "offer.html", "case.html"):
+        (tmp_path / page).write_text(f"<html>{page}</html>")
+    dbname = conn.execute("SELECT current_database()").fetchone()[0]
+    with TestClient(create_app(make_conninfo(TEST_DSN, dbname=dbname), web_dir=tmp_path)) as client:
+        assert client.get("/").text == "<html>index.html</html>"
+        assert client.get("/offer").text == "<html>offer.html</html>"
+        assert client.get("/case").text == "<html>case.html</html>"
+        assert client.get("/health").json()["mode"] == "replay"  # API routes win over the static mount
+    assert (ROOT / "web" / "index.html").is_file()  # the real screens are in the repo

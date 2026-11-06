@@ -31,7 +31,8 @@ def test_both_presets_load_with_their_data():
 
 
 def test_autonomy_is_policy_data_with_partial_overrides():
-    assert SWIM.autonomy == {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "propose"}
+    assert SWIM.autonomy == {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "propose",
+                             "night_cover": "propose"}
     bolder = default_policy("fitness_club", autonomy={"merge_groups": "auto"})
     assert bolder.autonomy["merge_groups"] == "auto" and bolder.autonomy["plan_b"] == "propose"
     with pytest.raises(ValueError, match="autonomy modes"):
@@ -179,7 +180,8 @@ def _logic_files() -> list[str]:
     files = []
     for path in sorted((ROOT / "coachcover").rglob("*")):
         rel = path.relative_to(ROOT).as_posix()
-        if path.suffix in (".py", ".sql") and "/presets/" not in rel and not rel.endswith("/seed.py"):
+        # presets, the training school and its judge scenarios are allowed to speak the business's language
+        if path.suffix in (".py", ".sql") and "/presets/" not in rel and not rel.endswith(("/seed.py", "/demo.py")):
             files.append(rel)
     return files
 

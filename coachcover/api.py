@@ -155,7 +155,7 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
     @app.get("/api/cases/{case_ref}")
     def get_case(case_ref: str, download: bool = False, conn: psycopg.Connection = Depends(get_conn)):
         case_id = pipeline(conn).find_case(case_ref)
-        page = views.case_page(conn, policy_id, case_id)
+        page = screens.case_page(conn, policy_id, case_id, live=mode == "live")
         if not download:
             return page
         return JSONResponse(page, headers={"Content-Disposition": f'attachment; filename="case-{page["case_id"]}.json"'})

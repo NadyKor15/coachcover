@@ -12,7 +12,7 @@ import psycopg
 
 from coachcover.checks import night_report
 from coachcover.model import Preset
-from coachcover.models import SHORT_NAMES
+from coachcover.models import MODEL_LABELS, SHORT_NAMES, canonical_key
 from coachcover.pipeline import NotFound, Pipeline, plain
 from coachcover.repo import load_policy, load_shift, load_staff
 from coachcover.rules import cert_expiry, group_norm, required_certs
@@ -328,9 +328,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
                          "label": "Plan B approved" if pstatus == "approved" else "Plan B ready", "_at": when})
     elif status in ("open", "covered"):
         facts = p._plan_facts(case_id, now)
-        from coachcover.models import canonical_key
-
-        out["plan_b"] = {"id": None, "state": "standby", "text": _plan_text(facts, preset),
+        out["plan_b"] = {"id": "P-standby", "state": "standby", "text": _plan_text(facts, preset),
                          "hash": canonical_key(facts), "autonomy": autonomy}
     timeline.sort(key=lambda e: e.pop("_at", opened_at))
     timeline.append({"time_label": _clock(info["start"], tz), "kind": "shift_start"})
@@ -412,7 +410,9 @@ def offer_phone(conn: psycopg.Connection, policy_id: str, offer_ref: str, now: d
         else f"{local_day:%a}, {local_day:%b} {local_day.day}"
     person = next(s for s in load_staff(conn, policy_id) if s.id == staff_id)
     why = []
-    for code in required_certs(preset.roles[shift.role], shift, preset):
+    needed = required_certs(preset.roles[shift.role], shift, preset)
+    order = [needed[0], *shift.extra_certs, *needed[1:]] if needed else []  # main card, the shift's extra, the rest
+    for code in dict.fromkeys(order):
         cards = [c for c in person.certs if c.cert_type == code and not c.needs_review]
         if cards:
             exp = max(cert_expiry(c, preset.cert_types[code]) for c in cards)
@@ -440,4 +440,196 @@ def offer_phone(conn: psycopg.Connection, policy_id: str, offer_ref: str, now: d
         "expires_in_s": max(0, int((expires - now).total_seconds())) if status == "pending" else 0,
         "window_s": int((expires - sent).total_seconds()),
         "manager": {"name": manager, "role": "Manager"} if manager else None,
+    })
+
+
+STATUS_LABELS = {"open": "Open", "covered": "Covered", "plan_b": "Plan B", "cancelled": "Cancelled", "uncovered": "Uncovered"}
+
+
+def _utc(value: datetime) -> str:
+    return value.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _utc_label(value: datetime) -> str:
+    return value.astimezone(ZoneInfo("UTC")).strftime("%H:%M:%S UTC")
+
+
+def model_calls(conn: psycopg.Connection, case_id: int, callout_id) -> list[dict]:
+    rows = conn.execute(
+        "SELECT at, purpose, model_requested, model_returned, duration_ms, input_tokens, output_tokens, cost_usd, source,"
+        " ref->>'recording', coalesce((ref->>'synthetic')::boolean, false), ok, error FROM model_call"
+        " WHERE case_id = %s OR (%s::uuid IS NOT NULL AND ref->>'callout_id' = %s::text) ORDER BY at, id",
+        (case_id, callout_id, callout_id),
+    ).fetchall()
+    out = []
+    for at, purpose, requested, returned, ms, tin, tout, cost, source, recording, synthetic, ok, error in rows:
+        if source == "live":
+            where = "live call on Vultr"
+        else:
+            where = f"recorded answer tests/fixtures/models/{recording}" + (" (synthetic)" if synthetic else "") if recording \
+                else "no recorded answer"
+        out.append({
+            "at": _utc(at), "purpose": purpose, "model": returned or requested,
+            "model_label": MODEL_LABELS.get(returned or requested, returned or requested),
+            "ms": ms, "input_tokens": tin, "output_tokens": tout,
+            "cost_usd": float(cost) if cost is not None else None,
+            "source": where if ok else f"{where} · failed: {error}",
+        })
+    return out
+
+
+def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool) -> dict:
+    """The case file as one proof page: call-out, shift, who is allowed, offers, outcome, models and their cost."""
+    policy = load_policy(conn, policy_id)
+    preset = policy.preset
+    row = conn.execute(
+        "SELECT c.code, c.shift_id, c.status, c.opened_at, c.closed_at, c.callout_id, c.absent_staff_id FROM cover_case c"
+        " JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id WHERE c.id = %s AND v.policy_id = %s",
+        (case_id, policy_id),
+    ).fetchone()
+    if row is None:
+        raise NotFound(f"unknown case {case_id}")
+    code, shift_id, status, opened, closed, callout_id, absent = row
+    p = Pipeline(conn, None, policy_id)  # type: ignore[arg-type] - read-only use
+    info = p.shift_info(shift_id)
+    shift = load_shift(conn, shift_id)
+    tz = ZoneInfo(info["tz"])
+    labels = _shift_labels(info, shift, preset)
+    manager = conn.execute("SELECT manager_name FROM policy WHERE id = %s", (policy_id,)).fetchone()[0]
+    names = dict(conn.execute("SELECT id, full_name FROM staff WHERE policy_id = %s", (policy_id,)).fetchall())
+    events = conn.execute("SELECT seq, at, kind, data FROM case_event WHERE case_id = %s ORDER BY seq", (case_id,)).fetchall()
+    first = {kind: (at, data) for _, at, kind, data in reversed(events)}
+    steps = []
+    if "callout_received" in first:
+        at, data = first["callout_received"]
+        voice = first.get("voice_transcribed", (None, {}))[1]
+        audio = conn.execute("SELECT 1 FROM callout_audio WHERE callout_id = %s", (callout_id,)).fetchone()
+        steps.append({
+            "kind": "callout", "at": _utc(at), "time_label": _utc_label(at),
+            "title": "Voice call-out" if data.get("channel") == "voice" else "Text call-out",
+            "staff": f"{names.get(absent)} · {labels['needs_label']}",
+            "language": LANGUAGE_NAMES.get(data.get("language")),
+            "audio_url": f"/media/callouts/{code}.ogg" if audio else None,
+            "transcript_original": data.get("text"), "transcript_en": data.get("text_en"),
+            "model_tag": f"{MODEL_LABELS.get(voice.get('model'), voice.get('model'))} · {voice['duration_ms'] / 1000:.1f} s"
+            if voice.get("duration_ms") else None,
+        })
+    if "night_check_found" in first:
+        at, data = first["night_check_found"]
+        steps.append({"kind": "night_check", "at": _utc(at), "time_label": _utc_label(at), "title": "Night check",
+                      "summary": f"{data['name']}: " + "; ".join(r["text"] for r in data.get("reasons", []))})
+    for _, at, kind, data in events:
+        if kind == "flagged_for_manager":
+            steps.append({"kind": "flagged", "at": _utc(at), "time_label": _utc_label(at),
+                          "title": "Message flagged for the manager",
+                          "summary": f"{data.get('name')}: “{data.get('text')}” · the rules were checked anyway"})
+    if "callout_understood" in first or "shift_opened" in first:
+        at, data = first.get("callout_understood") or first["shift_opened"]
+        by = data.get("by")
+        steps.append({
+            "kind": "shift", "at": _utc(at), "time_label": _utc_label(at), "title": "Shift identified",
+            "shift_id": shift_id,
+            "summary": f"{labels['time_label']} · Needs: {labels['needs_label']}"
+            + (f" · {labels['program_label']}" if labels["program_label"] else ""),
+            "model_tag": MODEL_LABELS.get(by, by) if by and by != "fallback" else None,
+        })
+    ranked = first.get("candidates_ranked")
+    if ranked:
+        at, data = ranked
+        grid = data.get("grid", [])
+        chips: dict[str, dict] = {}
+        staff_rows = []
+        for person in grid:
+            label = None
+            if person["first"]:
+                label = reason_label(person["first"]["code"], person["first"]["params"], preset, conn, tz)
+                chips.setdefault(label, {"code": person["first"]["code"], "label": label, "count": 0})["count"] += 1
+            staff_rows.append({"id": person["staff_id"], "name": person["name"], "allowed": person["eligible"],
+                               "reason_label": label})
+        refusal = _first_refusal(events, grid, shift, preset, conn, tz)
+        steps.append({
+            "kind": "allowed", "at": _utc(at), "time_label": _utc_label(at), "title": "Who is allowed",
+            "total": data["total"], "allowed": data["eligible"],
+            "blocked": {"staff": refusal["staff"], "label": refusal["label"]} if refusal else None,
+            "reasons": sorted(chips.values(), key=lambda c: (-c["count"], c["label"])),
+            "staff": staff_rows,
+        })
+    offers = conn.execute(
+        "SELECT id, staff_id, status, sent_at, expires_at, responded_at, place->>'line' FROM offer WHERE case_id = %s ORDER BY id",
+        (case_id,),
+    ).fetchall()
+    if offers:
+        rows = []
+        for oid, sid, ostatus, sent, expires, responded, line in offers:
+            result, when, result_label = {
+                "declined": ("declined", responded, "declined"),
+                "expired": ("no_reply", expires, f"no reply in {int((expires - sent).total_seconds() // 60)} min"),
+                "accepted": ("accepted", responded, "accepted"),
+                "released": ("accepted", responded, "accepted, later gave it back"),
+                "withdrawn": ("declined", responded or expires, "no longer eligible"),
+                "pending": ("pending", sent, "asked, waiting"),
+            }[ostatus]
+            rows.append({"id": f"O-{oid}", "time_label": _clock(when, tz), "staff": names[sid], "result": result,
+                         "result_label": result_label, "why_first": line})
+        steps.append({"kind": "offers", "at": _utc(offers[0][3]), "time_label": _utc_label(offers[0][3]),
+                      "title": "Offers in order", "offers": rows})
+    for _, at, kind, data in events:
+        if kind == "approval_refused":
+            steps.append({"kind": "plan_b", "at": _utc(at), "time_label": _utc_label(at),
+                          "title": "Approval refused: plan changed",
+                          "summary": f"{data.get('plan_id')} was shown with hash {str(data.get('shown_hash'))[:8]}…; "
+                                     f"the data changed, the current plan has hash {str(data.get('current_hash'))[:8]}…"})
+    plan = conn.execute(
+        "SELECT id, snapshot, snapshot_hash, status, created_at, decided_at, decided_by, chosen_option FROM plan_b"
+        " WHERE case_id = %s AND status IN ('proposed', 'approved') ORDER BY id DESC LIMIT 1",
+        (case_id,),
+    ).fetchone()
+    cancelled = conn.execute(
+        "SELECT count(*) FROM shift WHERE status = 'cancelled' AND venue_id = %s AND starts_at::date = %s::date"
+        " AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = shift.id)",
+        (info["venue_id"], info["start"]),
+    ).fetchone()[0]
+    covered = first.get("shift_covered")
+    if covered:
+        at, data = covered
+        steps.append({"kind": "covered", "at": _utc(at), "time_label": _utc_label(at), "title": "Schedule covered",
+                      "summary": f"{labels['time_label'].split('–')[0]} covered by {data.get('name')} · "
+                                 f"{cancelled} lesson{'s' if cancelled != 1 else ''} cancelled"})
+    if plan:
+        pid, snap, digest, pstatus, created, decided, decided_by, chosen = plan
+        lines = snap.get("text", {}).get("lines", [])
+        if pstatus == "approved":
+            option = snap["options"][chosen]
+            text = lines[chosen] if chosen < len(lines) else option["kind"]
+            steps.append({"kind": "plan_b", "at": _utc(decided), "time_label": _utc_label(decided),
+                          "title": "Plan B approved by hash", "summary": f"{text} · approved by {decided_by} · P-{pid}"})
+        else:
+            steps.append({"kind": "plan_b", "at": _utc(created), "time_label": _utc_label(created),
+                          "title": "Plan B waiting for approval", "summary": " · ".join(lines) or _plan_text(snap, preset)})
+        proof = {"plan_id": f"P-{pid}", "plan_hash": digest}
+    elif status in ("open", "covered"):
+        proof = {"plan_id": None, "plan_hash": canonical_key(p._plan_facts(case_id, closed or opened))}
+    else:
+        proof = {"plan_id": None, "plan_hash": None}
+    proof["policy_label"] = f"cover = {policy.autonomy['assign_cover']} · plan B = {policy.autonomy['plan_b']}"
+    steps.sort(key=lambda s: s["at"])
+    calls = model_calls(conn, case_id, callout_id)
+    local_day = info["start"].astimezone(tz)
+    return plain({
+        "case_id": code,
+        "status": status,
+        "status_label": STATUS_LABELS.get(status, status),
+        "covered_time_label": _clock(covered[0], tz) if covered else None,
+        "shift_label": f"{_clock(info['start'], tz)} {labels['lanes_label'].split(' (')[0]}",
+        "venue": {"id": info["venue_id"], "name": info["venue"]},
+        "date_label": f"{local_day:%a}, {local_day:%b} {local_day.day}",
+        "user_label": f"{manager} · Manager" if manager else None,
+        "opened_at": _utc(opened),
+        "closed_at": _utc(closed) if closed else None,
+        "steps": steps,
+        "proof": proof,
+        "model_calls": calls,
+        "model_cost_usd": round(sum(c["cost_usd"] or 0 for c in calls), 6),
+        "risk": {"kids": sum(g.size for g in shift.groups) or None, "refunds_usd": None, "overtime_usd": None,
+                 "total_usd": None},
     })

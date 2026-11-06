@@ -13,7 +13,8 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
-from coachcover.pipeline import Pipeline, plain
+from coachcover.models import MODEL_LABELS
+from coachcover.pipeline import plain
 from coachcover.repo import load_context, load_policy, load_shift, load_staff
 from coachcover.rules import Code, eligible
 
@@ -82,125 +83,6 @@ def event_line(kind: str, data: dict, at: datetime, tz: ZoneInfo, names: dict) -
     return lines.get(kind, lambda: f"{t} {kind}")()
 
 
-def _names(conn: psycopg.Connection, policy_id: str) -> dict:
-    return dict(conn.execute("SELECT id, full_name FROM staff WHERE policy_id = %s", (policy_id,)).fetchall())
-
-
-def case_page(conn: psycopg.Connection, policy_id: str, case_id: int) -> dict:
-    row = conn.execute(
-        "SELECT c.id, c.shift_id, c.absent_staff_id, c.source, c.status, c.opened_at, c.closed_at, c.callout_id, c.code"
-        " FROM cover_case c JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id"
-        " WHERE c.id = %s AND v.policy_id = %s",
-        (case_id, policy_id),
-    ).fetchone()
-    if row is None:
-        return {}
-    cid, shift_id, absent, source, status, opened, closed, callout_id, code = row
-    shift = Pipeline(conn, None, policy_id).shift_info(shift_id)  # type: ignore[arg-type] - read-only use
-    tz = ZoneInfo(shift["tz"])
-    names = _names(conn, policy_id)
-    events = conn.execute("SELECT seq, at, actor, kind, data FROM case_event WHERE case_id = %s ORDER BY seq", (cid,)).fetchall()
-    by_kind = {}
-    for _, _, _, kind, data in events:
-        by_kind.setdefault(kind, data)
-    ranked = by_kind.get("candidates_ranked", {})
-    offers = [
-        dict(zip(("offer_id", "staff_id", "queue_pos", "line", "sent_at", "expires_at", "status", "responded_at", "overtime"), r))
-        for r in conn.execute(
-            "SELECT id, staff_id, queue_pos, place->>'line', sent_at, expires_at, status, responded_at, overtime"
-            " FROM offer WHERE case_id = %s ORDER BY id",
-            (cid,),
-        )
-    ]
-    for o in offers:
-        o["name"] = names.get(o["staff_id"])
-        o["sent"] = _hm(o["sent_at"], tz)
-        o["answered"] = _hm(o["responded_at"], tz) if o["responded_at"] else None
-    plans = []
-    for pid, snap, digest, pstatus, chosen, by, decided in conn.execute(
-        "SELECT id, snapshot, snapshot_hash, status, chosen_option, decided_by, decided_at FROM plan_b WHERE case_id = %s ORDER BY id",
-        (cid,),
-    ):
-        lines = snap.get("text", {}).get("lines", [])
-        plans.append({
-            "plan_id": pid, "status": pstatus, "hash": digest, "headline": snap.get("text", {}).get("headline"),
-            "text_source": snap.get("text_source"), "recommended": snap.get("recommended"), "chosen": chosen,
-            "decided_by": by, "decided_at": decided,
-            "options": [{"index": i, "kind": o["kind"], "mode": o["mode"], "line": lines[i] if i < len(lines) else o["kind"],
-                         "cost_usd": o.get("cost_usd")} for i, o in enumerate(snap.get("options", []))],
-            "rejected": snap.get("rejected", []),
-        })
-    calls = [
-        dict(zip(("at", "purpose", "model", "ok", "error", "ms", "cost_usd", "input_tokens", "output_tokens", "source", "synthetic"), r))
-        for r in conn.execute(
-            "SELECT at, purpose, model_returned, ok, error, duration_ms, cost_usd, input_tokens, output_tokens, source,"
-            " coalesce((ref->>'synthetic')::boolean, false) FROM model_call"
-            " WHERE case_id = %s OR (%s::uuid IS NOT NULL AND ref->>'callout_id' = %s::text) ORDER BY at, id",
-            (cid, callout_id, callout_id),
-        )
-    ]
-    msgs = conn.execute(
-        "SELECT m.audience, m.language, m.group_id, g.size FROM message m LEFT JOIN lesson_group g ON g.id = m.group_id"
-        " WHERE m.case_id = %s",
-        (cid,),
-    ).fetchall()
-    family_groups = {(g, size) for aud, _, g, size in msgs if aud == "family"}
-    covered = by_kind.get("shift_covered")
-    received = by_kind.get("callout_received", {})
-    return plain({
-        "case_id": code,
-        "case_number": cid,
-        "status": status,
-        "source": source,
-        "opened_at": opened,
-        "closed_at": closed,
-        "opened": _hm(opened, tz),
-        "closed": _hm(closed, tz) if closed else None,
-        "minutes_to_close": round((closed - opened).total_seconds() / 60, 1) if closed else None,
-        "shift_id": shift_id,
-        "shift_label": shift["label"],
-        "venue": shift["venue"],
-        "zone": shift["zone"],
-        "role": shift["role_label"],
-        "groups": [{"id": g["id"], "name": g["name"], "size": g["size"], "languages": g["languages"]} for g in shift["groups"]],
-        "absent_staff_id": absent,
-        "absent_name": names.get(absent),
-        "message_text": received.get("text"),
-        "message_channel": received.get("channel"),
-        "transcript_original": received.get("text"),
-        "transcript_en": received.get("text_en"),
-        "language": received.get("language"),
-        "audio_url": f"/media/callouts/{code}.ogg" if conn.execute(
-            "SELECT 1 FROM callout_audio WHERE callout_id = %s", (callout_id,)).fetchone() else None,
-        "filter": by_kind.get("message_screened"),
-        "understood": (by_kind.get("callout_understood") or {}).get("understood"),
-        "understood_by": (by_kind.get("callout_understood") or {}).get("by"),
-        "filter_total": ranked.get("total"),
-        "filter_eligible": ranked.get("eligible"),
-        "filter_out": ranked.get("filtered"),
-        "filter_chips": [{**c, "text": CODE_TEXT.get(c["code"], c["code"])} for c in ranked.get("chips", [])],
-        "filter_grid": ranked.get("grid", []),
-        "queue_top": ranked.get("top", []),
-        "offers": offers,
-        "covered_by": covered.get("staff_id") if covered else None,
-        "covered_by_name": covered.get("name") if covered else None,
-        "plans": plans,
-        "timeline": [
-            {"seq": seq, "at": at, "at_utc": at.astimezone(UTC).isoformat(), "time": _hm(at, tz), "actor": actor,
-             "kind": kind, "line": event_line(kind, data, at, tz, names), "data": data}
-            for seq, at, actor, kind, data in events
-        ],
-        "model_calls": calls,
-        "model_cost_usd": round(sum(float(c["cost_usd"] or 0) for c in calls), 6),
-        "total_cost_usd": round(sum(float(c["cost_usd"] or 0) for c in calls), 6),
-        "model_ms": sum(c["ms"] or 0 for c in calls),
-        "messages_staff": sum(1 for aud, *_ in msgs if aud == "staff"),
-        "messages_family": sum(1 for aud, *_ in msgs if aud == "family"),
-        "families_told": sum(size or 0 for _, size in family_groups),
-        "family_languages": sorted({lang for aud, lang, _, _ in msgs if aud == "family"}),
-    })
-
-
 def stats(conn: psycopg.Connection, policy_id: str) -> dict:
     """Run numbers for the screens. `sim` comes from the simulation lane when it is part of the build."""
     rows = conn.execute(
@@ -255,11 +137,12 @@ def eligibility_violations(conn: psycopg.Connection, policy_id: str) -> int:
 
 def ledger(conn: psycopg.Connection, limit: int = 200) -> dict:
     calls = [
-        dict(zip(("id", "at", "purpose", "model_requested", "model_returned", "source", "ok", "error", "input_tokens",
-                  "output_tokens", "ms", "cost_usd", "case_id", "synthetic"), r))
+        {**dict(zip(("id", "at", "purpose", "model_requested", "model_returned", "source", "ok", "error", "input_tokens",
+                     "output_tokens", "ms", "cost_usd", "case_id", "synthetic", "recording"), r)),
+         "model_label": MODEL_LABELS.get(r[4] or r[3], r[4] or r[3])}
         for r in conn.execute(
             "SELECT id, at, purpose, model_requested, model_returned, source, ok, error, input_tokens, output_tokens,"
-            " duration_ms, cost_usd, case_id, coalesce((ref->>'synthetic')::boolean, false)"
+            " duration_ms, cost_usd, case_id, coalesce((ref->>'synthetic')::boolean, false), ref->>'recording'"
             " FROM model_call ORDER BY id DESC LIMIT %s",
             (limit,),
         )

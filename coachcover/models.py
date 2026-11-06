@@ -50,6 +50,7 @@ SHORT_NAMES = {
     SAFETY_MODEL: "nemotron-safety",
     "raon-1-mini-preview": "raon",
 }
+MODEL_LABELS = {**SHORT_NAMES, SPEECH_MODEL: SPEECH_MODEL}  # labels for tables: the speech model keeps its full id
 
 DEFAULT_BASE_URL = "https://api.vultrinference.com/v1"
 PRICES_FILE = Path(__file__).parent / "model_prices.json"
@@ -177,6 +178,7 @@ class Recording:
     duration_ms: int
     synthetic: bool
     source: str
+    file: str = ""
 
 
 class Recordings:
@@ -195,6 +197,7 @@ class Recordings:
                 duration_ms=int(raw["duration_ms"]),
                 synthetic=bool(raw["synthetic"]),
                 source=raw["source"],
+                file=path.name,
             )
             key = (rec.purpose, rec.model, rec.input_sha256)
             if key in self._index:
@@ -363,6 +366,7 @@ class ModelClient:
             if self.mode == "replay":
                 rec = self.recordings.find(purpose, model, input_sha256)
                 body, duration, synthetic = rec.response, rec.duration_ms, rec.synthetic
+                call_ref["recording"] = rec.file
                 if synthetic:
                     call_ref["synthetic"] = True
             else:
