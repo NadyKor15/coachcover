@@ -158,7 +158,7 @@ DEMO_GROUPS = {
 }
 
 READER_A_MODEL = "muse-glimmer-30b"
-READER_B_MODEL = "nemotron-3-nano-omni"
+READER_B_MODEL = "nemotron-3-nano-omni-30b-a3b-reasoning"
 
 
 @dataclass

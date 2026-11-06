@@ -24,9 +24,9 @@ DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 
 def test_migrations_apply_once(new_database):
     conn = new_database()
-    assert migrate(conn) == ["001_init", "002_pipeline"]
+    assert migrate(conn) == ["001_init", "002_pipeline", "003_review_fixes"]
     assert migrate(conn) == []
-    assert conn.execute("SELECT version FROM schema_migrations ORDER BY 1").fetchall() == [("001_init",), ("002_pipeline",)]
+    assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == ["001_init", "002_pipeline", "003_review_fixes"]
 
 
 def test_preset_install_is_idempotent_and_refuses_a_different_copy(new_database):
@@ -238,16 +238,16 @@ def test_case_file_events_and_first_yes_wins(school):
             with school.transaction():
                 school.execute("UPDATE case_event SET kind = 'edited' WHERE case_id = %s", (case_id,))
         school.execute(
-            "INSERT INTO offer (case_id, staff_id, queue_pos, place, sent_at, expires_at, status, responded_at)"
-            " VALUES (%s, 'S17', 1, '{}', %s, %s, 'accepted', %s)",
-            (case_id, NOW, NOW + timedelta(minutes=5), NOW + timedelta(minutes=1)),
+            "INSERT INTO offer (case_id, shift_id, staff_id, queue_pos, place, sent_at, expires_at, status, responded_at)"
+            " VALUES (%s, %s, 'S17', 1, '{}', %s, %s, 'accepted', %s)",
+            (case_id, DEMO_LESSON, NOW, NOW + timedelta(minutes=5), NOW + timedelta(minutes=1)),
         )
         with pytest.raises(psycopg.errors.UniqueViolation):
             with school.transaction():
                 school.execute(
-                    "INSERT INTO offer (case_id, staff_id, queue_pos, place, sent_at, expires_at, status, responded_at)"
-                    " VALUES (%s, 'S08', 2, '{}', %s, %s, 'accepted', %s)",
-                    (case_id, NOW, NOW + timedelta(minutes=5), NOW + timedelta(minutes=2)),
+                    "INSERT INTO offer (case_id, shift_id, staff_id, queue_pos, place, sent_at, expires_at, status, responded_at)"
+                    " VALUES (%s, %s, 'S08', 2, '{}', %s, %s, 'accepted', %s)",
+                    (case_id, DEMO_LESSON, NOW, NOW + timedelta(minutes=5), NOW + timedelta(minutes=2)),
                 )
         with pytest.raises(psycopg.errors.UniqueViolation):
             with school.transaction():
