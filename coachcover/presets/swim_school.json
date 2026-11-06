@@ -1,0 +1,40 @@
+{
+  "code": "swim_school",
+  "label": "Swim school",
+  "note": "Example values, not legal advice. Ratios follow the Georgia DPH Model Aquatic Safety Plan: 1:4 for young or beginner swimmers, 1:8 for ages 6-17. Two-year certificate validity matches common US lifeguard and instructor cards. Check your state rules and certifying agency. Overtime cost per hour is an example (1.5 x a typical instructor wage).",
+  "venue_term": {"en": "pool", "ru": "бассейн"},
+  "cert_types": [
+    {"code": "lifeguarding", "label": "Lifeguarding", "validity_months": 24, "match": ["LIFEGUARD"]},
+    {"code": "cpr_aed", "label": "CPR/AED", "validity_months": 24, "match": ["CPR"]},
+    {"code": "wsi", "label": "Water Safety Instructor (WSI)", "validity_months": 24, "match": ["WATER SAFETY INSTRUCTOR", "WSI"]}
+  ],
+  "roles": [
+    {"code": "lifeguard", "label": "Lifeguard", "required_certs": ["lifeguarding", "cpr_aed"]},
+    {"code": "instructor", "label": "Swim instructor", "required_certs": ["wsi", "cpr_aed"]},
+    {"code": "head_coach", "label": "Head coach", "required_certs": ["cpr_aed"], "reserve": true}
+  ],
+  "programs": [
+    {
+      "code": "learn_to_swim",
+      "label": "Learn-to-Swim",
+      "renewal_months": 12,
+      "levels": [
+        {"code": "1", "label": "Level 1 (beginner)", "max_per_instructor": 4},
+        {"code": "2", "label": "Level 2", "max_per_instructor": 8},
+        {"code": "3", "label": "Level 3", "max_per_instructor": 8},
+        {"code": "4", "label": "Level 4", "max_per_instructor": 8},
+        {"code": "5", "label": "Level 5", "max_per_instructor": 8},
+        {"code": "6", "label": "Level 6", "max_per_instructor": 8}
+      ]
+    }
+  ],
+  "policy_defaults": {
+    "max_weekly_hours": 40,
+    "week_start": "sunday",
+    "makeup_window_days": 30,
+    "autonomy": {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "propose"},
+    "offer_timeout_minutes": 5,
+    "overtime_cost_per_hour": 34.0,
+    "default_remedy": "credit"
+  }
+}

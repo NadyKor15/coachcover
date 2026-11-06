@@ -1,0 +1,16 @@
+{
+ "purpose": "transcribe",
+ "model": "whisper-large-v3-turbo",
+ "input": {
+  "audio_sha256": "9b0c5ba00d6841a5b0ed44d5a60648643163b32c9386a23b425dfe5b1be14ef6"
+ },
+ "input_sha256": "d461301ce2bab6f7afdcc42ccbfc0229b6126ba5ab896b917858a92198c6d86e",
+ "synthetic": false,
+ "source": "model check 2026-11-06 (spike-result.json), asr ru-callout.ogg; the check kept only the text, \"model\" is added and must be verified live",
+ "duration_ms": 1050,
+ "response": {
+  "text": " Привет, это Марина. У меня температура 38, я не выйду в 6. У меня в 6 дорожка и в 7 урок у малышей. Прости.",
+  "model": "whisper-large-v3-turbo",
+  "duration": 8.529
+ }
+}

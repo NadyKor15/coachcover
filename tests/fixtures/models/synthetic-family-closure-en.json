@@ -1,0 +1,31 @@
+{
+ "purpose": "family_message",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "event": "closure",
+  "language": "en",
+  "venue": "Northside Aquatic Center",
+  "date": "2026-11-09",
+  "reason": "weather",
+  "remedy": "You get a lesson credit."
+ },
+ "input_sha256": "db75f622d48070ba576fd468e29c71f8e44c99b9da7001dff57e181ffb7caf11",
+ "synthetic": true,
+ "source": "synthetic: written by hand to the family_message schema, only facts from input",
+ "duration_ms": 1300,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 260,
+   "completion_tokens": 90
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"body\": \"Hello: because of the weather, Northside Aquatic Center is closed today, November 9. The {group} lesson at {time} is cancelled. You get a lesson credit. Sorry for the trouble.\"}"
+    }
+   }
+  ]
+ }
+}

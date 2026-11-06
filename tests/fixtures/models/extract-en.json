@@ -1,0 +1,26 @@
+{
+ "purpose": "extract_callout",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "transcript": "Hi, it's Jake. I woke up with a fever. I can't make the 6am shift today. Sorry for the short notice."
+ },
+ "input_sha256": "dfcc8f3a928b1c0a13d07011d008c1d191ef9e151daf0605dfd59573349a7082",
+ "synthetic": true,
+ "source": "synthetic: written to the extract_callout schema for the recorded transcript",
+ "duration_ms": 1400,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 443,
+   "completion_tokens": 70
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"language\": \"en\", \"absent\": true, \"start_times\": [\"06:00\"], \"reason\": \"illness\", \"summary_en\": \"Jake woke up with a fever and cannot make the 6 a.m. shift today.\"}"
+    }
+   }
+  ]
+ }
+}

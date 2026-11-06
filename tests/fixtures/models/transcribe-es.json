@@ -1,0 +1,16 @@
+{
+ "purpose": "transcribe",
+ "model": "whisper-large-v3-turbo",
+ "input": {
+  "audio_sha256": "673e64f269d58e0b2e1cdb53e5972f3a3a02370c6ac82541ddf55ad421f41e32"
+ },
+ "input_sha256": "3bffb0f7f519edb4bc0b52a225b2c64fc86a50eed150d5079727b895f8fe550e",
+ "synthetic": false,
+ "source": "model check 2026-11-06 (spike-result.json), asr es-callout.ogg; the check kept only the text, \"model\" is added and must be verified live",
+ "duration_ms": 930,
+ "response": {
+  "text": " Hola, soy Diego. Tengo fiebre y no puedo ir al turno de las 6. Lo siento mucho.",
+  "model": "whisper-large-v3-turbo",
+  "duration": 5.277
+ }
+}

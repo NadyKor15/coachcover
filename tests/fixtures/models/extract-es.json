@@ -1,0 +1,26 @@
+{
+ "purpose": "extract_callout",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "transcript": "Hola, soy Diego. Tengo fiebre y no puedo ir al turno de las 6. Lo siento mucho."
+ },
+ "input_sha256": "8cb176202b2228b19ee6fc7733727d1661265675195b30a43a6217e9d0f71c77",
+ "synthetic": true,
+ "source": "synthetic: written to the extract_callout schema for the recorded transcript",
+ "duration_ms": 1400,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 436,
+   "completion_tokens": 70
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"language\": \"es\", \"absent\": true, \"start_times\": [\"06:00\"], \"reason\": \"illness\", \"summary_en\": \"Diego has a fever and cannot come to the 6 o'clock shift.\"}"
+    }
+   }
+  ]
+ }
+}

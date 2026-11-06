@@ -1,0 +1,33 @@
+{
+ "purpose": "read_card",
+ "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+ "input": {
+  "image_sha256": "2a3ec66898bcad2fff9a80b6d0dc5204c80c4472b1bc5ec9139dc3856bc625b5"
+ },
+ "input_sha256": "4469ca705f324a5012a686c7c4bd89935143024105f034ccb2fae973fdbb7674",
+ "synthetic": false,
+ "source": "model check 2026-11-06 (spike-result.json), nemotron-3-nano-omni-30b-a3b-reasoning|c2-scan",
+ "duration_ms": 6460,
+ "response": {
+  "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+  "usage": {
+   "prompt_tokens": 760,
+   "completion_tokens": 1015,
+   "total_tokens": 1775,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 935
+   }
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Jake Turner\", \"title\": \"WATER SAFETY INSTRUCTOR (WSI)\", \"issued\": \"03/15/2024\", \"exp\": \"03/15/2026\", \"id\": \"NSIB-WSI-55109\"}"
+    }
+   }
+  ]
+ }
+}

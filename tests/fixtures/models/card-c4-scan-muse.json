@@ -1,0 +1,33 @@
+{
+ "purpose": "read_card",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "image_sha256": "a6ca2a4e157e25c6627d3317420922aa915a367cce7456b7fc1db774a621a43d"
+ },
+ "input_sha256": "6ae2cccceead63cf8d57208a6a741c0a16210e7f4a3a370c6b0335d5a3b0da1b",
+ "synthetic": false,
+ "source": "model check 2026-11-06 (spike-result.json), muse-glimmer-30b|c4-scan",
+ "duration_ms": 1310,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 1013,
+   "completion_tokens": 420,
+   "total_tokens": 1433,
+   "prompt_tokens_details": {
+    "cached_tokens": 64
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 356
+   }
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Diego Ramirez\", \"title\": \"LIFEGUARDING / FIRST AID / CPR / AED\", \"issued\": \"10/28/2024\", \"exp\": \"10/28/2026\", \"id\": \"ASTC-9M1B-0457\"}"
+    }
+   }
+  ]
+ }
+}

@@ -1,0 +1,33 @@
+{
+ "purpose": "read_card",
+ "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+ "input": {
+  "image_sha256": "73e372e7239a10e5808d81e349c296e1066a842cd696c0b4801c1ea97a73507c"
+ },
+ "input_sha256": "38acb6e19cb10c21a0274b519ad57f4e29567c084378e1542f55fce190c54e9c",
+ "synthetic": false,
+ "source": "model check 2026-11-06 (spike-result.json), nemotron-3-nano-omni-30b-a3b-reasoning|c4-photo",
+ "duration_ms": 6250,
+ "response": {
+  "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+  "usage": {
+   "prompt_tokens": 835,
+   "completion_tokens": 956,
+   "total_tokens": 1791,
+   "prompt_tokens_details": {
+    "cached_tokens": 0
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 870
+   }
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Diego Ramirez\", \"title\": \"LIFEGUARDING / FIRST AID / CPR / AED\", \"issued\": \"10/28/2024\", \"exp\": \"10/28/2026\", \"id\": \"ASTC-9M1B-0457\"}"
+    }
+   }
+  ]
+ }
+}
