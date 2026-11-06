@@ -26,5 +26,10 @@
       ]
     }
   ],
-  "policy_defaults": {"max_weekly_hours": 40, "week_start": "sunday", "makeup_window_days": 30}
+  "policy_defaults": {
+    "max_weekly_hours": 40,
+    "week_start": "sunday",
+    "makeup_window_days": 30,
+    "autonomy": {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "off"}
+  }
 }

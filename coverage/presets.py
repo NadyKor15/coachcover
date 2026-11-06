@@ -10,12 +10,12 @@ import json
 from pathlib import Path
 from typing import Any
 
-from coverage.model import WEEKDAYS, CertType, Level, Policy, Preset, Program, Role
+from coverage.model import WEEKDAYS, CertType, Level, Policy, Preset, Program, Role, check_autonomy
 
 PRESET_DIR = Path(__file__).parent / "presets"
 
 _PRESET_KEYS = {"code", "label", "note", "cert_types", "roles", "programs", "policy_defaults"}
-_DEFAULT_KEYS = {"max_weekly_hours", "week_start", "makeup_window_days"}
+_DEFAULT_KEYS = {"max_weekly_hours", "week_start", "makeup_window_days", "autonomy"}
 
 
 def _keys(obj: Any, required: set[str], where: str, optional: set[str] = frozenset()) -> dict:
@@ -104,6 +104,7 @@ def _policy_defaults(data: dict) -> dict:
     defaults = _keys(data["policy_defaults"], _DEFAULT_KEYS, f"preset {data['code']} policy_defaults")
     if defaults["week_start"] not in WEEKDAYS:
         raise ValueError(f"preset {data['code']}: week_start must be one of {WEEKDAYS}")
+    check_autonomy(defaults["autonomy"])
     return defaults
 
 
@@ -119,6 +120,8 @@ def default_policy(code: str, **overrides: Any) -> Policy:
     unknown = values.keys() - _DEFAULT_KEYS
     if unknown:
         raise ValueError(f"unknown policy settings {sorted(unknown)}")
+    if "autonomy" in overrides:  # a partial override keeps the preset's other actions
+        values["autonomy"] = {**_policy_defaults(data)["autonomy"], **overrides["autonomy"]}
     week_start = values["week_start"]
     if isinstance(week_start, str):
         if week_start not in WEEKDAYS:
@@ -129,4 +132,5 @@ def default_policy(code: str, **overrides: Any) -> Policy:
         max_weekly_hours=values["max_weekly_hours"],
         week_start=week_start,
         makeup_window_days=values["makeup_window_days"],
+        autonomy=dict(values["autonomy"]),
     )

@@ -30,6 +30,16 @@ def test_both_presets_load_with_their_data():
     assert fit.programs["group_classes"].levels["hiit"].max_per_instructor == 20
 
 
+def test_autonomy_is_policy_data_with_partial_overrides():
+    assert SWIM.autonomy == {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "off"}
+    bolder = default_policy("fitness_club", autonomy={"merge_groups": "auto"})
+    assert bolder.autonomy["merge_groups"] == "auto" and bolder.autonomy["plan_b"] == "propose"
+    with pytest.raises(ValueError, match="autonomy modes"):
+        default_policy("swim_school", autonomy={"overtime": "sometimes"})
+    with pytest.raises(ValueError, match="exactly"):
+        default_policy("swim_school", autonomy={"fly": "auto"})
+
+
 def test_policy_defaults_and_overrides():
     assert (SWIM.max_weekly_hours, SWIM.week_start, SWIM.makeup_window_days) == (40, 6, 30)
     custom = default_policy("swim_school", week_start="monday", max_weekly_hours=29)
@@ -53,6 +63,7 @@ def test_policy_defaults_and_overrides():
         (lambda d: d.update(colour="blue"), "unknown"),
         (lambda d: d["policy_defaults"].update(week_start="funday"), "week_start"),
         (lambda d: d["roles"][0].update(required_certs="cpr_aed"), "expected a list"),
+        (lambda d: d["policy_defaults"]["autonomy"].pop("overtime"), "autonomy must set exactly"),
     ],
 )
 def test_broken_preset_is_rejected(break_it, message):

@@ -1,4 +1,4 @@
-"""Human text for rule reasons. Deterministic templates, English and Russian.
+"""Human text for rule reasons and queue places. Deterministic templates, English and Russian.
 
 The rules return codes and parameters only; this module turns them into a
 short line for a person. Codes are replaced by preset labels when a preset is
@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from coverage.model import Preset
-from coverage.rules import Code, Reason
+from coverage.rules import Code, Ranked, Reason
 
 LANGUAGES = ("en", "ru")
 
@@ -92,3 +92,62 @@ def describe(reason: Reason, lang: str = "en", preset: Preset | None = None) -> 
         if name in params:
             params[name] = _number(params[name])
     return TEMPLATES[lang][key].format(**params)
+
+
+_PLACE = {
+    "en": {
+        "ordinals": {1: "first", 2: "second", 3: "third"},
+        "position": "#{n}",
+        "head": "{name} {position}: ",
+        "not_eligible": "not eligible",
+        "hours": "{hours} h this week",
+        "not_cleared": "not cleared for {levels}",
+        "same_venue": "same venue",
+        "km": "{km} km away",
+        "other_venue": "other venue",
+        "tenure": "{years} yr at this level",
+    },
+    "ru": {
+        "ordinals": {},
+        "position": "№{n}",
+        "head": "{name}, {position}: ",
+        "not_eligible": "не допущен(а)",
+        "hours": "{hours} ч на этой неделе",
+        "not_cleared": "нет допуска к {levels}",
+        "same_venue": "та же площадка",
+        "km": "{km} км",
+        "other_venue": "другая площадка",
+        "tenure": "{years} г. на этом уровне",
+    },
+}
+
+
+def _level_text(program: str, level: str, preset: Preset | None) -> str:
+    if preset is not None and program in preset.programs and level in preset.programs[program].levels:
+        return preset.programs[program].levels[level].label
+    return f"{program} {level}"
+
+
+def describe_place(ranked: Ranked, name: str, lang: str = "en", preset: Preset | None = None) -> str:
+    """One line for a queue place, e.g. "Maria first: 12 h this week, Level 3, same venue"."""
+    if lang not in LANGUAGES:
+        raise ValueError(f"unsupported language {lang!r}; use one of {LANGUAGES}")
+    t = _PLACE[lang]
+    place = ranked.place()
+    position = t["ordinals"].get(place["position"]) or t["position"].format(n=place["position"])
+    parts = [] if place["eligible"] else [t["not_eligible"]]
+    parts.append(t["hours"].format(hours=_number(place["week_hours"])))
+    levels = ", ".join(_level_text(program, level, preset) for program, level in place["levels"])
+    if place["level_match"] is True:
+        parts.append(levels)
+    elif place["level_match"] is False:
+        parts.append(t["not_cleared"].format(levels=levels))
+    if place["same_venue"]:
+        parts.append(t["same_venue"])
+    elif place["distance_km"] is not None:
+        parts.append(t["km"].format(km=_number(place["distance_km"])))
+    else:
+        parts.append(t["other_venue"])
+    if place["level_tenure_days"] is not None:
+        parts.append(t["tenure"].format(years=round(place["level_tenure_days"] / 365.25, 1)))
+    return t["head"].format(name=name, position=position) + ", ".join(parts)

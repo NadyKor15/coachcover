@@ -372,6 +372,11 @@ def eligible(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: 
 
 
 # --- ranking ----------------------------------------------------------------
+#
+# Queue order (product decision, a product decision): 1) eligible only on top; 2) fewer
+# hours this week; 3) closer venue, the same venue before any other; 4) program
+# and level match the group; 5) longer tenure at the level. Staff id breaks
+# the last tie, so the order never depends on input order.
 
 
 @dataclass(frozen=True)
@@ -379,44 +384,70 @@ class Candidate:
     staff_id: str
     decision: Decision
     week_hours: float  # already booked in the week of the shift, this shift not included
+    same_venue: bool  # home venue is the shift's venue
     distance_km: float | None  # home venue -> shift venue; None when unknown
-    level_tenure_days: int | None  # days qualified at the shift's level(s); None without groups or level
+    level_match: bool | None  # cleared for every group's program and level; None for a shift without groups
+    level_tenure_days: int | None  # days cleared at the shift's level(s); None without groups or level
+    levels: tuple[tuple[str, str], ...] = ()  # the shift's (program, level) pairs, for the text
+
+
+RANK_FACTORS = (
+    "eligible",
+    "week_hours",
+    "same_venue",
+    "distance_km",
+    "level_match",
+    "level_tenure_days",
+    "staff_id",
+)
 
 
 @dataclass(frozen=True)
 class Ranked:
     position: int
     candidate: Candidate
-    above_next: Mapping[str, object] | None  # the factor that puts this candidate above the next one
+    above_next: Mapping[str, object] | None  # the first factor that puts this candidate above the next one
 
+    def place(self) -> dict[str, object]:
+        """Machine reason for this place in the queue; human text is built from it."""
+        c = self.candidate
+        return {
+            "position": self.position,
+            "staff_id": c.staff_id,
+            "eligible": c.decision.ok,
+            "week_hours": c.week_hours,
+            "same_venue": c.same_venue,
+            "distance_km": c.distance_km,
+            "level_match": c.level_match,
+            "levels": [list(pair) for pair in c.levels],
+            "level_tenure_days": c.level_tenure_days,
+            "above_next": dict(self.above_next) if self.above_next else None,
+        }
 
-RANK_FACTORS = ("eligible", "week_hours", "distance_km", "level_tenure_days", "staff_id")
 
 _EARTH_RADIUS_KM = 6371.0088
 
 
 def _distance_km(home: Venue | None, venue: Venue) -> float | None:
-    if home is None or home.lat is None or venue.lat is None:
+    if home is None:
         return None
     if home.id == venue.id:
         return 0.0
+    if home.lat is None or venue.lat is None:
+        return None
     lat1, lon1, lat2, lon2 = map(math.radians, (home.lat, home.lon, venue.lat, venue.lon))
     h = math.sin((lat2 - lat1) / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2
     return round(2 * _EARTH_RADIUS_KM * math.asin(math.sqrt(h)), 1)
 
 
-def _level_tenure_days(staff: Staff, shift: Shift, tz: ZoneInfo) -> int | None:
-    if not shift.groups:
-        return None
-    day = _local_day(shift.start, tz)
-    days = []
-    for group in shift.groups:
-        held = staff.programs.get(group.program)
-        since = held.levels.get(group.level) if held else None
-        if since is None or since > day:
-            return None
-        days.append((day - since).days)
-    return min(days)
+def _cleared_since(staff: Staff, group: GroupRef, day: date) -> date | None:
+    held = staff.programs.get(group.program)
+    since = held.levels.get(group.level) if held else None
+    return since if since is not None and since <= day else None
+
+
+def _shift_levels(shift: Shift) -> tuple[tuple[str, str], ...]:
+    return tuple(dict.fromkeys((g.program, g.level) for g in shift.groups))
 
 
 def assess(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: Context) -> Candidate:
@@ -425,14 +456,19 @@ def assess(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: Co
     venue = _venue(context, shift.venue)
     tz = ZoneInfo(venue.tz)
     home = _venue(context, staff.home_venue) if staff.home_venue is not None else None
-    week = week_start_date(_local_day(shift.start, tz), policy.week_start)
-    week_from, week_to = _week_bounds(week, tz)
+    day = _local_day(shift.start, tz)
+    week_from, week_to = _week_bounds(week_start_date(day, policy.week_start), tz)
+    since = [_cleared_since(staff, g, day) for g in shift.groups]
+    level_match = all(s is not None for s in since) if shift.groups else None
     return Candidate(
         staff_id=staff.id,
         decision=decision,
         week_hours=_hours(_booked_seconds(_own_commitments(staff, shift, context), week_from, week_to)),
+        same_venue=home is not None and home.id == venue.id,
         distance_km=_distance_km(home, venue),
-        level_tenure_days=_level_tenure_days(staff, shift, tz),
+        level_match=level_match,
+        level_tenure_days=min((day - s).days for s in since) if level_match else None,
+        levels=_shift_levels(shift),
     )
 
 
@@ -440,7 +476,9 @@ def _sort_key(c: Candidate) -> tuple:
     return (
         0 if c.decision.ok else 1,
         c.week_hours,
+        0 if c.same_venue else 1,
         math.inf if c.distance_km is None else c.distance_km,
+        1 if c.level_match is False else 0,
         math.inf if c.level_tenure_days is None else -c.level_tenure_days,
         c.staff_id,
     )
@@ -451,7 +489,7 @@ def _factor_value(c: Candidate, factor: str) -> object:
 
 
 def rank(candidates: Iterable[Candidate]) -> list[Ranked]:
-    """Eligible first; then lower weekly load, closer home venue, longer tenure at the level; staff id breaks ties."""
+    """Order candidates for offers; see the queue order above. Every place carries its reason."""
     ordered = sorted(candidates, key=_sort_key)
     ids = [c.staff_id for c in ordered]
     if len(set(ids)) != len(ids):

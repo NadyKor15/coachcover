@@ -17,6 +17,19 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
 
+# What the engine may do by itself ("auto"), only suggest to a person ("propose") or never do ("off").
+AUTONOMY_ACTIONS = ("assign_cover", "plan_b", "merge_groups", "overtime")
+AUTONOMY_MODES = ("auto", "propose", "off")
+
+
+def check_autonomy(autonomy: Mapping[str, str]) -> None:
+    if not isinstance(autonomy, Mapping) or set(autonomy) != set(AUTONOMY_ACTIONS):
+        got = sorted(autonomy) if isinstance(autonomy, Mapping) else type(autonomy).__name__
+        raise ValueError(f"autonomy must set exactly {AUTONOMY_ACTIONS}, got {got}")
+    bad = {k: v for k, v in autonomy.items() if v not in AUTONOMY_MODES}
+    if bad:
+        raise ValueError(f"autonomy modes must be one of {AUTONOMY_MODES}: {bad}")
+
 
 def _require_aware(value: datetime, name: str) -> None:
     if not isinstance(value, datetime):
@@ -124,8 +137,10 @@ class Policy:
     max_weekly_hours: float
     week_start: int  # 0 = Monday ... 6 = Sunday
     makeup_window_days: int
+    autonomy: Mapping[str, str]  # action -> mode, see AUTONOMY_ACTIONS / AUTONOMY_MODES
 
     def __post_init__(self) -> None:
+        check_autonomy(self.autonomy)
         if not (0 < self.max_weekly_hours <= 168):
             raise ValueError("max_weekly_hours must be in (0, 168]")
         if not isinstance(self.week_start, int) or not (0 <= self.week_start <= 6):
