@@ -12,7 +12,7 @@ import uuid
 import psycopg
 import pytest
 from psycopg import sql
-from psycopg.conninfo import make_conninfo
+from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
 TEST_DSN = (
     os.environ.get("COACHCOVER_TEST_DSN")
@@ -21,12 +21,27 @@ TEST_DSN = (
 )
 
 
+def masked_dsn(dsn: str) -> str:
+    """The DSN with any password replaced, safe to print."""
+    try:
+        parts = conninfo_to_dict(dsn)
+    except psycopg.ProgrammingError:
+        return "<unparsable DSN>"
+    if parts.get("password"):
+        parts["password"] = "***"
+    return make_conninfo(**parts)
+
+
 @pytest.fixture(scope="session")
 def pg_admin():
     try:
         conn = psycopg.connect(TEST_DSN, autocommit=True, connect_timeout=3)
     except psycopg.OperationalError as exc:
-        pytest.fail(f"test Postgres not reachable at {TEST_DSN}; start it: scripts/test-db-up.sh ({exc})", pytrace=False)
+        pytest.fail(
+            f"test Postgres not reachable at {masked_dsn(TEST_DSN)}; start it: scripts/test-db-up.sh"
+            f" ({type(exc).__name__})",
+            pytrace=False,
+        )
     yield conn
     conn.close()
 

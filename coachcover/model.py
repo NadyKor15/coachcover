@@ -251,9 +251,13 @@ class Shift:
     groups: tuple[GroupRef, ...] = ()
     instructors: int = 1  # people teaching these groups together, the candidate included
     zone: str | None = None
+    assignee: str | None = None  # who holds (or held, before the call-out) this shift
+    merged_shift_ids: tuple[str, ...] = ()  # plan B: the shifts whose groups this shift takes over
 
     def __post_init__(self) -> None:
         _require_code(self.id, "shift id")
+        if self.id in self.merged_shift_ids or len(set(self.merged_shift_ids)) != len(self.merged_shift_ids):
+            raise ValueError(f"shift {self.id}: merged_shift_ids must be distinct and not the shift itself")
         _require_aware(self.start, f"shift {self.id} start")
         _require_aware(self.end, f"shift {self.id} end")
         if not _ends_after(self.start, self.end):

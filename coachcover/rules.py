@@ -39,6 +39,7 @@ from coachcover.model import (
 
 
 class Code(StrEnum):
+    IS_THE_ABSENT_PERSON = "IS_THE_ABSENT_PERSON"
     ROLE_MISSING = "ROLE_MISSING"
     CERT_MISSING = "CERT_MISSING"
     CERT_NOT_YET_VALID = "CERT_NOT_YET_VALID"
@@ -137,6 +138,29 @@ def _hours(seconds: int) -> float:
     return round(seconds / 3600, 2)
 
 
+def _hours_up(seconds: int) -> float:
+    """Hours rounded up to 0.01, so a total over the limit never prints as the limit."""
+    return math.ceil(seconds / 36) / 100
+
+
+def _merged(intervals: Iterable[tuple[datetime, datetime]]) -> list[tuple[datetime, datetime]]:
+    out: list[tuple[datetime, datetime]] = []
+    for a, b in sorted(intervals):
+        if out and a <= out[-1][1]:
+            out[-1] = (out[-1][0], max(out[-1][1], b))
+        else:
+            out.append((a, b))
+    return out
+
+
+def _run_covering(intervals: Iterable[tuple[datetime, datetime]], start: datetime, end: datetime) -> datetime | None:
+    """End of the merged run of intervals that covers all of [start, end), or None."""
+    for a, b in _merged(intervals):
+        if a <= start and end <= b:
+            return b
+    return None
+
+
 # --- context lookups --------------------------------------------------------
 
 
@@ -165,13 +189,21 @@ def _level(preset: Preset, group: GroupRef) -> Level:
 
 
 def _own_commitments(staff: Staff, shift: Shift, context: Context) -> list[Commitment]:
-    """The person's bookings, minus this very shift and its groups (no double count, no self-overlap)."""
-    skip = {shift.id, *(g.id for g in shift.groups)}
-    return [c for c in context.commitments.get(staff.id, ()) if c.ref not in skip]
+    """The person's bookings, minus this shift, the shifts it merges and its groups (no double count, no self-overlap)."""
+    shifts = {shift.id, *shift.merged_shift_ids}
+    groups = {g.id for g in shift.groups}
+    return [
+        c
+        for c in context.commitments.get(staff.id, ())
+        if not ((c.kind == "shift" and c.ref in shifts) or (c.kind == "group" and c.ref in groups))
+    ]
 
 
 def _booked_seconds(commitments: Sequence[Commitment], start: datetime, end: datetime) -> int:
-    return sum(_overlap_seconds(c.start, c.end, start, end) for c in commitments)
+    """Booked time inside [start, end); bookings that overlap each other count once."""
+    s, e = _utc(start), _utc(end)
+    clipped = [(max(_utc(c.start), s), min(_utc(c.end), e)) for c in commitments]
+    return sum(int((b - a).total_seconds()) for a, b in _merged((a, b) for a, b in clipped if a < b))
 
 
 def _week_bounds(week_start: date, tz: ZoneInfo) -> tuple[datetime, datetime]:
@@ -179,6 +211,12 @@ def _week_bounds(week_start: date, tz: ZoneInfo) -> tuple[datetime, datetime]:
 
 
 # --- the checks -------------------------------------------------------------
+
+
+def _check_assignee(staff: Staff, shift: Shift) -> list[Reason]:
+    if shift.assignee is not None and staff.id == shift.assignee:
+        return [Reason(Code.IS_THE_ABSENT_PERSON, {})]
+    return []
 
 
 def _check_role(staff: Staff, shift: Shift) -> list[Reason]:
@@ -198,16 +236,15 @@ def _check_certs(staff: Staff, role: Role, shift: Shift, at: datetime, tz: ZoneI
         if not held:
             reasons.append(Reason(Code.CERT_MISSING, {"cert_type": code}))
             continue
-        # newest card first: the latest expiry decides, the issue date breaks ties
-        cards = sorted(((cert_expiry(c, cert_type), c) for c in held), key=lambda p: (p[0], p[1].issued_on), reverse=True)
-        covering = [
-            (expiry, c)
-            for expiry, c in cards
-            if _local_midnight_utc(c.issued_on, tz) <= start and end <= _local_midnight_utc(expiry + timedelta(days=1), tz)
+        # each card is valid from 00:00 of its issue day to the end of its expiry day, venue time;
+        # cards that follow each other without a gap cover the shift together
+        windows = [
+            (_local_midnight_utc(c.issued_on, tz), _local_midnight_utc(cert_expiry(c, cert_type) + timedelta(days=1), tz), c)
+            for c in held
         ]
-        trusted = [(expiry, c) for expiry, c in covering if not c.needs_review]
-        if trusted:
-            expiry, _ = trusted[0]
+        trusted_end = _run_covering(((a, b) for a, b, c in windows if not c.needs_review), start, end)
+        if trusted_end is not None:
+            expiry = _last_local_day(trusted_end, tz)
             if expiry == last_day:
                 reasons.append(
                     Reason(
@@ -216,30 +253,31 @@ def _check_certs(staff: Staff, role: Role, shift: Shift, at: datetime, tz: ZoneI
                     )
                 )
             continue
-        if covering:
-            expiry, _ = covering[0]
-            reasons.append(Reason(Code.CERT_NEEDS_REVIEW, {"cert_type": code, "expires_on": expiry.isoformat()}))
-            continue
-        expiry, card = cards[0]
-        valid_from = _local_midnight_utc(card.issued_on, tz)
-        valid_until = _local_midnight_utc(expiry + timedelta(days=1), tz)
-        if start < valid_from:
+        any_end = _run_covering(((a, b) for a, b, _ in windows), start, end)
+        if any_end is not None:
             reasons.append(
-                Reason(Code.CERT_NOT_YET_VALID, {"cert_type": code, "valid_from": card.issued_on.isoformat()})
+                Reason(Code.CERT_NEEDS_REVIEW, {"cert_type": code, "expires_on": _last_local_day(any_end, tz).isoformat()})
             )
-        elif start >= valid_until:
-            reasons.append(Reason(Code.CERT_EXPIRED, {"cert_type": code, "expires_on": expiry.isoformat()}))
-        else:
+            continue
+        at_start = [b for a, b in _merged((a, b) for a, b, _ in windows) if a <= start < b]
+        later = [c for a, _, c in windows if a > start]
+        if at_start:
             reasons.append(
                 Reason(
                     Code.CERT_EXPIRES_DURING_SHIFT,
                     {
                         "cert_type": code,
-                        "expires_on": expiry.isoformat(),
-                        "valid_until": valid_until.astimezone(tz).isoformat(),
+                        "expires_on": _last_local_day(at_start[0], tz).isoformat(),
+                        "valid_until": at_start[0].astimezone(tz).isoformat(),
                     },
                 )
             )
+        elif later:
+            first = min(later, key=lambda c: c.issued_on)
+            reasons.append(Reason(Code.CERT_NOT_YET_VALID, {"cert_type": code, "valid_from": first.issued_on.isoformat()}))
+        else:
+            expiry = max(cert_expiry(c, cert_type) for c in held)
+            reasons.append(Reason(Code.CERT_EXPIRED, {"cert_type": code, "expires_on": expiry.isoformat()}))
     return reasons
 
 
@@ -269,7 +307,8 @@ def _check_programs(staff: Staff, shift: Shift, tz: ZoneInfo, preset: Preset) ->
         months = preset.programs[group.program].renewal_months
         if months is not None:
             due = add_months(held.renewed_at, months)
-            if day > due:
+            # like a card: the renewal holds to the end of its due day and must cover the whole shift
+            if _utc(shift.end) > _local_midnight_utc(due + timedelta(days=1), tz):
                 reasons.append(
                     Reason(
                         Code.PROGRAM_RENEWAL_OVERDUE,
@@ -297,7 +336,7 @@ def _check_hours(own: Sequence[Commitment], shift: Shift, tz: ZoneInfo, policy: 
                         "week_start": week.isoformat(),
                         "hours_before": _hours(before),
                         "shift_hours": _hours(this),
-                        "hours_after": _hours(before + this),
+                        "hours_after": _hours_up(before + this),
                         "limit_hours": policy.max_weekly_hours,
                     },
                 )
@@ -359,6 +398,7 @@ def eligible(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: 
     role = _role(preset, shift)
     own = _own_commitments(staff, shift, context)
     reasons = [
+        *_check_assignee(staff, shift),
         *_check_role(staff, shift),
         *_check_certs(staff, role, shift, at, tz, preset),
         *_check_programs(staff, shift, tz, preset),

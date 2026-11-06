@@ -137,9 +137,10 @@ def test_the_morning_queue_is_ordered_and_explained(school):
     staff = load_staff(school, POLICY_ID)
     lesson = load_shift(school, DEMO_LESSON)
     context = load_context(school, POLICY_ID, lesson)
-    ranked = rank(assess(s, lesson, NOW, policy, context) for s in staff if s.id != "S05")
+    ranked = rank(assess(s, lesson, NOW, policy, context) for s in staff)
     ok = [r for r in ranked if r.candidate.decision.ok]
-    assert len(ranked) == 39 and 3 <= len(ok) < 39
+    assert len(ranked) == 40 and 3 <= len(ok) < 40
+    assert "S05" not in {r.candidate.staff_id for r in ok}  # the absent person is not her own cover
     assert all(r.candidate.decision.ok for r in ranked[: len(ok)])  # eligible first
     hours = [r.candidate.week_hours for r in ok]
     assert hours == sorted(hours)  # within the eligible, lighter week first
@@ -147,7 +148,7 @@ def test_the_morning_queue_is_ordered_and_explained(school):
     top = ranked[0]
     line = describe_place(top, names[top.candidate.staff_id].split()[0], "en", policy.preset)
     assert line.startswith(f"{names[top.candidate.staff_id].split()[0]} first: ") and "Level 3" in line
-    again = rank(assess(s, lesson, NOW, policy, context) for s in reversed(staff) if s.id != "S05")
+    again = rank(assess(s, lesson, NOW, policy, context) for s in reversed(staff))
     assert [r.candidate.staff_id for r in again] == [r.candidate.staff_id for r in ranked]
 
 

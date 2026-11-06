@@ -123,14 +123,17 @@ def load_staff(conn: psycopg.Connection, policy_id: str) -> list[Staff]:
 
 
 def load_shift(conn: psycopg.Connection, shift_id: str) -> Shift:
+    # the assignee is the person on the shift, or, once it is open, the person who called out
     row = conn.execute(
-        "SELECT s.venue_id, r.code, s.starts_at, s.ends_at, s.instructors, s.zone_id FROM shift s"
-        " JOIN role r ON r.id = s.role_id WHERE s.id = %s",
+        "SELECT s.venue_id, r.code, s.starts_at, s.ends_at, s.instructors, s.zone_id,"
+        " coalesce(s.staff_id, (SELECT c.absent_staff_id FROM cover_case c WHERE c.shift_id = s.id"
+        "  ORDER BY c.opened_at DESC, c.id DESC LIMIT 1))"
+        " FROM shift s JOIN role r ON r.id = s.role_id WHERE s.id = %s",
         (shift_id,),
     ).fetchone()
     if row is None:
         raise ValueError(f"unknown shift {shift_id!r}")
-    venue, role, start, end, instructors, zone = row
+    venue, role, start, end, instructors, zone, assignee = row
     groups = tuple(
         GroupRef(gid, prog, lv, size)
         for gid, prog, lv, size in conn.execute(
@@ -140,7 +143,7 @@ def load_shift(conn: psycopg.Connection, shift_id: str) -> Shift:
             (shift_id,),
         )
     )
-    return Shift(shift_id, venue, role, start, end, groups, instructors, zone)
+    return Shift(shift_id, venue, role, start, end, groups, instructors, zone, assignee)
 
 
 def load_context(conn: psycopg.Connection, policy_id: str, around: Shift) -> Context:
