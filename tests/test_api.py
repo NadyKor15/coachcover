@@ -54,7 +54,11 @@ def test_judge_run_then_case_page_today_stats_and_ledger(api):
     today = client.get("/api/today").json()
     assert today["focus_case_id"] == page["case_id"] and today["filter_total"] == 40
     assert today["feed"] and today["feed"][0]["time"] == "05:12"
-    assert today["tomorrow_date"] == "2026-11-10" and isinstance(today["expiring_30"], list)
+    assert today["tomorrow_date"] == "2026-11-10"
+    assert [(e["staff_id"], e["days_left"]) for e in today["expiring_30"]] == [("S20", 17), ("S33", 24)]
+    assert ("S02", 48) in [(e["staff_id"], e["days_left"]) for e in today["expiring_60"]]
+    assert all(30 < e["days_left"] <= 60 for e in today["expiring_60"])
+    assert sum(c["count"] for c in today["filter_chips"]) == today["filter_out"]
     stats = client.get("/api/stats").json()
     assert stats["covered"] == 1 and stats["plan_b_by_option"] == {"lead": 1} and stats["lessons_saved"] == 2
     ledger = client.get("/api/models/ledger").json()

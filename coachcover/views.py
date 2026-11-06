@@ -50,7 +50,10 @@ def event_line(kind: str, data: dict, at: datetime, tz: ZoneInfo, names: dict) -
             else f"{t} message not understood; taking all of today's shifts"
         ),
         "shift_opened": lambda: f"{t} shift needs cover: {data.get('label')}",
-        "candidates_ranked": lambda: f"{t} {data.get('total')} people: {data.get('eligible')} can take it, {data.get('filtered')} filtered out",
+        "candidates_ranked": lambda: (
+            f"{t} {data.get('total')} people: {data.get('eligible')} can take it, {data.get('filtered')} filtered out"
+            + (f", {data['reserve']} in reserve" if data.get("reserve") else "")
+        ),
         "offer_sent": lambda: f"{t} offer to {who} (#{data.get('queue_pos')})" + (" with overtime" if data.get("overtime") else ""),
         "offer_declined": lambda: f"{t} {who}: no",
         "offer_expired": lambda: f"{t} {who}: no answer in time",

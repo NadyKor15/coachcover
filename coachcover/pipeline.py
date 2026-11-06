@@ -155,11 +155,12 @@ class Pipeline:
     def candidates(self, shift_id: str, now: datetime) -> dict:
         ranked, names, policy, reserve = self.ranked(shift_id, now)
         rows = []
-        chips: Counter[str] = Counter()
+        chips: Counter[str] = Counter()  # each filtered person counted once, by the first blocking reason
         for r in ranked:
             c = r.candidate
             blocking = [x for x in c.decision.reasons if x.blocking]
-            chips.update({x.code.value for x in blocking})
+            if blocking:
+                chips[blocking[0].code.value] += 1
             rows.append(
                 {
                     "position": r.position,

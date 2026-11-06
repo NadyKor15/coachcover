@@ -1,0 +1,5 @@
+# SITE_ADDRESS: the server's domain for automatic HTTPS, or ":80" for plain HTTP by address.
+{$SITE_ADDRESS::80} {
+	encode zstd gzip
+	reverse_proxy api:8000
+}

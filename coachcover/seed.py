@@ -116,6 +116,12 @@ TRAP_EXPIRY = {
     ("S08", "cpr_aed"): date(2026, 11, 9),
     ("S30", "lifeguarding"): date(2026, 11, 9),
 }
+# not traps: still valid on Monday, for the 30/60-day radar
+RADAR_EXPIRY = {
+    ("S20", "cpr_aed"): date(2026, 11, 27),
+    ("S33", "lifeguarding"): date(2026, 12, 4),
+    ("S02", "wsi"): date(2026, 12, 28),
+}
 DISPUTED = ("S13", "wsi", date(2027, 3, 14), date(2026, 3, 14))  # staff, type, reader A expiry, reader B expiry
 OVERDUE_PROGRAM = ("S14", date(2025, 10, 1))
 DEMO_ABSENT = "S05"
@@ -195,7 +201,7 @@ def _monday_morning(start: datetime) -> bool:
 
 
 def _cert(staff_id: str, n: int, i: int, ctype: str) -> dict:
-    expires = TRAP_EXPIRY.get((staff_id, ctype))
+    expires = TRAP_EXPIRY.get((staff_id, ctype)) or RADAR_EXPIRY.get((staff_id, ctype))
     if expires is None:
         # Jan 2027 .. Oct 2028, so the issue date (24 months earlier) is never after today
         expires = date(2027 + (n + i) % 2, 1 + (n * 5 + i * 3) % 10, 1 + (n * 11 + i * 7) % 28)
