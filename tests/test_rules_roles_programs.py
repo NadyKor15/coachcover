@@ -4,7 +4,7 @@ from datetime import date
 
 import pytest
 
-from coverage.rules import Code, eligible
+from coachcover.rules import Code, eligible
 from tests.factory import AT, SWIM, card, ctx, group, guard_shift, instructor, lesson, lifeguard
 
 
@@ -65,7 +65,7 @@ def test_unknown_level_in_the_shift_is_a_data_error():
 
 
 def test_unknown_role_in_the_shift_is_a_data_error():
-    from coverage.model import Shift
+    from coachcover.model import Shift
 
     shift = guard_shift()
     bad = Shift(shift.id, shift.venue, "pilot", shift.start, shift.end)

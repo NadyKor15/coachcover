@@ -6,12 +6,12 @@ import psycopg
 import pytest
 from psycopg.types.json import Jsonb
 
-from coverage.db import install_preset, migrate
-from coverage.presets import default_policy
-from coverage.reasons_text import describe_place
-from coverage.repo import load_context, load_policy, load_shift, load_staff
-from coverage.rules import Code, assess, eligible, rank
-from coverage.seed import NOW, POLICY_ID, build_school, load_school
+from coachcover.db import install_preset, migrate
+from coachcover.presets import default_policy
+from coachcover.reasons_text import describe_place
+from coachcover.repo import load_context, load_policy, load_shift, load_staff
+from coachcover.rules import Code, assess, eligible, rank
+from coachcover.seed import NOW, POLICY_ID, build_school, load_school
 
 pytestmark = pytest.mark.db
 

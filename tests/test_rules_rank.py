@@ -4,9 +4,9 @@ from datetime import date
 
 import pytest
 
-from coverage.presets import load_preset
-from coverage.reasons_text import describe_place
-from coverage.rules import Candidate, Code, Decision, Reason, assess, rank
+from coachcover.presets import load_preset
+from coachcover.reasons_text import describe_place
+from coachcover.rules import Candidate, Code, Decision, Reason, assess, rank
 from tests.factory import AT, SWIM, booked, ctx, group, guard_shift, instructor, lesson, lifeguard, local
 
 OK = Decision.of([])

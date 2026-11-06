@@ -5,9 +5,9 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from coverage.model import Commitment, Context, GroupRef, Shift, Staff, StaffCert, StaffProgram, Venue
-from coverage.presets import default_policy
-from coverage.rules import add_months
+from coachcover.model import Commitment, Context, GroupRef, Shift, Staff, StaffCert, StaffProgram, Venue
+from coachcover.presets import default_policy
+from coachcover.rules import add_months
 
 NY = ZoneInfo("America/New_York")
 LA = ZoneInfo("America/Los_Angeles")

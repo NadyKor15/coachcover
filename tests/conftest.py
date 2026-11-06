@@ -14,7 +14,11 @@ import pytest
 from psycopg import sql
 from psycopg.conninfo import make_conninfo
 
-TEST_DSN = os.environ.get("COVERAGE_TEST_DSN", "postgresql://postgres@127.0.0.1:55432/postgres")
+TEST_DSN = (
+    os.environ.get("COACHCOVER_TEST_DSN")
+    or os.environ.get("COVERAGE_TEST_DSN")  # old name, still honoured
+    or "postgresql://postgres@127.0.0.1:55432/postgres"
+)
 
 
 @pytest.fixture(scope="session")
@@ -51,7 +55,7 @@ def new_database(pg_admin):
 @pytest.fixture(scope="session")
 def school(new_database):
     """One database with the training school, shared by read-only tests."""
-    from coverage.seed import load_school
+    from coachcover.seed import load_school
 
     conn = new_database()
     load_school(conn)

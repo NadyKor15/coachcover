@@ -2,9 +2,9 @@
 
 from datetime import timedelta
 
-from coverage.model import Shift
-from coverage.presets import default_policy
-from coverage.rules import Code, eligible
+from coachcover.model import Shift
+from coachcover.presets import default_policy
+from coachcover.rules import Code, eligible
 from tests.factory import AT, SWIM, booked, ctx, group, guard_shift, instructor, lesson, lifeguard, local
 
 SUNDAY_NOV_8 = local(2026, 11, 8)

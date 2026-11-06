@@ -7,10 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from coverage.model import Commitment, GroupRef, Shift, StaffCert, Venue
-from coverage.presets import available, default_policy, load_preset, preset_from_dict, read_preset_file
-from coverage.reasons_text import LANGUAGES, TEMPLATES, describe
-from coverage.rules import Code, Decision, Reason, eligible
+from coachcover.model import Commitment, GroupRef, Shift, StaffCert, Venue
+from coachcover.presets import available, default_policy, load_preset, preset_from_dict, read_preset_file
+from coachcover.reasons_text import LANGUAGES, TEMPLATES, describe
+from coachcover.rules import Code, Decision, Reason, eligible
 from tests.factory import AT, NY, SWIM, ctx, instructor, lesson, local
 
 # --- presets ----------------------------------------------------------------
@@ -155,13 +155,13 @@ def test_other_invalid_inputs_are_rejected():
 
 ROOT = Path(__file__).resolve().parents[1]
 LOGIC_FILES = [
-    "coverage/model.py",
-    "coverage/rules.py",
-    "coverage/presets.py",
-    "coverage/reasons_text.py",
-    "coverage/db.py",
-    "coverage/repo.py",
-    "coverage/migrations/001_init.sql",
+    "coachcover/model.py",
+    "coachcover/rules.py",
+    "coachcover/presets.py",
+    "coachcover/reasons_text.py",
+    "coachcover/db.py",
+    "coachcover/repo.py",
+    "coachcover/migrations/001_init.sql",
 ]
 INDUSTRY_WORDS = re.compile(r"swim|pool|lifeguard|aquatic|\bwsi\b|бассейн|плава|спасат", re.IGNORECASE)
 
@@ -177,4 +177,4 @@ def test_logic_files_have_no_industry_words():
 
 def test_industry_word_guard_is_not_blind():
     assert INDUSTRY_WORDS.search('"code": "wsi"') and INDUSTRY_WORDS.search("Swim instructor")
-    assert INDUSTRY_WORDS.search((ROOT / "coverage/presets/swim_school.json").read_text(encoding="utf-8"))
+    assert INDUSTRY_WORDS.search((ROOT / "coachcover/presets/swim_school.json").read_text(encoding="utf-8"))

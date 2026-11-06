@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from coverage.model import Preset
-from coverage.rules import Code, Ranked, Reason
+from coachcover.model import Preset
+from coachcover.rules import Code, Ranked, Reason
 
 LANGUAGES = ("en", "ru")
 

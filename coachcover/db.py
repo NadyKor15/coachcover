@@ -11,8 +11,8 @@ from pathlib import Path
 import psycopg
 from psycopg.types.json import Jsonb
 
-from coverage.model import Policy
-from coverage.presets import preset_from_dict, read_preset_file
+from coachcover.model import Policy
+from coachcover.presets import preset_from_dict, read_preset_file
 
 MIGRATIONS_DIR = Path(__file__).parent / "migrations"
 _LOCK_KEY = 0x636F7665  # advisory lock id for migrations

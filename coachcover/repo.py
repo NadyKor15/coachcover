@@ -7,7 +7,7 @@ from datetime import timedelta
 
 import psycopg
 
-from coverage.model import (
+from coachcover.model import (
     CertType,
     Commitment,
     Context,

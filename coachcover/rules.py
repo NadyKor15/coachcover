@@ -2,7 +2,7 @@
 
 `eligible` collects every reason at once (it does not stop at the first one).
 Each reason is a machine code plus parameters; human text is built separately
-(`coverage.reasons_text`).
+(`coachcover.reasons_text`).
 
 All interval arithmetic runs in UTC. Python compares and subtracts datetimes
 that share one tzinfo by wall clock, which is wrong across a DST change, so
@@ -21,7 +21,7 @@ from enum import StrEnum
 from typing import Iterable, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
-from coverage.model import (
+from coachcover.model import (
     CertType,
     Commitment,
     Context,

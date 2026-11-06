@@ -16,7 +16,7 @@ Demo call-out: S05 Olga Petrova cannot come; her Monday 06:00 and 06:30 level-3
 lessons at V1 need cover. A level-3 group of another instructor runs next to
 each of them (06:00: 4 + 4 children, can merge at 1:8; 06:30: 5 + 4, cannot).
 
-Every name is invented. Run: python -m coverage.seed --dsn postgresql://...
+Every name is invented. Run: python -m coachcover.seed --dsn postgresql://...
 """
 
 from __future__ import annotations
@@ -31,9 +31,9 @@ from zoneinfo import ZoneInfo
 import psycopg
 from psycopg.types.json import Jsonb
 
-from coverage.db import insert_policy, install_preset, migrate
-from coverage.presets import default_policy
-from coverage.rules import add_months
+from coachcover.db import insert_policy, install_preset, migrate
+from coachcover.presets import default_policy
+from coachcover.rules import add_months
 
 PRESET = "swim_school"
 POLICY_ID = "demo-school"

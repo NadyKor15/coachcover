@@ -1,7 +1,7 @@
 [project]
-name = "coverage-engine"
+name = "coachcover"
 version = "0.1.0"
-description = "Shift coverage engine for teams with certifications"
+description = "CoachCover: shift cover engine for teams with certifications"
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [

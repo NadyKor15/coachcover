@@ -1,4 +1,4 @@
-"""Load presets (data files in coverage/presets/) and build a policy from them.
+"""Load presets (data files in coachcover/presets/) and build a policy from them.
 
 The loader is strict: a missing or unknown key, a wrong type or a dangling
 reference raises ValueError, so a typo in a preset file cannot pass silently.
@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from coverage.model import WEEKDAYS, CertType, Level, Policy, Preset, Program, Role, check_autonomy
+from coachcover.model import WEEKDAYS, CertType, Level, Policy, Preset, Program, Role, check_autonomy
 
 PRESET_DIR = Path(__file__).parent / "presets"
 

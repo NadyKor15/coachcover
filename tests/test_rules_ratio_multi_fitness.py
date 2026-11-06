@@ -4,8 +4,8 @@ from datetime import date
 
 import pytest
 
-from coverage.model import Shift, Staff, StaffProgram
-from coverage.rules import Code, eligible, ratio_reason
+from coachcover.model import Shift, Staff, StaffProgram
+from coachcover.rules import Code, eligible, ratio_reason
 from tests.factory import AT, FIT, SWIM, booked, card, ctx, group, instructor, lesson, lifeguard, local
 
 

@@ -4,8 +4,8 @@ from datetime import date, timedelta
 
 import pytest
 
-from coverage.model import Shift
-from coverage.rules import Code, add_months, eligible
+from coachcover.model import Shift
+from coachcover.rules import Code, add_months, eligible
 from tests.factory import AT, LA, NY, SWIM, card, ctx, guard_shift, instructor, lesson, lifeguard, local
 
 
