@@ -1,0 +1,11 @@
+{
+  "source": "Vultr Serverless Inference catalog, read on 2026-11-06. Re-check before quoting costs.",
+  "currency": "USD",
+  "models": {
+    "muse-glimmer-30b": {"input_per_1m_tokens": 0.25, "output_per_1m_tokens": 1.00},
+    "nemotron-3-nano-omni-30b-a3b-reasoning": {"input_per_1m_tokens": 0.10, "output_per_1m_tokens": 0.25},
+    "raon-1-mini-preview": {"input_per_1m_tokens": 0.10, "output_per_1m_tokens": 0.30},
+    "nemotron-3.5-content-safety": {"input_per_1m_tokens": 0.05, "output_per_1m_tokens": 0.15},
+    "whisper-large-v3-turbo": {"per_audio_hour": 0.04}
+  }
+}
