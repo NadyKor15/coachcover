@@ -1,0 +1,99 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//CoachCover tests//synthetic schedule//EN
+X-WR-TIMEZONE:America/New_York
+BEGIN:VTIMEZONE
+TZID:America/New_York
+BEGIN:STANDARD
+DTSTART:19701101T020000
+TZOFFSETFROM:-0400
+TZOFFSETTO:-0500
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:class-l3@example.com
+SUMMARY:Level 3 class
+CATEGORIES:Swim instructor
+LOCATION:Northside
+DTSTART;TZID=America/New_York:20261026T060000
+DTEND;TZID=America/New_York:20261026T063000
+RRULE:FREQ=WEEKLY;BYDAY=MO,WE;COUNT=6
+EXDATE;TZID=America/New_York:20261028T060000
+ATTENDEE;CN="Daniel Brooks";ROLE=REQ-PARTICIPANT:mailto:daniel.brooks@example.com
+END:VEVENT
+BEGIN:VEVENT
+UID:class-l3@example.com
+RECURRENCE-ID;TZID=America/New_York:20261102T060000
+SUMMARY:Level 3 class (moved)
+CATEGORIES:Swim instructor
+LOCATION:Northside
+DTSTART;TZID=America/New_York:20261102T070000
+DTEND;TZID=America/New_York:20261102T073000
+ATTENDEE;CN="Daniel Brooks":mailto:daniel.brooks@example.com
+END:VEVENT
+BEGIN:VEVENT
+UID:night-guard@example.com
+SUMMARY:Lifeguard
+LOCATION:Riverbend
+DTSTART;TZID=America/New_York:20261109T220000
+DTEND;TZID=America/New_York:20261110T060000
+ATTENDEE;CN=Mason Turner:mailto:mason.turner@example.com
+END:VEVENT
+BEGIN:VEVENT
+UID:utc-event@example.com
+SUMMARY:Front desk
+LOCATION:Lakeview
+DTSTART:20261109T130000Z
+DURATION:PT4H
+DESCRIPTION:Line one\nLine two\, with a comma
+ATTENDEE;CN=Ella Morgan:mailto:ella.morgan@example.com
+END:VEVENT
+BEGIN:VEVENT
+UID:floating@example.com
+SUMMARY:Lifeguard
+LOCATION:Northside
+DTSTART:20261110T053000
+DTEND:20261110T100000
+ATTENDEE;CN=Ava Mitchell:mailto:ava.mitchell@example.com
+ATTENDEE;CN=Rafael Ortiz:mailto:rafael.ortiz@example.com
+ATTENDEE;CN=Front office;ROLE=NON-PARTICIPANT:mailto:office@example.com
+END:VEVENT
+BEGIN:VEVENT
+UID:windows-zone@example.com
+SUMMARY:Lifeguard
+LOCATION:Riverbend
+DTSTART;TZID="Eastern Standard Time":20261111T100000
+DTEND;TZID="Eastern Standard Time":20261111T140000
+ATTENDEE;CN=Logan Pierce:mailto:logan.pierce@example.com
+END:VEVENT
+BEGIN:VEVENT
+UID:cancelled@example.com
+STATUS:CANCELLED
+SUMMARY:Lifeguard
+DTSTART;TZID=America/New_York:20261112T100000
+DTEND;TZID=America/New_York:20261112T140000
+END:VEVENT
+BEGIN:VEVENT
+UID:allday@example.com
+SUMMARY:Staff meeting day
+DTSTART;VALUE=DATE:20261113
+DTEND;VALUE=DATE:20261114
+END:VEVENT
+BEGIN:VEVENT
+UID:folded@example.com
+SUMMARY:Swim instructor for the Saturday morning beginners group at the teaching
+  pool
+CATEGORIES:Swim instructor,Beginners
+LOCATION:Northside\, teaching pool
+DTSTART;TZID=America/New_York:20261114T090000
+DTEND;TZID=America/New_York:20261114T094500
+END:VEVENT
+BEGIN:VEVENT
+UID:night-guard-copy@example.com
+SUMMARY:Lifeguard
+LOCATION:Riverbend
+DTSTART;TZID=America/New_York:20261109T220000
+DTEND;TZID=America/New_York:20261110T060000
+ATTENDEE;CN=Mason Turner:mailto:mason.turner@example.com
+END:VEVENT
+END:VCALENDAR
