@@ -170,21 +170,23 @@ def test_other_invalid_inputs_are_rejected():
 # --- the logic stays free of one industry's words ---------------------------
 
 ROOT = Path(__file__).resolve().parents[1]
-LOGIC_FILES = [
-    "coachcover/model.py",
-    "coachcover/rules.py",
-    "coachcover/presets.py",
-    "coachcover/reasons_text.py",
-    "coachcover/db.py",
-    "coachcover/repo.py",
-    "coachcover/migrations/001_init.sql",
-]
-INDUSTRY_WORDS = re.compile(r"swim|pool|lifeguard|aquatic|\bwsi\b|бассейн|плава|спасат", re.IGNORECASE)
+INDUSTRY_WORDS = re.compile(
+    r"swim|pool|aquatic|wsi(?![a-z])|life[\s_-]?guard|natator|water\s+safety|бассейн|плава|спасат", re.IGNORECASE
+)
+
+
+def _logic_files() -> list[str]:
+    files = []
+    for path in sorted((ROOT / "coachcover").rglob("*")):
+        rel = path.relative_to(ROOT).as_posix()
+        if path.suffix in (".py", ".sql") and "/presets/" not in rel and not rel.endswith("/seed.py"):
+            files.append(rel)
+    return files
 
 
 def test_logic_files_have_no_industry_words():
     hits = []
-    for rel in LOGIC_FILES:
+    for rel in _logic_files():
         for n, line in enumerate((ROOT / rel).read_text(encoding="utf-8").splitlines(), 1):
             if INDUSTRY_WORDS.search(line):
                 hits.append(f"{rel}:{n}: {line.strip()}")
@@ -193,4 +195,8 @@ def test_logic_files_have_no_industry_words():
 
 def test_industry_word_guard_is_not_blind():
     assert INDUSTRY_WORDS.search('"code": "wsi"') and INDUSTRY_WORDS.search("Swim instructor")
+    for sample in ("wsi_cert", "life-guard", "life_guard", "natatorium", "water  safety", "Lifeguarding"):
+        assert INDUSTRY_WORDS.search(sample), sample
+    assert set(_logic_files()) >= {"coachcover/rules.py", "coachcover/models.py", "coachcover/migrations/003_review_fixes.sql"}
+    assert "coachcover/seed.py" not in _logic_files()
     assert INDUSTRY_WORDS.search((ROOT / "coachcover/presets/swim_school.json").read_text(encoding="utf-8"))
