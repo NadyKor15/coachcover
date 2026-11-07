@@ -22,6 +22,7 @@ def test_each_scenario_runs_on_recordings_and_repeats(new_database):
         failed = conn.execute("SELECT purpose, error FROM model_call WHERE NOT ok").fetchall()
         assert failed == [], (scenario, failed)  # every model step had a recorded answer
         assert abs((clock_now(conn) - first["ended_at"]).total_seconds()) < 5
+        assert str(first["ended_at"].tzinfo) == "America/New_York", scenario  # venue time, as the screens show it
         timeline = conn.execute("SELECT kind, at FROM case_event ORDER BY case_id, seq").fetchall()
         second = _run(conn, scenario)
         assert second["case_id"] == first["case_id"]

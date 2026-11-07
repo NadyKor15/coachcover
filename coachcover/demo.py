@@ -146,6 +146,6 @@ def run_scenario(conn: psycopg.Connection, models: ModelClient, scenario: str) -
         code = conn.execute("SELECT code FROM cover_case WHERE id = %s", (result["case"],)).fetchone()[0] if result["case"] else None
         set_clock(conn, result["ended_at"])
         return {"scenario": scenario, "case_id": code, **{k: v for k, v in result.items() if k not in ("case", "ended_at")},
-                "ended_at": result["ended_at"]}
+                "ended_at": result["ended_at"].astimezone(NOW.tzinfo)}  # venue time in every scenario
     finally:
         conn.execute("UPDATE ops.judge_state SET running = false, case_code = %s, finished_at = now()", (code,))
