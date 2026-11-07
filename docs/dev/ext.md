@@ -257,7 +257,7 @@ uncovered (the hero shift in the `nobody_accepts` run); the week at V1 shows 19 
    offering the freed people first). The Northside people live in `coachcover/presets/network/demo_network.json`
    (installed by `a2a.ensure_network`), so the seed does not need them.
 5. Training data: the binder reports what is on the roster. The trap people (expired cards) hold shifts later
-   in the week on both seeds, so a week's binder shows violations; Monday alone is clean except the night-check
-   trap. Clean those rows in the seed if the demo should say "0 violations" for a whole week.
+   in the week on both seeds, so a week's binder at V1 shows 19-21 violations; Monday at V1 shows 1 on both
+   seeds (main: Ivan Smirnov at 10:00; core: the night-check trap). Clean those rows in the seed if the demo should say "0 violations" for a whole week.
 6. Optional: the worker can call `notify.sweep(conn, policy_id, now)` each tick; otherwise `GET /api/team-posts`
    sweeps when it is read.
