@@ -2,61 +2,34 @@
  "purpose": "plan_b_text",
  "model": "muse-glimmer-30b",
  "input": {
-  "shift": {
-   "id": "L-1109-G001",
-   "label": "Mon 06:00-06:30 · Swim instructor · Level 3 · Northside Aquatic Center",
-   "venue": "Northside Aquatic Center",
-   "zone_id": "V1-LAP",
-   "start": "2026-11-09T11:00:00+00:00",
-   "end": "2026-11-09T11:30:00+00:00",
-   "role": "instructor"
-  },
+  "shift": "Mon 06:00-06:30 · Swim instructor · Level 3 · Northside Aquatic Center",
   "options": [
    {
     "kind": "merge",
-    "mode": "propose",
-    "into_shift_id": "L-1109-G002",
-    "staff_id": "S01",
-    "staff_name": "Emma Carter",
-    "groups": [
-     "G002",
-     "G001"
-    ],
+    "who": "Emma Carter",
     "participants": 8,
-    "capacity": 8
+    "places": 8
    },
    {
     "kind": "lead",
-    "mode": "propose",
-    "staff_id": "S12",
-    "staff_name": "Noah Bennett"
+    "who": "Noah Bennett"
    },
    {
     "kind": "reschedule",
-    "mode": "propose",
-    "groups": [
-     "G001"
-    ],
     "families": 4,
     "remedy": "makeup",
-    "valid_until": "2026-12-09"
+    "until": "Dec 9"
    },
    {
     "kind": "close",
-    "mode": "propose",
-    "zone_id": "V1-LAP",
-    "groups": [
-     "G001"
-    ],
     "families": 4,
-    "remedy": "credit",
-    "valid_until": null
+    "remedy": "credit"
    }
   ]
  },
- "input_sha256": "f2b817796dd110037af124214c17f84a669130cce90880f012c79892e87a226d",
+ "input_sha256": "a05cc3767766afaa9da224faaad6d3dafddd84a7aa4cb1aa502511ee96b974c5",
  "synthetic": true,
- "source": "synthetic: written by hand to the plan_b_text schema, only facts from input",
+ "source": "synthetic: written by hand to the plan_b_text schema, only facts from input (names, money, minutes, days)",
  "duration_ms": 1600,
  "response": {
   "model": "muse-glimmer-30b",

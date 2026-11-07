@@ -364,7 +364,8 @@ def test_the_screens_speak_of_a_private_lesson_in_plain_words(morning):
     assert chloe["result_label"] == "said yes, waiting for the family"
     refusal = screen["eligibility"]["first_refusal"]["label"]
     assert refusal.endswith("· private lesson") and "kids" not in refusal and "ratio" not in refusal
-    assert screen["plan_b"]["text"] == "move the lesson to Marina, Wed 17:00 · cancel: a credit for one lesson ($50)"
+    assert screen["plan_b"]["text"] == ("Move the lesson to Marina, Wed 17:00: the family keeps their coach. · "
+                                        "Cancel: the family gets a credit for one lesson ($50).")
     ask = asks(conn, case)[0][0]
     p.family_respond(ask, False, at("08:44"))
     p.family_respond(asks(conn, case)[1][0], True, at("08:46"))

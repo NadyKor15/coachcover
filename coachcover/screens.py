@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
+from coachcover import messages as M
 from coachcover import money as money_model
 from coachcover.checks import night_report
 from coachcover.model import Preset
@@ -216,10 +217,11 @@ def _plan_option_text(option: dict, preset: Preset) -> str:
 
 
 def _plan_text(facts: dict, preset: Preset) -> str:
-    parts = [_plan_option_text(o, preset) for o in facts["options"]]
+    parts = list(M.plan_b_fallback(facts)["lines"])  # the same words as the plan the manager approves
     for r in facts.get("rejected", []):
         if r["kind"] == "merge" and "RATIO_EXCEEDED" in r["codes"]:
-            parts.insert(0, f"merge refused: {r['participants']} {preset.copy.get('participants', 'participants')} over the norm")
+            parts.insert(0, f"Merging next door is refused: {r['participants']} {preset.copy.get('participants', 'participants')}"
+                            " would be over the norm.")
     return " · ".join(parts)
 
 
