@@ -134,17 +134,18 @@ def load_context(conn: psycopg.Connection, policy_id: str, around: Shift) -> Con
 
 
 def load_absences(conn: psycopg.Connection, policy_id: str, window_from, window_to) -> dict:
-    """People who called out: the whole local day of each shift they called out from (venue time)."""
+    """People who called out: from the moment of the call-out to the end of that local day (venue time). A shift that
+    ended before the call-out is not touched (she taught the 09:30 lesson and fell ill by noon); one under way is."""
     absences: dict[str, list[tuple]] = defaultdict(list)
-    for sid, start, tz in conn.execute(
-        "SELECT c.absent_staff_id, s.starts_at, v.tz FROM cover_case c JOIN shift s ON s.id = c.shift_id"
+    for sid, start, called_at, tz in conn.execute(
+        "SELECT c.absent_staff_id, s.starts_at, c.opened_at, v.tz FROM cover_case c JOIN shift s ON s.id = c.shift_id"
         " JOIN venue v ON v.id = s.venue_id WHERE v.policy_id = %s AND c.source = 'callout'"
         " AND c.absent_staff_id IS NOT NULL AND s.starts_at < %s AND s.ends_at > %s ORDER BY 1, 2",
         (policy_id, window_to, window_from),
     ):
-        day = start.astimezone(ZoneInfo(tz)).date()
-        first = datetime.combine(day, time(0), tzinfo=ZoneInfo(tz))
-        window = (first, first + timedelta(days=1))
+        zone = ZoneInfo(tz)
+        first = datetime.combine(start.astimezone(zone).date(), time(0), tzinfo=zone)
+        window = (max(called_at, first), first + timedelta(days=1))  # a case opens at the call-out (its opened_at)
         if window not in absences[sid]:
             absences[sid].append(window)
     return {k: tuple(v) for k, v in absences.items()}

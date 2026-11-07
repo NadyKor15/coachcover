@@ -89,8 +89,9 @@ def build(conn: psycopg.Connection, policy_id: str, venue_id: str | None, first:
     vid, vname, tzname = venue
     tz = ZoneInfo(tzname)
     policy = load_policy(conn, policy_id)
-    today = now.astimezone(tz).date()
-    first = first or (today - timedelta(days=(today.weekday() - policy.week_start) % 7))
+    if first is None and last is None:
+        first = _default_week(conn, vid, tz, policy.week_start, now)
+    first = first or _week_of(now.astimezone(tz).date(), policy.week_start)
     last = last or (first + timedelta(days=6))
     if last < first:
         raise ValueError("the period ends before it starts")
@@ -117,7 +118,14 @@ def build(conn: psycopg.Connection, policy_id: str, venue_id: str | None, first:
         (vid, start, end),
     ).fetchall():
         caught_by_night[shift_id] = (notify.case_ref(conn, case_id), data.get("name"))
-    shifts, violations, uncovered, caught = [], 0, 0, 0
+    # and those it caught whose case is still open: still a violation, with the case that is finding a replacement
+    caught_open_by_night = {shift_id: notify.case_ref(conn, case_id) for case_id, shift_id in conn.execute(
+        "SELECT c.id, c.shift_id FROM cover_case c JOIN shift s ON s.id = c.shift_id"
+        " WHERE s.venue_id = %s AND c.source = 'night_check' AND c.closed_at IS NULL"
+        " AND s.starts_at >= %s AND s.starts_at < %s ORDER BY c.opened_at, c.id",
+        (vid, start, end),
+    ).fetchall()}
+    shifts, violations, uncovered, caught, caught_open = [], 0, 0, 0, 0
     for shift_id, status, holder in rows:
         shift = load_shift(conn, shift_id)
         local = shift.start.astimezone(tz)
@@ -147,6 +155,10 @@ def build(conn: psycopg.Connection, policy_id: str, venue_id: str | None, first:
             ref, name = caught_by_night[shift_id]
             caught += 1
             row.update({"caught": True, "result": f"caught by the nightly check · case {ref} · covered by {name}"})
+        elif shift_id in caught_open_by_night and blocking:
+            caught_open += 1
+            row.update({"caught_open": True, "result": row["result"] + " · caught by the nightly check · case "
+                        f"{caught_open_by_night[shift_id]} · replacement being found"})
         shifts.append(row)
     cases = []
     for case_id, status, shift_id, absent, opened, closed in conn.execute(
@@ -183,9 +195,10 @@ def build(conn: psycopg.Connection, policy_id: str, venue_id: str | None, first:
         "period": {"from": first.isoformat(), "to": last.isoformat(), "label": period},
         "generated_at": now.astimezone(UTC).isoformat(),
         "summary": {"shifts": len(shifts), "violations": violations, "uncovered": uncovered, "caught": caught,
-                    "cases": len(cases), "incidents": len(incidents),
+                    "caught_open": caught_open, "cases": len(cases), "incidents": len(incidents),
                     "headline": f"{_n(len(shifts), 'shift')} · {_n(violations, 'violation')}"
-                                + (f" · {caught} caught before the shift" if caught else "")},
+                                + (f" · {caught} caught before the shift" if caught else "")
+                                + (f" · {caught_open} caught by the nightly check" if caught_open else "")},
         "shifts": shifts, "cases": cases, "incidents": incidents,
         "checks": "Each person is checked again at the start of the shift: certificates valid on that date, "
                   "programs and levels, weekly hours, overlaps, participant norm.",
@@ -193,6 +206,22 @@ def build(conn: psycopg.Connection, policy_id: str, venue_id: str | None, first:
     # the digest covers the records, not the moment of printing: the same records give the same digest
     data["sha256"] = sha256_json({k: v for k, v in data.items() if k != "generated_at"})
     return data
+
+
+def _week_of(day: date, week_start: int) -> date:
+    return day - timedelta(days=(day.weekday() - week_start) % 7)
+
+
+def _default_week(conn: psycopg.Connection, venue_id: str, tz: ZoneInfo, week_start: int, now: datetime) -> date:
+    """The policy week that holds "now" on the demo clock; if no shift of it is still ahead (Sunday night), the week of
+    the next shift, so the folder opened after the night check shows the week it checked, not an empty one."""
+    first = _week_of(now.astimezone(tz).date(), week_start)
+    week_end = datetime.combine(first + timedelta(days=7), time(0), tzinfo=tz)
+    ahead = conn.execute(
+        "SELECT min(starts_at) FROM shift WHERE venue_id = %s AND starts_at >= %s AND status IN ('scheduled', 'open')",
+        (venue_id, now),
+    ).fetchone()[0]
+    return _week_of(ahead.astimezone(tz).date(), week_start) if ahead is not None and ahead >= week_end else first
 
 
 def _n(count: int, word: str) -> str:
@@ -267,7 +296,7 @@ def render(data: dict, compress: bool = True) -> bytes:
     pdf.cell(0, 12, _t(f"  {s['headline']}"), fill=True, new_x="LMARGIN", new_y="NEXT")
     pdf.set_fill_color(255, 255, 255)
     pdf.set_font("Helvetica", size=9)
-    pdf.cell(0, 6, _t(f"{s['uncovered']} uncovered · {s['cases']} replacements · {s['incidents']} incidents · "
+    pdf.cell(0, 6, _t(f"{s['uncovered']} uncovered · {_n(s['cases'], 'replacement')} · {_n(s['incidents'], 'incident')} · "
                       f"generated {_generated(data)}"), new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", size=8)
     pdf.multi_cell(0, 4.5, _t(data["checks"] + " Hashes: sha256 of the canonical JSON of each case's events and each "

@@ -223,7 +223,12 @@ Latin-1: a Cyrillic name would print as `?` (all training names are Latin). A sh
 and a replacement then covered is not a violation but the line "caught by the nightly check · case C-… ·
 covered by …", and the headline adds "· N caught before the shift". On the training week the only holder trap
 is S07's Monday 16:00 lesson: 1 violation at V1 without the night check, "0 violations · 1 caught before the
-shift" once the night check's case is covered.
+shift" once the night check's case is covered. While that case is still open (Sunday 21:30, approval pending) the
+violation stays and the line adds "· caught by the nightly check · case C-… · replacement being found"; the summary
+counts it in `caught_open` and the headline reads "1 violation · 1 caught by the nightly check". Without dates the
+binder takes the policy week that holds "now" on the demo clock, or, when none of its shifts is still ahead (Sunday
+night), the week of the next shift. A call-out marks its person absent from the call-out to the end of that day: a
+shift that ended before it is not a violation (repo.load_absences).
 
 ## (10) Team chat posts: `GET /api/team-posts`
 

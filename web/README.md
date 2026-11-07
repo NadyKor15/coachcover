@@ -117,7 +117,7 @@ The page reads these fields (see `fixtures/cases/C-1109-01.json`); kinds it has 
   - `offers`: `offers[{id,time_label,staff,result,result_label,why_first}]`;
   - `covered` / `plan_b`: `summary`;
 - `proof{plan_id, plan_hash, policy_label}`; the page shows the hash as `7f3a…c2e1` and the full hash on hover;
-- `model_calls[{at, purpose, model (id from the answer), model_label, ms, input_tokens, output_tokens, cost_usd, source}]`, `model_cost_usd`; the table counts calls per `model_label`;
+- `model_calls[{at, purpose, model (id from the answer), model_label, ms, input_tokens, output_tokens, cost_usd, source}]`, `model_cost_usd`; the Proof table has a row per call (its `time_label`, `purpose_label`, `seconds_label`, `cost_label`, `shared_label`, `source_label`) and a total, `model_calls_total_label`;
 - `risk{kids, refunds_usd, overtime_usd, total_usd}`: the "If nobody had accepted" card shows only the sums that are numbers above 0 and is hidden when none is.
 
 ## Checks
@@ -128,4 +128,4 @@ PLAYWRIGHT_MODULE=<…/node_modules/playwright> node tests/web/e2e_fixture.js --
 python3 tests/web/compare_regions.py web/shots/ref-variant-C.png web/shots/C-fixture-1920.png  # region diff against the approved HTML
 ```
 
-Snapshots in `shots/`: `C-fixture-1920.png`, `P2-fixture-430.png`, the states after the buttons (`C-fixture-nobody-accepts.png`, `C-fixture-plan-changed-409.png`, `P2-fixture-accepted.png`, `P2-fixture-not-eligible-409.png`), the case page `case-fixture-1920.png`, renders of the approved HTML (`ref-variant-*.png`) and side-by-side pairs (`compare-*.png`).
+Snapshots in `shots/`: `C-fixture-1920.png`, `P2-fixture-430.png`, the states after the buttons (`C-fixture-nobody-accepts.png`, `C-fixture-plan-changed-409.png`, `P2-fixture-accepted.png`, `P2-fixture-not-eligible-409.png`), the case page `case-fixture-1920.png`, renders of the approved HTML (`ref-variant-*.png`) and side-by-side pairs (`compare-*.png`) where they still match the screens (the originals of every approved variant are kept with the design files, outside this repository).
