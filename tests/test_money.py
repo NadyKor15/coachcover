@@ -56,7 +56,8 @@ def test_every_price_says_whether_it_is_an_assumption():
     params = money_params(SWIM.preset.money, SWIM.overtime_cost_per_hour)
     info = params.as_dict()
     assert set(info) == {"lesson_price", "refund_share", "hourly_wage", "overtime_multiplier", "inspection_penalty",
-                         "manager_hour"}
+                         "manager_hour", "private_lesson_price"}
+    assert not info["private_lesson_price"]["assumption"] and info["private_lesson_price"]["value"] == 50.0
     assert all({"value", "unit", "assumption", "source", "note"} <= set(v) for v in info.values())
     assert not info["lesson_price"]["assumption"] and info["lesson_price"]["source"] == "from the founder's coaching experience"
     assert info["manager_hour"]["assumption"] and info["hourly_wage"]["assumption"]
@@ -136,11 +137,14 @@ def test_today_money_after_the_judge_morning(new_database):
     assert money["uncovered_morning_usd"] == 240.0 and out["uncovered"]["participants"] == 8
     assert money["uncovered_morning_label"] == "If nobody had accepted: $240 (Refunds: 8 participants × $30)"
     assert money["manager_hour_usd"] == 25.0
-    # one call-out, one case: all four call-out calls are this case's, plus its own (Anna's message filter)
-    assert out["case_cost"]["shared_calls"] == 4 and out["case_cost"]["shared_between_cases"] == 1
+    # one call-out, two cases (Marina is out all day: the 09:30 lesson and her 17:00 private lesson): the four
+    # call-out calls are shared between them; plus the case's own call (Anna's message filter)
+    assert out["case_cost"]["shared_calls"] == 4 and out["case_cost"]["shared_between_cases"] == 2
     assert out["case_cost"]["own_calls"] == 1
     total = float(conn.execute("SELECT sum(cost_usd) FROM model_call").fetchone()[0])
-    assert case_cost(conn, case)["usd"] == pytest.approx(total, abs=2e-6)  # nothing lost, nothing counted twice
+    cases = [c for (c,) in conn.execute("SELECT id FROM cover_case")]
+    assert len(cases) == 2  # nothing lost, nothing counted twice
+    assert sum(case_cost(conn, c)["usd"] for c in cases) == pytest.approx(total, abs=2e-6)
     assert 0 < money["case_cost_cents"] < 1  # a fraction of a cent
     # before the call-out nothing is due
     quiet = today_money(conn, POLICY_ID, run["ended_at"] - timedelta(minutes=30))

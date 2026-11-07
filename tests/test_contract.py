@@ -100,7 +100,7 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert today["shift"] == {
         "id": "L-1109-G002", "time_label": "09:30–10:15",
         "lanes_label": "Teaching pool + Preschool swim, ages 3–5 (8 kids)",  # two lines; Emma is on the call-out line
-        "needs_label": "Instructor", "program_label": "Preschool training (ages 3–5)",
+        "needs_label": "Instructor", "program_label": "Preschool training (ages 3–5)", "private": False,
     }
     elig = today["eligibility"]
     assert (elig["total"], elig["eligible"]) == (40, 5)

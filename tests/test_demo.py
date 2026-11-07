@@ -32,7 +32,9 @@ def test_each_scenario_runs_on_recordings_and_repeats(new_database):
     assert results["nobody_accepts"]["conflict"]["reason"] == "plan changed"
     assert results["nightly_check"]["case_id"] == "C-1108-01" and [o["staff_id"] for o in results["nightly_check"]["opened"]] == ["S07"]
     assert conn.execute("SELECT count(*) FROM ops.judge_run").fetchone() == (1,)  # the limit survives every reset
-    assert conn.execute("SELECT running, case_code FROM ops.judge_state").fetchone() == (False, "C-1108-01")
+    # the private lesson's scenarios end on Marina's second case of the day: her 17:00 private lesson with Lily
+    assert results["private_lesson"]["case_id"] == results["private_declined"]["case_id"] == "C-1109-02"
+    assert conn.execute("SELECT running, case_code FROM ops.judge_state").fetchone() == (False, "C-1109-02")
 
 
 def test_unknown_scenario_is_refused(new_database):

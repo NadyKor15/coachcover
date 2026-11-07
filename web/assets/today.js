@@ -18,6 +18,7 @@
     noreply: { size: 44, svg: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v8.5l5.5 4"/></svg>' },
     accepted: { size: 49, svg: '<svg width="26" height="20" viewBox="0 0 26 20" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5l6.5 6L23 3.5"/></svg>' },
     planmark: { size: 44, svg: '<svg width="22" height="18" viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h8.5l15.5 16"/><path d="M19.5 19.5h7v-7"/><path d="M13.5 6.6C9 9.5 6.4 13.5 6 19"/></svg>' },
+    family: { size: 44, svg: '<svg width="22" height="20" viewBox="0 0 22 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3.5h16a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H9l-4.5 3.5V14.5H3A1.5 1.5 0 0 1 1.5 13V5A1.5 1.5 0 0 1 3 3.5z"/></svg>' },
     other: { size: 44, svg: '' },
     end: { size: 26, svg: '' }
   };
@@ -52,6 +53,7 @@
     if (s === 'no_reply' || s === 'noreply' || s === 'expired' || s === 'timeout') return 'noreply';
     if (s === 'declined' || s === 'accepted') return s;
     if (s === 'plan_b' || s === 'planb') return 'planmark';
+    if (s === 'family') return 'family';
     if (s === 'shift_start' || s === 'end') return 'end';
     return 'other';
   }
@@ -402,17 +404,26 @@
     const add = (cls, s) => { const x = el('span', cls, s); txt.appendChild(x); return x; };
     // the banner names the shift's start (from the shift); covered_time is when the case closed, shown small
     const shiftStart = (d.shift && String(d.shift.time_label || '').split('–')[0]) || '';
+    const priv = !!(d.shift && d.shift.private);
     if (o.covered_by) {
       box.classList.remove('open');
       ico.innerHTML = CHECK_BANNER;
       add(null, (shiftStart || o.covered_time) + ' covered by ' + o.covered_by);
       add('sep', ' · ');
       const n = Number(o.lessons_cancelled || 0);
-      add(null, n + (n === 1 ? ' lesson cancelled' : ' lessons cancelled'));
+      // a private lesson: another coach only with the family's yes
+      add(null, priv ? 'the family agreed' : n + (n === 1 ? ' lesson cancelled' : ' lessons cancelled'));
       if (o.covered_time && shiftStart && o.covered_time !== shiftStart) {
         const c = add('closed', 'closed ' + o.covered_time);
         c.dataset.slot = 'covered-closed';
       }
+    } else if (priv && o.private_line) {
+      // a private lesson the family moved to their own coach, or a credit: closed without another coach
+      box.classList.remove('open');
+      ico.innerHTML = CHECK_BANNER;
+      add(null, (shiftStart ? shiftStart + ' private lesson' : 'Private lesson'));
+      add('sep', ' · ');
+      add(null, o.private_line);
     } else {
       const st = p && p.state;
       const approved = st === 'approved' || st === 'done' || st === 'executed';

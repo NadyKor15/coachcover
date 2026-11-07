@@ -8,8 +8,8 @@ policy's plan_b and the option's own action; overtime is never automatic.
 from __future__ import annotations
 
 import dataclasses
-from datetime import datetime, timedelta
-from typing import Collection, Mapping, Sequence
+from datetime import UTC, datetime, timedelta
+from typing import Callable, Collection, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
 from coachcover.model import Context, Policy, Shift, Staff
@@ -180,3 +180,55 @@ def ratio_plan_options(
                         "groups": [g.id for g in lesson.groups], "families": families, "remedy": "credit"})
     options.sort(key=lambda o: RATIO_OPTION_ORDER.index(o["kind"]))
     return options, rejected
+
+
+# --- a private lesson (one child, one coach) ---------------------------------------------------------------------
+
+
+def is_private(shift: Shift) -> bool:
+    return bool(shift.groups) and all(g.kind == "private" for g in shift.groups)
+
+
+def own_coach_slot(
+    *,
+    shift: Shift,
+    coach: Staff,
+    policy: Policy,
+    context_for: Callable[[Shift], Context],
+    tz: ZoneInfo,
+    now: datetime,
+    days: int = 7,
+) -> tuple[Shift | None, list[dict]]:
+    """The nearest time the family's own coach can teach the lesson instead: the same local start time on each of the
+    next `days` days (the family already comes at that hour), checked by the same rules as any shift (cards, weekly
+    hours, overlaps, rest, absences). Returns (the moved lesson as a shift, or None; every day tried, with why not)."""
+    local = shift.start.astimezone(tz)
+    length = shift.end.astimezone(UTC) - shift.start.astimezone(UTC)
+    tried = []
+    for d in range(1, days + 1):
+        start = datetime.combine(local.date() + timedelta(days=d), local.timetz().replace(tzinfo=None), tzinfo=tz)
+        if start.astimezone(UTC) <= now.astimezone(UTC):
+            continue
+        moved = dataclasses.replace(shift, id=f"{shift.id}-M{d}", start=start, end=(start.astimezone(UTC) + length).astimezone(tz),
+                                    assignee=None, merged_shift_ids=())
+        decision = eligible(coach, moved, now, policy, context_for(moved))
+        tried.append({"start": start, "ok": decision.ok, "codes": [r.code.value for r in decision.reasons if r.blocking]})
+        if decision.ok:
+            return moved, tried
+    return None, tried
+
+
+def private_plan_options(*, shift: Shift, coach: Staff | None, slot: Shift | None, policy: Policy, tz: ZoneInfo,
+                         price_usd: float) -> list[dict]:
+    """Plan B for a private lesson nobody covers, or whose family did not answer: never another coach without the
+    family's yes. (a) the family's own coach at the nearest free time; (b) a credit for one lesson."""
+    auto = policy.autonomy
+    options = []
+    groups = [g.id for g in shift.groups]
+    if coach is not None and slot is not None:
+        options.append({"kind": "reschedule_own", "mode": auto["plan_b"], "staff_id": coach.id, "staff_name": coach.name,
+                        "starts_at": slot.start, "ends_at": slot.end, "when": f"{slot.start.astimezone(tz):%a %H:%M}",
+                        "groups": groups, "families": len(groups)})
+    options.append({"kind": "credit", "mode": auto["plan_b"], "groups": groups, "families": len(groups),
+                    "remedy": "credit", "amount_usd": price_usd})
+    return options

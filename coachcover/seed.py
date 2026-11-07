@@ -236,6 +236,25 @@ PRESCHOOL_GROUPS = {
     ("V1", "V1-LAP", 0, LESSON_AT): FixedGroup(4, 6, (8, 10), "S04", ("en",), minutes=45),
 }
 
+# Private lessons (preschool story): one child with one coach, 30 min, a group of one (lesson_group.kind 'private').
+# Another coach takes one only after the family says yes; "no" moves it to the family's own coach, else a credit.
+PRIVATE_LESSON_USD = 50  # one private lesson (30 min): price from the founder's coaching practice; = the preset's
+#                          money.private_lesson_price (a test checks they match)
+PRIVATE_MINUTES = 30
+HERO_PRIVATE = "L-1109-P001"  # Marina's Monday 17:00 private lesson: the second case of her call-out (she is out all day)
+# Marina's own private lessons: (weekday, start, child, age, level, family language). Lily on Monday 17:00 is the story;
+# Tuesday 17:00 is taken too, so the nearest free time at the same hour, if Lily's family says no to another coach,
+# is Wednesday 17:00.
+MARINA_PRIVATES = [(0, time(17, 0), "Lily", 6, "2", "en"), (1, time(17, 0), "Vera", 8, "3", "ru")]
+# the other coaches' private lessons: their own home venue, at times the school already runs (before school on
+# weekday mornings, after school, Saturday mornings); 1-2 each, never over the greedy hours cap, never breaking rest.
+# Coaches whose week is fixed for the demo (FIXED_ONLY) get none, so the morning's hours stay as told above.
+PRIVATE_SLOTS = [(d, time(8, 0)) for d in (1, 2, 3, 4)] + [(d, time(15, 15)) for d in (1, 2, 3, 4)] + [
+    (5, time(9, 0)), (5, time(9, 45)), (5, time(10, 30))]
+CHILDREN = ["Ruby", "Mia", "Ivy", "Nora", "Jack", "Hugo", "Aria", "Felix", "Maya", "Isaac", "Luna", "Oscar", "Iris",
+            "Jude", "Clara", "Milo", "Hazel", "Ezra", "Alma", "Nina", "Tess", "June", "Ben", "Eva", "Leah", "Toby",
+            "Kira", "Pablo", "Inés", "Timur", "Nico", "Yasha"]
+
 READER_A_MODEL = "muse-glimmer-30b"
 READER_B_MODEL = "nemotron-3-nano-omni-30b-a3b-reasoning"
 
@@ -584,6 +603,10 @@ def build_school(story: str = STORY) -> School:
                     }
                 )
 
+    if preschool:
+        _add_privates(school, roles_of, levels_of, home_of, busy, hours, free_monday, reserve_until, certs_by, revoked,
+                      cleared_for, book)
+
     school.demo = {
         "story": story,
         "now": NOW if preschool else DECK_NOW,
@@ -595,6 +618,65 @@ def build_school(story: str = STORY) -> School:
         "hours": {sid: round(h, 2) for sid, h in sorted(hours.items())},
     }
     return school
+
+
+def _private_name(child: str, age: int, level: str) -> str:
+    return f"Private · {child}, age {age}, Level {level}"
+
+
+def _add_privates(school: School, roles_of: dict, levels_of: dict, home_of: dict, busy: dict, hours: dict,
+                  free_monday: set[str], reserve_until: time, certs_by: dict, revoked: dict, cleared_for: set,
+                  book) -> None:
+    """Private lessons after every other booking, so nothing placed before them moves: Marina's two, then 1-2 for each
+    coach whose week is not fixed for the demo, in free time that keeps the rules (cards, rest, hours cap)."""
+    zone_of = {vid: zones[0][0] for vid, *_, zones in VENUES}  # the venue's first zone: the teaching pool
+    n = 0
+
+    def add(sid: str, day: date, start: time, child: str, age: int, level: str, language: str) -> None:
+        nonlocal n
+        n += 1
+        gid = f"P{n:03d}"
+        vid = home_of[sid]
+        begin = _at(day, start)
+        end = begin + timedelta(minutes=PRIVATE_MINUTES)
+        if (sid, "learn_to_swim", level) not in cleared_for:
+            raise RuntimeError(f"seed design error: {sid} is not cleared for the private lesson's level {level}")
+        book(sid, begin, end)
+        school.groups.append({
+            "id": gid, "venue_id": vid, "zone_id": zone_of[vid], "program": "learn_to_swim", "level": level,
+            "name": _private_name(child, age, level), "size": 1, "age_min": age, "age_max": age,
+            "family_languages": [language], "family_counts": {language: 1}, "weekday": day.weekday(),
+            "starts_local": start, "minutes": PRIVATE_MINUTES, "instructor_id": sid, "kind": "private", "participant": child,
+        })
+        school.shifts.append({
+            "id": f"L-{day:%m%d}-{gid}", "venue_id": vid, "zone_id": zone_of[vid], "role": "instructor", "extra_certs": [],
+            "instructors": 1, "starts_at": begin, "ends_at": end, "staff_id": sid, "groups": [gid],
+        })
+
+    for weekday, start, child, age, level, language in MARINA_PRIVATES:
+        add(DEMO_ABSENT, MONDAY + timedelta(days=weekday), start, child, age, level, language)
+    children = iter(CHILDREN)
+    coaches = [sid for sid in sorted(roles_of) if "instructor" in roles_of[sid] and sid not in FIXED_ONLY]
+    for k, sid in enumerate(coaches):
+        wanted = 1 + k % 2
+        rotation = PRIVATE_SLOTS[k % len(PRIVATE_SLOTS):] + PRIVATE_SLOTS[:k % len(PRIVATE_SLOTS)]
+        for weekday, start in rotation:
+            if wanted == 0:
+                break
+            day = MONDAY + timedelta(days=weekday)
+            begin = _at(day, start)
+            end = begin + timedelta(minutes=PRIVATE_MINUTES)
+            levels = levels_of[sid]
+            if (_off(sid, begin, free_monday, reserve_until)
+                    or not _cleared(sid, ("instructor",), (), day, True, certs_by, revoked)
+                    or hours[sid] + PRIVATE_MINUTES / 60 > GREEDY_HOURS_CAP
+                    or _overlaps(busy[sid], begin, end) or _short_rest(busy[sid], begin, end)):
+                continue
+            level = levels[(k + wanted) % len(levels)]
+            child = next(children)
+            language = staff_languages(next(lang for s, _, lang, _ in school.staff if s == sid))[0]
+            add(sid, day, start, child, 4 + int(level), level, language)
+            wanted -= 1
 
 
 def load_school(conn: psycopg.Connection, school: School | None = None, story: str = STORY) -> None:
@@ -669,8 +751,8 @@ def load_school(conn: psycopg.Connection, school: School | None = None, story: s
         with conn.cursor() as cur:
             cur.executemany(
                 "INSERT INTO lesson_group (id, venue_id, zone_id, level_id, name, size, age_min, age_max, family_languages,"
-                " family_counts, weekday, starts_local, minutes, instructor_id)"
-                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                " family_counts, weekday, starts_local, minutes, instructor_id, kind, participant)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 [
                     (
                         g["id"],
@@ -687,6 +769,8 @@ def load_school(conn: psycopg.Connection, school: School | None = None, story: s
                         g["starts_local"],
                         g["minutes"],
                         g["instructor_id"],
+                        g.get("kind", "group"),
+                        g.get("participant"),
                     )
                     for g in school.groups
                 ],

@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from coachcover.model import MONEY_KEYS, WEEKDAYS, CertType, Level, Policy, Preset, Program, Role, check_autonomy
+from coachcover.model import MONEY_KEYS, OPTIONAL_MONEY_KEYS, WEEKDAYS, CertType, Level, Policy, Preset, Program, Role, check_autonomy
 
 PRESET_DIR = Path(__file__).parent / "presets"
 
@@ -143,11 +143,14 @@ def _offers(data: dict) -> dict:
     offers = data.get("offers")
     if offers is None:
         return {}
-    _keys(offers, set(), "preset offers", optional={"wave_size", "collect_seconds", "plan_b_minutes_before_start"})
+    _keys(offers, set(), "preset offers", optional={"wave_size", "collect_seconds", "plan_b_minutes_before_start",
+                                                    "client_answer_minutes", "client_answer_before_start_minutes"})
     return {
         "offer_wave_size": offers.get("wave_size", 1),
         "offer_collect_seconds": offers.get("collect_seconds", 0),
         "plan_b_minutes_before_start": offers.get("plan_b_minutes_before_start"),
+        "client_answer_minutes": offers.get("client_answer_minutes", 30),
+        "client_answer_before_start_minutes": offers.get("client_answer_before_start_minutes", 60),
     }
 
 
@@ -156,7 +159,7 @@ def _money(data: dict) -> dict:
     if "money" not in data:
         return {}
     where = f"preset {data['code']} money"
-    block = _keys(data["money"], set(MONEY_KEYS), where)
+    block = _keys(data["money"], set(MONEY_KEYS), where, optional=set(OPTIONAL_MONEY_KEYS))
     out = {}
     for name, entry in block.items():
         _keys(entry, _PRICE_KEYS, f"{where}.{name}", optional={"source"})

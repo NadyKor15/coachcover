@@ -27,7 +27,7 @@ DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 def test_migrations_apply_once(new_database):
     conn = new_database()
     versions = ["001_init", "002_pipeline", "003_review_fixes", "004_callouts_and_ops", "005_screens_and_filter",
-                "006_safety_layer", "007_offer_waves", "008_standby"]
+                "006_safety_layer", "007_offer_waves", "008_standby", "009_private_lessons"]
     assert migrate(conn) == versions
     assert migrate(conn) == []
     assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == versions
@@ -60,7 +60,9 @@ def test_school_size_and_languages(school):
     assert _count(school, "SELECT count(*) FROM zone") == 6
     assert _count(school, "SELECT count(*) FROM staff") == 40
     assert _count(school, "SELECT count(DISTINCT full_name) FROM staff") == 40
-    assert _count(school, "SELECT count(*) FROM lesson_group") == 121  # + the lesson next door to the 09:30 one
+    # 120 + the lesson next door to the 09:30 one + 22 private lessons (one child each)
+    assert _count(school, "SELECT count(*) FROM lesson_group") == 143
+    assert _count(school, "SELECT count(*) FROM lesson_group WHERE kind = 'private' AND size = 1") == 22
     assert len(build_school("deck").groups) == 120
     assert _count(school, "SELECT count(*) FROM lesson_group WHERE instructor_id IS NULL") == 0
     langs = {r[0] for r in school.execute("SELECT DISTINCT unnest(family_languages) FROM lesson_group")}
@@ -234,7 +236,8 @@ def test_seed_is_deterministic(new_database):
     a, b = _dump(first), _dump(second)
     assert a == b
     # 204 + Gabriela's Sunday evening before the week + the lesson next door (G121) + Emma Carter's seat on G002
-    assert len(a["shift"]) == 207 and len(a["staff_cert"]) == 107
+    # + 22 private lessons
+    assert len(a["shift"]) == 229 and len(a["staff_cert"]) == 107
     assert build_school("deck") == build_school("deck") and len(build_school("deck").shifts) == 205
 
 

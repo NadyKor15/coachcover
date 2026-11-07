@@ -30,7 +30,8 @@ from psycopg.types.json import Jsonb
 from coachcover import messages as M
 from coachcover.model import Policy
 from coachcover.models import SECOND_READER_MODEL, TEXT_MODEL, ModelClient, ModelError, canonical_key, sha256_bytes
-from coachcover.planb import plan_b_options, ratio_plan_options, strictest  # noqa: F401 - strictest kept importable
+from coachcover.planb import (is_private, own_coach_slot, plan_b_options, private_plan_options,  # noqa: F401
+                              ratio_plan_options, strictest)  # strictest kept importable
 from coachcover.reasons_text import describe, describe_place
 from coachcover.repo import load_context, load_policy, load_shift, load_staff
 from coachcover.rules import Code, Ranked, assess, eligible, group_norm, rank, ratio_reason
@@ -115,9 +116,10 @@ class Pipeline:
         keys = ("id", "venue_id", "venue", "tz", "zone_id", "zone", "role", "role_label", "start", "end", "staff_id", "status")
         info = dict(zip(keys, row))
         info["groups"] = [
-            dict(zip(("id", "name", "size", "languages", "level", "level_label", "program"), g))
+            dict(zip(("id", "name", "size", "languages", "level", "level_label", "program", "kind", "participant"), g))
             for g in self.conn.execute(
-                "SELECT g.id, g.name, g.size, g.family_languages, l.code, l.label, p.code FROM shift_group sg"
+                "SELECT g.id, g.name, g.size, g.family_languages, l.code, l.label, p.code, g.kind, g.participant"
+                " FROM shift_group sg"
                 " JOIN lesson_group g ON g.id = sg.group_id JOIN program_level l ON l.id = g.level_id"
                 " JOIN program p ON p.id = l.program_id WHERE sg.shift_id = %s ORDER BY g.id",
                 (shift_id,),
@@ -127,6 +129,7 @@ class Pipeline:
         start, end = info["start"].astimezone(tz), info["end"].astimezone(tz)
         levels = ", ".join(dict.fromkeys(g["level_label"] for g in info["groups"]))
         info["local_start"], info["local_end"] = start, end
+        info["private"] = bool(info["groups"]) and all(g["kind"] == "private" for g in info["groups"])
         info["label"] = f"{start:%a %H:%M}-{end:%H:%M} · {info['role_label']}" + (f" · {levels}" if levels else "") + f" · {info['venue']}"
         return info
 
@@ -134,7 +137,8 @@ class Pipeline:
         return f"{info['local_start']:%a %d.%m %H:%M}-{info['local_end']:%H:%M}"
 
     def _what(self, info: dict) -> str:
-        return info["role_label"] + (f", {info['groups'][0]['level_label']}" if info["groups"] else "")
+        return (info["role_label"] + (f", {info['groups'][0]['level_label']}" if info["groups"] else "")
+                + (", private lesson" if info.get("private") else ""))
 
     # --- candidates -----------------------------------------------------------
 
@@ -277,6 +281,11 @@ class Pipeline:
         if not matched:
             result["note"] = "no shifts left today"
             return result
+        # a person who calls out is out for the whole day (the rules offer them nothing that day): the shifts the
+        # message names come first, then the rest of the day's shifts, so none of them is left without a person
+        named = {sid for sid, _ in matched}
+        rest_of_day = [(sid, s) for sid, s in todays if sid not in named]
+        matched = [*matched, *rest_of_day]
         opened = []
         with self.conn.transaction():
             if audio is not None:
@@ -296,8 +305,13 @@ class Pipeline:
                 self._screen_events(case_id, now, staff_id, person["name"], text, screened)
                 self._event(case_id, now, "agent", "callout_understood",
                             {"by": by, "error": error, "understood": understood,
-                             "matched_shift_ids": [sid for sid, _ in matched]})
-                self._event(case_id, now, "agent", "shift_opened", {"shift_id": shift_id, "label": info["label"]})
+                             "matched_shift_ids": [sid for sid, _ in matched if sid in named],
+                             "rest_of_day_shift_ids": [sid for sid, _ in rest_of_day]})
+                self._event(case_id, now, "agent", "shift_opened", {
+                    "shift_id": shift_id, "label": info["label"],
+                    **({"why": "out for the whole day"} if shift_id not in named else {}),
+                    **({"private": True} if info["private"] else {}),
+                })
                 opened.append((case_id, shift_id))
         for case_id, shift_id in opened:
             self._rank_event(case_id, shift_id, now)
@@ -497,6 +511,8 @@ class Pipeline:
             if row is None:
                 raise NotFound(f"unknown group {group_id}")
             size, counts, name = row
+            if self.conn.execute("SELECT kind FROM lesson_group WHERE id = %s", (group_id,)).fetchone()[0] == "private":
+                raise ValueError("a private lesson has one child; add a new private lesson instead")
             counts = {k: int(v) for k, v in counts.items()}
             if language is not None:
                 counts[language] = counts.get(language, 0) + added
@@ -643,11 +659,13 @@ class Pipeline:
                 self._event(case_id, now, "agent", "offer_expired", {"offer_id": offer_id, "staff_id": staff_id})
         collect = timedelta(seconds=self._policy().preset.offer_collect_seconds)
         windows = [r[0] for r in self.conn.execute(
-            "SELECT case_id FROM offer WHERE status = 'held' GROUP BY case_id HAVING min(responded_at) + %s <= %s",
+            "SELECT case_id FROM offer o WHERE status = 'held' AND NOT EXISTS (SELECT 1 FROM client_ask a"
+            " WHERE a.offer_id = o.id AND a.status = 'asked') GROUP BY case_id HAVING min(responded_at) + %s <= %s",
             (collect, now),
         )]
         for case_id in dict.fromkeys([*(case_id for _, case_id, _ in rows), *windows]):
             self._settle_or_next(case_id, now)
+        self._client_due(now)
         self._plan_b_by_deadline(now)
         return len(rows)
 
@@ -676,6 +694,8 @@ class Pipeline:
             status = self.conn.execute("SELECT status FROM cover_case WHERE id = %s FOR UPDATE", (case_id,)).fetchone()[0]
             if status != "open":
                 return None
+            if self.conn.execute("SELECT 1 FROM client_ask WHERE case_id = %s AND status = 'asked'", (case_id,)).fetchone():
+                return {"asking_family": True}  # the family has the question; their answer moves the case on
             rows = self.conn.execute(
                 "SELECT id, staff_id, status, queue_pos, responded_at, shift_id FROM offer"
                 " WHERE case_id = %s AND status IN ('pending', 'held') AND NOT overtime ORDER BY queue_pos",
@@ -695,6 +715,8 @@ class Pipeline:
                     if blocking:
                         self._refuse_yes(case_id, offer_id, staff_id, shift_id, blocking, policy, now)
                         continue
+                    if is_private(shift):
+                        return self._ask_family(case_id, offer_id, staff_id, shift_id, policy, now)
                     return self._take(case_id, offer_id, staff_id, shift_id, policy, now)
             elif rows:
                 return None
@@ -776,7 +798,7 @@ class Pipeline:
                 if blocking:
                     refused = self._refuse_yes(case_id, offer_id, staff_id, shift_id, blocking, policy, now)
                     move_on = True
-                elif not overtime and policy.preset.offer_collect_seconds > 0:
+                elif not overtime and (policy.preset.offer_collect_seconds > 0 or info["private"]):
                     # a wave: hold the "yes"; the highest "yes" gets the shift (see _settle_or_next)
                     self.conn.execute("UPDATE offer SET status = 'held', responded_at = %s WHERE id = %s", (now, offer_id))
                     self._event(case_id, now, "staff", "offer_yes_held", {
@@ -784,7 +806,8 @@ class Pipeline:
                         "collect_seconds": policy.preset.offer_collect_seconds,
                     })
                     lang = M.lang_or_en(self._staff_row(staff_id)["language"])
-                    self._message(now, "staff", lang, M.HELD[lang].format(when=self._when(info)),
+                    held = M.HELD_PRIVATE if info["private"] else M.HELD
+                    self._message(now, "staff", lang, held[lang].format(when=self._when(info)),
                                   staff_id=staff_id, case_id=case_id, offer_id=offer_id)
                     move_on = True
                 elif policy.autonomy["assign_cover"] == "propose" and not overtime:
@@ -862,6 +885,321 @@ class Pipeline:
             self._offer_next(case_id, now)
         return {"approval_id": approval_id, "status": "approved" if approve else "rejected"}
 
+    # --- a private lesson: the family says yes first -----------------------------------------------------------
+
+    def _family_of(self, info: dict) -> dict:
+        group = info["groups"][0]
+        language = M.lang_or_en(group["languages"][0] if group["languages"] else None)
+        return {"group_id": group["id"], "child": group["participant"] or group["name"], "language": language}
+
+    def _family_text(self, kind: str, facts: dict, template: dict, now: datetime, case_id: int) -> tuple[str, str]:
+        """The question or notice for the family, written by the text model in the family's language (facts only);
+        the template when no model answer is available. Returns (text, "model" | "template")."""
+        try:
+            answer = self.models.chat_json(purpose="family_question", system=M.CLIENT_SYSTEM,
+                                           user=json.dumps(plain(facts), ensure_ascii=False), schema=M.CLIENT_SCHEMA,
+                                           key=plain(facts), at=now, case_id=case_id)
+            body = answer.data["body"].strip()
+            if body:
+                return body, "model"
+        except (ModelError, AttributeError):
+            pass
+        return template[facts["language"]].format(**facts), "template"
+
+    def _answer_by(self, info: dict, now: datetime, policy: Policy) -> datetime:
+        return min(now + timedelta(minutes=policy.preset.client_answer_minutes),
+                   info["start"] - timedelta(minutes=policy.preset.client_answer_before_start_minutes))
+
+    def _ask_family(self, case_id: int, offer_id: int, staff_id: str, shift_id: str, policy: Policy,
+                    now: datetime) -> dict:
+        """A coach said yes to a private lesson and passed the rules again: hold them (no other offer for that time),
+        let the others in the wave go, and ask the family whether this coach may teach. Nothing is booked yet."""
+        info = self.shift_info(shift_id)
+        family = self._family_of(info)
+        coach = self._staff_row(staff_id)["name"]
+        absent = self.conn.execute("SELECT s.full_name FROM cover_case c JOIN staff s ON s.id = c.absent_staff_id"
+                                   " WHERE c.id = %s", (case_id,)).fetchone()
+        answer_by = self._answer_by(info, now, policy)
+        for other_id, other in self.conn.execute(
+            "UPDATE offer SET status = 'withdrawn' WHERE case_id = %s AND status IN ('pending', 'held') AND id <> %s"
+            " AND NOT overtime RETURNING id, staff_id", (case_id, offer_id),
+        ).fetchall():
+            self._event(case_id, now, "agent", "offer_stood_down", {"offer_id": other_id, "staff_id": other,
+                                                                    "for_family": staff_id})
+            lang = M.lang_or_en(self._staff_row(other)["language"])
+            self._message(now, "staff", lang, M.PRIVATE_STOOD_DOWN[lang].format(name=coach.split()[0], when=self._when(info)),
+                          staff_id=other, case_id=case_id, offer_id=other_id)
+        if answer_by <= now:
+            # too close to the start to ask: the coach is let go and the manager decides (move or credit)
+            self._event(case_id, now, "agent", "family_too_late", {"staff_id": staff_id, "name": coach,
+                                                                    "answer_by": answer_by})
+            self._release(case_id, offer_id, staff_id, info, now, M.RELEASED_SILENT)
+            return {"offer_id": offer_id, "staff_id": staff_id, "asked": None}
+        facts = {"kind": "cover", "language": family["language"], "child": family["child"],
+                 "absent": absent[0].split()[0] if absent else "Your coach", "coach": coach.split()[0],
+                 "time": f"{info['local_start']:%H:%M}", "date": info["local_start"].date(), "venue": info["venue"]}
+        text, source = self._family_text("cover", facts, M.CLIENT_COVER, now, case_id)
+        message_id = self._message(now, "family", family["language"], text, group_id=family["group_id"], case_id=case_id)
+        ask_id = self.conn.execute(
+            "INSERT INTO client_ask (case_id, group_id, kind, staff_id, offer_id, language, message_id, asked_at, answer_by)"
+            " VALUES (%s, %s, 'cover', %s, %s, %s, %s, %s, %s) RETURNING id",
+            (case_id, family["group_id"], staff_id, offer_id, family["language"], message_id, now, answer_by),
+        ).fetchone()[0]
+        self._event(case_id, now, "agent", "family_asked", {
+            "ask_id": f"Q-{ask_id}", "kind": "cover", "staff_id": staff_id, "name": coach, "offer_id": offer_id,
+            "child": family["child"], "text": text, "text_source": source, "language": family["language"],
+            "answer_by": answer_by,
+        })
+        return {"offer_id": offer_id, "staff_id": staff_id, "asked": f"Q-{ask_id}"}
+
+    def _release(self, case_id: int, offer_id: int, staff_id: str, info: dict, now: datetime, text: dict) -> None:
+        """Let a held coach go, with thanks."""
+        self.conn.execute("UPDATE offer SET status = 'withdrawn' WHERE id = %s AND status IN ('pending', 'held')",
+                          (offer_id,))
+        self._event(case_id, now, "agent", "coach_released", {"offer_id": offer_id, "staff_id": staff_id,
+                                                              "name": self._staff_row(staff_id)["name"]})
+        lang = M.lang_or_en(self._staff_row(staff_id)["language"])
+        self._message(now, "staff", lang, text[lang].format(when=self._when(info)), staff_id=staff_id, case_id=case_id,
+                      offer_id=offer_id)
+
+    def find_ask(self, ref: str | int) -> int:
+        text = str(ref).removeprefix("Q-")
+        row = self.conn.execute(
+            "SELECT a.id FROM client_ask a JOIN cover_case c ON c.id = a.case_id JOIN shift s ON s.id = c.shift_id"
+            " JOIN venue v ON v.id = s.venue_id WHERE v.policy_id = %s AND a.id::text = %s", (self.policy_id, text),
+        ).fetchone()
+        if row is None:
+            raise NotFound(f"unknown question {ref}")
+        return row[0]
+
+    def family_respond(self, ask_id: int, accept: bool, now: datetime) -> dict:
+        """The family's answer. "Yes" to another coach: the rules run again for that coach, then the lesson is booked
+        (if the coach no longer passes, the next coach is found and the family is asked again). "No": the coach is
+        let go and the family's own coach is offered at the nearest free time, else a credit. "Yes" to the new time:
+        the lesson moves; "no": a credit. Nothing is booked, moved or credited without an answer."""
+        self.expire_due(now)
+        policy = self._policy()
+        follow = None
+        with self.conn.transaction():
+            row = self.conn.execute(
+                "SELECT case_id, kind, staff_id, offer_id, proposed_start, proposed_end, status FROM client_ask"
+                " WHERE id = %s FOR UPDATE", (ask_id,),
+            ).fetchone()
+            if row is None:
+                raise NotFound(f"unknown question Q-{ask_id}")
+            case_id, kind, staff_id, offer_id, start, end, status = row
+            self.conn.execute("SELECT 1 FROM cover_case WHERE id = %s FOR UPDATE", (case_id,))
+            if status != "asked":
+                raise Conflict(f"Thanks — this question was already closed ({status})", {"status": status})
+            self.conn.execute("UPDATE client_ask SET status = %s, answered_at = %s WHERE id = %s",
+                              ("yes" if accept else "no", now, ask_id))
+            shift_id = self.conn.execute("SELECT shift_id FROM cover_case WHERE id = %s", (case_id,)).fetchone()[0]
+            info = self.shift_info(shift_id)
+            family = self._family_of(info)
+            name = self._staff_row(staff_id)["name"]
+            self._event(case_id, now, "family", "family_yes" if accept else "family_no",
+                        {"ask_id": f"Q-{ask_id}", "kind": kind, "staff_id": staff_id, "name": name,
+                         **({"start": start} if start else {})})
+            if kind == "cover" and accept:
+                person = next(s for s in load_staff(self.conn, self.policy_id) if s.id == staff_id)
+                shift = load_shift(self.conn, shift_id)
+                decision = eligible(person, shift, now, policy, load_context(self.conn, self.policy_id, shift))
+                blocking = [r for r in decision.reasons if r.blocking]
+                if blocking:
+                    why = self._refuse_yes(case_id, offer_id, staff_id, shift_id, blocking, policy, now)
+                    self._event(case_id, now, "agent", "family_yes_recheck_failed", {"staff_id": staff_id, "why": why})
+                    self._message(now, "family", family["language"], M.CLIENT_RECHECK_FAILED[family["language"]].format(
+                        coach=name.split()[0]), group_id=family["group_id"], case_id=case_id)
+                    follow = "next_coach"
+                else:
+                    self._take(case_id, offer_id, staff_id, shift_id, policy, now)
+                    self._message(now, "family", family["language"], M.CLIENT_COVER_CONFIRMED[family["language"]].format(
+                        coach=name.split()[0], child=family["child"], time=f"{info['local_start']:%H:%M}"),
+                        group_id=family["group_id"], case_id=case_id)
+            elif kind == "cover":
+                self._release(case_id, offer_id, staff_id, info, now, M.RELEASED)
+                follow = "own_coach"
+            elif accept:
+                coach = next(s for s in load_staff(self.conn, self.policy_id) if s.id == staff_id)
+                shift = load_shift(self.conn, shift_id)
+                moved = dataclasses.replace(shift, id=f"{shift_id}-M", start=start, end=end, assignee=None)
+                decision = eligible(coach, moved, now, policy, load_context(self.conn, self.policy_id, moved))
+                if decision.ok:
+                    self._move_private(case_id, staff_id, start, end, now, by="family")
+                else:
+                    self._credit_private(case_id, now, why="time_taken")
+            else:
+                self._credit_private(case_id, now, why="family_no")
+        if follow == "next_coach":
+            self._offer_next(case_id, now)
+        elif follow == "own_coach":
+            self._offer_own_coach(case_id, now)
+        return self.ask_state(ask_id)
+
+    def ask_state(self, ask_id: int) -> dict:
+        row = self.conn.execute(
+            "SELECT a.id, a.case_id, a.kind, a.status, c.status FROM client_ask a JOIN cover_case c ON c.id = a.case_id"
+            " WHERE a.id = %s", (ask_id,),
+        ).fetchone()
+        return {"ask_id": f"Q-{row[0]}", "case_id": row[1], "kind": row[2], "status": row[3], "case_status": row[4]}
+
+    def _own_slot(self, shift_id: str, coach_id: str | None, now: datetime) -> tuple:
+        """(coach, the moved lesson or None, the days tried): the family's own coach at the nearest free time."""
+        if coach_id is None:
+            return None, None, []
+        coach = next((s for s in load_staff(self.conn, self.policy_id) if s.id == coach_id), None)
+        if coach is None:
+            return None, None, []
+        shift = load_shift(self.conn, shift_id)
+        tz = ZoneInfo(self.shift_info(shift_id)["tz"])
+        slot, tried = own_coach_slot(shift=shift, coach=coach, policy=self._policy(),
+                                     context_for=lambda moved: load_context(self.conn, self.policy_id, moved), tz=tz,
+                                     now=now)
+        return coach, slot, tried
+
+    def _offer_own_coach(self, case_id: int, now: datetime) -> dict:
+        """After "no" to another coach: ask the family about their own coach at the nearest free time; with none,
+        or too late to ask, a credit."""
+        policy = self._policy()
+        with self.conn.transaction():
+            shift_id, absent, status = self.conn.execute(
+                "SELECT shift_id, absent_staff_id, status FROM cover_case WHERE id = %s FOR UPDATE", (case_id,)).fetchone()
+            if status != "open":
+                return {"status": status}
+            info = self.shift_info(shift_id)
+            coach, slot, tried = self._own_slot(shift_id, absent, now)
+            self._event(case_id, now, "agent", "own_coach_checked", {
+                "staff_id": absent, "name": coach.name if coach else None,
+                "found": slot.start if slot else None,
+                "tried": [{"start": t["start"], "codes": t["codes"]} for t in tried],
+            })
+            if slot is None:
+                return self._credit_private(case_id, now, why="no_time")
+            answer_by = self._answer_by(info, now, policy)
+            if answer_by <= now:
+                return self._credit_private(case_id, now, why="too_late")
+            family = self._family_of(info)
+            local = slot.start.astimezone(ZoneInfo(info["tz"]))
+            when = f"{local:%a, %b} {local.day} at {local:%H:%M}"
+            facts = {"kind": "reschedule", "language": family["language"], "child": family["child"],
+                     "coach": coach.name.split()[0], "when": when, "venue": info["venue"]}
+            text, source = self._family_text("reschedule", facts, M.CLIENT_RESCHEDULE, now, case_id)
+            message_id = self._message(now, "family", family["language"], text, group_id=family["group_id"],
+                                       case_id=case_id)
+            ask_id = self.conn.execute(
+                "INSERT INTO client_ask (case_id, group_id, kind, staff_id, proposed_start, proposed_end, language,"
+                " message_id, asked_at, answer_by) VALUES (%s, %s, 'reschedule', %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                (case_id, family["group_id"], coach.id, slot.start, slot.end, family["language"], message_id, now,
+                 answer_by),
+            ).fetchone()[0]
+            self._event(case_id, now, "agent", "family_asked", {
+                "ask_id": f"Q-{ask_id}", "kind": "reschedule", "staff_id": coach.id, "name": coach.name,
+                "child": family["child"], "start": slot.start, "when": f"{local:%a %H:%M}", "text": text,
+                "text_source": source, "language": family["language"], "answer_by": answer_by,
+            })
+        return {"asked": f"Q-{ask_id}"}
+
+    def _move_private(self, case_id: int, staff_id: str, start: datetime, end: datetime, now: datetime,
+                      by: str) -> dict:
+        """The lesson moves to the family's own coach at the agreed time: a new booking; the old one is cancelled."""
+        shift_id = self.conn.execute("SELECT shift_id FROM cover_case WHERE id = %s", (case_id,)).fetchone()[0]
+        info = self.shift_info(shift_id)
+        tz = ZoneInfo(info["tz"])
+        family = self._family_of(info)
+        local = start.astimezone(tz)
+        new_id = f"L-{local:%m%d}-{family['group_id']}"
+        if self.conn.execute("SELECT 1 FROM shift WHERE id = %s", (new_id,)).fetchone():
+            new_id = f"{new_id}-C{case_id}"
+        self.conn.execute(
+            "INSERT INTO shift (id, venue_id, zone_id, role_id, starts_at, ends_at, staff_id, instructors, extra_certs,"
+            " status) SELECT %s, venue_id, zone_id, role_id, %s, %s, %s, instructors, extra_certs, 'scheduled'"
+            " FROM shift WHERE id = %s", (new_id, start, end, staff_id, shift_id),
+        )
+        self.conn.execute("INSERT INTO shift_group (shift_id, group_id) SELECT %s, group_id FROM shift_group"
+                          " WHERE shift_id = %s", (new_id, shift_id))
+        self.conn.execute("UPDATE shift SET status = 'cancelled' WHERE id = %s", (shift_id,))
+        self._close_case(case_id, now, "plan_b")
+        coach = self._staff_row(staff_id)
+        label = f"{local:%a %H:%M}"
+        when = f"{local:%a, %b} {local.day} at {local:%H:%M}"
+        self._event(case_id, now, "agent", "private_moved", {
+            "to_shift_id": new_id, "staff_id": staff_id, "name": coach["name"], "start": start, "when": label, "by": by,
+            "line": f"Moved to {coach['name'].split()[0]}, {label}",
+        })
+        self._message(now, "family", family["language"], M.CLIENT_MOVED[family["language"]].format(
+            child=family["child"], coach=coach["name"].split()[0], when=when), group_id=family["group_id"], case_id=case_id)
+        lang = M.lang_or_en(coach["language"])
+        self._message(now, "staff", lang, M.PRIVATE_MOVED_COACH[lang].format(child=family["child"], when=when,
+                                                                            venue=info["venue"]),
+                      staff_id=staff_id, case_id=case_id)
+        return {"moved_to": new_id, "staff_id": staff_id, "start": start}
+
+    def _credit_private(self, case_id: int, now: datetime, why: str) -> dict:
+        """The lesson does not run: the family gets a credit for one lesson, at the private lesson's price."""
+        from coachcover.money import money_params
+
+        shift_id = self.conn.execute("SELECT shift_id FROM cover_case WHERE id = %s", (case_id,)).fetchone()[0]
+        info = self.shift_info(shift_id)
+        family = self._family_of(info)
+        policy = self._policy()
+        amount = money_params(policy.preset.money, policy.overtime_cost_per_hour).private_price.value
+        self.conn.execute("UPDATE shift SET status = 'cancelled' WHERE id = %s", (shift_id,))
+        self.conn.execute(
+            "INSERT INTO remedy (shift_id, group_id, kind, families, valid_until, case_id, created_at, amount_usd)"
+            " VALUES (%s, %s, 'credit', 1, NULL, %s, %s, %s)", (shift_id, family["group_id"], case_id, now, amount),
+        )
+        self._close_case(case_id, now, "plan_b")
+        self._event(case_id, now, "agent", "private_credit", {"group_id": family["group_id"], "amount_usd": amount,
+                                                              "why": why, "line": "Credit for one lesson"})
+        when = f"{info['local_start']:%a %H:%M}"
+        self._message(now, "family", family["language"], M.CLIENT_CREDIT[family["language"]].format(
+            child=family["child"], when=when, amount=f"${amount:g}"), group_id=family["group_id"], case_id=case_id)
+        return {"credit_usd": amount}
+
+    def _client_due(self, now: datetime) -> list[int]:
+        """Questions the family did not answer in time: the held coach is let go and the manager gets plan B for the
+        lesson (the family's own coach at the nearest free time, or a credit). Nothing moves without a person."""
+        due = self.conn.execute(
+            "SELECT a.id, a.case_id, a.kind, a.staff_id, a.offer_id FROM client_ask a JOIN cover_case c ON c.id = a.case_id"
+            " JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id WHERE v.policy_id = %s"
+            " AND a.status = 'asked' AND a.answer_by <= %s ORDER BY a.answer_by, a.id",
+            (self.policy_id, now),
+        ).fetchall()
+        for ask_id, case_id, kind, staff_id, offer_id in due:
+            with self.conn.transaction():
+                if self.conn.execute("UPDATE client_ask SET status = 'silent' WHERE id = %s AND status = 'asked'"
+                                     " RETURNING id", (ask_id,)).fetchone() is None:
+                    continue
+                shift_id = self.conn.execute("SELECT shift_id FROM cover_case WHERE id = %s", (case_id,)).fetchone()[0]
+                info = self.shift_info(shift_id)
+                self._event(case_id, now, "agent", "family_silent", {"ask_id": f"Q-{ask_id}", "kind": kind,
+                                                                     "staff_id": staff_id})
+                if kind == "cover":
+                    self._release(case_id, offer_id, staff_id, info, now, M.RELEASED_SILENT)
+            self.propose_plan_b(case_id, now)
+        return [r[1] for r in due]
+
+    def _private_facts(self, case_id: int, shift_id: str, absent: str | None, now: datetime) -> dict:
+        """Plan B for a private lesson: never another coach without the family's yes (planb.private_plan_options)."""
+        from coachcover.money import money_params
+
+        policy = self._policy()
+        info = self.shift_info(shift_id)
+        coach, slot, tried = self._own_slot(shift_id, absent, now)
+        price = money_params(policy.preset.money, policy.overtime_cost_per_hour).private_price.value
+        options = private_plan_options(shift=load_shift(self.conn, shift_id), coach=coach, slot=slot, policy=policy,
+                                       tz=ZoneInfo(info["tz"]), price_usd=price)
+        return plain({
+            "case_id": case_id,
+            "shift": {"id": shift_id, "label": info["label"], "venue": info["venue"], "zone_id": info["zone_id"],
+                      "start": info["start"], "end": info["end"], "role": info["role"]},
+            "options": options,
+            "recommended": 0,
+            "rejected": [{"kind": "reschedule_own", "start": t["start"], "codes": t["codes"]} for t in tried if not t["ok"]],
+            "private": True,
+        })
+
+
     # --- plan B ---------------------------------------------------------------
 
     def _plan_facts(self, case_id: int, now: datetime) -> dict:
@@ -870,6 +1208,8 @@ class Pipeline:
         ).fetchone()
         if source == "ratio":
             return self._ratio_facts(case_id, shift_id, now)
+        if self.shift_info(shift_id)["private"]:
+            return self._private_facts(case_id, shift_id, absent, now)
         policy = self._policy()
         staff = {s.id: s for s in load_staff(self.conn, self.policy_id)}
         shift = load_shift(self.conn, shift_id)
@@ -879,6 +1219,8 @@ class Pipeline:
             "SELECT s.id FROM shift s WHERE s.venue_id = %s AND s.role_id = (SELECT role_id FROM shift WHERE id = %s)"
             " AND s.starts_at = %s AND s.ends_at = %s AND s.status = 'scheduled' AND s.id <> %s"
             " AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = s.id)"
+            # a private lesson is never a group next door: its family said yes to one coach, not to a group
+            " AND NOT EXISTS (SELECT 1 FROM shift_group pg JOIN lesson_group pl ON pl.id = pg.group_id WHERE pg.shift_id = s.id AND pl.kind = 'private')"
             # a shift teaching the same groups (an instructor seat of a broken norm) is not a group next door
             " AND NOT EXISTS (SELECT 1 FROM shift_group a JOIN shift_group b ON b.group_id = a.group_id"
             "  WHERE a.shift_id = s.id AND b.shift_id = %s) ORDER BY s.id",
@@ -928,6 +1270,7 @@ class Pipeline:
         partner_ids = [r[0] for r in self.conn.execute(
             "SELECT s.id FROM shift s WHERE s.venue_id = %s AND s.starts_at = %s AND s.ends_at = %s AND s.status = 'scheduled'"
             " AND s.extra_for IS NULL AND s.id <> %s AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = s.id)"
+            " AND NOT EXISTS (SELECT 1 FROM shift_group pg JOIN lesson_group pl ON pl.id = pg.group_id WHERE pg.shift_id = s.id AND pl.kind = 'private')"
             " AND NOT EXISTS (SELECT 1 FROM shift_group a JOIN shift_group b ON b.group_id = a.group_id"
             "  WHERE a.shift_id = s.id AND b.shift_id = %s) ORDER BY s.id",
             (lesson.venue, lesson.start, lesson.end, lesson_id, lesson_id),
@@ -936,7 +1279,8 @@ class Pipeline:
             "SELECT DISTINCT s.id, s.starts_at FROM shift s JOIN shift_group sg ON sg.shift_id = s.id"
             " JOIN lesson_group g ON g.id = sg.group_id JOIN venue v ON v.id = s.venue_id"
             " WHERE v.policy_id = %s AND s.status = 'scheduled' AND s.extra_for IS NULL AND s.starts_at > %s"
-            " AND s.starts_at < %s AND g.id <> %s AND g.level_id = (SELECT level_id FROM lesson_group WHERE id = %s)"
+            " AND s.starts_at < %s AND g.id <> %s AND g.kind = 'group'"
+            " AND g.level_id = (SELECT level_id FROM lesson_group WHERE id = %s)"
             " ORDER BY s.starts_at, s.id",
             (self.policy_id, lesson.start, lesson.start + self.RATIO_HORIZON, group_id, group_id),
         )]
@@ -1060,6 +1404,11 @@ class Pipeline:
         kind = chosen["kind"]
         if kind in ("split", "move", "cancel_lesson"):
             return self._apply_ratio_option(case_id, snapshot, chosen, now)
+        if kind == "reschedule_own":
+            start, end = datetime.fromisoformat(chosen["starts_at"]), datetime.fromisoformat(chosen["ends_at"])
+            return self._move_private(case_id, chosen["staff_id"], start, end, now, by="plan_b")
+        if kind == "credit":
+            return self._credit_private(case_id, now, why="plan_b")
         if kind == "merge":
             for gid in [g["id"] for g in info["groups"]]:
                 self.conn.execute("INSERT INTO shift_group (shift_id, group_id) VALUES (%s, %s)", (chosen["into_shift_id"], gid))

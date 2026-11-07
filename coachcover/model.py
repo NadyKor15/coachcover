@@ -22,6 +22,8 @@ AUTONOMY_ACTIONS = ("assign_cover", "plan_b", "merge_groups", "overtime", "night
 AUTONOMY_MODES = ("auto", "propose", "off")
 REMEDIES = ("credit", "makeup")
 MONEY_KEYS = ("lesson_price", "refund_share", "hourly_wage", "overtime_multiplier", "inspection_penalty", "manager_hour")
+# optional prices: a private lesson (one child, one coach) has its own price; without it, the group lesson price
+OPTIONAL_MONEY_KEYS = ("private_lesson_price",)
 
 
 def check_autonomy(autonomy: Mapping[str, str]) -> None:
@@ -145,9 +147,16 @@ class Preset:
     offer_wave_size: int = 1  # offers sent at once, in queue order (product decision: 3)
     offer_collect_seconds: int = 0  # after the first "yes" of a wave, wait this long for a "yes" from higher up
     plan_b_minutes_before_start: int | None = None  # plan B goes to the manager this long before the start
+    # a private lesson: the family has this long to answer "another coach, OK?", and must answer at the latest this
+    # long before the start; silence hands the lesson to the manager (move to the family's coach, or a credit)
+    client_answer_minutes: int = 30
+    client_answer_before_start_minutes: int = 60
 
     def __post_init__(self) -> None:
         _require_code(self.code, "preset code")
+        if not _positive_int(self.client_answer_minutes) or not _positive_int(self.client_answer_before_start_minutes):
+            raise ValueError(f"preset {self.code}: offers.client_answer_minutes and client_answer_before_start_minutes"
+                             " must be ints >= 1")
         if (self.young_age_max is None) != (self.young_max_per_instructor is None):
             raise ValueError(f"preset {self.code}: young_age_max and young_max_per_instructor go together")
         if self.young_max_per_instructor is not None and not _positive_int(self.young_max_per_instructor):
@@ -277,9 +286,14 @@ class GroupRef:
     size: int
     age_min: int | None = None  # youngest participant, when known
     families: tuple[tuple[str, int], ...] = ()  # (language, number of families speaking it), when known
+    kind: str = "group"  # "private": one child with one coach; another coach only after the family says yes
 
     def __post_init__(self) -> None:
         _require_code(self.id, "group id")
+        if self.kind not in ("group", "private"):
+            raise ValueError(f"group {self.id}: kind must be group or private")
+        if self.kind == "private" and self.size != 1:
+            raise ValueError(f"group {self.id}: a private lesson has exactly one participant")
         for lang, n in self.families:
             if not (isinstance(lang, str) and lang) or not isinstance(n, int) or n < 0:
                 raise ValueError(f"group {self.id}: families must be (language, count >= 0) pairs")
