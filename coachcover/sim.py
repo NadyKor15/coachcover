@@ -19,7 +19,7 @@ Both strategies run on that same morning, each on its own copy of the schedule.
 - CoachCover: `rules.eligible` + `rules.rank`, one offer at a time with the
   policy's timer, the rules again at "yes"; when nobody is left, plan B in the
   core's order (merge, reserve person, overtime, move, close) under the policy's
-  autonomy. The plan B options mirror `Pipeline._plan_facts`.
+  autonomy. Plan B comes from the core's pure function, coachcover.planb.plan_b_options.
 
 Every placement of both strategies is audited by the same `rules.eligible` at the
 moment of booking; a placement with a blocking reason is a violation. Run:
@@ -45,7 +45,7 @@ from zoneinfo import ZoneInfo
 
 from coachcover import seed as school_seed
 from coachcover.model import Commitment, Context, GroupRef, Policy, Shift, Staff, StaffCert, StaffProgram, Venue
-from coachcover.pipeline import OPTION_ORDER, strictest
+from coachcover.planb import plan_b_options as core_plan_b_options
 from coachcover.presets import default_policy
 from coachcover.rules import Code, add_months, assess, eligible, rank
 
@@ -69,10 +69,12 @@ CATEGORY_OF = {
     Code.CERT_EXPIRED: "certificate",
     Code.CERT_EXPIRES_DURING_SHIFT: "certificate",
     Code.CERT_NEEDS_REVIEW: "certificate",
+    Code.CERT_REVOKED: "certificate",
     Code.PROGRAM_MISSING: "program",
     Code.LEVEL_MISSING: "program",
     Code.PROGRAM_RENEWAL_OVERDUE: "program",
     Code.HOURS_LIMIT_EXCEEDED: "hours",
+    Code.REST_TOO_SHORT: "hours",
     Code.RATIO_EXCEEDED: "ratio",
     Code.OVERLAPS_COMMITMENT: "other",
     Code.IS_THE_ABSENT_PERSON: "other",
@@ -81,9 +83,9 @@ CATEGORY_OF = {
 PRIMARY_ORDER = ("role", "certificate", "program", "hours", "ratio", "other")
 CATEGORY_LABEL = {
     "role": "no role for the shift",
-    "certificate": "certificate expired, missing or unconfirmed",
+    "certificate": "certificate expired, revoked, missing or unconfirmed",
     "program": "no program or level, or renewal overdue",
-    "hours": "over the weekly hours limit",
+    "hours": "over the weekly hours limit or too little rest",
     "ratio": "group norm broken (participants per instructor)",
     "other": "other (double booking)",
 }
@@ -130,7 +132,9 @@ class SimParams:
     rota_swaps: tuple[int, int] = (0, 3)
     p_renewal_overdue: float = 0.4
     # variants for the "what if" rows; the main table uses the defaults (the core as built, the literal baseline)
-    offer_batch: int = 1
+    # "waves": the core as built (the preset's waves, collection window and plan B deadline, a product decision);
+    # "one": one offer at a time, plan B only when the queue is empty (the core before 2026-11-07)
+    offers: str = "waves"
     baseline_checks_role: bool = False
 
 
@@ -213,23 +217,30 @@ def load_world() -> World:
     roles: dict[str, set[str]] = defaultdict(set)
     for sid, role in school.staff_roles:
         roles[sid].add(role)
+    revoked = {(r["cert_type"], r["card_number"]): r["revoked_on"] for r in school.registry if r["revoked_on"]}
     certs: dict[str, list[StaffCert]] = defaultdict(list)
     for row in school.certs:
-        certs[row["staff_id"]].append(StaffCert(row["cert_type"], row["issued_on"], row["expires_on"], _needs_review(row)))
+        certs[row["staff_id"]].append(StaffCert(row["cert_type"], row["issued_on"], row["expires_on"], _needs_review(row),
+                                                revoked.get((row["cert_type"], row["card_number"]))))
     programs: dict[str, dict[str, StaffProgram]] = defaultdict(dict)
     for p in school.programs:
         if p["program"] != program:
             raise ValueError(f"unexpected program {p['program']!r} in the training school")
         programs[p["staff_id"]][program] = StaffProgram(program, p["renewed_at"], dict(p["levels"]))
     staff = {
-        sid: Staff(sid, name, frozenset(roles[sid]), tuple(certs[sid]), programs[sid], home)
-        for sid, name, _, home in school.staff
+        sid: Staff(sid, name, frozenset(roles[sid]), tuple(certs[sid]), programs[sid], home,
+                   frozenset(school_seed.staff_languages(lang)))
+        for sid, name, lang, home in school.staff
     }
-    groups = {g["id"]: GroupRef(g["id"], program, g["level"], g["size"]) for g in school.groups}
+    groups = {
+        g["id"]: GroupRef(g["id"], program, g["level"], g["size"], g["age_min"], tuple(sorted(g["family_counts"].items())))
+        for g in school.groups
+    }
     shifts = {
         s["id"]: Shift(
             s["id"], s["venue_id"], s["role"], s["starts_at"], s["ends_at"],
-            tuple(groups[g] for g in s["groups"]), 1, s["zone_id"], assignee=s["staff_id"],
+            tuple(groups[g] for g in s["groups"]), s["instructors"], s["zone_id"], assignee=s["staff_id"],
+            extra_certs=tuple(s["extra_certs"]),
         )
         for s in school.shifts
     }
@@ -635,39 +646,11 @@ def run_baseline(world: World, morning: Morning, params: SimParams = SimParams()
 # --- CoachCover: rules, ranked offers with a timer, plan B ---------------------------
 
 
-def plan_b_options(state: State, shift: Shift, absent: str, now: datetime) -> list[dict]:
-    """Plan B in the core's order (Pipeline._plan_facts): merge, reserve person, overtime, move, close."""
-    world, staff = state.world, state.morning.staff
-    policy = world.policy
-    auto = policy.autonomy
-    context = state.context()
-    options: list[dict] = []
-    if shift.groups and auto["merge_groups"] != "off":
-        for partner in state.partners(shift):
-            teacher = staff.get(partner.assignee)
-            merged = Shift(partner.id, partner.venue, partner.role, partner.start, partner.end,
-                           partner.groups + shift.groups, partner.instructors, partner.zone,
-                           assignee=None, merged_shift_ids=(shift.id,))
-            if teacher is not None and eligible(teacher, merged, now, policy, context).ok:
-                options.append({"kind": "merge", "mode": strictest(auto["plan_b"], auto["merge_groups"]),
-                                "into_shift_id": partner.id, "staff_id": teacher.id})
-    reserve_roles = {r.code for r in policy.preset.roles.values() if r.reserve}
-    leads = [s for s in staff.values() if s.roles & reserve_roles and s.id != absent]
-    ready = [r for r in rank(assess(s, shift, now, policy, context) for s in leads) if r.candidate.decision.ok]
-    if ready:
-        options.append({"kind": "lead", "mode": auto["plan_b"], "staff_id": ready[0].candidate.staff_id})
-    if auto["overtime"] != "off":
-        people = [s for s in staff.values() if not (s.roles & reserve_roles)]
-        for r in rank(assess(s, shift, now, policy, context) for s in people):
-            blocking = [x for x in r.candidate.decision.reasons if x.blocking]
-            if blocking and all(x.code == Code.HOURS_LIMIT_EXCEEDED for x in blocking):
-                options.append({"kind": "overtime", "mode": strictest("propose", auto["plan_b"]),
-                                "staff_id": r.candidate.staff_id})
-                break
-    if shift.groups:
-        options.append({"kind": "reschedule", "mode": auto["plan_b"]})
-    options.append({"kind": "close", "mode": auto["plan_b"]})
-    options.sort(key=lambda o: OPTION_ORDER.index(o["kind"]))
+def plan_b_options(state: State, shift: Shift, absent: str, now: datetime, exclude: Iterable[str] = ()) -> list[dict]:
+    """Plan B from the core's pure function (coachcover.planb), on the replay's own state."""
+    options, _ = core_plan_b_options(shift=shift, absent=absent, partners=state.partners(shift),
+                                     staff=state.morning.staff, policy=state.world.policy, context=state.context(),
+                                     now=now, exclude=frozenset(exclude))
     return options
 
 
@@ -694,41 +677,67 @@ def run_coachcover(world: World, morning: Morning, params: SimParams = SimParams
         people = [s for s in morning.staff.values() if not (s.roles & reserve_roles)]
         queue = [r.candidate.staff_id for r in rank(assess(s, shift, t, policy, state.context()) for s in people)
                  if r.candidate.decision.ok]
-        asked, done = 0, None
+        asked_ids: list[str] = []
+        done = None
+        preset = policy.preset
+        waves = params.offers == "waves"
+        size = preset.offer_wave_size if waves else 1
+        collect = timedelta(seconds=preset.offer_collect_seconds if waves else 0)
+        lead = preset.plan_b_minutes_before_start if waves else None
+        deadline = shift.start - timedelta(minutes=lead) if lead is not None else None
+        winner = None
         if policy.autonomy["assign_cover"] != "off":
-            # params.offer_batch offers are open at once (the core: 1); each one that ends without a "yes"
-            # is replaced by an offer to the next person in the queue
             pending = list(queue)
-            active: list[tuple[datetime, str, str]] = []
-            while pending or active:
-                while pending and len(active) < params.offer_batch:
-                    sid = pending.pop(0)
-                    asked += 1
-                    answer, when = _offer(morning, sid, shift, t, window, params)
-                    active.append((when, sid, answer))
-                active.sort(key=lambda a: (_utc(a[0]), a[1]))
-                when, sid, answer = active.pop(0)
-                t = when
-                if answer != "yes":
-                    continue
-                if not eligible(morning.staff[sid], shift, t, policy, state.context()).ok:
-                    continue  # blocked at "yes": withdrawn, next person
-                human = policy.autonomy["assign_cover"] == "propose"
-                at = t + notice + decide if human else t
-                codes = _audit(state, sid, shift, at)
-                state.book(sid, shift)
-                done = CaseResult(shift.id, bool(shift.groups), callout.at, shift.start, at, "covered", "offer", sid, human,
-                                  codes, manager_minutes=params.decide_minutes if human else 0.0, asked=asked)
-                break
+            while pending and winner is None:
+                # a wave: the next `size` people at once; the highest "yes" wins once nobody above it can still
+                # answer or `collect` after the first "yes"; with nobody, the next wave when the last one is over
+                wave, pending = pending[:size], pending[size:]
+                asked_ids.extend(wave)
+                answers = sorted(((*_offer(morning, sid, shift, t, window, params), i, sid) for i, sid in enumerate(wave)),
+                                 key=lambda a: (_utc(a[1]), a[2]))
+                held: list[tuple[int, str]] = []
+                resolved: set[int] = set()
+                first_yes = None
+                settle = None
+                for answer, when, i, sid in answers:
+                    if first_yes is not None and _utc(when) > _utc(first_yes + collect):
+                        settle = first_yes + collect
+                        break
+                    resolved.add(i)
+                    if answer == "yes" and eligible(morning.staff[sid], shift, when, policy, state.context()).ok:
+                        held.append((i, sid))
+                        first_yes = first_yes or when
+                    if held and all(k in resolved for k in range(min(held)[0])):
+                        settle = when
+                        break
+                    t = when
+                if held:
+                    t = settle if settle is not None else first_yes + collect
+                    winner = min(held)[1]
+                elif answers:
+                    t = max((a[1] for a in answers), key=_utc)
+        # with a deadline, plan B goes to the manager at the deadline (or at once, for a late call-out) and the
+        # manager acts after noticing it; a "yes" before that still covers the shift
+        plan_b_at = max(deadline, callout.at + timedelta(minutes=params.intake_minutes), key=_utc) if deadline else None
+        if winner is not None and (plan_b_at is None or _utc(t) < _utc(plan_b_at + notice + decide)):
+            human = policy.autonomy["assign_cover"] == "propose"
+            at = t + notice + decide if human else t
+            codes = _audit(state, winner, shift, at)
+            state.book(winner, shift)
+            done = CaseResult(shift.id, bool(shift.groups), callout.at, shift.start, at, "covered", "offer", winner, human,
+                              codes, manager_minutes=params.decide_minutes if human else 0.0, asked=len(asked_ids))
         if done is None:
-            done = _plan_b(state, callout, shift, t, asked, params)
+            # plan B: when the queue is empty, or at the deadline while offers are still out (whichever is first)
+            start_b = t if plan_b_at is None or _utc(t) < _utc(plan_b_at) else plan_b_at
+            done = _plan_b(state, callout, shift, start_b, len(asked_ids), params, exclude=asked_ids)
         results.append(done)
     return results
 
 
-def _plan_b(state: State, callout: Callout, shift: Shift, t: datetime, asked: int, params: SimParams) -> CaseResult:
+def _plan_b(state: State, callout: Callout, shift: Shift, t: datetime, asked: int, params: SimParams,
+            exclude: Iterable[str] = ()) -> CaseResult:
     morning, policy = state.morning, state.world.policy
-    options = plan_b_options(state, shift, callout.staff_id, t)
+    options = plan_b_options(state, shift, callout.staff_id, t, exclude=exclude)
     notice = timedelta(minutes=params.manager_notice_minutes)
     decide = timedelta(minutes=params.decide_minutes)
     manager = 0.0
@@ -876,10 +885,10 @@ WHAT_IF = {
         {"baseline_checks_role": True},
         BASELINE,
     ),
-    "coachcover_three_offers_at_once": (
-        "CoachCover with three offers open at once instead of one (the first eligible yes wins). "
-        "Not what the core does today; shown to size that change.",
-        {"offer_batch": 3},
+    "coachcover_one_offer_at_a_time": (
+        "CoachCover before 2026-11-07: one offer at a time, plan B only when the queue is empty "
+        "(the 'before' column of the before/after table).",
+        {"offers": "one"},
         COACHCOVER,
     ),
 }
@@ -911,8 +920,8 @@ def run(mornings: int = MORNINGS, seed: int = SEED, params: SimParams = SimParam
     """The whole replay. Deterministic: the same arguments give the same dict."""
     if not isinstance(mornings, int) or isinstance(mornings, bool) or mornings < 1:
         raise ValueError("mornings must be an int >= 1")
-    if not isinstance(params.offer_batch, int) or params.offer_batch < 1:
-        raise ValueError("offer_batch must be an int >= 1")
+    if params.offers not in ("waves", "one"):
+        raise ValueError("offers must be 'waves' or 'one'")
     world = load_world()
     tz = world.tz
     rows, results, manager = _replay(world, mornings, seed, params, keep_rows=True)
@@ -923,7 +932,7 @@ def run(mornings: int = MORNINGS, seed: int = SEED, params: SimParams = SimParam
             variants[name] = {"text": text, "params": change, "strategy": key,
                               "summary": summarize(other[key], other_manager[key])}
     policy = world.policy
-    return {
+    result = {
         "label": label(mornings, seed),
         "synthetic": True,
         "version": SIM_VERSION,
@@ -933,6 +942,9 @@ def run(mornings: int = MORNINGS, seed: int = SEED, params: SimParams = SimParam
         "school": {"preset": policy.preset.code, "venues": len(world.venues), "staff": len(world.staff),
                    "shifts": len(world.shifts), "week_start": world.week_start.isoformat(), "tz": str(tz)},
         "policy": {"offer_timeout_minutes": policy.offer_timeout_minutes, "max_weekly_hours": policy.max_weekly_hours,
+                   "offer_wave_size": policy.preset.offer_wave_size,
+                   "offer_collect_seconds": policy.preset.offer_collect_seconds,
+                   "plan_b_minutes_before_start": policy.preset.plan_b_minutes_before_start,
                    "autonomy": dict(policy.autonomy)},
         "params": _jsonable(asdict(params)),
         "assumptions": ASSUMPTIONS,
@@ -940,6 +952,8 @@ def run(mornings: int = MORNINGS, seed: int = SEED, params: SimParams = SimParam
         "what_if": variants,
         "mornings_detail": rows,
     }
+    result["before_after"] = before_after(result)
+    return result
 
 
 def _jsonable(value):
@@ -1063,6 +1077,50 @@ def what_if_markdown(result: dict) -> str:
     return "\n".join(lines)
 
 
+BEFORE_AFTER_ROWS = (
+    ("Shifts that needed cover", "cases"),
+    ("People placed", "placements"),
+    ("Placements that break a rule", "violations"),
+    ("Placements with an expired card", "expired_certificate_placements"),
+    ("Minutes from call-out to closed, median", "median_minutes_to_close"),
+    ("Minutes from call-out to closed, p90", "p90_minutes_to_close"),
+    ("Minutes from call-out to closed, mean", "mean_minutes_to_close"),
+    ("Closed after the shift started", "closed_after_shift_start"),
+    ("Closed without a person", "closed_without_human"),
+    ("Closed without a person, %", "closed_without_human_pct"),
+    ("Shifts covered (offer or plan B)", "covered"),
+    ("Lessons cancelled or moved", "lessons_cancelled"),
+    ("Children without their lesson", "participants_without_lesson"),
+    ("Shifts without groups left empty", "shifts_without_groups_left_empty"),
+    ("Approved overtime", "approved_overtime"),
+    ("Offers sent (people asked)", "asked_total"),
+    ("Manager minutes, total", "manager_minutes_total"),
+)
+BEFORE_KEY = "coachcover_one_offer_at_a_time"
+
+
+def before_after(result: dict) -> dict | None:
+    """CoachCover one offer at a time (before) against waves + plan B by the deadline (after, the core as built)."""
+    before = (result.get("what_if") or {}).get(BEFORE_KEY)
+    if before is None:
+        return None
+    b, a = before["summary"], result["summary"][COACHCOVER]
+    return {"before": "one offer at a time, plan B when the queue is empty",
+            "after": "waves of 3, highest yes in 60 s, plan B 20 min before the start",
+            "rows": [[title, b[key], a[key]] for title, key in BEFORE_AFTER_ROWS],
+            "outcomes": {"before": b["outcomes"], "after": a["outcomes"]}}
+
+
+def before_after_markdown(result: dict) -> str:
+    table = before_after(result)
+    if table is None:
+        return "Not computed in this run."
+    lines = [f"| Metric | Before: {table['before']} | After: {table['after']} |", "|---|---:|---:|"]
+    lines += [f"| {title} | {_cell(b)} | {_cell(a)} |" for title, b, a in table["rows"]]
+    lines += ["", f"Outcomes before: {table['outcomes']['before']}; after: {table['outcomes']['after']}."]
+    return "\n".join(lines)
+
+
 def report_markdown(result: dict) -> str:
     b, c = result["summary"][BASELINE], result["summary"][COACHCOVER]
     p = result["params"]
@@ -1099,12 +1157,23 @@ def report_markdown(result: dict) -> str:
         "and the group norm are not checked: that is how a chat and a general scheduler work. Nobody by the start: a lesson "
         "goes into the group next to it without checking the norm, otherwise it is cancelled; a shift without groups stays empty.",
         f"- **{STRATEGY_LABEL[COACHCOVER]}.** {p['intake_minutes']} min after the call-out the case opens. The rules rank every "
-        "non-reserve person; offers go to eligible people only, one at a time, with the policy's timer "
-        f"({result['policy']['offer_timeout_minutes']} min); the rules run again at \"yes\". When nobody is left, plan B in the "
+        "non-reserve person; offers go to eligible people only, in waves of "
+        f"{result['policy']['offer_wave_size']} in queue order, with the policy's timer "
+        f"({result['policy']['offer_timeout_minutes']} min); the highest \"yes\" wins once nobody above it can still answer, "
+        f"at most {result['policy']['offer_collect_seconds']} s after the first \"yes\"; the rules run again at \"yes\". "
+        f"Plan B goes to the manager {result['policy']['plan_b_minutes_before_start']} min before the shift starts even while "
+        "offers are out (a \"yes\" before the manager acts still covers the shift), or earlier when nobody is left, in the "
         "core's order: merge into the group next to it within the norm, a reserve person, overtime (an offer to a person blocked "
         "only by hours), move the lesson, close. Plan B is `propose` in the policy, so the manager approves it "
         f"({p['manager_notice_minutes']} min to see the card, {p['decide_minutes']} min to decide). If an overtime offer is not "
         "taken, the manager goes to the next option.",
+        "",
+        "## Before / after: offer waves (product decision)",
+        "",
+        "CoachCover on the same 50 mornings, before (one offer at a time) and after (waves + plan B by the deadline). "
+        "The baseline does not change.",
+        "",
+        before_after_markdown(result),
         "",
         "## What if (not the main table)",
         "",
@@ -1128,12 +1197,12 @@ def report_markdown(result: dict) -> str:
         "",
         "- Synthetic data: one fictional school, one week, changed per morning. Real numbers need a real school's schedule.",
         "- The cases of one morning are worked one after another in call-out order; a person booked for an earlier case is busy for a later one that overlaps.",
-        "- People answer the chat, a call and an offer with the same delay and the same wish; the chat reaches everyone at once, CoachCover asks one person at a time.",
+        "- People answer the chat, a call and an offer with the same delay and the same wish; the chat reaches everyone at once, CoachCover asks a wave of three at a time.",
         "- The baseline manager never checks anything. A careful manager would check some things; the replay counts what nobody checks.",
         "- A shift counts as closed when a person is booked or the fallback is decided; the time runs from the call-out.",
         "- In plan B a reserve person is booked on the manager's approval without being asked, as the core does; the baseline manager never calls a reserve person.",
         "- \"Closed without a person\" is 0 for the baseline by construction: the manager books every shift by hand.",
-        "- CoachCover keeps sending offers until the queue is empty, as the core does: there is no deadline before the shift starts.",
+        "- Plan B by the deadline: the manager acts on it after noticing the card; the offers of the open wave keep running until then.",
         "",
     ]
     return "\n".join(out)

@@ -1,10 +1,9 @@
 """Money on the screen: what an uncovered morning costs, and what one cover costs in model calls.
 
-Every price is a parameter that says where it comes from. Most are assumptions:
-no real school's price list was available, so the defaults are conservative
-placeholders, marked `assumption: true`, to be replaced by the school's own
-numbers. The hourly wage follows the policy's `overtime_cost_per_hour`, so the
-money card and the plan B overtime option show the same rate.
+Every price comes from the preset's `money` block and says where it comes from. Most are assumptions:
+no real school's price list was available, so the preset's values are conservative placeholders,
+marked `assumption: true`, to be replaced by the school's own numbers. The hourly wage follows the
+policy's `overtime_cost_per_hour`, so the money card and the plan B overtime option show the same rate.
 
 - `uncovered_cost`: refunds for the lessons that would not run (participants x
   price x refund share), overtime for the shifts without groups someone would
@@ -23,11 +22,10 @@ from datetime import UTC, datetime
 from typing import Any, Iterable, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
-from coachcover.model import Shift
+from coachcover.model import MONEY_KEYS, Shift
 from coachcover.models import call_cost, load_prices
 
 CURRENCY = "USD"
-OVERTIME_SOURCE = "US Fair Labor Standards Act: time and a half for hours over 40 in a workweek"
 
 
 @dataclass(frozen=True)
@@ -35,15 +33,12 @@ class Price:
     value: float
     unit: str
     note: str
-    source: str | None = None  # None: an assumption of ours, not checked against a real school
+    source: str | None = None
+    assumption: bool = True  # not checked against a real school
 
     def __post_init__(self) -> None:
         if not isinstance(self.value, (int, float)) or isinstance(self.value, bool) or self.value < 0:
             raise ValueError(f"price {self.unit!r}: value must be a number >= 0")
-
-    @property
-    def assumption(self) -> bool:
-        return self.source is None or self.source.startswith("assumption")
 
     def as_dict(self) -> dict:
         return {"value": self.value, "unit": self.unit, "assumption": self.assumption, "source": self.source,
@@ -74,39 +69,29 @@ class MoneyParams:
                 ("lesson_price", "refund_share", "hourly_wage", "overtime_multiplier", "inspection_penalty", "manager_hour")}
 
 
-DEFAULT_LESSON_PRICE = 15.0
-DEFAULT_WAGE = 20.0
-DEFAULT_MANAGER_HOUR = 25.0
+def _price(entry: Mapping[str, Any]) -> Price:
+    return Price(float(entry["value"]), entry["unit"], entry["note"], entry.get("source"), bool(entry["assumption"]))
 
 
-def money_params(overtime_cost_per_hour: float | None = None, **values: float) -> MoneyParams:
-    """Defaults, with the policy's overtime price when given; keyword values replace a default's value
-    (a replaced value keeps its unit and is marked as the school's own number)."""
-    multiplier = Price(1.5, "x the wage per overtime hour",
-                       "Overtime is paid at time and a half.", OVERTIME_SOURCE)
+def money_params(prices: Mapping[str, Mapping[str, Any]], overtime_cost_per_hour: float | None = None,
+                 **values: float) -> MoneyParams:
+    """Prices from the preset's `money` block, with the policy's overtime price when given; keyword values
+    replace a price's value (a replaced value keeps its unit and is marked as the school's own number)."""
+    if not prices:
+        raise ValueError("the preset has no money block")
+    params = MoneyParams(**{name: _price(prices[name]) for name in MONEY_KEYS})
     if overtime_cost_per_hour is not None:
-        wage = Price(overtime_cost_per_hour / multiplier.value, "USD per hour",
-                     "Derived from the policy's overtime price (overtime_cost_per_hour / 1.5); the preset calls that "
-                     "price an example, so this is an assumption too.",
-                     "assumption: policy overtime_cost_per_hour / 1.5")
-    else:
-        wage = Price(DEFAULT_WAGE, "USD per hour", "Conservative placeholder for an hourly staff wage.")
-    params = MoneyParams(
-        lesson_price=Price(DEFAULT_LESSON_PRICE, "USD per participant per lesson",
-                           "Conservative placeholder for one group lesson; replace with the school's price list."),
-        refund_share=Price(1.0, "share of the lesson price",
-                           "Every participant of a lesson that does not run gets a refund or a credit."),
-        hourly_wage=wage,
-        overtime_multiplier=multiplier,
-        inspection_penalty=Price(0.0, "USD per uncovered morning",
-                                 "Off by default; set a fine or the cost of a closure if an inspector would act."),
-        manager_hour=Price(DEFAULT_MANAGER_HOUR, "USD per hour",
-                           "Conservative placeholder for one hour of a manager's time."),
-    )
+        multiplier = params.overtime_multiplier.value
+        params = replace(params, hourly_wage=Price(
+            overtime_cost_per_hour / multiplier, "USD per hour",
+            f"Derived from the policy's overtime price (overtime_cost_per_hour / {multiplier:g}); the preset calls that "
+            "price an example, so this is an assumption too.",
+            f"assumption: policy overtime_cost_per_hour / {multiplier:g}", True))
     unknown = set(values) - set(params.as_dict())
     if unknown:
         raise ValueError(f"unknown money parameters {sorted(unknown)}")
-    changed = {k: replace(getattr(params, k), value=v, source="set by the school") for k, v in values.items()}
+    changed = {k: replace(getattr(params, k), value=v, source="set by the school", assumption=False)
+               for k, v in values.items()}
     return replace(params, **changed)
 
 
@@ -321,7 +306,8 @@ def today_money(conn, policy_id: str, now: datetime, params: MoneyParams | None 
     from coachcover.repo import load_policy, load_shift  # the database layer only when it is used
 
     if params is None:
-        params = money_params(load_policy(conn, policy_id).overtime_cost_per_hour)
+        policy = load_policy(conn, policy_id)
+        params = money_params(policy.preset.money, policy.overtime_cost_per_hour)
     cases = _today_cases(conn, policy_id, now)
     shifts = [load_shift(conn, sid) for sid in dict.fromkeys(sid for _, sid in cases)]
     uncovered = uncovered_cost(shifts, params)

@@ -44,6 +44,7 @@ class Code(StrEnum):
     CERT_MISSING = "CERT_MISSING"
     CERT_NOT_YET_VALID = "CERT_NOT_YET_VALID"
     CERT_EXPIRED = "CERT_EXPIRED"
+    CERT_REVOKED = "CERT_REVOKED"
     CERT_EXPIRES_DURING_SHIFT = "CERT_EXPIRES_DURING_SHIFT"
     CERT_NEEDS_REVIEW = "CERT_NEEDS_REVIEW"
     CERT_EXPIRES_ON_SHIFT_DAY = "CERT_EXPIRES_ON_SHIFT_DAY"  # warning
@@ -52,6 +53,7 @@ class Code(StrEnum):
     PROGRAM_RENEWAL_OVERDUE = "PROGRAM_RENEWAL_OVERDUE"
     HOURS_LIMIT_EXCEEDED = "HOURS_LIMIT_EXCEEDED"
     OVERLAPS_COMMITMENT = "OVERLAPS_COMMITMENT"
+    REST_TOO_SHORT = "REST_TOO_SHORT"
     RATIO_EXCEEDED = "RATIO_EXCEEDED"
 
 
@@ -225,12 +227,20 @@ def _check_role(staff: Staff, shift: Shift) -> list[Reason]:
     return [Reason(Code.ROLE_MISSING, {"role": shift.role})]
 
 
+def required_certs(role: Role, shift: Shift, preset: Preset) -> tuple[str, ...]:
+    """The role's certificates, then the shift's extra ones, each once."""
+    for code in shift.extra_certs:
+        if code not in preset.cert_types:
+            raise ValueError(f"shift {shift.id}: unknown extra certificate {code!r}")
+    return tuple(dict.fromkeys((*role.required_certs, *shift.extra_certs)))
+
+
 def _check_certs(staff: Staff, role: Role, shift: Shift, at: datetime, tz: ZoneInfo, preset: Preset) -> list[Reason]:
     reasons: list[Reason] = []
     start, end = _utc(shift.start), _utc(shift.end)
     last_day = _last_local_day(shift.end, tz)
     today = _local_day(at, tz)
-    for code in role.required_certs:
+    for code in required_certs(role, shift, preset):
         cert_type = preset.cert_types[code]
         held = [c for c in staff.certs if c.cert_type == code]
         if not held:
@@ -238,10 +248,15 @@ def _check_certs(staff: Staff, role: Role, shift: Shift, at: datetime, tz: ZoneI
             continue
         # each card is valid from 00:00 of its issue day to the end of its expiry day, venue time;
         # cards that follow each other without a gap cover the shift together
-        windows = [
+        # a card the issuer revoked stops at the start of its revocation day, whatever its printed expiry
+        printed = [
             (_local_midnight_utc(c.issued_on, tz), _local_midnight_utc(cert_expiry(c, cert_type) + timedelta(days=1), tz), c)
             for c in held
         ]
+        windows = [
+            (a, min(b, _local_midnight_utc(c.revoked_on, tz)) if c.revoked_on is not None else b, c) for a, b, c in printed
+        ]
+        windows = [(a, b, c) for a, b, c in windows if a < b]
         trusted_end = _run_covering(((a, b) for a, b, c in windows if not c.needs_review), start, end)
         if trusted_end is not None:
             expiry = _last_local_day(trusted_end, tz)
@@ -257,6 +272,22 @@ def _check_certs(staff: Staff, role: Role, shift: Shift, at: datetime, tz: ZoneI
         if any_end is not None:
             reasons.append(
                 Reason(Code.CERT_NEEDS_REVIEW, {"cert_type": code, "expires_on": _last_local_day(any_end, tz).isoformat()})
+            )
+            continue
+        revoked = [(a, b, c) for a, b, c in printed if c.revoked_on is not None]
+        if revoked and _run_covering(((a, b) for a, b, _ in printed), start, end) is not None:
+            # the printed dates would cover the shift: the revocation is what blocks
+            covering = [c for a, b, c in revoked if a <= start < b] or [c for _, _, c in revoked]
+            card = max(covering, key=lambda c: (c.revoked_on, c.issued_on))
+            reasons.append(
+                Reason(
+                    Code.CERT_REVOKED,
+                    {
+                        "cert_type": code,
+                        "revoked_on": card.revoked_on.isoformat(),
+                        "expires_on": cert_expiry(card, cert_type).isoformat(),
+                    },
+                )
             )
             continue
         at_start = [b for a, b in _merged((a, b) for a, b, _ in windows) if a <= start < b]
@@ -364,14 +395,58 @@ def _check_overlaps(own: Sequence[Commitment], shift: Shift, tz: ZoneInfo) -> li
     return reasons
 
 
+def _check_rest(own: Sequence[Commitment], shift: Shift, tz: ZoneInfo, preset: Preset) -> list[Reason]:
+    """Rest between work on different days: the last booking that started on an earlier local day must end at
+    least `min_rest_hours` before the shift starts; the first booking that starts on a later day must start at
+    least that long after the shift ends. Bookings on the shift's own start day are one working day (a split
+    shift), not a rest question."""
+    if preset.min_rest_hours is None:
+        return []
+    need = timedelta(hours=preset.min_rest_hours)
+    start, end = _utc(shift.start), _utc(shift.end)
+    day = _local_day(shift.start, tz)
+    reasons = []
+    before = [c for c in own if _local_day(c.start, tz) < day and _utc(c.end) <= start]
+    if before:
+        c = max(before, key=lambda c: (_utc(c.end), c.ref))
+        gap = start - _utc(c.end)
+        if gap < need:
+            reasons.append(Reason(Code.REST_TOO_SHORT, {
+                "side": "before", "rest_hours": _hours(int(gap.total_seconds())), "min_rest_hours": preset.min_rest_hours,
+                "since": c.end.astimezone(tz).isoformat(), "kind": c.kind, "ref": c.ref,
+            }))
+    after = [c for c in own if _local_day(c.start, tz) > day and _utc(c.start) >= end]
+    if after:
+        c = min(after, key=lambda c: (_utc(c.start), c.ref))
+        gap = _utc(c.start) - end
+        if gap < need:
+            reasons.append(Reason(Code.REST_TOO_SHORT, {
+                "side": "after", "rest_hours": _hours(int(gap.total_seconds())), "min_rest_hours": preset.min_rest_hours,
+                "until": c.start.astimezone(tz).isoformat(), "kind": c.kind, "ref": c.ref,
+            }))
+    return reasons
+
+
+def group_norm(group: GroupRef, preset: Preset) -> int:
+    """Participants per instructor for one group: its level's norm, stricter for young children."""
+    per = _level(preset, group).max_per_instructor
+    if (
+        preset.young_age_max is not None
+        and group.age_min is not None
+        and group.age_min <= preset.young_age_max
+    ):
+        per = min(per, preset.young_max_per_instructor)
+    return per
+
+
 def ratio_reason(groups: Sequence[GroupRef], instructors: int, preset: Preset) -> Reason | None:
-    """Participants per instructor for groups taught together. Mixed levels take the strictest norm."""
+    """Participants per instructor for groups taught together. Mixed groups take the strictest norm."""
     if not isinstance(instructors, int) or instructors < 1:
         raise ValueError("instructors must be an int >= 1")
     if not groups:
         return None
-    strictest = min(groups, key=lambda g: _level(preset, g).max_per_instructor)
-    per = _level(preset, strictest).max_per_instructor
+    strictest = min(groups, key=lambda g: group_norm(g, preset))
+    per = group_norm(strictest, preset)
     participants = sum(g.size for g in groups)
     capacity = per * instructors
     if participants <= capacity:
@@ -404,6 +479,7 @@ def eligible(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: 
         *_check_programs(staff, shift, tz, preset),
         *_check_hours(own, shift, tz, policy),
         *_check_overlaps(own, shift, tz),
+        *_check_rest(own, shift, tz, preset),
     ]
     ratio = ratio_reason(shift.groups, shift.instructors, preset)
     if ratio is not None:
@@ -415,8 +491,9 @@ def eligible(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: 
 #
 # Queue order (product decision, a product decision): 1) eligible only on top; 2) fewer
 # hours this week; 3) closer venue, the same venue before any other; 4) program
-# and level match the group; 5) longer tenure at the level. Staff id breaks
-# the last tie, so the order never depends on input order.
+# and level match the group; 5) longer tenure at the level; then (idea 4, after
+# that order) speaks the language most of the group's families speak. Staff id
+# breaks the last tie, so the order never depends on input order.
 
 
 @dataclass(frozen=True)
@@ -429,6 +506,10 @@ class Candidate:
     level_match: bool | None  # cleared for every group's program and level; None for a shift without groups
     level_tenure_days: int | None  # days cleared at the shift's level(s); None without groups or level
     levels: tuple[tuple[str, str], ...] = ()  # the shift's (program, level) pairs, for the text
+    family_language: str | None = None  # the language most families of the shift's groups speak (over half)
+    family_count: int = 0  # families speaking it
+    family_total: int = 0  # families with a known language
+    speaks_family_language: bool | None = None  # None when the groups have no majority language
 
 
 RANK_FACTORS = (
@@ -438,6 +519,7 @@ RANK_FACTORS = (
     "distance_km",
     "level_match",
     "level_tenure_days",
+    "family_language",
     "staff_id",
 )
 
@@ -461,6 +543,11 @@ class Ranked:
             "level_match": c.level_match,
             "levels": [list(pair) for pair in c.levels],
             "level_tenure_days": c.level_tenure_days,
+            "family_language": (
+                {"language": c.family_language, "families": c.family_count, "of": c.family_total,
+                 "speaks": c.speaks_family_language}
+                if c.family_language else None
+            ),
             "above_next": dict(self.above_next) if self.above_next else None,
         }
 
@@ -490,6 +577,19 @@ def _shift_levels(shift: Shift) -> tuple[tuple[str, str], ...]:
     return tuple(dict.fromkeys((g.program, g.level) for g in shift.groups))
 
 
+def family_language(groups: Sequence[GroupRef]) -> tuple[str | None, int, int]:
+    """(language spoken by more than half of the families, its families, all families with a known language)."""
+    counts: dict[str, int] = {}
+    for g in groups:
+        for lang, n in g.families:
+            counts[lang] = counts.get(lang, 0) + n
+    total = sum(counts.values())
+    if not total:
+        return None, 0, 0
+    lang, n = max(sorted(counts.items()), key=lambda kv: kv[1])
+    return (lang, n, total) if n * 2 > total else (None, 0, total)
+
+
 def assess(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: Context) -> Candidate:
     """`eligible` plus the facts `rank` sorts by."""
     decision = eligible(staff, shift, at, policy, context)
@@ -500,6 +600,7 @@ def assess(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: Co
     week_from, week_to = _week_bounds(week_start_date(day, policy.week_start), tz)
     since = [_cleared_since(staff, g, day) for g in shift.groups]
     level_match = all(s is not None for s in since) if shift.groups else None
+    lang, lang_n, lang_total = family_language(shift.groups)
     return Candidate(
         staff_id=staff.id,
         decision=decision,
@@ -509,6 +610,10 @@ def assess(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: Co
         level_match=level_match,
         level_tenure_days=min((day - s).days for s in since) if level_match else None,
         levels=_shift_levels(shift),
+        family_language=lang,
+        family_count=lang_n,
+        family_total=lang_total,
+        speaks_family_language=(lang in staff.languages) if lang else None,
     )
 
 
@@ -520,12 +625,17 @@ def _sort_key(c: Candidate) -> tuple:
         math.inf if c.distance_km is None else c.distance_km,
         1 if c.level_match is False else 0,
         math.inf if c.level_tenure_days is None else -c.level_tenure_days,
+        0 if c.speaks_family_language else 1,
         c.staff_id,
     )
 
 
 def _factor_value(c: Candidate, factor: str) -> object:
-    return c.decision.ok if factor == "eligible" else getattr(c, factor)
+    if factor == "eligible":
+        return c.decision.ok
+    if factor == "family_language":
+        return c.speaks_family_language
+    return getattr(c, factor)
 
 
 def rank(candidates: Iterable[Candidate]) -> list[Ranked]:

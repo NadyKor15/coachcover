@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "image_sha256": "fe6a5ec21300a6437c8daffd97592ca0972eafdcdbfebc6ffbd6f394bee44352"
+ },
+ "input_sha256": "c401e278fc3280a9f07e9d125e721bfb7e083b405a5e6a9296102a1c64adc8a1",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h16 reader muse; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 1360,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Ava Thompson\", \"id\": \"NS-6224-09\", \"issued\": \"2024-09-30\", \"exp\": null}"
+    }
+   }
+  ]
+ }
+}

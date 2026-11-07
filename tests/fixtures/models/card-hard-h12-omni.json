@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+ "input": {
+  "image_sha256": "08d7ad0d01222051caf8ba0647b1c5dc8c4745ca312f2ee24d55a089cec26142"
+ },
+ "input_sha256": "1bb32e8b832b35fdf5f9002e983afb513b1ebcb4c97a04ba358beb0e7c12a2b7",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h12 reader omni; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 7720,
+ "response": {
+  "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Hana Sato\", \"id\": \"NAT-3229-35\", \"issued\": \"2024-09-28\", \"exp\": \"2026-09-28\"}"
+    }
+   }
+  ]
+ }
+}

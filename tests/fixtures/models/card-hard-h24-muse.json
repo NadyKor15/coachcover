@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "image_sha256": "601591ccf1ab23c1df1ff06aa5df06b9312b4edc4b55f97dd5d6613e65967eae"
+ },
+ "input_sha256": "4e19ca23fe34493bfe8b0160ef4a398217068497325ff60184a69b8408f581da",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h24 reader muse; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 1360,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Hana Sato\", \"id\": \"REG-5450-87\", \"issued\": \"2025-04-11\", \"exp\": \"2027-04-11\"}"
+    }
+   }
+  ]
+ }
+}

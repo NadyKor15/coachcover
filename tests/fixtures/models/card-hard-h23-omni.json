@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+ "input": {
+  "image_sha256": "ce1a63f43f113771f711f64dcf4a19e4526ee478bdc5001492c137f367cfca1a"
+ },
+ "input_sha256": "8a063cc34092ce8d78021216ea78b314a39d13535021bbd9e065845d1104129e",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h23 reader omni; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 7720,
+ "response": {
+  "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Maria Lopez\", \"id\": \"AQU-1429-11\", \"issued\": \"2024-11-18\", \"exp\": \"2026-11-18\"}"
+    }
+   }
+  ]
+ }
+}

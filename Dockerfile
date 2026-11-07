@@ -15,6 +15,8 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --python /usr/local/bin/python3
 COPY coachcover ./coachcover
+# the screens, served by the API at / (offer and case pages at /offer and /case)
+COPY web ./web
 # replay mode answers from the recorded model answers and plays the recorded voice note
 COPY tests/fixtures ./tests/fixtures
 

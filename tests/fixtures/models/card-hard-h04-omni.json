@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+ "input": {
+  "image_sha256": "364cc304c5d0e5b0aea8076993db4bc4ca2cc4262b5df5b2e53d1e0dd17d8f46"
+ },
+ "input_sha256": "d8a4aa3f3b3139da339548269b3819c9637b18b6d1fb797ea7540f3d6833b5ac",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h04 reader omni; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 7720,
+ "response": {
+  "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Sofia Reyes\", \"id\": \"REG-9373-18\", \"issued\": \"2025-02-09\", \"exp\": \"2027-02-09\"}"
+    }
+   }
+  ]
+ }
+}

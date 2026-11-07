@@ -31,7 +31,8 @@ def test_both_presets_load_with_their_data():
 
 
 def test_autonomy_is_policy_data_with_partial_overrides():
-    assert SWIM.autonomy == {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "propose"}
+    assert SWIM.autonomy == {"assign_cover": "auto", "plan_b": "propose", "merge_groups": "propose", "overtime": "propose",
+                             "night_cover": "propose"}
     bolder = default_policy("fitness_club", autonomy={"merge_groups": "auto"})
     assert bolder.autonomy["merge_groups"] == "auto" and bolder.autonomy["plan_b"] == "propose"
     with pytest.raises(ValueError, match="autonomy modes"):
@@ -104,6 +105,8 @@ SAMPLE_PARAMS = {
     Code.PROGRAM_RENEWAL_OVERDUE: {"program": "learn_to_swim", "renewed_at": "2025-10-01", "due_on": "2026-10-01"},
     Code.HOURS_LIMIT_EXCEEDED: {"week_start": "2026-11-08", "hours_before": 39.0, "shift_hours": 4.0, "hours_after": 43.0, "limit_hours": 40},
     Code.OVERLAPS_COMMITMENT: {"kind": "shift", "ref": "X", "start": "2026-11-09T06:00:00-05:00", "end": "2026-11-09T10:00:00-05:00"},
+    Code.REST_TOO_SHORT: {"side": "before", "rest_hours": 8.0, "min_rest_hours": 10, "since": "2026-11-08T22:00:00-05:00", "kind": "shift", "ref": "X"},
+    Code.CERT_REVOKED: {"cert_type": "lifeguarding", "revoked_on": "2026-07-24", "expires_on": "2027-05-10"},
     Code.RATIO_EXCEEDED: {"participants": 9, "instructors": 1, "max_per_instructor": 8, "capacity": 8, "program": "learn_to_swim", "level": "3", "groups": ["G1"]},
 }
 
@@ -179,7 +182,8 @@ def _logic_files() -> list[str]:
     files = []
     for path in sorted((ROOT / "coachcover").rglob("*")):
         rel = path.relative_to(ROOT).as_posix()
-        if path.suffix in (".py", ".sql") and "/presets/" not in rel and not rel.endswith("/seed.py"):
+        # presets, the training school and its judge scenarios are allowed to speak the business's language
+        if path.suffix in (".py", ".sql") and "/presets/" not in rel and not rel.endswith(("/seed.py", "/demo.py")):
             files.append(rel)
     return files
 

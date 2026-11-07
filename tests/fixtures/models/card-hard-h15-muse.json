@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "image_sha256": "9c1757fa62341cc516e3fd3f92d706f1c026e279795c883e50edbb6da07be687"
+ },
+ "input_sha256": "ba74d69e0f38f4df9a4761fe926124a9b2073b55860278a1f101aab5a8f89d88",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h15 reader muse; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 1360,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Daniel Novak\", \"id\": null, \"issued\": \"2024-09-05\", \"exp\": null}"
+    }
+   }
+  ]
+ }
+}

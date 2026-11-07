@@ -14,7 +14,9 @@ API and the worker can run on the demo clock.
 
 from __future__ import annotations
 
+import dataclasses
 import json
+import re
 import uuid
 from collections import Counter
 from datetime import date, datetime, timedelta
@@ -26,14 +28,13 @@ import psycopg
 from psycopg.types.json import Jsonb
 
 from coachcover import messages as M
-from coachcover.model import Policy, Shift
+from coachcover.model import Policy
 from coachcover.models import SECOND_READER_MODEL, TEXT_MODEL, ModelClient, ModelError, canonical_key, sha256_bytes
+from coachcover.planb import plan_b_options, strictest  # noqa: F401 - strictest kept importable from here
 from coachcover.reasons_text import describe, describe_place
 from coachcover.repo import load_context, load_policy, load_shift, load_staff
-from coachcover.rules import Code, Ranked, assess, eligible, rank
+from coachcover.rules import Code, Ranked, assess, eligible, rank, ratio_reason
 
-MODE_ORDER = {"auto": 0, "propose": 1, "off": 2}
-OPTION_ORDER = ("merge", "lead", "overtime", "reschedule", "close")
 
 
 class PipelineError(Exception):
@@ -48,10 +49,6 @@ class Conflict(PipelineError):
     def __init__(self, message: str, detail: dict | None = None):
         super().__init__(message)
         self.detail = detail or {}
-
-
-def strictest(*modes: str) -> str:
-    return max(modes, key=MODE_ORDER.__getitem__)
 
 
 def _default(value: Any) -> Any:
@@ -141,8 +138,8 @@ class Pipeline:
 
     # --- candidates -----------------------------------------------------------
 
-    def ranked(self, shift_id: str, now: datetime) -> tuple[list[Ranked], dict, Policy, int]:
-        """All non-reserve staff, ranked for the shift; plus a name map and the number of reserve people."""
+    def ranked(self, shift_id: str, now: datetime) -> tuple[list[Ranked], dict, Policy, list[str]]:
+        """All non-reserve staff, ranked for the shift; plus a name map and the reserve people's ids."""
         policy = self._policy()
         staff = load_staff(self.conn, self.policy_id)
         shift = load_shift(self.conn, shift_id)
@@ -150,10 +147,12 @@ class Pipeline:
         reserve_roles = {r.code for r in policy.preset.roles.values() if r.reserve}
         people = [s for s in staff if not (s.roles & reserve_roles)]
         names = {s.id: s.name for s in staff}
-        return rank(assess(s, shift, now, policy, context) for s in people), names, policy, len(staff) - len(people)
+        reserve = [s.id for s in staff if s.roles & reserve_roles]
+        return rank(assess(s, shift, now, policy, context) for s in people), names, policy, reserve
 
     def candidates(self, shift_id: str, now: datetime) -> dict:
-        ranked, names, policy, reserve = self.ranked(shift_id, now)
+        ranked, names, policy, reserve_ids = self.ranked(shift_id, now)
+        reserve = len(reserve_ids)
         rows = []
         chips: Counter[str] = Counter()  # each filtered person counted once, by the first blocking reason
         for r in ranked:
@@ -176,6 +175,22 @@ class Pipeline:
                 }
             )
         eligible_count = sum(1 for r in rows if r["eligible"])
+        grid = []
+        for q in rows:
+            blocking = [x for x in q["reasons"] if x["severity"] == "block"]
+            grid.append({
+                "staff_id": q["staff_id"], "name": q["name"], "position": q["position"], "eligible": q["eligible"],
+                "reserve": False, "week_hours": q["place"]["week_hours"],
+                "first": {"code": blocking[0]["code"], "params": blocking[0]["params"]} if blocking else None,
+                "blocking_codes": [x["code"] for x in blocking],
+                "warnings": [{"code": x["code"], "params": x["params"]} for x in q["reasons"] if x["severity"] == "warn"],
+            })
+        for sid in reserve_ids:
+            grid.append({"staff_id": sid, "name": names[sid], "position": None, "eligible": False, "reserve": True,
+                         "week_hours": None, "first": {"code": "RESERVE", "params": {}}, "blocking_codes": ["RESERVE"],
+                         "warnings": []})
+        if reserve:
+            chips["RESERVE"] = reserve
         return {
             "shift_id": shift_id,
             "total": len(rows) + reserve,
@@ -184,9 +199,29 @@ class Pipeline:
             "filtered": len(rows) - eligible_count,
             "chips": [{"code": code, "count": n} for code, n in sorted(chips.items(), key=lambda kv: (-kv[1], kv[0]))],
             "queue": rows,
+            "grid": grid,
         }
 
     # --- call-out -------------------------------------------------------------
+
+    def _screen(self, text: str, now: datetime, ref: dict, case_id: int | None = None) -> dict:
+        """Content-safety verdict for a staff message. It never decides eligibility: it only warns the manager."""
+        policy_text = self._policy().preset.copy.get("safety_policy", M.SAFETY_FALLBACK)
+        try:
+            answer = self.models.screen_message(text, policy_text, at=now, case_id=case_id, ref=ref)
+            return {**answer.data, "model": answer.record.model_returned}
+        except ModelError as exc:
+            return {"verdict": "unknown", "error": str(exc), "model": None}
+
+    def _translate(self, text: str, language: str | None, now: datetime, ref: dict) -> tuple[str | None, str]:
+        if language == "en":
+            return text, "original"
+        try:
+            answer = self.models.chat_json(purpose="translate", system=M.TRANSLATE_SYSTEM, user=text,
+                                           schema=M.TRANSLATE_SCHEMA, key={"text": text, "to": "en"}, at=now, ref=ref)
+            return answer.data["text"], "model"
+        except ModelError:
+            return None, "none"
 
     def callout(self, staff_id: str, *, now: datetime, text: str | None = None, audio: bytes | None = None,
                 filename: str = "voice.ogg") -> dict:
@@ -204,7 +239,8 @@ class Pipeline:
             heard = self.models.transcribe(audio, filename, at=now, ref=ref)
             text = heard.data["text"]
             voice = {"model": heard.record.model_returned, "duration_ms": heard.record.duration_ms,
-                     "cost_usd": heard.record.cost_usd, "recorded": heard.record.source == "recorded"}
+                     "cost_usd": heard.record.cost_usd, "recorded": heard.record.source == "recorded",
+                     "seconds": heard.data.get("duration")}
         today = now.astimezone(tz).date()
         todays = [
             (sid, start)
@@ -214,6 +250,7 @@ class Pipeline:
             )
             if start.astimezone(tz).date() == today
         ]
+        screened = self._screen(text, now, ref)
         understood, by, error = None, "fallback", None
         try:
             prompt = (
@@ -226,7 +263,10 @@ class Pipeline:
             understood, by = answer.data, answer.record.model_returned
         except ModelError as exc:
             error = str(exc)
-        result = {"callout_id": callout_id, "staff_id": staff_id, "text": text, "understood": understood, "cases": []}
+        language = understood["language"] if understood and understood["language"] != "other" else None
+        text_en, translated_by = self._translate(text, language, now, ref)
+        result = {"callout_id": callout_id, "staff_id": staff_id, "text": text, "text_en": text_en,
+                  "understood": understood, "screened": screened, "cases": []}
         if understood is not None and not understood["absent"]:
             result["note"] = "the message is not a call-out"
             return result
@@ -239,51 +279,249 @@ class Pipeline:
             return result
         opened = []
         with self.conn.transaction():
+            if audio is not None:
+                self.conn.execute(
+                    "INSERT INTO callout_audio (callout_id, filename, mime, seconds, data) VALUES (%s, %s, %s, %s, %s)",
+                    (callout_id, filename, _audio_mime(filename), voice.get("seconds"), audio),
+                )
             for shift_id, _ in matched:
                 case_id = self._open_case(shift_id, staff_id, now, "callout", callout_id)
                 info = self.shift_info(shift_id)
                 self._event(case_id, now, "staff", "callout_received",
-                            {"channel": "voice" if audio is not None else "text", "text": text,
+                            {"channel": "voice" if audio is not None else "text", "text": text, "text_en": text_en,
+                             "translated_by": translated_by, "language": language,
                              "staff_id": staff_id, "staff_name": person["name"], "callout_id": callout_id})
                 if voice:
                     self._event(case_id, now, "agent", "voice_transcribed", voice)
+                self._screen_events(case_id, now, staff_id, person["name"], text, screened)
                 self._event(case_id, now, "agent", "callout_understood",
                             {"by": by, "error": error, "understood": understood,
                              "matched_shift_ids": [sid for sid, _ in matched]})
                 self._event(case_id, now, "agent", "shift_opened", {"shift_id": shift_id, "label": info["label"]})
                 opened.append((case_id, shift_id))
         for case_id, shift_id in opened:
-            summary = self.candidates(shift_id, now)
-            with self.conn.transaction():
-                self._event(case_id, now, "agent", "candidates_ranked", {
-                    "total": summary["total"], "reserve": summary["reserve"], "eligible": summary["eligible"],
-                    "filtered": summary["filtered"], "chips": summary["chips"],
-                    "top": [q["line"] for q in summary["queue"][:5]],
-                    "grid": [
-                        {"staff_id": q["staff_id"], "name": q["name"], "position": q["position"], "eligible": q["eligible"],
-                         "code": next((r["code"] for r in q["reasons"] if r["severity"] == "block"), None),
-                         "warning": any(r["severity"] == "warn" for r in q["reasons"])}
-                        for q in summary["queue"]
-                    ],
-                })
+            self._rank_event(case_id, shift_id, now)
             self._offer_next(case_id, now)
-            result["cases"].append({"case_id": case_id, "shift_id": shift_id})
+            result["cases"].append({"case_id": case_id, "code": self.case_code(case_id), "shift_id": shift_id})
         return result
 
-    def _open_case(self, shift_id: str, absent: str | None, now: datetime, source: str, callout_id: str | None) -> int:
+    def _screen_events(self, case_id: int, now: datetime, staff_id: str, name: str, text: str, screened: dict) -> None:
+        self._event(case_id, now, "agent", "message_screened", {"staff_id": staff_id, **screened})
+        if screened["verdict"] == "unsafe":
+            self._event(case_id, now, "agent", "flagged_for_manager", {
+                "staff_id": staff_id, "name": name, "text": text,
+                "why": "the message tries to change the rules; eligibility is still checked by code",
+            })
+
+    def _rank_event(self, case_id: int, shift_id: str, now: datetime) -> dict:
+        """Snapshot of who may take the shift at this moment: the evidence for the screens."""
+        summary = self.candidates(shift_id, now)
+        with self.conn.transaction():
+            self._event(case_id, now, "agent", "candidates_ranked", {
+                "total": summary["total"], "reserve": summary["reserve"], "eligible": summary["eligible"],
+                "filtered": summary["filtered"], "chips": summary["chips"],
+                "top": [q["line"] for q in summary["queue"][:5]],
+                "grid": summary["grid"],
+            })
+        return summary
+
+    def case_code(self, case_id: int) -> str:
+        return self.conn.execute("SELECT code FROM cover_case WHERE id = %s", (case_id,)).fetchone()[0]
+
+    def _insert_case(self, shift_id: str, absent: str | None, now: datetime, source: str, callout_id: str | None) -> int:
         open_case = self.conn.execute(
             "SELECT id FROM cover_case WHERE shift_id = %s AND status = 'open'", (shift_id,)
         ).fetchone()
         if open_case:
             raise Conflict(f"shift {shift_id} already has an open case", {"case_id": open_case[0]})
+        tz = ZoneInfo(self.shift_info(shift_id)["tz"])
+        prefix = f"C-{now.astimezone(tz):%m%d}-"
+        self.conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (prefix,))
+        n = self.conn.execute("SELECT count(*) + 1 FROM cover_case WHERE code LIKE %s", (prefix + "%",)).fetchone()[0]
+        return self.conn.execute(
+            "INSERT INTO cover_case (shift_id, absent_staff_id, source, opened_at, callout_id, code)"
+            " VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+            (shift_id, absent, source, now, callout_id, f"{prefix}{n:02d}"),
+        ).fetchone()[0]
+
+    def _open_shift(self, shift_id: str) -> None:
         self.conn.execute("SELECT 1 FROM shift WHERE id = %s FOR UPDATE", (shift_id,))
         self.conn.execute("UPDATE shift SET status = 'open', staff_id = NULL WHERE id = %s", (shift_id,))
         self.conn.execute("UPDATE offer SET status = 'released' WHERE shift_id = %s AND status = 'accepted'", (shift_id,))
-        return self.conn.execute(
-            "INSERT INTO cover_case (shift_id, absent_staff_id, source, opened_at, callout_id)"
-            " VALUES (%s, %s, %s, %s, %s) RETURNING id",
-            (shift_id, absent, source, now, callout_id),
-        ).fetchone()[0]
+
+    def _open_case(self, shift_id: str, absent: str | None, now: datetime, source: str, callout_id: str | None) -> int:
+        case_id = self._insert_case(shift_id, absent, now, source, callout_id)
+        self._open_shift(shift_id)
+        return case_id
+
+    def find_case(self, ref: str | int) -> int:
+        """A case by its code (C-1109-01) or its number."""
+        text = str(ref)
+        row = self.conn.execute(
+            "SELECT c.id FROM cover_case c JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id"
+            " WHERE v.policy_id = %s AND (c.code = %s OR c.id::text = %s)",
+            (self.policy_id, text, text.removeprefix("C-")),
+        ).fetchone()
+        if row is None:
+            raise NotFound(f"unknown case {ref}")
+        return row[0]
+
+    # --- volunteers and the night check ------------------------------------------
+
+    def volunteer(self, case_id: int, staff_id: str, text: str, now: datetime) -> dict:
+        """Someone offers to take an open shift. The message is screened; the rules decide, as always."""
+        row = self.conn.execute("SELECT shift_id, status FROM cover_case WHERE id = %s", (case_id,)).fetchone()
+        if row is None:
+            raise NotFound(f"unknown case {case_id}")
+        shift_id, status = row
+        if status != "open":
+            raise Conflict(f"case {case_id} is {status}")
+        person = self._staff_row(staff_id)
+        screened = self._screen(text, now, {"case_id": case_id, "staff_id": staff_id}, case_id=case_id)
+        policy = self._policy()
+        staff = next(s for s in load_staff(self.conn, self.policy_id) if s.id == staff_id)
+        shift = load_shift(self.conn, shift_id)
+        decision = eligible(staff, shift, now, policy, load_context(self.conn, self.policy_id, shift))
+        reasons = [{"code": r.code.value, "params": dict(r.params), "text": describe(r, "en", policy.preset)}
+                   for r in decision.reasons if r.blocking]
+        booked = False
+        with self.conn.transaction():
+            self.conn.execute("SELECT 1 FROM cover_case WHERE id = %s FOR UPDATE", (case_id,))
+            self._event(case_id, now, "staff", "volunteered", {"staff_id": staff_id, "name": person["name"], "text": text})
+            self._screen_events(case_id, now, staff_id, person["name"], text, screened)
+            if reasons:
+                self._event(case_id, now, "agent", "volunteer_blocked",
+                            {"staff_id": staff_id, "name": person["name"], "reasons": reasons})
+                lang = M.lang_or_en(person["language"])
+                info = self.shift_info(shift_id)
+                self._message(now, "staff", lang, M.NO_LONGER[lang].format(
+                    when=self._when(info), why="; ".join(r["text"] for r in reasons)), staff_id=staff_id, case_id=case_id)
+            elif policy.autonomy["assign_cover"] == "auto":
+                self.conn.execute("UPDATE offer SET status = 'withdrawn' WHERE case_id = %s AND status = 'pending'", (case_id,))
+                self._book(case_id, shift_id, staff_id, now, via={"volunteer": True})
+                booked = True
+        return {"case_id": case_id, "staff_id": staff_id, "eligible": not reasons, "reasons": reasons,
+                "screened": screened, "booked": booked}
+
+    def night_cover(self, report: dict, now: datetime) -> list[dict]:
+        """Open a cover case for each problem of the night check, as the policy says (night_cover)."""
+        mode = self._policy().autonomy["night_cover"]
+        opened = []
+        if mode == "off":
+            return opened
+        for problem in sorted(report["problems"], key=lambda p: (p["start"], p["shift_id"])):
+            shift_id, staff_id = problem["shift_id"], problem["staff_id"]
+            if self.conn.execute("SELECT 1 FROM cover_case WHERE shift_id = %s AND status = 'open'", (shift_id,)).fetchone():
+                continue
+            info = self.shift_info(shift_id)
+            with self.conn.transaction():
+                if mode == "auto":
+                    case_id = self._open_case(shift_id, staff_id, now, "night_check", None)
+                else:
+                    case_id = self._insert_case(shift_id, staff_id, now, "night_check", None)
+                self._event(case_id, now, "agent", "night_check_found", {
+                    "staff_id": staff_id, "name": problem["name"], "shift_id": shift_id, "label": info["label"],
+                    "reasons": problem["reasons"], "for_date": report["for_date"],
+                })
+                if mode == "propose":
+                    approval = self.conn.execute(
+                        "INSERT INTO approval (case_id, action, payload, created_at) VALUES (%s, 'night_cover', %s, %s) RETURNING id",
+                        (case_id, Jsonb({"shift_id": shift_id, "staff_id": staff_id, "reasons": problem["reasons"]}), now),
+                    ).fetchone()[0]
+                    self._event(case_id, now, "agent", "awaiting_approval",
+                                {"approval_id": approval, "action": "night_cover", "staff_id": staff_id})
+                    self._message(now, "manager", "en", f"Night check: {problem['name']} may not work {info['label']}: "
+                                  + "; ".join(r["text"] for r in problem["reasons"]) + ". Find a replacement?", case_id=case_id)
+            self._rank_event(case_id, shift_id, now)
+            if mode == "auto":
+                self._offer_next(case_id, now)
+            opened.append({"case_id": case_id, "code": self.case_code(case_id), "shift_id": shift_id,
+                           "staff_id": staff_id, "mode": mode})
+        return opened
+
+    # --- enrolment: the children-per-instructor norm, live --------------------------
+
+    RATIO_HORIZON = timedelta(days=7)
+
+    def enroll(self, group_id: str, added: int, now: datetime, *, language: str | None = None,
+               by: str = "front desk") -> dict:
+        """Children added to a group. The norm is checked again on the group's shifts of the coming week; a shift
+        over the norm gets one more instructor seat (a shift that teaches the same groups at the same time) and a
+        cover case for it, filled from the same queue by the same rules. Nobody presses anything."""
+        if not isinstance(added, int) or isinstance(added, bool) or not 1 <= added <= 100:
+            raise ValueError("add must be a whole number of children from 1 to 100")
+        if language is not None and not re.fullmatch(r"[a-z]{2}", language):
+            raise ValueError("language must be a two-letter code, e.g. es")
+        with self.conn.transaction():
+            row = self.conn.execute(
+                "SELECT g.size, g.family_counts, g.name FROM lesson_group g JOIN venue v ON v.id = g.venue_id"
+                " WHERE g.id = %s AND v.policy_id = %s FOR UPDATE OF g",
+                (group_id, self.policy_id),
+            ).fetchone()
+            if row is None:
+                raise NotFound(f"unknown group {group_id}")
+            size, counts, name = row
+            counts = {k: int(v) for k, v in counts.items()}
+            if language is not None:
+                counts[language] = counts.get(language, 0) + added
+            self.conn.execute("UPDATE lesson_group SET size = size + %s, family_counts = %s WHERE id = %s",
+                              (added, Jsonb(counts), group_id))
+            self.conn.execute(
+                "INSERT INTO group_enrollment (group_id, at, added, language, size_before, size_after, by_whom)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                (group_id, now, added, language, size, size + added, by),
+            )
+        shift_ids = [r[0] for r in self.conn.execute(
+            "SELECT s.id FROM shift s JOIN shift_group sg ON sg.shift_id = s.id WHERE sg.group_id = %s"
+            " AND s.extra_for IS NULL AND s.status IN ('scheduled', 'open') AND s.starts_at > %s AND s.starts_at < %s"
+            " ORDER BY s.starts_at, s.id",
+            (group_id, now, now + self.RATIO_HORIZON),
+        )]
+        alerts = [a for a in (self._ratio_check(sid, group_id, name, size, added, now, by) for sid in shift_ids) if a]
+        return {"group_id": group_id, "name": name, "size_before": size, "size_after": size + added,
+                "checked_shifts": shift_ids, "alerts": alerts}
+
+    def _ratio_check(self, shift_id: str, group_id: str, name: str, size_before: int, added: int, now: datetime,
+                     by: str) -> dict | None:
+        policy = self._policy()
+        shift = load_shift(self.conn, shift_id)
+        reason = ratio_reason(shift.groups, shift.instructors, policy.preset)
+        if reason is None:
+            return None
+        per, participants = reason.params["max_per_instructor"], reason.params["participants"]
+        needed = -(-participants // per)
+        info = self.shift_info(shift_id)
+        opened = []
+        with self.conn.transaction():
+            self.conn.execute("SELECT 1 FROM shift WHERE id = %s FOR UPDATE", (shift_id,))
+            self.conn.execute("UPDATE shift SET instructors = %s WHERE id = %s OR extra_for = %s", (needed, shift_id, shift_id))
+            for seat in range(shift.instructors + 1, needed + 1):
+                extra = f"{shift_id}-I{seat}"
+                self.conn.execute(
+                    "INSERT INTO shift (id, venue_id, zone_id, role_id, starts_at, ends_at, staff_id, instructors,"
+                    " extra_certs, status, extra_for) SELECT %s, venue_id, zone_id, role_id, starts_at, ends_at, NULL, %s,"
+                    " extra_certs, 'open', id FROM shift WHERE id = %s",
+                    (extra, needed, shift_id),
+                )
+                self.conn.execute("INSERT INTO shift_group (shift_id, group_id) SELECT %s, group_id FROM shift_group"
+                                  " WHERE shift_id = %s", (extra, shift_id))
+                case_id = self._insert_case(extra, None, now, "ratio", None)
+                self._event(case_id, now, "agent", "ratio_broken", {
+                    "group_id": group_id, "group_name": name, "size_before": size_before, "added": added, "by": by,
+                    "shift_id": shift_id, "extra_shift_id": extra, "label": info["label"],
+                    "participants": participants, "max_per_instructor": per, "instructors_before": shift.instructors,
+                    "instructors_needed": needed, "reason": plain(dict(reason.params)),
+                })
+                self._event(case_id, now, "agent", "shift_opened", {"shift_id": extra, "label": info["label"]})
+                self._message(now, "manager", "en", f"{name}: now {participants} children for {shift.instructors}"
+                              f" instructor(s), the norm is 1:{per}. Looking for instructor no. {seat}.", case_id=case_id)
+                opened.append((case_id, extra))
+        for case_id, extra in opened:
+            self._rank_event(case_id, extra, now)
+            self._offer_next(case_id, now)
+        return {"shift_id": shift_id, "label": info["label"], "participants": participants, "max_per_instructor": per,
+                "instructors_before": shift.instructors, "instructors_needed": needed,
+                "cases": [{"case_id": self.case_code(c), "extra_shift_id": e} for c, e in opened]}
 
     # --- offers ---------------------------------------------------------------
 
@@ -298,11 +536,11 @@ class Pipeline:
             shift_id, status = case
             if status != "open":
                 return None
-            pending = self.conn.execute(
-                "SELECT id FROM offer WHERE case_id = %s AND status = 'pending'", (case_id,)
+            active = self.conn.execute(
+                "SELECT id FROM offer WHERE case_id = %s AND status IN ('pending', 'held') ORDER BY queue_pos", (case_id,)
             ).fetchone()
-            if pending:
-                return {"offer_id": pending[0]}
+            if active:
+                return {"offer_id": active[0]}
             ranked, names, policy, _ = self.ranked(shift_id, now)
             if policy.autonomy["assign_cover"] == "off":
                 self._event(case_id, now, "agent", "offers_off", {"why": "policy: assign_cover is off"})
@@ -310,20 +548,39 @@ class Pipeline:
             offered = {r[0] for r in self.conn.execute("SELECT staff_id FROM offer WHERE case_id = %s", (case_id,))}
             queue = [r for r in ranked if r.candidate.decision.ok and r.candidate.staff_id not in offered]
             if queue:
-                return self._send_offer(case_id, shift_id, queue[0], names, policy, now, len(offered) + 1)
+                # a wave: the next people in queue order, all at once (product decision)
+                wave = self.conn.execute("SELECT coalesce(max(wave), 0) + 1 FROM offer WHERE case_id = %s",
+                                         (case_id,)).fetchone()[0]
+                members = queue[: policy.preset.offer_wave_size]
+                sent = [self._send_offer(case_id, shift_id, r, names, policy, now, len(offered) + i + 1, wave=wave,
+                                         wave_place=i + 1) for i, r in enumerate(members)]
+                if len(members) > 1:
+                    self._event(case_id, now, "agent", "wave_sent", {
+                        "wave": wave, "staff_ids": [x["staff_id"] for x in sent],
+                        "collect_seconds": policy.preset.offer_collect_seconds,
+                    })
+                return {**sent[0], "offers": sent, "wave": wave}
             self._event(case_id, now, "agent", "queue_exhausted", {"offered": len(offered)})
+            # an approved option that left the case open did not work out (the overtime person said no)
+            failed = self.conn.execute(
+                "UPDATE plan_b SET status = 'failed' WHERE case_id = %s AND status = 'approved' RETURNING id", (case_id,)
+            ).fetchall()
+            for (plan_id,) in failed:
+                self._event(case_id, now, "agent", "plan_b_failed", {"plan_id": f"P-{plan_id}"})
         return self.propose_plan_b(case_id, now)
 
     def _send_offer(self, case_id: int, shift_id: str, r: Ranked, names: dict, policy: Policy, now: datetime,
-                    pos: int, overtime: bool = False) -> dict:
+                    pos: int, overtime: bool = False, wave: int = 1, wave_place: int = 1) -> dict:
         staff_id = r.candidate.staff_id
         info = self.shift_info(shift_id)
         expires = now + timedelta(minutes=policy.offer_timeout_minutes)
-        place = {**r.place(), "line": describe_place(r, names[staff_id].split()[0], "en", policy.preset), "overtime": overtime}
+        here = dataclasses.replace(r, position=wave_place)  # the place among those still in the queue
+        place = {**r.place(), "line": describe_place(here, names[staff_id].split()[0], "en", policy.preset),
+                 "overtime": overtime, "wave": wave, "wave_place": wave_place}
         offer_id = self.conn.execute(
-            "INSERT INTO offer (case_id, shift_id, staff_id, queue_pos, place, sent_at, expires_at, overtime)"
-            " VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
-            (case_id, shift_id, staff_id, pos, Jsonb(plain(place)), now, expires, overtime),
+            "INSERT INTO offer (case_id, shift_id, staff_id, queue_pos, place, sent_at, expires_at, overtime, wave)"
+            " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+            (case_id, shift_id, staff_id, pos, Jsonb(plain(place)), now, expires, overtime, wave),
         ).fetchone()[0]
         lang = M.lang_or_en(self._staff_row(staff_id)["language"])
         body = M.OFFER[lang].format(when=self._when(info), venue=info["venue"], what=self._what(info),
@@ -333,7 +590,7 @@ class Pipeline:
         self._message(now, "staff", lang, body, staff_id=staff_id, case_id=case_id, offer_id=offer_id)
         self._event(case_id, now, "agent", "offer_sent", {
             "offer_id": offer_id, "staff_id": staff_id, "name": names[staff_id], "queue_pos": pos,
-            "line": place["line"], "expires_at": expires, "overtime": overtime,
+            "line": place["line"], "expires_at": expires, "overtime": overtime, "wave": wave,
         })
         return {"offer_id": offer_id, "staff_id": staff_id}
 
@@ -348,14 +605,111 @@ class Pipeline:
             for offer_id, case_id, staff_id in rows:
                 self.conn.execute("UPDATE offer SET status = 'expired' WHERE id = %s", (offer_id,))
                 self._event(case_id, now, "agent", "offer_expired", {"offer_id": offer_id, "staff_id": staff_id})
-        for case_id in dict.fromkeys(case_id for _, case_id, _ in rows):
-            self._offer_next(case_id, now)
+        collect = timedelta(seconds=self._policy().preset.offer_collect_seconds)
+        windows = [r[0] for r in self.conn.execute(
+            "SELECT case_id FROM offer WHERE status = 'held' GROUP BY case_id HAVING min(responded_at) + %s <= %s",
+            (collect, now),
+        )]
+        for case_id in dict.fromkeys([*(case_id for _, case_id, _ in rows), *windows]):
+            self._settle_or_next(case_id, now)
+        self._plan_b_by_deadline(now)
         return len(rows)
+
+    def _plan_b_by_deadline(self, now: datetime) -> list[int]:
+        """Plan B goes to the manager `plan_b_minutes_before_start` before the shift, even while offers are out."""
+        minutes = self._policy().preset.plan_b_minutes_before_start
+        if minutes is None:
+            return []
+        due = [r[0] for r in self.conn.execute(
+            "SELECT c.id FROM cover_case c JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id"
+            " WHERE v.policy_id = %s AND c.status = 'open' AND s.status = 'open' AND s.starts_at - %s <= %s"
+            " AND NOT EXISTS (SELECT 1 FROM plan_b p WHERE p.case_id = c.id) ORDER BY s.starts_at, c.id",
+            (self.policy_id, timedelta(minutes=minutes), now),
+        )]
+        for case_id in due:
+            with self.conn.transaction():
+                self._event(case_id, now, "agent", "plan_b_deadline", {"minutes_before_start": minutes})
+            self.propose_plan_b(case_id, now)
+        return due
+
+    def _settle_or_next(self, case_id: int, now: datetime) -> dict | None:
+        """After an answer or a timer: give the shift to the highest "yes" once nobody higher can still answer or
+        the collection window is over; tell the others; with nothing left open, send the next wave."""
+        policy = self._policy()
+        with self.conn.transaction():
+            status = self.conn.execute("SELECT status FROM cover_case WHERE id = %s FOR UPDATE", (case_id,)).fetchone()[0]
+            if status != "open":
+                return None
+            rows = self.conn.execute(
+                "SELECT id, staff_id, status, queue_pos, responded_at, shift_id FROM offer"
+                " WHERE case_id = %s AND status IN ('pending', 'held') AND NOT overtime ORDER BY queue_pos",
+                (case_id,),
+            ).fetchall()
+            held = [r for r in rows if r[2] == "held"]
+            if held:
+                window_end = min(r[4] for r in held) + timedelta(seconds=policy.preset.offer_collect_seconds)
+                higher_open = any(r[2] == "pending" and r[3] < held[0][3] for r in rows)
+                if higher_open and now < window_end:
+                    return {"collecting_until": window_end}
+                for offer_id, staff_id, _, _, _, shift_id in held:
+                    person = next(s for s in load_staff(self.conn, self.policy_id) if s.id == staff_id)
+                    shift = load_shift(self.conn, shift_id)
+                    decision = eligible(person, shift, now, policy, load_context(self.conn, self.policy_id, shift))
+                    blocking = [r for r in decision.reasons if r.blocking]
+                    if blocking:
+                        self._refuse_yes(case_id, offer_id, staff_id, shift_id, blocking, policy, now)
+                        continue
+                    return self._take(case_id, offer_id, staff_id, shift_id, policy, now)
+            elif rows:
+                return None
+        return self._offer_next(case_id, now)
+
+    def _refuse_yes(self, case_id: int, offer_id: int, staff_id: str, shift_id: str, blocking: list, policy: Policy,
+                    now: datetime) -> str:
+        self.conn.execute("UPDATE offer SET status = 'withdrawn', responded_at = coalesce(responded_at, %s) WHERE id = %s",
+                          (now, offer_id))
+        why = "; ".join(describe(r, "en", policy.preset) for r in blocking)
+        self._event(case_id, now, "agent", "accept_rejected",
+                    {"offer_id": offer_id, "staff_id": staff_id, "codes": [r.code.value for r in blocking], "why": why})
+        lang = M.lang_or_en(self._staff_row(staff_id)["language"])
+        self._message(now, "staff", lang, M.NO_LONGER[lang].format(when=self._when(self.shift_info(shift_id)), why=why),
+                      staff_id=staff_id, case_id=case_id, offer_id=offer_id)
+        return why
+
+    def _take(self, case_id: int, offer_id: int, staff_id: str, shift_id: str, policy: Policy, now: datetime) -> dict:
+        """This "yes" gets the shift (or, in propose mode, the manager's card); everyone else still open stands down."""
+        self.conn.execute("UPDATE offer SET status = 'accepted', responded_at = coalesce(responded_at, %s) WHERE id = %s",
+                          (now, offer_id))
+        if policy.autonomy["assign_cover"] == "propose":
+            approval = self.conn.execute(
+                "INSERT INTO approval (case_id, action, payload, created_at) VALUES (%s, 'assign_cover', %s, %s) RETURNING id",
+                (case_id, Jsonb({"offer_id": offer_id, "staff_id": staff_id, "shift_id": shift_id}), now),
+            ).fetchone()[0]
+            self._event(case_id, now, "agent", "awaiting_approval",
+                        {"approval_id": approval, "action": "assign_cover", "staff_id": staff_id})
+        else:
+            self._book(case_id, shift_id, staff_id, now, via={"offer_id": offer_id, "overtime": False})
+        self._stand_down(case_id, staff_id, shift_id, now)
+        return {"offer_id": offer_id, "staff_id": staff_id, "taken": True}
+
+    def _stand_down(self, case_id: int, winner: str, shift_id: str, now: datetime) -> None:
+        name = self._staff_row(winner)["name"].split()[0]
+        when = self._when(self.shift_info(shift_id))
+        for offer_id, staff_id in self.conn.execute(
+            "UPDATE offer SET status = 'withdrawn' WHERE case_id = %s AND status IN ('pending', 'held') AND NOT overtime"
+            " RETURNING id, staff_id", (case_id,),
+        ).fetchall():
+            self._event(case_id, now, "agent", "offer_stood_down", {"offer_id": offer_id, "staff_id": staff_id,
+                                                                    "covered_by": winner})
+            lang = M.lang_or_en(self._staff_row(staff_id)["language"])
+            self._message(now, "staff", lang, M.STOOD_DOWN[lang].format(name=name, when=when),
+                          staff_id=staff_id, case_id=case_id, offer_id=offer_id)
 
     def respond(self, offer_id: int, accept: bool, now: datetime) -> dict:
         """A staff answer. The person is checked again at the moment of "yes"."""
         self.expire_due(now)
         move_on = False
+        refused = None
         with self.conn.transaction():
             row = self.conn.execute(
                 "SELECT o.case_id, o.shift_id, o.staff_id, o.status, o.overtime FROM offer o WHERE o.id = %s FOR UPDATE",
@@ -364,8 +718,13 @@ class Pipeline:
             if row is None:
                 raise NotFound(f"unknown offer {offer_id}")
             case_id, shift_id, staff_id, status, overtime = row
-            self.conn.execute("SELECT 1 FROM cover_case WHERE id = %s FOR UPDATE", (case_id,))
+            case_status = self.conn.execute("SELECT status FROM cover_case WHERE id = %s FOR UPDATE", (case_id,)).fetchone()[0]
             if status != "pending":
+                holder = self.conn.execute("SELECT s.full_name FROM shift sh JOIN staff s ON s.id = sh.staff_id"
+                                           " WHERE sh.id = %s", (shift_id,)).fetchone()
+                if case_status in ("covered", "plan_b") and holder and accept:
+                    raise Conflict(f"Thanks — {holder[0].split()[0]} already covered it",
+                                   {"status": status, "covered_by": holder[0]})
                 raise Conflict(f"offer {offer_id} is {status}", {"status": status})
             info = self.shift_info(shift_id)
             if not accept:
@@ -379,12 +738,17 @@ class Pipeline:
                 decision = eligible(person, shift, now, policy, load_context(self.conn, self.policy_id, shift))
                 blocking = [r for r in decision.reasons if r.blocking and not (overtime and r.code == Code.HOURS_LIMIT_EXCEEDED)]
                 if blocking:
-                    self.conn.execute("UPDATE offer SET status = 'withdrawn', responded_at = %s WHERE id = %s", (now, offer_id))
-                    why = "; ".join(describe(r, "en", policy.preset) for r in blocking)
-                    self._event(case_id, now, "agent", "accept_rejected",
-                                {"offer_id": offer_id, "staff_id": staff_id, "codes": [r.code.value for r in blocking], "why": why})
+                    refused = self._refuse_yes(case_id, offer_id, staff_id, shift_id, blocking, policy, now)
+                    move_on = True
+                elif not overtime and policy.preset.offer_collect_seconds > 0:
+                    # a wave: hold the "yes"; the highest "yes" gets the shift (see _settle_or_next)
+                    self.conn.execute("UPDATE offer SET status = 'held', responded_at = %s WHERE id = %s", (now, offer_id))
+                    self._event(case_id, now, "staff", "offer_yes_held", {
+                        "offer_id": offer_id, "staff_id": staff_id,
+                        "collect_seconds": policy.preset.offer_collect_seconds,
+                    })
                     lang = M.lang_or_en(self._staff_row(staff_id)["language"])
-                    self._message(now, "staff", lang, M.NO_LONGER[lang].format(when=self._when(info), why=why),
+                    self._message(now, "staff", lang, M.HELD[lang].format(when=self._when(info)),
                                   staff_id=staff_id, case_id=case_id, offer_id=offer_id)
                     move_on = True
                 elif policy.autonomy["assign_cover"] == "propose" and not overtime:
@@ -398,9 +762,14 @@ class Pipeline:
                 else:
                     self.conn.execute("UPDATE offer SET status = 'accepted', responded_at = %s WHERE id = %s", (now, offer_id))
                     self._book(case_id, shift_id, staff_id, now, via={"offer_id": offer_id, "overtime": overtime})
+                    if not overtime:
+                        self._stand_down(case_id, staff_id, shift_id, now)
         if move_on:
-            self._offer_next(case_id, now)
-        return self.offer_state(offer_id)
+            self._settle_or_next(case_id, now)
+        state = self.offer_state(offer_id)
+        if refused:
+            state["reason"] = refused
+        return state
 
     def offer_state(self, offer_id: int) -> dict:
         row = self.conn.execute(
@@ -415,6 +784,7 @@ class Pipeline:
         self.conn.execute("UPDATE shift SET staff_id = %s, status = 'scheduled' WHERE id = %s", (staff_id, shift_id))
         opened_at = self.conn.execute("SELECT opened_at FROM cover_case WHERE id = %s", (case_id,)).fetchone()[0]
         self.conn.execute("UPDATE cover_case SET status = 'covered', closed_at = %s WHERE id = %s", (now, case_id))
+        self.conn.execute("UPDATE plan_b SET status = 'superseded' WHERE case_id = %s AND status = 'proposed'", (case_id,))
         person = self._staff_row(staff_id)
         self._event(case_id, now, "agent", "shift_covered", {
             **via, "staff_id": staff_id, "name": person["name"],
@@ -439,13 +809,20 @@ class Pipeline:
                 "UPDATE approval SET status = %s, decided_by = %s, decided_at = %s WHERE id = %s",
                 ("approved" if approve else "rejected", by, now, approval_id),
             )
-            if approve:
+            if action == "night_cover":
+                if approve:
+                    self._open_shift(payload["shift_id"])
+                    self._event(case_id, now, "manager", "night_cover_approved", {"approval_id": approval_id, "by": by})
+                else:
+                    self._close_case(case_id, now, "cancelled")
+                    self._event(case_id, now, "manager", "approval_rejected", {"approval_id": approval_id, "by": by})
+            elif approve:
                 self._book(case_id, payload["shift_id"], payload["staff_id"], now,
                            via={"offer_id": payload["offer_id"], "approval_id": approval_id, "approved_by": by})
             else:
                 self.conn.execute("UPDATE offer SET status = 'withdrawn' WHERE id = %s", (payload["offer_id"],))
                 self._event(case_id, now, "manager", "approval_rejected", {"approval_id": approval_id, "by": by})
-        if not approve:
+        if (action == "night_cover" and approve) or (action == "assign_cover" and not approve):
             self._offer_next(case_id, now)
         return {"approval_id": approval_id, "status": "approved" if approve else "rejected"}
 
@@ -456,77 +833,24 @@ class Pipeline:
             "SELECT shift_id, absent_staff_id FROM cover_case WHERE id = %s", (case_id,)
         ).fetchone()
         policy = self._policy()
-        auto = policy.autonomy
         staff = {s.id: s for s in load_staff(self.conn, self.policy_id)}
         shift = load_shift(self.conn, shift_id)
         context = load_context(self.conn, self.policy_id, shift)
         info = self.shift_info(shift_id)
-        tz = ZoneInfo(info["tz"])
-        families = sum(g["size"] for g in info["groups"])
-        group_ids = [g["id"] for g in info["groups"]]
-        options: list[dict] = []
-        rejected: list[dict] = []
-        if shift.groups and auto["merge_groups"] != "off":
-            partners = self.conn.execute(
-                "SELECT s.id FROM shift s WHERE s.venue_id = %s AND s.role_id = (SELECT role_id FROM shift WHERE id = %s)"
-                " AND s.starts_at = %s AND s.ends_at = %s AND s.status = 'scheduled' AND s.id <> %s"
-                " AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = s.id) ORDER BY s.id",
-                (shift.venue, shift_id, shift.start, shift.end, shift_id),
-            ).fetchall()
-            for (partner_id,) in partners:
-                partner = load_shift(self.conn, partner_id)
-                teacher = staff.get(partner.assignee)
-                merged = Shift(partner.id, partner.venue, partner.role, partner.start, partner.end,
-                               partner.groups + shift.groups, partner.instructors, partner.zone,
-                               assignee=None, merged_shift_ids=(shift_id,))
-                decision = eligible(teacher, merged, now, policy, context)
-                participants = sum(g.size for g in merged.groups)
-                if decision.ok:
-                    per = min(policy.preset.programs[g.program].levels[g.level].max_per_instructor for g in merged.groups)
-                    options.append({
-                        "kind": "merge", "mode": strictest(auto["plan_b"], auto["merge_groups"]),
-                        "into_shift_id": partner.id, "staff_id": teacher.id, "staff_name": teacher.name,
-                        "groups": [g.id for g in merged.groups], "participants": participants,
-                        "capacity": per * merged.instructors,
-                    })
-                else:
-                    rejected.append({"kind": "merge", "into_shift_id": partner.id, "participants": participants,
-                                     "codes": [r.code.value for r in decision.reasons if r.blocking]})
-        reserve_roles = {r.code for r in policy.preset.roles.values() if r.reserve}
-        leads = [s for s in staff.values() if s.roles & reserve_roles and s.id != absent]
-        lead_rank = rank(assess(s, shift, now, policy, context) for s in leads)
-        ready = [r for r in lead_rank if r.candidate.decision.ok]
-        if ready:
-            lead = staff[ready[0].candidate.staff_id]
-            options.append({"kind": "lead", "mode": auto["plan_b"], "staff_id": lead.id, "staff_name": lead.name})
-        elif leads:
-            rejected.append({"kind": "lead", "codes": sorted({r.code.value for x in lead_rank
-                                                               for r in x.candidate.decision.reasons if r.blocking})})
-        if auto["overtime"] != "off":
-            people = [s for s in staff.values() if not (s.roles & reserve_roles)]
-            for r in rank(assess(s, shift, now, policy, context) for s in people):
-                blocking = [x for x in r.candidate.decision.reasons if x.blocking]
-                if blocking and all(x.code == Code.HOURS_LIMIT_EXCEEDED for x in blocking):
-                    over = round(sum(x.params["hours_after"] - x.params["limit_hours"] for x in blocking), 2)
-                    person = staff[r.candidate.staff_id]
-                    options.append({
-                        "kind": "overtime", "mode": strictest("propose", auto["plan_b"]),
-                        "staff_id": person.id, "staff_name": person.name, "hours_over": over,
-                        "cost_usd": round(over * policy.overtime_cost_per_hour, 2),
-                    })
-                    break
-        local_day = info["local_start"].date()
-        if shift.groups:
-            options.append({
-                "kind": "reschedule", "mode": auto["plan_b"], "groups": group_ids, "families": families,
-                "remedy": "makeup", "valid_until": local_day + timedelta(days=policy.makeup_window_days),
-            })
-        options.append({
-            "kind": "close", "mode": auto["plan_b"], "zone_id": info["zone_id"], "groups": group_ids,
-            "families": families, "remedy": policy.default_remedy,
-            "valid_until": local_day + timedelta(days=policy.makeup_window_days) if policy.default_remedy == "makeup" else None,
-        })
-        options.sort(key=lambda o: OPTION_ORDER.index(o["kind"]))
+        partner_ids = [r[0] for r in self.conn.execute(
+            "SELECT s.id FROM shift s WHERE s.venue_id = %s AND s.role_id = (SELECT role_id FROM shift WHERE id = %s)"
+            " AND s.starts_at = %s AND s.ends_at = %s AND s.status = 'scheduled' AND s.id <> %s"
+            " AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = s.id)"
+            # a shift teaching the same groups (an instructor seat of a broken norm) is not a group next door
+            " AND NOT EXISTS (SELECT 1 FROM shift_group a JOIN shift_group b ON b.group_id = a.group_id"
+            "  WHERE a.shift_id = s.id AND b.shift_id = %s) ORDER BY s.id",
+            (shift.venue, shift_id, shift.start, shift.end, shift_id, shift_id),
+        )]
+        asked = {r[0] for r in self.conn.execute("SELECT staff_id FROM offer WHERE case_id = %s", (case_id,))}
+        options, rejected = plan_b_options(
+            shift=shift, absent=absent, partners=[load_shift(self.conn, pid) for pid in partner_ids], staff=staff,
+            policy=policy, context=context, now=now, exclude=asked,
+        )
         return plain({
             "case_id": case_id,
             "shift": {"id": shift_id, "label": info["label"], "venue": info["venue"], "zone_id": info["zone_id"],
@@ -583,15 +907,19 @@ class Pipeline:
             raise NotFound(f"unknown plan {plan_id}")
         case_id, snapshot, stored, status = row
         if status != "proposed":
+            live = self.conn.execute(
+                "SELECT id, snapshot_hash FROM plan_b WHERE case_id = %s AND status = 'proposed'", (case_id,)
+            ).fetchone()
+            if status == "superseded" and live:
+                raise Conflict("plan changed", {"plan_id": f"P-{live[0]}", "current_hash": live[1]})
             raise Conflict(f"plan {plan_id} is {status}", {"status": status})
         if digest != stored:
-            raise Conflict("the plan changed since it was shown", {"plan_id": plan_id, "hash": stored})
+            raise Conflict("plan changed", {"plan_id": f"P-{plan_id}", "current_hash": stored})
         fresh = self._plan_facts(case_id, now)
         if any(fresh[k] != snapshot[k] for k in ("shift", "options", "recommended", "rejected")):
             new_plan = self.propose_plan_b(case_id, now)
-            raise Conflict("the situation changed; a new plan replaces the shown one",
-                           {"plan_id": new_plan["plan_id"] if new_plan else None,
-                            "hash": new_plan["hash"] if new_plan else None})
+            raise Conflict("plan changed", {"plan_id": f"P-{new_plan['plan_id']}" if new_plan else None,
+                                            "current_hash": new_plan["hash"] if new_plan else None})
         index = snapshot["recommended"] if option is None else option
         if not 0 <= index < len(snapshot["options"]):
             raise Conflict(f"no option {index} in plan {plan_id}")
@@ -788,43 +1116,47 @@ class Pipeline:
 
     # --- certificate cards ------------------------------------------------------
 
-    def read_certificate(self, staff_id: str, image: bytes, mime: str, now: datetime) -> dict:
-        """Two independent readers; a disagreement, an unknown type or another name sends the card to a person."""
+    def read_certificate(self, staff_id: str, image: bytes, mime: str, now: datetime, cert_type: str | None = None) -> dict:
+        """Two independent readers. Trusted only when both agree on the dates (the database checks it too);
+        a different card number alone is a note ("check_id"), not a block. Another person's name, an unknown
+        type or a failed reader sends the card to a person."""
         person = self._staff_row(staff_id)
         policy = self._policy()
+        if cert_type is not None and cert_type not in policy.preset.cert_types:
+            raise ValueError(f"unknown certificate type {cert_type!r}")
         ref = {"staff_id": staff_id}
         readings: dict[str, dict | None] = {}
         flags: list[str] = []
+        notes: list[str] = []
         for model in (TEXT_MODEL, SECOND_READER_MODEL):
             try:
                 readings[model] = self.models.read_card(image, mime, model=model, at=now, ref=ref).data
             except ModelError:
                 readings[model] = None
                 flags.append(f"reader_failed:{model}")
-        first = readings[TEXT_MODEL] or readings[SECOND_READER_MODEL]
+        a, b = readings[TEXT_MODEL], readings[SECOND_READER_MODEL]
+        first = a or b
         if first is None:
-            return {"cards": [], "flags": flags, "readings": readings}
-        title = (first.get("title") or "").upper()
-        types = [c.code for c in policy.preset.cert_types.values() if any(m in title for m in c.match)]
+            return {"cards": [], "flags": flags, "notes": notes, "review": True, "readings": readings}
+        if cert_type:
+            types = [cert_type]
+        else:
+            title = " ".join(((r or {}).get("title") or "") for r in (a, b)).upper()
+            types = [c.code for c in policy.preset.cert_types.values() if any(m in title for m in c.match)]
         if not types:
             flags.append("unknown_type")
-        if " ".join((first.get("name") or "").split()).casefold() != " ".join(person["name"].split()).casefold():
+        wanted = _name_key(person["name"])
+        if not any(_name_key((r or {}).get("name")) == wanted for r in (a, b) if r):
             flags.append("name_mismatch")
-
-        def us_date(value: str | None) -> str | None:
-            try:
-                return datetime.strptime(value, "%m/%d/%Y").date().isoformat() if value else None
-            except ValueError:
-                return None
-
-        issued, expires = us_date(first.get("issued")), us_date(first.get("exp"))
+        dates = {m: (_card_date((r or {}).get("issued")), _card_date((r or {}).get("exp"))) for m, r in readings.items() if r}
+        issued, expires = dates.get(TEXT_MODEL) or dates.get(SECOND_READER_MODEL)
         if issued is None:
             flags.append("unreadable_dates")
-        a, b = readings[TEXT_MODEL], readings[SECOND_READER_MODEL]
-        if a is not None and b is not None and (
-            any(us_date(a.get(k)) != us_date(b.get(k)) for k in ("issued", "exp")) or a.get("id") != b.get("id")
-        ):
-            flags.append("readers_disagree")
+        if a is not None and b is not None:
+            if dates[TEXT_MODEL] != dates[SECOND_READER_MODEL]:
+                flags.append("dates_disagree")
+            elif _id_key(a.get("id")) != _id_key(b.get("id")):
+                notes.append("check_id")
         cards = []
         sha = sha256_bytes(image)
         with self.conn.transaction():
@@ -833,20 +1165,43 @@ class Pipeline:
                     got = readings[model]
                     if got is None:
                         return None
+                    got_issued, got_exp = dates[model]
                     return {"model": model, "fields": {"type": code, "card_number": got.get("id"),
-                                                       "issued_on": us_date(got.get("issued")),
-                                                       "expires_on": us_date(got.get("exp"))},
+                                                       "issued_on": got_issued, "expires_on": got_exp},
                             "name": got.get("name"), "title": got.get("title"), "read_at": now.isoformat()}
 
                 row = self.conn.execute(
                     "INSERT INTO staff_cert (staff_id, cert_type_id, card_number, issued_on, expires_on, reader_a, reader_b,"
-                    " flags, image_sha256) VALUES (%s, (SELECT id FROM cert_type WHERE preset_code = %s AND code = %s),"
-                    " %s, %s, %s, %s, %s, %s, %s) RETURNING id, needs_review",
+                    " flags, notes, image_sha256) VALUES (%s, (SELECT id FROM cert_type WHERE preset_code = %s AND code = %s),"
+                    " %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id, needs_review",
                     (staff_id, policy.preset.code, code, first.get("id"), issued, expires,
-                     Jsonb(reader(TEXT_MODEL)) if readings[TEXT_MODEL] else None,
-                     Jsonb(reader(SECOND_READER_MODEL)) if readings[SECOND_READER_MODEL] else None,
-                     flags, sha),
+                     Jsonb(reader(TEXT_MODEL)) if a else None, Jsonb(reader(SECOND_READER_MODEL)) if b else None,
+                     [f for f in flags if f != "dates_disagree"], notes, sha),
                 ).fetchone()
                 cards.append({"id": row[0], "type": code, "issued_on": issued, "expires_on": expires, "review": row[1]})
-        return {"cards": cards, "flags": flags, "review": bool(flags) or any(c["review"] for c in cards),
-                "readings": readings}
+        return {"cards": cards, "flags": flags, "notes": notes,
+                "review": bool(flags) or any(c["review"] for c in cards), "readings": readings}
+
+
+def _audio_mime(filename: str) -> str:
+    return "audio/ogg" if filename.lower().endswith((".ogg", ".oga", ".opus")) else "application/octet-stream"
+
+
+def _name_key(name: str | None) -> str:
+    return " ".join((name or "").split()).casefold()
+
+
+def _id_key(value: str | None) -> str:
+    return " ".join((value or "").split()).upper()
+
+
+def _card_date(value: str | None) -> str | None:
+    """ISO (YYYY-MM-DD) or US (MM/DD/YYYY) date from a reading, as ISO; None when missing or unreadable."""
+    if not value:
+        return None
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
+        try:
+            return datetime.strptime(value.strip(), fmt).date().isoformat()
+        except ValueError:
+            continue
+    return None

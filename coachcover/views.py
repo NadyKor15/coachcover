@@ -6,15 +6,16 @@ its data-slot elements without logic.
 
 from __future__ import annotations
 
-from collections import Counter
-from datetime import datetime, timedelta
+import dataclasses
+from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
 import psycopg
 
-from coachcover.checks import night_report
-from coachcover.pipeline import Pipeline, plain
-from coachcover.rules import Code
+from coachcover.models import MODEL_LABELS
+from coachcover.pipeline import plain
+from coachcover.repo import load_context, load_policy, load_shift, load_staff
+from coachcover.rules import Code, eligible
 
 CODE_TEXT = {
     Code.IS_THE_ABSENT_PERSON.value: "the absent person",
@@ -69,223 +70,70 @@ def event_line(kind: str, data: dict, at: datetime, tz: ZoneInfo, names: dict) -
         "cancelled_by_closure": lambda: f"{t} cancelled by a closure",
         "offers_off": lambda: f"{t} offers are off in the policy",
         "plan_b_off": lambda: f"{t} plan B is off in the policy",
-        "approval_rejected": lambda: f"{t} the manager rejected the assignment",
+        "approval_rejected": lambda: f"{t} the manager said no",
+        "volunteered": lambda: f"{t} {who} offered to take it: «{data.get('text')}»",
+        "volunteer_blocked": lambda: f"{t} {who} blocked: " + "; ".join(r["text"] for r in data.get("reasons", [])),
+        "message_screened": lambda: f"{t} message filter ({data.get('model')}): {data.get('verdict')}",
+        "flagged_for_manager": lambda: f"{t} message from {who} flagged for the manager; the rules were checked anyway",
+        "night_check_found": lambda: f"{t} night check: {who} may not work it: " + "; ".join(r["text"] for r in data.get("reasons", [])),
+        "night_cover_approved": lambda: f"{t} the manager approved finding a replacement",
+        "approval_refused": lambda: f"{t} approval refused: {data.get('reason')} (shown {str(data.get('shown_hash'))[:8]}…, now {str(data.get('current_hash'))[:8]}…)",
     }
     return lines.get(kind, lambda: f"{t} {kind}")()
 
 
-def _names(conn: psycopg.Connection, policy_id: str) -> dict:
-    return dict(conn.execute("SELECT id, full_name FROM staff WHERE policy_id = %s", (policy_id,)).fetchall())
-
-
-def case_page(conn: psycopg.Connection, policy_id: str, case_id: int) -> dict:
-    row = conn.execute(
-        "SELECT c.id, c.shift_id, c.absent_staff_id, c.source, c.status, c.opened_at, c.closed_at, c.callout_id"
-        " FROM cover_case c JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id"
-        " WHERE c.id = %s AND v.policy_id = %s",
-        (case_id, policy_id),
-    ).fetchone()
-    if row is None:
-        return {}
-    cid, shift_id, absent, source, status, opened, closed, callout_id = row
-    shift = Pipeline(conn, None, policy_id).shift_info(shift_id)  # type: ignore[arg-type] - read-only use
-    tz = ZoneInfo(shift["tz"])
-    names = _names(conn, policy_id)
-    events = conn.execute("SELECT seq, at, actor, kind, data FROM case_event WHERE case_id = %s ORDER BY seq", (cid,)).fetchall()
-    by_kind = {}
-    for _, _, _, kind, data in events:
-        by_kind.setdefault(kind, data)
-    ranked = by_kind.get("candidates_ranked", {})
-    offers = [
-        dict(zip(("offer_id", "staff_id", "queue_pos", "line", "sent_at", "expires_at", "status", "responded_at", "overtime"), r))
-        for r in conn.execute(
-            "SELECT id, staff_id, queue_pos, place->>'line', sent_at, expires_at, status, responded_at, overtime"
-            " FROM offer WHERE case_id = %s ORDER BY id",
-            (cid,),
-        )
-    ]
-    for o in offers:
-        o["name"] = names.get(o["staff_id"])
-        o["sent"] = _hm(o["sent_at"], tz)
-        o["answered"] = _hm(o["responded_at"], tz) if o["responded_at"] else None
-    plans = []
-    for pid, snap, digest, pstatus, chosen, by, decided in conn.execute(
-        "SELECT id, snapshot, snapshot_hash, status, chosen_option, decided_by, decided_at FROM plan_b WHERE case_id = %s ORDER BY id",
-        (cid,),
-    ):
-        lines = snap.get("text", {}).get("lines", [])
-        plans.append({
-            "plan_id": pid, "status": pstatus, "hash": digest, "headline": snap.get("text", {}).get("headline"),
-            "text_source": snap.get("text_source"), "recommended": snap.get("recommended"), "chosen": chosen,
-            "decided_by": by, "decided_at": decided,
-            "options": [{"index": i, "kind": o["kind"], "mode": o["mode"], "line": lines[i] if i < len(lines) else o["kind"],
-                         "cost_usd": o.get("cost_usd")} for i, o in enumerate(snap.get("options", []))],
-            "rejected": snap.get("rejected", []),
-        })
-    calls = [
-        dict(zip(("at", "purpose", "model", "ok", "error", "ms", "cost_usd", "input_tokens", "output_tokens", "source", "synthetic"), r))
-        for r in conn.execute(
-            "SELECT at, purpose, model_returned, ok, error, duration_ms, cost_usd, input_tokens, output_tokens, source,"
-            " coalesce((ref->>'synthetic')::boolean, false) FROM model_call"
-            " WHERE case_id = %s OR (%s::uuid IS NOT NULL AND ref->>'callout_id' = %s::text) ORDER BY at, id",
-            (cid, callout_id, callout_id),
-        )
-    ]
-    msgs = conn.execute(
-        "SELECT m.audience, m.language, m.group_id, g.size FROM message m LEFT JOIN lesson_group g ON g.id = m.group_id"
-        " WHERE m.case_id = %s",
-        (cid,),
-    ).fetchall()
-    family_groups = {(g, size) for aud, _, g, size in msgs if aud == "family"}
-    covered = by_kind.get("shift_covered")
-    return plain({
-        "case_id": cid,
-        "status": status,
-        "source": source,
-        "opened_at": opened,
-        "closed_at": closed,
-        "opened": _hm(opened, tz),
-        "closed": _hm(closed, tz) if closed else None,
-        "minutes_to_close": round((closed - opened).total_seconds() / 60, 1) if closed else None,
-        "shift_id": shift_id,
-        "shift_label": shift["label"],
-        "venue": shift["venue"],
-        "zone": shift["zone"],
-        "role": shift["role_label"],
-        "groups": [{"id": g["id"], "name": g["name"], "size": g["size"], "languages": g["languages"]} for g in shift["groups"]],
-        "absent_staff_id": absent,
-        "absent_name": names.get(absent),
-        "message_text": by_kind.get("callout_received", {}).get("text"),
-        "message_channel": by_kind.get("callout_received", {}).get("channel"),
-        "understood": (by_kind.get("callout_understood") or {}).get("understood"),
-        "understood_by": (by_kind.get("callout_understood") or {}).get("by"),
-        "filter_total": ranked.get("total"),
-        "filter_eligible": ranked.get("eligible"),
-        "filter_out": ranked.get("filtered"),
-        "filter_chips": [{**c, "text": CODE_TEXT.get(c["code"], c["code"])} for c in ranked.get("chips", [])],
-        "filter_grid": ranked.get("grid", []),
-        "queue_top": ranked.get("top", []),
-        "offers": offers,
-        "covered_by": covered.get("staff_id") if covered else None,
-        "covered_by_name": covered.get("name") if covered else None,
-        "plans": plans,
-        "timeline": [
-            {"seq": seq, "at": at, "time": _hm(at, tz), "actor": actor, "kind": kind,
-             "line": event_line(kind, data, at, tz, names), "data": data}
-            for seq, at, actor, kind, data in events
-        ],
-        "model_calls": calls,
-        "model_cost_usd": round(sum(float(c["cost_usd"] or 0) for c in calls), 6),
-        "model_ms": sum(c["ms"] or 0 for c in calls),
-        "messages_staff": sum(1 for aud, *_ in msgs if aud == "staff"),
-        "messages_family": sum(1 for aud, *_ in msgs if aud == "family"),
-        "families_told": sum(size or 0 for _, size in family_groups),
-        "family_languages": sorted({lang for aud, lang, _, _ in msgs if aud == "family"}),
-    })
-
-
-def today_page(conn: psycopg.Connection, policy_id: str, now: datetime) -> dict:
-    tz = ZoneInfo(conn.execute("SELECT tz FROM venue WHERE policy_id = %s ORDER BY id LIMIT 1", (policy_id,)).fetchone()[0])
-    local = now.astimezone(tz)
-    day_from = local.replace(hour=0, minute=0, second=0, microsecond=0)
-    names = _names(conn, policy_id)
-    cases = conn.execute(
-        "SELECT c.id, c.shift_id, c.status, c.opened_at FROM cover_case c JOIN shift s ON s.id = c.shift_id"
-        " JOIN venue v ON v.id = s.venue_id WHERE v.policy_id = %s AND c.opened_at >= %s AND c.opened_at <= %s"
-        " ORDER BY c.opened_at, c.id",
-        (policy_id, day_from, now),
-    ).fetchall()
-    focus = case_page(conn, policy_id, cases[0][0]) if cases else None
-    feed = []
-    for case_id, *_ in cases:
-        for seq, at, kind, data in conn.execute(
-            "SELECT seq, at, kind, data FROM case_event WHERE case_id = %s AND at <= %s ORDER BY seq", (case_id, now)
-        ):
-            feed.append({"at": at, "time": _hm(at, tz), "case_id": case_id, "kind": kind,
-                         "line": event_line(kind, data, at, tz, names)})
-    feed.sort(key=lambda e: (e["at"], e["case_id"]))
-    tomorrow = night_report(conn, policy_id, local.date() + timedelta(days=1), now)
-    closures = conn.execute(
-        "SELECT c.id, c.venue_id, v.name, c.zone_id, c.reason, c.starts_at, c.ends_at, c.remedy FROM closure c"
-        " JOIN venue v ON v.id = c.venue_id WHERE v.policy_id = %s AND c.ends_at >= %s ORDER BY c.starts_at",
-        (policy_id, day_from),
-    ).fetchall()
-    return plain({
-        "now": now,
-        "time": f"{local:%H:%M}",
-        "date": local.date(),
-        "weekday": f"{local:%A}",
-        "cases": [{"case_id": cid, "shift_id": sid, "status": st, "opened": _hm(op, tz)} for cid, sid, st, op in cases],
-        "focus_case_id": focus["case_id"] if focus else None,
-        "focus": focus,
-        "feed": feed,
-        "filter_total": focus["filter_total"] if focus else None,
-        "filter_eligible": focus["filter_eligible"] if focus else None,
-        "filter_out": focus["filter_out"] if focus else None,
-        "filter_chips": focus["filter_chips"] if focus else [],
-        "grid": focus["filter_grid"] if focus else [],
-        "queue": focus["offers"] if focus else [],
-        "plan_b": next((p for p in reversed(focus["plans"]) if p["status"] in ("proposed", "approved")), None) if focus else None,
-        "tomorrow_date": tomorrow["for_date"],
-        "tomorrow_shifts": tomorrow["shifts"],
-        "tomorrow_ok": tomorrow["covered_ok"],
-        "tomorrow_problems": tomorrow["problems"],
-        "tomorrow_uncovered": tomorrow["uncovered"],
-        "expiring_30": tomorrow["expiring_30"],
-        "expiring_60": tomorrow["expiring_60"],
-        "closures": [
-            {"closure_id": cid, "venue_id": vid, "venue": vname, "zone_id": zid, "reason": reason,
-             "from": _hm(a, tz), "to": _hm(b, tz), "remedy": remedy}
-            for cid, vid, vname, zid, reason, a, b, remedy in closures
-        ],
-    })
-
-
 def stats(conn: psycopg.Connection, policy_id: str) -> dict:
+    """GET /api/stats, keys as in the contract; `sim` is the 50-morning replay (synthetic)."""
+    from coachcover import sim
+
     rows = conn.execute(
-        "SELECT c.id, c.status, c.opened_at, c.closed_at, EXISTS (SELECT 1 FROM approval a WHERE a.case_id = c.id)"
+        "SELECT c.status, c.opened_at, c.closed_at, EXISTS (SELECT 1 FROM approval a WHERE a.case_id = c.id),"
+        " EXISTS (SELECT 1 FROM plan_b p WHERE p.case_id = c.id AND p.status = 'approved' AND p.decided_by <> 'agent')"
         " FROM cover_case c JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id WHERE v.policy_id = %s",
         (policy_id,),
     ).fetchall()
-    covered = [r for r in rows if r[1] == "covered"]
-    by_agent = [r for r in covered if not r[4]]
-    minutes = sorted((r[3] - r[2]).total_seconds() / 60 for r in covered if r[3])
-    plan_b = Counter(
-        snap["options"][chosen]["kind"]
-        for snap, chosen in conn.execute(
-            "SELECT p.snapshot, p.chosen_option FROM plan_b p WHERE p.status = 'approved'"
-        )
-    )
-    families = conn.execute(
-        "SELECT coalesce(sum(g.size), 0) FROM (SELECT DISTINCT group_id, coalesce(case_id, -closure_id) FROM message"
-        " WHERE audience = 'family') m(group_id, ctx) JOIN lesson_group g ON g.id = m.group_id"
-    ).fetchone()[0]
-    remedies = dict(conn.execute("SELECT kind, coalesce(sum(families), 0) FROM remedy GROUP BY kind").fetchall())
-    cost, calls = conn.execute("SELECT coalesce(sum(cost_usd), 0), count(*) FROM model_call").fetchone()
-    lessons_saved = len(covered) + plan_b.get("merge", 0) + plan_b.get("lead", 0)
+    closed = [r for r in rows if r[0] != "open"]
+    by_agent = [r for r in closed if r[0] == "covered" and not r[3] and not r[4]]
+    minutes = sorted((r[2] - r[1]).total_seconds() / 60 for r in rows if r[0] == "covered" and r[2])
     return plain({
-        "cases": len(rows),
-        "covered": len(covered),
-        "covered_without_a_person": len(by_agent),
-        "covered_without_a_person_pct": round(100 * len(by_agent) / len(rows), 1) if rows else None,
+        "runs": conn.execute("SELECT count(*) FROM ops.judge_run").fetchone()[0],
+        "closed_without_human_pct": round(100 * len(by_agent) / len(closed), 1) if closed else None,
         "median_minutes_to_cover": minutes[len(minutes) // 2] if minutes else None,
-        "plan_b_by_option": dict(plan_b),
-        "lessons_saved": lessons_saved,
-        "families_told": families,
-        "credits_families": remedies.get("credit", 0),
-        "makeup_families": remedies.get("makeup", 0),
-        "model_calls": calls,
-        "model_cost_usd": round(float(cost), 6),
+        "eligibility_violations": eligibility_violations(conn, policy_id),
+        "sim": sim.sim_stats(),
     })
+
+
+def eligibility_violations(conn: psycopg.Connection, policy_id: str) -> int:
+    """Audit: every booking the engine made (accepted offer, volunteer, plan B), re-checked at the moment it was made."""
+    policy = load_policy(conn, policy_id)
+    staff = {s.id: s for s in load_staff(conn, policy_id)}
+    bad = 0
+    for shift_id, at, data in conn.execute(
+        "SELECT c.shift_id, e.at, e.data FROM case_event e JOIN cover_case c ON c.id = e.case_id"
+        " JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id"
+        " WHERE e.kind = 'shift_covered' AND v.policy_id = %s ORDER BY e.at",
+        (policy_id,),
+    ).fetchall():
+        shift = load_shift(conn, shift_id)
+        if shift.assignee != data.get("staff_id"):
+            continue  # the shift changed hands later; that booking is audited on its own
+        holder = dataclasses.replace(shift, assignee=None)
+        decision = eligible(staff[data["staff_id"]], holder, at, policy, load_context(conn, policy_id, shift))
+        overtime = bool(data.get("overtime"))
+        if any(r.blocking and not (overtime and r.code == Code.HOURS_LIMIT_EXCEEDED) for r in decision.reasons):
+            bad += 1
+    return bad
 
 
 def ledger(conn: psycopg.Connection, limit: int = 200) -> dict:
     calls = [
-        dict(zip(("id", "at", "purpose", "model_requested", "model_returned", "source", "ok", "error", "input_tokens",
-                  "output_tokens", "ms", "cost_usd", "case_id", "synthetic"), r))
+        {**dict(zip(("id", "at", "purpose", "model_requested", "model_returned", "source", "ok", "error", "input_tokens",
+                     "output_tokens", "ms", "cost_usd", "case_id", "synthetic", "recording"), r)),
+         "model_label": MODEL_LABELS.get(r[4] or r[3], r[4] or r[3])}
         for r in conn.execute(
             "SELECT id, at, purpose, model_requested, model_returned, source, ok, error, input_tokens, output_tokens,"
-            " duration_ms, cost_usd, case_id, coalesce((ref->>'synthetic')::boolean, false)"
+            " duration_ms, cost_usd, case_id, coalesce((ref->>'synthetic')::boolean, false), ref->>'recording'"
             " FROM model_call ORDER BY id DESC LIMIT %s",
             (limit,),
         )

@@ -14,8 +14,8 @@ from tests.conftest import masked_dsn
 
 pytestmark = pytest.mark.db
 
-MARINA_0600 = "L-1109-G001"
-NEIGHBOUR_0600 = "L-1109-G002"
+MARINA_0600 = "L-1109-G002"
+NEIGHBOUR_0600 = "L-1109-G001"
 
 
 def _rejected(conn, statement, params=(), error=psycopg.Error):
@@ -80,7 +80,9 @@ def test_review_4_merge_on_real_data(school):
         merged_shift_ids=(NEIGHBOUR_0600,),
     )
     decision = eligible(staff[neighbour_shift.assignee], merged, NOW, policy, load_context(school, POLICY_ID, merged))
-    assert decision.ok, decision.reasons
+    # the merge is judged on the norm (14 children, 1:4 for the young ones), not refused as a clash with his own shift
+    assert Code.OVERLAPS_COMMITMENT not in decision.codes
+    assert decision.codes == [Code.RATIO_EXCEEDED] and decision.reasons[0].params["capacity"] == 4
 
 
 # 5. the case file is append-only: no update, no delete, no truncate, no cascade

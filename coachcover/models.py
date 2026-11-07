@@ -42,6 +42,15 @@ ALLOWED_MODELS = (
 SPEECH_MODEL = "whisper-large-v3-turbo"
 TEXT_MODEL = "muse-glimmer-30b"
 SECOND_READER_MODEL = "nemotron-3-nano-omni-30b-a3b-reasoning"
+SAFETY_MODEL = "nemotron-3.5-content-safety"
+SHORT_NAMES = {
+    SPEECH_MODEL: "whisper",
+    TEXT_MODEL: "muse-glimmer-30b",
+    SECOND_READER_MODEL: "nemotron-omni",
+    SAFETY_MODEL: "nemotron-safety",
+    "raon-1-mini-preview": "raon",
+}
+MODEL_LABELS = {**SHORT_NAMES, SPEECH_MODEL: SPEECH_MODEL}  # labels for tables: the speech model keeps its full id
 
 DEFAULT_BASE_URL = "https://api.vultrinference.com/v1"
 PRICES_FILE = Path(__file__).parent / "model_prices.json"
@@ -169,6 +178,7 @@ class Recording:
     duration_ms: int
     synthetic: bool
     source: str
+    file: str = ""
 
 
 class Recordings:
@@ -187,6 +197,7 @@ class Recordings:
                 duration_ms=int(raw["duration_ms"]),
                 synthetic=bool(raw["synthetic"]),
                 source=raw["source"],
+                file=path.name,
             )
             key = (rec.purpose, rec.model, rec.input_sha256)
             if key in self._index:
@@ -355,6 +366,7 @@ class ModelClient:
             if self.mode == "replay":
                 rec = self.recordings.find(purpose, model, input_sha256)
                 body, duration, synthetic = rec.response, rec.duration_ms, rec.synthetic
+                call_ref["recording"] = rec.file
                 if synthetic:
                     call_ref["synthetic"] = True
             else:
@@ -393,7 +405,7 @@ class ModelClient:
             text = body.get("text")
             if not isinstance(text, str) or not text.strip():
                 raise BadAnswer("empty transcript")
-            return {"text": text.strip(), "language": body.get("language")}
+            return {"text": text.strip(), "language": body.get("language"), "duration": body.get("duration")}
 
         return self._call(
             purpose="transcribe",
@@ -448,6 +460,26 @@ class ModelClient:
             parse=parse,
         )
 
+    def screen_message(self, text: str, policy: str, *, at: datetime, case_id: int | None = None,
+                       ref: dict | None = None) -> Answer:
+        """Content-safety verdict for a staff message: data = {"verdict": "safe" | "unsafe" | "unknown", "raw": ...}.
+        The model may answer in its own format ("User Safety: unsafe") rather than JSON; both are read."""
+        request = ("/chat/completions", {"json": {
+            "model": SAFETY_MODEL,
+            "temperature": 0,
+            "messages": [{"role": "system", "content": policy}, {"role": "user", "content": text}],
+        }})
+
+        def parse(body: dict) -> dict:
+            try:
+                content = body["choices"][0]["message"]["content"] or ""
+            except (KeyError, IndexError, TypeError):
+                raise BadAnswer("no message in the answer") from None
+            return {"verdict": safety_verdict(content), "raw": content[:200]}
+
+        return self._call(purpose="screen_message", model=SAFETY_MODEL, input_sha256=canonical_key({"text": text}),
+                          request=request, at=at, case_id=case_id, ref=ref or {}, parse=parse)
+
     def read_card(
         self, image: bytes, mime: str, *, model: str, at: datetime, case_id: int | None = None, ref: dict | None = None
     ) -> Answer:
@@ -471,13 +503,14 @@ class ModelClient:
 
 
 CARD_PROMPT = (
-    "Read this certificate card. Return JSON with keys: name, title, issued (MM/DD/YYYY), "
-    "exp (MM/DD/YYYY, the valid-through date), id. Use null for an unreadable field."
+    "Read this certificate photo. Return ONLY JSON with keys: name, id, title, issued, exp. "
+    "issued and exp are dates in ISO format YYYY-MM-DD (exp = the valid-through / expiry date). "
+    "If a field is missing or unreadable, use null. Do not guess."
 )
 
 CARD_SCHEMA = {
     "type": "object",
-    "required": ["name", "title", "issued", "exp", "id"],
+    "required": ["name", "issued", "exp", "id"],
     "properties": {
         "name": {"type": ["string", "null"]},
         "title": {"type": ["string", "null"]},
@@ -490,3 +523,18 @@ CARD_SCHEMA = {
 
 def now_utc() -> datetime:
     return datetime.now(UTC)
+
+
+def safety_verdict(content: str) -> str:
+    """'unsafe', 'safe' or 'unknown' from a content-safety answer (JSON or the model's own "User Safety: ..." line)."""
+    try:
+        data = json.loads(content)
+        if isinstance(data, dict) and data.get("verdict") in ("safe", "unsafe"):
+            return data["verdict"]
+    except (json.JSONDecodeError, TypeError):
+        pass
+    if re.search(r"\bunsafe\b", content, re.IGNORECASE):
+        return "unsafe"
+    if re.search(r"\bsafe\b", content, re.IGNORECASE):
+        return "safe"
+    return "unknown"

@@ -4,12 +4,12 @@
  "input": {
   "event": "closure",
   "language": "en",
-  "venue": "Northside Aquatic Center",
+  "venue": "Riverside Aquatic Center",
   "date": "2026-11-09",
-  "reason": "weather",
+  "reason": "equipment failure",
   "remedy": "You get a lesson credit."
  },
- "input_sha256": "db75f622d48070ba576fd468e29c71f8e44c99b9da7001dff57e181ffb7caf11",
+ "input_sha256": "e55f4fcd695fd6eb862ebb1dff6326abdc30408924af9b284f6e88b9bd8b3a3e",
  "synthetic": true,
  "source": "synthetic: written by hand to the family_message schema, only facts from input",
  "duration_ms": 1300,
@@ -23,7 +23,7 @@
    {
     "message": {
      "role": "assistant",
-     "content": "{\"body\": \"Hello: because of the weather, Northside Aquatic Center is closed today, November 9. The {group} lesson at {time} is cancelled. You get a lesson credit. Sorry for the trouble.\"}"
+     "content": "{\"body\": \"Hello: because of an equipment failure, Riverside Aquatic Center is closed today, November 9. The {group} lesson at {time} is cancelled. You get a lesson credit. Sorry for the trouble.\"}"
     }
    }
   ]

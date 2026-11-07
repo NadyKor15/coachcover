@@ -2,6 +2,7 @@
 
 import json
 from collections import Counter
+from dataclasses import replace
 from datetime import time, timedelta
 from pathlib import Path
 
@@ -97,35 +98,38 @@ def test_violations_are_measured_by_the_rules_for_both_strategies(result):
 
 
 def test_the_audit_is_not_blind():
-    """Must light: the same audit flags a known-bad placement on the unchanged Monday (S27's card expired Oct 20)."""
+    """Must light: the same audit flags known-bad placements on the unchanged Monday (S27 Anna Kim's lifeguard card
+    ended Nov 5; a lifeguard without the instructor role on a lesson; a merge over the group norm)."""
     world = load_world()
     shift = world.shifts["G-1109-V1-0530"]
     morning = Morning(0, SEED, NOW.date(), world.staff, world.shifts, {}, (), {}, ())
     state = State(world, morning)
     assert "CERT_EXPIRED" in _audit(state, "S27", shift, NOW)
-    assert "ROLE_MISSING" in _audit(state, "S01", shift, NOW)  # an instructor without the role on that shift
-    # merges: 4 + 4 at level 3 fits 1:8; 3 + 2 beginners breaks 1:4 - the group-norm category can light up too
-    teacher_six = world.shifts["L-1109-G002"].assignee
-    assert _audit(state, teacher_six, state.merge(world.shifts["L-1109-G002"], world.shifts["L-1109-G001"]), NOW) == ()
-    teacher_seven = world.shifts["L-1109-G003"].assignee
-    codes = _audit(state, teacher_seven, state.merge(world.shifts["L-1109-G003"], world.shifts["L-1109-G004"]), NOW)
+    assert "ROLE_MISSING" in _audit(state, "S28", world.shifts["L-1109-G003"], NOW)  # a lifeguard on a lesson
+    # merges: Marina's 8 children aged 4-5 with the 6 next door break 1:4; the same post with 2 + 2 children fits
+    hero, next_door = world.shifts["L-1109-G002"], world.shifts["L-1109-G001"]
+    teacher = next_door.assignee
+    codes = _audit(state, teacher, State(world, morning).merge(next_door, hero), NOW)
     assert "RATIO_EXCEEDED" in codes and "IS_THE_ABSENT_PERSON" not in codes
     assert sim.primary_category(codes) in {"ratio", "program"}
+    small = lambda s: replace(s, groups=tuple(replace(g, size=2) for g in s.groups))  # noqa: E731
+    assert _audit(state, teacher, State(world, morning).merge(small(next_door), small(hero)), NOW) == ()
 
 
 def test_plan_b_follows_the_core_order_on_the_demo_morning():
-    """Same answers as the core's judge scenario: 06:00 merges into the group next to it, 07:00 gets S06."""
+    """Same answers as the core's judge scenario "nobody_accepts": the merge with the group next door breaks the 1:4
+    norm, so the head coach in reserve (S06) comes first, then overtime (S11), then move and close."""
     world = load_world()
-    callout = Callout("S05", NOW, ("L-1109-G001", "L-1109-G004"))
+    callout = Callout("S05", NOW, ("L-1109-G002",))
     morning = Morning(0, SEED, NOW.date(), world.staff, world.shifts, {}, (callout,), {}, ())
     state = State(world, morning)
     at = NOW + timedelta(minutes=10)
-    six = plan_b_options(state, world.shifts["L-1109-G001"], "S05", at)
-    assert six[0]["kind"] == "merge" and six[0]["into_shift_id"] == "L-1109-G002"
-    seven = plan_b_options(state, world.shifts["L-1109-G004"], "S05", at)
-    assert [o["kind"] for o in seven][0] == "lead" and seven[0]["staff_id"] == "S06"
-    assert [o["kind"] for o in seven][-2:] == ["reschedule", "close"]
-    assert all(o["mode"] == "propose" for o in seven)
+    six = plan_b_options(state, world.shifts["L-1109-G002"], "S05", at)
+    assert [o["kind"] for o in six] == ["lead", "overtime", "reschedule", "close"]
+    assert (six[0]["staff_id"], six[1]["staff_id"]) == ("S06", "S11")
+    assert all(o["mode"] == "propose" for o in six)
+    # whoever already said no is not suggested again
+    assert plan_b_options(state, world.shifts["L-1109-G002"], "S05", at, exclude={"S11"})[1]["kind"] != "overtime"
 
 
 def test_baseline_takes_the_first_yes_and_coachcover_only_eligible_people(result):
@@ -141,8 +145,19 @@ def test_baseline_takes_the_first_yes_and_coachcover_only_eligible_people(result
 def test_what_if_rows(result):
     checks_role = result["what_if"]["baseline_manager_checks_role"]["summary"]
     assert checks_role["violations_by_reason"]["role"] == 0 and checks_role["violations"] > 0
-    batch = result["what_if"]["coachcover_three_offers_at_once"]["summary"]
-    assert batch["violations"] == 0 and batch["cases"] == result["summary"][COACHCOVER]["cases"]
+    before = result["what_if"]["coachcover_one_offer_at_a_time"]["summary"]
+    assert before["violations"] == 0 and before["cases"] == result["summary"][COACHCOVER]["cases"]
+
+
+def test_before_after_waves_keep_zero_violations_and_close_sooner(result):
+    """a product decision: the same 50 mornings, one offer at a time (before) against waves + plan B by the deadline (after)."""
+    table = {title: (b, a) for title, b, a in result["before_after"]["rows"]}
+    assert table["Placements that break a rule"] == (0, 0)
+    before_median, after_median = table["Minutes from call-out to closed, median"]
+    assert after_median < before_median
+    assert table["Closed after the shift started"][1] == 0  # plan B by the deadline: nothing is late
+    assert table["Shifts that needed cover"][0] == table["Shifts that needed cover"][1]
+    assert "## Before / after: offer waves (product decision)" in sim.report_markdown(result)
 
 
 def test_stats_block_follows_the_contract(result):
@@ -167,5 +182,5 @@ def test_cli_writes_both_files(tmp_path, capsys):
 def test_bad_arguments():
     with pytest.raises(ValueError, match="mornings"):
         run(0)
-    with pytest.raises(ValueError, match="offer_batch"):
-        run(1, params=SimParams(offer_batch=0))
+    with pytest.raises(ValueError, match="offers"):
+        run(1, params=SimParams(offers="all"))

@@ -1,5 +1,6 @@
 """Schema, preset install, the training school and its traps, read back through the rules."""
 
+import dataclasses
 from datetime import date, datetime, timedelta
 
 import psycopg
@@ -15,7 +16,7 @@ from coachcover.seed import NOW, POLICY_ID, build_school, load_school
 
 pytestmark = pytest.mark.db
 
-DEMO_LESSON = "L-1109-G001"  # Marina's Monday 06:00 level-3 lane group at V1
+DEMO_LESSON = "L-1109-G002"  # Marina's Monday 06:00-08:00 lanes + Level 3 (8 young kids) at V1
 DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 
 
@@ -24,7 +25,8 @@ DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 
 def test_migrations_apply_once(new_database):
     conn = new_database()
-    versions = ["001_init", "002_pipeline", "003_review_fixes", "004_callouts_and_ops"]
+    versions = ["001_init", "002_pipeline", "003_review_fixes", "004_callouts_and_ops", "005_screens_and_filter",
+                "006_safety_layer", "007_offer_waves"]
     assert migrate(conn) == versions
     assert migrate(conn) == []
     assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == versions
@@ -117,19 +119,24 @@ def test_the_traps_meet_the_rules_at_the_morning_call_out(school):
     expired = decide("S07", lesson, lesson_ctx)
     assert expired.codes == [Code.CERT_EXPIRED] and expired.reasons[0].params["expires_on"] == "2026-11-08"
     assert decide("S10", lesson, lesson_ctx).codes == [Code.CERT_EXPIRED]
-    today = decide("S08", lesson, lesson_ctx)
-    assert today.ok and today.codes == [Code.CERT_EXPIRES_ON_SHIFT_DAY] and today.reasons[0].params["today"] is True
-    assert decide("S11", lesson, lesson_ctx).ok  # 39.5 h + 0.5 h = exactly 40
+    today = decide("S08", lesson, lesson_ctx)  # card ends today (a warning) and he teaches at 07:00
+    assert today.codes == [Code.CERT_EXPIRES_ON_SHIFT_DAY, Code.OVERLAPS_COMMITMENT] and today.reasons[0].params["today"] is True
+    assert decide("S11", lesson, lesson_ctx).codes == [Code.HOURS_LIMIT_EXCEEDED]  # 39.5 h + 2 h
+    anna = decide("S27", lesson, lesson_ctx)  # free, level 3, but her lifeguard card ended Nov 5
+    assert anna.codes == [Code.CERT_EXPIRED] and anna.reasons[0].params == {"cert_type": "lifeguarding", "expires_on": "2026-11-05"}
     assert decide("S13", lesson, lesson_ctx).codes == [Code.CERT_NEEDS_REVIEW]
     assert decide("S14", lesson, lesson_ctx).codes == [Code.PROGRAM_RENEWAL_OVERDUE]
     assert decide("S17", lesson, lesson_ctx).reasons == ()
 
     assert decide("S27", guard, guard_ctx).codes == [Code.CERT_EXPIRED]
-    assert decide("S30", guard, guard_ctx).codes == [Code.CERT_EXPIRES_ON_SHIFT_DAY]
+    assert decide("S28", lesson, lesson_ctx).codes[:2] == [Code.CERT_MISSING, Code.PROGRAM_MISSING]  # lifeguard without WSI
+    holder_view = dataclasses.replace(guard, assignee=None)  # judged as the person on the block, not a replacement
+    s30 = decide("S30", holder_view, guard_ctx)  # her card ends today; she closed V1 at 21:00 on Sunday
+    assert s30.codes == [Code.CERT_EXPIRES_ON_SHIFT_DAY, Code.REST_TOO_SHORT] and s30.reasons[1].params["rest_hours"] == 8.5
     over = decide("S29", guard, guard_ctx)
     assert over.codes == [Code.HOURS_LIMIT_EXCEEDED] and over.reasons[0].params["hours_after"] == 42.5
     # the regular instructor of the group next door is busy at 06:00
-    neighbour = school.execute("SELECT staff_id FROM shift WHERE id = 'L-1109-G002'").fetchone()[0]
+    neighbour = school.execute("SELECT staff_id FROM shift WHERE id = 'L-1109-G001'").fetchone()[0]
     assert Code.OVERLAPS_COMMITMENT in decide(neighbour, lesson, lesson_ctx).codes
 
 
@@ -172,7 +179,7 @@ def test_seed_is_deterministic(new_database):
     load_school(second)
     a, b = _dump(first), _dump(second)
     assert a == b
-    assert len(a["shift"]) == 204 and len(a["staff_cert"]) == 87
+    assert len(a["shift"]) == 204 and len(a["staff_cert"]) == 107
 
 
 def test_loading_the_school_twice_fails(new_database):
@@ -201,7 +208,7 @@ def test_loading_the_school_twice_fails(new_database):
         (
             "INSERT INTO shift (id, venue_id, role_id, starts_at, ends_at, staff_id)"
             " SELECT 'X-DOUBLE', 'V1', role_id, starts_at + interval '10 minutes', ends_at, staff_id"
-            " FROM shift WHERE id = 'L-1109-G002'",
+            " FROM shift WHERE id = 'L-1109-G001'",
             psycopg.errors.ExclusionViolation,
         ),
         (

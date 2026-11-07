@@ -18,9 +18,10 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
 
 # What the engine may do by itself ("auto"), only suggest to a person ("propose") or never do ("off").
-AUTONOMY_ACTIONS = ("assign_cover", "plan_b", "merge_groups", "overtime")
+AUTONOMY_ACTIONS = ("assign_cover", "plan_b", "merge_groups", "overtime", "night_cover")
 AUTONOMY_MODES = ("auto", "propose", "off")
 REMEDIES = ("credit", "makeup")
+MONEY_KEYS = ("lesson_price", "refund_share", "hourly_wage", "overtime_multiplier", "inspection_penalty", "manager_hour")
 
 
 def check_autonomy(autonomy: Mapping[str, str]) -> None:
@@ -64,6 +65,7 @@ class CertType:
     label: str
     validity_months: int
     match: tuple[str, ...] = ()  # words on a card title that name this type (upper case)
+    short: str = ""  # short label for screens ("CPR/AED"); the label when empty
 
     def __post_init__(self) -> None:
         _require_code(self.code, "cert type code")
@@ -77,6 +79,7 @@ class Role:
     label: str
     required_certs: tuple[str, ...]
     reserve: bool = False  # people with this role are kept out of the offer queue (plan B "senior steps in")
+    short: str = ""  # short label for screens; the label when empty
 
     def __post_init__(self) -> None:
         _require_code(self.code, "role code")
@@ -102,6 +105,7 @@ class Program:
     label: str
     renewal_months: int | None
     levels: Mapping[str, Level]
+    short: str = ""  # short code for screens ("LTS")
 
     def __post_init__(self) -> None:
         _require_code(self.code, "program code")
@@ -122,9 +126,33 @@ class Preset:
     cert_types: Mapping[str, CertType]
     programs: Mapping[str, Program]
     venue_term: Mapping[str, str] = field(default_factory=dict)  # language -> the word for a venue, e.g. "club"
+    young_age_max: int | None = None  # groups with children up to this age use young_max_per_instructor
+    young_max_per_instructor: int | None = None
+    copy: Mapping[str, str] = field(default_factory=dict)  # screen and prompt texts of this kind of business
+    money: Mapping[str, Mapping[str, object]] = field(default_factory=dict)  # prices for the money card, see MONEY_KEYS
+    min_rest_hours: float | None = None  # rest a person needs between work on different days; None: no rule
+    offer_wave_size: int = 1  # offers sent at once, in queue order (product decision)
+    offer_collect_seconds: int = 0  # after the first "yes" of a wave, wait this long for a "yes" from higher up
+    plan_b_minutes_before_start: int | None = None  # plan B goes to the manager this long before the start
 
     def __post_init__(self) -> None:
         _require_code(self.code, "preset code")
+        if (self.young_age_max is None) != (self.young_max_per_instructor is None):
+            raise ValueError(f"preset {self.code}: young_age_max and young_max_per_instructor go together")
+        if self.young_max_per_instructor is not None and not _positive_int(self.young_max_per_instructor):
+            raise ValueError(f"preset {self.code}: young_max_per_instructor must be a positive int")
+        if self.min_rest_hours is not None and not (
+            isinstance(self.min_rest_hours, (int, float)) and not isinstance(self.min_rest_hours, bool)
+            and 0 < self.min_rest_hours <= 24
+        ):
+            raise ValueError(f"preset {self.code}: min_rest_hours must be a number in (0, 24]")
+        if not _positive_int(self.offer_wave_size):
+            raise ValueError(f"preset {self.code}: offers.wave_size must be an int >= 1")
+        if not isinstance(self.offer_collect_seconds, int) or isinstance(self.offer_collect_seconds, bool) \
+                or not 0 <= self.offer_collect_seconds <= 3600:
+            raise ValueError(f"preset {self.code}: offers.collect_seconds must be an int from 0 to 3600")
+        if self.plan_b_minutes_before_start is not None and not _positive_int(self.plan_b_minutes_before_start):
+            raise ValueError(f"preset {self.code}: offers.plan_b_minutes_before_start must be an int >= 1")
         for kind, items in (("role", self.roles), ("cert type", self.cert_types), ("program", self.programs)):
             for key, item in items.items():
                 if key != item.code:
@@ -192,6 +220,7 @@ class StaffCert:
     issued_on: date
     expires_on: date | None = None  # None: issued_on + validity months of the type
     needs_review: bool = False  # the readings disagree and no person has confirmed
+    revoked_on: date | None = None  # the issuer's registry says the card was revoked on this day
 
     def __post_init__(self) -> None:
         _require_code(self.cert_type, "certificate type")
@@ -217,6 +246,7 @@ class Staff:
     certs: tuple[StaffCert, ...] = ()
     programs: Mapping[str, StaffProgram] = field(default_factory=dict)
     home_venue: str | None = None
+    languages: frozenset[str] = frozenset()  # languages the person speaks with families (ISO 639-1)
 
     def __post_init__(self) -> None:
         _require_code(self.id, "staff id")
@@ -234,11 +264,18 @@ class GroupRef:
     program: str
     level: str
     size: int
+    age_min: int | None = None  # youngest participant, when known
+    families: tuple[tuple[str, int], ...] = ()  # (language, number of families speaking it), when known
 
     def __post_init__(self) -> None:
         _require_code(self.id, "group id")
+        for lang, n in self.families:
+            if not (isinstance(lang, str) and lang) or not isinstance(n, int) or n < 0:
+                raise ValueError(f"group {self.id}: families must be (language, count >= 0) pairs")
         if not isinstance(self.size, int) or self.size < 0:
             raise ValueError(f"group {self.id}: size must be a non-negative int")
+        if self.age_min is not None and (not isinstance(self.age_min, int) or self.age_min < 0):
+            raise ValueError(f"group {self.id}: age_min must be a non-negative int")
 
 
 @dataclass(frozen=True)
@@ -253,6 +290,7 @@ class Shift:
     zone: str | None = None
     assignee: str | None = None  # who holds (or held, before the call-out) this shift
     merged_shift_ids: tuple[str, ...] = ()  # plan B: the shifts whose groups this shift takes over
+    extra_certs: tuple[str, ...] = ()  # certificates this shift needs on top of its role's
 
     def __post_init__(self) -> None:
         _require_code(self.id, "shift id")

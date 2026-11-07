@@ -78,11 +78,11 @@ def install_preset(conn: psycopg.Connection, code: str) -> None:
                 )
 
 
-def insert_policy(conn: psycopg.Connection, policy_id: str, name: str, policy: Policy) -> None:
+def insert_policy(conn: psycopg.Connection, policy_id: str, name: str, policy: Policy, manager_name: str | None = None) -> None:
     conn.execute(
         "INSERT INTO policy (id, name, preset_code, max_weekly_hours, week_start, makeup_window_days, autonomy,"
-        " offer_timeout_minutes, overtime_cost_per_hour, default_remedy)"
-        " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        " offer_timeout_minutes, overtime_cost_per_hour, default_remedy, manager_name)"
+        " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             policy_id,
             name,
@@ -94,5 +94,6 @@ def insert_policy(conn: psycopg.Connection, policy_id: str, name: str, policy: P
             policy.offer_timeout_minutes,
             policy.overtime_cost_per_hour,
             policy.default_remedy,
+            manager_name,
         ),
     )

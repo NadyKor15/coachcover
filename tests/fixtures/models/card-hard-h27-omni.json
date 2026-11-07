@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+ "input": {
+  "image_sha256": "08ecfb12bfe2b509ee30a2e0f83bdec9235c63321733e34ee9ddef9b5333a7fe"
+ },
+ "input_sha256": "304d7fa12c5d1968afe83438465ecee818799f1b19e6af2f7352065ebb87264f",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h27 reader omni; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 7720,
+ "response": {
+  "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Ben Ortiz\", \"id\": \"AQU-7496-16\", \"issued\": \"2025-02-07\", \"exp\": \"2027-02-07\"}"
+    }
+   }
+  ]
+ }
+}

@@ -1,0 +1,22 @@
+{
+ "purpose": "read_card",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "image_sha256": "d30ddbfd41c478a01365a08114cb4c4e39a3226887db615863cfce9988430c68"
+ },
+ "input_sha256": "98d1058d8d1ab6692888050668bf3305fc4a78c8f417618933bcb69a0c3221f2",
+ "synthetic": false,
+ "source": "model check no. 2 2026-11-06 (spike2-result.json), h13 reader muse; the check kept the fields only: \"model\" added (no substitutions), no usage",
+ "duration_ms": 1360,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"name\": \"Ben Ortiz\", \"id\": \"AQU-7308-51\", \"issued\": \"2026-05-24\", \"exp\": \"2028-05-23\"}"
+    }
+   }
+  ]
+ }
+}

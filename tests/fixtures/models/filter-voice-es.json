@@ -1,0 +1,26 @@
+{
+ "purpose": "screen_message",
+ "model": "nemotron-3.5-content-safety",
+ "input": {
+  "text": "Hola, soy Diego. Tengo fiebre y no puedo ir al turno de las 6. Lo siento mucho."
+ },
+ "input_sha256": "01b2b215a862c62cac5b78808a6ca3e3a9f0192c2d81b189c4bb6fdcf4f6a4ec",
+ "synthetic": true,
+ "source": "synthetic: the filter's own answer format (as in check no. 2) for the recorded transcript",
+ "duration_ms": 600,
+ "response": {
+  "model": "nemotron-3.5-content-safety",
+  "usage": {
+   "prompt_tokens": 480,
+   "completion_tokens": 5
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "User Safety: safe"
+    }
+   }
+  ]
+ }
+}

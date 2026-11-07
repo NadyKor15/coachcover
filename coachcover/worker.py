@@ -28,13 +28,16 @@ from coachcover.seed import POLICY_ID
 
 
 def tick(conn: psycopg.Connection, policy_id: str, now: datetime, night_hour: int = 21) -> dict:
-    expired = Pipeline(conn, ModelClient(DbLedger(conn)), policy_id).expire_due(now)
+    pipeline = Pipeline(conn, ModelClient(DbLedger(conn)), policy_id)
+    expired = pipeline.expire_due(now)
     tz = ZoneInfo(conn.execute("SELECT tz FROM venue WHERE policy_id = %s ORDER BY id LIMIT 1", (policy_id,)).fetchone()[0])
     local = now.astimezone(tz)
     night = None
     if local.hour >= night_hour:
         report, created = store_night_report(conn, policy_id, local.date() + timedelta(days=1), now)
-        night = {"for_date": report["for_date"], "created": created, "problems": len(report["problems"])}
+        opened = pipeline.night_cover(report, now) if created else []
+        night = {"for_date": report["for_date"], "created": created, "problems": len(report["problems"]),
+                 "cases": [c["code"] for c in opened]}
     return {"expired_offers": expired, "night_report": night}
 
 
