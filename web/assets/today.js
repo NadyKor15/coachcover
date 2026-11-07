@@ -66,10 +66,10 @@
     if (s === 'amber' || s === 'gold' || s === 'review') return 'review';
     return 'plain';
   }
+  // the API's cents format (money.cents_label): 2 decimals from 1¢, else 3, below 0.001¢ 4
   function fmtCents(c) {
-    if (c < 0.1) return c.toFixed(2) + '¢';
-    if (c < 10) return c.toFixed(1) + '¢';
-    return Math.round(c) + '¢';
+    if (c >= 1) return c.toFixed(2) + '¢';
+    return c >= 0.001 ? c.toFixed(3) + '¢' : c.toFixed(4) + '¢';
   }
   function fmtUsd(v) {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: v < 100 ? 2 : 0, minimumFractionDigits: 0 }).format(v);
@@ -91,6 +91,7 @@
     const caseId = d.callout && d.callout.case_id;
     const href = 'case.html' + (caseId ? '?id=' + encodeURIComponent(caseId) + (CC.FIXTURE ? '&fixture=1' : '') : '');
     $('#navCases').href = href;
+    document.querySelectorAll('.nav a[data-nav]').forEach(a => { a.href = a.dataset.nav + '.html' + (CC.FIXTURE ? '?fixture=1' : ''); });
     // the covered line and the timeline open the case of this morning
     ui.caseHref = caseId ? href : null;
     ['#covered', '.band'].forEach(sel => {
@@ -384,19 +385,25 @@
     const box = $('#covered'), txt = slot('covered'), ico = $('#coveredIco');
     txt.textContent = '';
     const add = (cls, s) => { const x = el('span', cls, s); txt.appendChild(x); return x; };
+    // the banner names the shift's start (from the shift); covered_time is when the case closed, shown small
+    const shiftStart = (d.shift && String(d.shift.time_label || '').split('–')[0]) || '';
     if (o.covered_by) {
       box.classList.remove('open');
       ico.innerHTML = CHECK_BANNER;
-      add(null, o.covered_time + ' covered by ' + o.covered_by);
+      add(null, (shiftStart || o.covered_time) + ' covered by ' + o.covered_by);
       add('sep', ' · ');
       const n = Number(o.lessons_cancelled || 0);
       add(null, n + (n === 1 ? ' lesson cancelled' : ' lessons cancelled'));
+      if (o.covered_time && shiftStart && o.covered_time !== shiftStart) {
+        const c = add('closed', 'closed ' + o.covered_time);
+        c.dataset.slot = 'covered-closed';
+      }
     } else {
       const st = p && p.state;
       const approved = st === 'approved' || st === 'done' || st === 'executed';
       box.classList.toggle('open', !approved);
       ico.innerHTML = approved ? CHECK_BANNER : BANG_BANNER;
-      const start = o.covered_time || (d.shift && String(d.shift.time_label || '').split('–')[0]) || '';
+      const start = shiftStart || o.covered_time || '';
       add(null, (start ? start + ' ' : '') + 'not covered yet');
       add('sep', ' · ');
       add(null, approved ? 'plan B approved' : p ? 'plan B needs your approval' : 'offers running');
@@ -460,21 +467,10 @@
     setText('money-big', big);
     setText('money-detail', detail);
     slot('money-detail').hidden = !detail;
-    // where the price comes from: money.source_label, else the lesson price source of the case's own money card
-    const source = hasUnc ? (m.source_label || ui.priceSource || '') : '';
-    setText('money-source', stripRef(source));
+    // where the lesson price comes from (money.source); "assumption" when the school has not set its own price
+    const source = hasUnc ? stripRef(m.source || '') : '';
+    setText('money-source', source);
     slot('money-source').hidden = !source;
-    if (hasUnc && !m.source_label) loadPriceSource(d.callout && d.callout.case_id);
-  }
-
-  async function loadPriceSource(caseId) {
-    if (!caseId || ui.priceSourceFor === caseId) return;
-    ui.priceSourceFor = caseId;
-    const r = await CC.get('/api/cases/' + encodeURIComponent(caseId));
-    const a = r.status === 200 && r.body && r.body.risk && r.body.risk.assumptions;
-    const src = a && a.lesson_price && a.lesson_price.source;
-    ui.priceSource = src || '';
-    if (ui.data) renderMoney(ui.data);
   }
 
   function renderAlert(d) {

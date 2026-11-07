@@ -193,6 +193,7 @@ h1{height:79px;padding:16.9px 0 0 0;font-size:36px;line-height:44px;font-weight:
 .covered .chk{margin-left:30px;width:38px;height:38px;border-radius:50%;background:#94700f;display:flex;align-items:center;justify-content:center;flex:none}
 .covered .txt{margin-left:23.4px;font-size:33px;line-height:65px;font-weight:700;letter-spacing:0.25px;white-space:nowrap}
 .covered .sep{margin:0 3px}
+.covered .closed{margin-left:18px;font-size:17px;font-weight:600;letter-spacing:0;color:#9a7a3a;vertical-align:4px}
 .covered.open{border-color:#e7c7c1;background:#fbf0ed;color:#8f2a20}
 .covered.open .chk{background:#a83a2f}
 .planb{margin:11.5px 0 0 1px;width:1331px;height:76px;border:1px solid #e5ded4;border-radius:14px;background:#fbf9f7;position:relative;overflow:hidden}

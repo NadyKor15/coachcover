@@ -70,7 +70,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('C: state ready', await p.evaluate(() => document.body.dataset.state) === 'ready');
     check('C: title from data', await text(p, 'h1') === today.title);
     const nav = await texts(p, '.nav li');
-    check('C: menu', JSON.stringify(nav) === JSON.stringify(['Today', 'Staff & Certificates', 'Cases', 'Groups', 'Closures', 'Reports', 'Schedule', 'Settings']), nav);
+    check('C: menu', JSON.stringify(nav) === JSON.stringify(['Today', 'Week ahead', 'Staff & Certificates', 'Cases', 'Network', 'Groups', 'Closures', 'Reports', 'Schedule', 'Settings']), nav);
     const e = today.eligibility;
     const dots = await p.$$eval('.dot', ds => ds.map(d => ({ cls: d.className, title: d.title })));
     check('C: one dot per person', dots.length === e.staff.length && e.staff.length === e.total, dots.length);
@@ -105,7 +105,9 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
       await text(p, '[data-slot="callout-transcript"]') === '“' + today.callout.transcript_en + '”');
     check('C: whisper line from data', await text(p, '[data-slot="callout-asr"]') === today.callout.asr_label);
     check('C: tagline', await text(p, '.tagline') === "Not who's free — who's allowed. Running on Vultr.");
-    check('C: covered banner', await text(p, '[data-slot="covered"]') === today.outcome.covered_time + ' covered by ' + today.outcome.covered_by + ' · ' + today.outcome.lessons_cancelled + ' lessons cancelled');
+    const heroStart = today.shift.time_label.split('–')[0];
+    check('C: covered banner names the shift start', await text(p, '[data-slot="covered"]') === heroStart + ' covered by ' + today.outcome.covered_by + ' · ' + today.outcome.lessons_cancelled + ' lessons cancelled' +
+      (today.outcome.covered_time !== heroStart ? 'closed ' + today.outcome.covered_time : ''), await text(p, '[data-slot="covered"]'));
     const label = today.money.uncovered_morning_label.match(/^(.*?):\s*(\$[\d,.]+)\s*\((.*)\)$/);
     check('C: money from data', await text(p, '[data-slot="money-head"]') === label[1] && await text(p, '[data-slot="money-big"]') === label[2] &&
       await text(p, '[data-slot="money-detail"]') === label[3], [await text(p, '#money'), label]);
@@ -209,7 +211,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await p.route('**/fixtures/today.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(caseOnly) }));
     await p.reload();
     await ready(p);
-    check('money: case cost alone', await text(p, '[data-slot="money-head"]') === 'Cost of this cover' && await text(p, '[data-slot="money-big"]') === '0.3¢' &&
+    check('money: case cost alone', await text(p, '[data-slot="money-head"]') === 'Cost of this cover' && await text(p, '[data-slot="money-big"]') === '0.250¢' &&
       !(await visible(p, '[data-slot="money-source"]')));
     await p.close();
 
@@ -298,7 +300,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('case: reasons add up', caseCounts.reduce((a, b) => a + b, 0) === steps.allowed.total - steps.allowed.allowed, caseCounts);
     const accRow = (await texts(p, '[data-slot="offer-row"]')).find(t => t.startsWith(accepted.staff));
     check('case: accepted offer with its why line', accRow === accepted.staff + ' — accepted · ' + accepted.why_first, accRow);
-    check('case: models line', await text(p, '.facts li:last-child') === 'Models: ' + caseFx.model_calls.length + ' calls · $' + Number(caseFx.model_cost_usd.toPrecision(2)), await text(p, '.facts li:last-child'));
+    check('case: models line', await text(p, '.facts li:last-child') === 'Models: ' + caseFx.model_calls.length + ' calls · ' + caseFx.model_cost_label, await text(p, '.facts li:last-child'));
     check('case: plan hash shortened from data', await text(p, '[data-slot="plan-hash"]') === caseFx.proof.plan_hash.slice(0, 4) + '…' + caseFx.proof.plan_hash.slice(-4));
     check('case: if-nobody-accepted card from data', await visible(p, '#risk') &&
       await p.$eval('#risk p', x => x.innerText) === caseFx.risk.kids + ' kids · refunds $' + caseFx.risk.refunds_usd + ' · $' + caseFx.risk.total_usd + ' at risk', await p.$eval('#risk p', x => x.innerText));
@@ -341,6 +343,129 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await Promise.all([p.waitForURL('**/case.html?id=' + ratioOpen.ratio_alert.case_id + '&fixture=1'), p.click('#alert')]);
     await ready(p);
     check('C → ratio case from the banner', (await text(p, '[data-slot="case-id"]')) === ratioOpen.ratio_alert.case_id);
+    await p.close();
+    /* ---------- week ahead ---------- */
+    const week = fx('week.json');
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'week.html?fixture=1');
+    await ready(p);
+    const starts = [...new Set(week.days.flatMap(d => d.cells.map(c => c.time_label.split('–')[0])))].sort();
+    check('week: one column per day, labels from data', JSON.stringify(await texts(p, '[data-slot="day-label"]')) === JSON.stringify(week.days.map(d => d.label)));
+    check('week: one row per start time', JSON.stringify(await texts(p, '[data-slot="slot-time"]')) === JSON.stringify(starts));
+    check('week: grid is rows x days', (await p.$$('[data-slot="cell"]')).length === starts.length * week.days.length);
+    const wcells = await p.$$eval('[data-slot="cell"]', es => es.map(e => ({ level: e.dataset.level, shift: e.dataset.shift || null, txt: e.innerText.replace(/\s+/g, ' ').trim() })));
+    const byId = Object.fromEntries(week.days.flatMap(d => d.cells).map(c => [c.shift_id, c]));
+    const LV = { at_risk: 'risk', fragile: 'fragile', safe: 'safe' };
+    check('week: every fragile shift is a fragile or at-risk cell with its number and tag', week.fragile.every(id => {
+      const c = wcells.find(x => x.shift === id); const d = byId[id];
+      return c && c.level === LV[d.level] && c.txt === d.backups + (d.level === 'at_risk' ? ' at risk' : ' fragile'); }), wcells.filter(c => c.level !== 'safe' && c.level !== 'none'));
+    check('week: started shifts are grey', wcells.filter(c => c.level === 'past').length > 0);
+    const legend = await texts(p, '[data-slot="legend-item"]');
+    check('week: legend from data, threshold included', legend.includes(week.legend.find(l => l.level === 'fragile').label + ' (fragile)') &&
+      legend.includes(week.legend.find(l => l.level === 'at_risk').label + ' (at risk)') && legend.includes(week.legend.find(l => l.level === 'safe').label + ' (safe)'), legend);
+    check('week: legend inside the card', await p.evaluate(() => Math.max(...[...document.querySelectorAll('.legend .li')].map(x => x.getBoundingClientRect().right)) < document.querySelector('.gcard').getBoundingClientRect().right));
+    check('week: fragile count from data', await text(p, '[data-slot="fragile-count"]') === String(week.counts.fragile_total));
+    check('week: fragile list rows', (await p.$$('[data-slot="fragile-row"]')).length === Math.min(6, week.fragile.length));
+    const wdots = await p.$$eval('.flist .dot', es => es.map(e => e.dataset.level));
+    check('week: diamond for at risk, dot for fragile', wdots.every(l => l === 'risk' || l === 'fragile') && wdots.includes('risk'), wdots);
+    check('week: tips from data', JSON.stringify(await texts(p, '[data-slot="tip-text"]')) === JSON.stringify([week.fixes.standby[0].text, week.fixes.training.best.text]));
+    check('week: tips fit their boxes', await p.$$eval('.tip', es => es.every(t => t.scrollHeight <= t.clientHeight + 1)));
+    await p.click('[data-slot="tip-action"]');
+    check('week: Propose standby only says what it can do', (await text(p, '[data-slot="tip-result"]')).startsWith('Not sent'));
+    check('week: menu links', (await p.$eval('[data-nav="network"]', a => a.getAttribute('href'))) === 'network.html?fixture=1' &&
+      (await p.$eval('[data-nav="today"]', a => a.getAttribute('href'))) === 'index.html?fixture=1');
+    check('week: no console errors', p._errors.length === 0, p._errors);
+    await p.close();
+
+    /* ---------- network: the loan step by step, both managers, the 409s ---------- */
+    const nm = fx('network_mocks.json');
+    const loanOf = st => fx(nm.loan_files[st]);
+    const cand = loanOf('candidate'), done = loanOf('assigned');
+    const ref = cand.code;
+    const shortName = v => v.split(' ')[0];
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'network.html?loan=' + ref + '&fixture=1');
+    await ready(p);
+    const msgKinds = await p.$$eval('[data-slot="message"]', es => es.map(e => e.dataset.kind));
+    check('network: messages are the agents talking', JSON.stringify(msgKinds) === JSON.stringify(cand.steps.filter(s => ['request_sent', 'offered', 'checked_offer'].includes(s.kind)).map(s => s.kind)), msgKinds);
+    const heads = await texts(p, '[data-slot="message-head"]');
+    check('network: UTC stamps from the steps', heads.every(h => / UTC · /.test(h)) && heads[0].startsWith(cand.steps.find(s => s.kind === 'request_sent').at_label), heads);
+    check('network: two approve buttons, one per manager', JSON.stringify(await texts(p, '[data-slot^="approve-"]')) === JSON.stringify(['Approve as ' + cand.borrower.manager, 'Approve as ' + cand.lender.manager]));
+    check('network: waiting for both', await text(p, '#result-text') === cand.status_label);
+    await shot(p, 'network-fixture-candidate.png');
+    await p.click('[data-slot="approve-borrower"]');
+    await p.waitForFunction(m => document.getElementById('result-text').textContent === 'Waiting for ' + m, cand.lender.manager + ' (' + shortName(cand.lender.venue_name) + ')');
+    check('network: one approval -> waiting for the other manager', await text(p, '#result-text') === 'Waiting for ' + cand.lender.manager + ' (' + shortName(cand.lender.venue_name) + ')');
+    check('network: the approved side shows who and when', (await texts(p, '[data-slot="approval"]'))[0] === loanOf('one_approval').borrower.approved.at_label + ' · ' + cand.borrower.manager + ' (' + shortName(cand.borrower.venue_name) + ') approved');
+    await shot(p, 'network-fixture-one-approval.png');
+    await p.click('[data-slot="approve-lender"]');
+    await p.waitForFunction(() => document.getElementById('result').dataset.state === 'assigned');
+    check('network: both -> loan approved, person, case', await text(p, '#result-text') === done.status_label + ' · ' + done.candidate.name + ' covers ' + shortName(done.borrower.venue_name) + ' ' + done.shift.time_label.split(' ').pop().split('–')[0] + ' · case ' + done.case.ref, await text(p, '#result-text'));
+    check('network: result opens the case of the loan', (await p.$eval('#result', a => a.getAttribute('href'))) === 'case.html?id=' + done.case.ref + '&mock=network_loan&fixture=1');
+    check('network: two approval cards', (await p.$$('[data-slot="approval"]')).length === 2);
+    const wrong = await p.evaluate(r => window.CC.post('/api/network/loans/' + r + '/approve', { manager: 'x', venue: 'x' }), ref);
+    check('network mock: a wrong manager gets 403', wrong.status === 403);
+    check('network: no console errors', p._errors.length === 0, p._errors);
+    await p.close();
+
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'network.html?loan=' + ref + '&fixture=1&mock=one_approval,approve_conflict');
+    await ready(p);
+    await p.click('[data-slot="approve-lender"]');
+    await p.waitForSelector('[data-slot="approve-error"]');
+    check('network 409 (already approved): shown in that manager card', await text(p, '[data-slot="approve-error"]') === 'Not approved — ' + nm.approve.repeat.error);
+    await p.close();
+
+    p = await newPage(browser, 1920, 1080);
+    let loanBody = null;
+    await p.route('**/api/network/loans/' + ref, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(loanOf('one_approval')) }));
+    await p.route('**/api/network/loans/' + ref + '/approve', r => { loanBody = r.request().postDataJSON(); r.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify(nm.approve.closed) }); });
+    await p.goto(base + 'network.html?loan=' + ref);
+    await ready(p);
+    await p.click('[data-slot="approve-lender"]');
+    await p.waitForSelector('[data-slot="approve-error"]');
+    check('network live: approve sends that manager and venue', loanBody && loanBody.manager === cand.lender.manager && loanBody.venue === cand.lender.venue_id, loanBody);
+    check('network live 409 (loan closed): shown', await text(p, '[data-slot="approve-error"]') === 'Not approved — ' + nm.approve.closed.error);
+    await p.close();
+
+    for (const st of ['declined_site_short', 'rejected_rules']) {
+      p = await newPage(browser, 1920, 1080);
+      await p.goto(base + 'network.html?loan=' + ref + '&fixture=1&mock=' + st);
+      await ready(p);
+      const l = loanOf(st);
+      check('network ' + st + ': refusal banner with the reason', await p.$eval('#result', r => r.classList.contains('fail')) && (await text(p, '#result-text')).startsWith(l.status_label + ' · '));
+      check('network ' + st + ': no approve buttons', (await p.$$('[data-slot^="approve-"]')).length === 0);
+      await shot(p, 'network-fixture-' + st.replace(/_/g, '-') + '.png');
+      await p.close();
+    }
+
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'network.html?fixture=1&mock=network_open');
+    await ready(p);
+    check('network ask: offered for the open shift', await visible(p, '#ask') && !(await p.$eval('#askBtn', b => b.disabled)));
+    await Promise.all([p.waitForURL('**/network.html?loan=' + nm.ask.created.code + '&fixture=1'), p.click('#askBtn')]);
+    await ready(p);
+    check('network ask: 201 -> the new loan', await text(p, '#result-text') === nm.ask.created.status_label);
+    await p.goto(base + 'network.html?fixture=1&mock=network_open,ask_conflict');
+    await ready(p);
+    await p.click('#askBtn');
+    await p.waitForFunction(() => document.querySelector('[data-slot="ask-error"]').textContent);
+    check('network ask: 409 shown', await text(p, '[data-slot="ask-error"]') === 'Not asked — ' + nm.ask.conflict.error);
+    await p.close();
+
+    /* menus lead to the new screens */
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'index.html?fixture=1');
+    await ready(p);
+    await Promise.all([p.waitForURL('**/week.html?fixture=1'), p.click('.nav a[data-nav="week"]')]);
+    check('C -> Week ahead', p.url().endsWith('week.html?fixture=1'));
+    await ready(p);
+    await Promise.all([p.waitForURL('**/network.html?fixture=1'), p.click('[data-nav="network"]')]);
+    check('Week -> Network', p.url().endsWith('network.html?fixture=1'));
+    await p.goto(base + 'case.html?id=' + caseId + '&fixture=1');
+    await ready(p);
+    await Promise.all([p.waitForURL('**/network.html?fixture=1'), p.click('.nav li[data-href="network.html"]')]);
+    check('case -> Network', p.url().endsWith('network.html?fixture=1'));
     await p.close();
   } finally {
     await browser.close();

@@ -29,11 +29,13 @@ NESTED = {
     "model_log": {"label", "calls", "usd"},
 }
 EXTENSIONS = {"today": {"flagged", "night_check", "ratio_alert", "judge"}, "callout": {"asr_label"},
+              "outcome": {"covered_via"}, "money": {"source"},
               "offer": {"state", "staff", "needs_label", "why_first"}}
 RATIO_KEYS = {"case_id", "status", "tone", "label", "action_label"}
 OFFER_KEYS = {"offer_id", "shift_day", "shift_start", "shift_end", "venue", "shift_detail", "why", "expires_in_s", "window_s", "manager"}
 CASE_KEYS = {"case_id", "status", "status_label", "covered_time_label", "shift_label", "venue", "date_label", "user_label",
-             "opened_at", "closed_at", "steps", "proof", "model_calls", "model_cost_usd", "risk"}
+             "opened_at", "closed_at", "steps", "proof", "model_calls", "model_cost_usd", "model_cost_label", "risk",
+             "covered_by", "covered_via"}
 CALL_KEYS = {"at", "purpose", "model", "model_label", "ms", "input_tokens", "output_tokens", "cost_usd", "source"}
 UTC_STAMP = re.compile(r"^\d{4}-\d\d-\d\dT(\d\d:\d\d:\d\d)Z$")
 
@@ -52,8 +54,9 @@ def hours(text: str | None) -> str | None:
 
 
 def test_fixture_set_is_complete():
-    assert today_files() == ["today.json", "today.nightly_check.json", "today.nobody_accepts.json",
-                             "today.ratio_covered.json", "today.ratio_open.json"]
+    assert today_files() == ["today.json", "today.network_assigned.json", "today.network_open.json",
+                             "today.nightly_check.json", "today.nobody_accepts.json", "today.ratio_covered.json",
+                             "today.ratio_open.json"]
     m = load("mocks.json")
     assert set(m["judge_run"]) == {"dangerous_morning", "nobody_accepts", "nightly_check"}
     for file in [*m["today_by_scenario"].values(), *m["today_by_mock"].values()]:
@@ -144,8 +147,7 @@ def test_money_comes_from_the_api_and_reads_as_the_screen_shows_it():
     label = re.match(r"^(.*?):\s*\$([\d,]+(?:\.\d+)?)\s*\((.*)\)$", m["uncovered_morning_label"])
     assert label and label.group(1) == "If nobody had accepted"
     assert float(label.group(2).replace(",", "")) == m["uncovered_morning_usd"]
-    case = load(f"cases/{load('today.json')['callout']['case_id']}.json")
-    assert "founder" in case["risk"]["assumptions"]["lesson_price"]["source"]
+    assert m["source"] == "from the founder's coaching experience"
 
 
 def test_ratio_banner_red_then_green():
@@ -197,34 +199,80 @@ def test_mocks_match_the_fixtures():
         assert o["accept"]["state"] == "accepted" and o["decline"]["state"] == "declined" and o["accept_conflict"]["reason"]
 
 
-VENDOR_WORDS = re.compile(r"\bvendor\b|\bAI\b|\bLLM\b|chatgpt|openai", re.IGNORECASE)
+def test_pages_declare_charset_first():
+    for page in ("index.html", "offer.html", "case.html", "week.html", "network.html"):
+        head = (WEB / page).read_text(encoding="utf-8").split("<head>", 1)[1].lstrip()
+        assert head.startswith('<meta charset="UTF-8">'), page
 
 
-def web_text_files() -> list[Path]:
-    files = [p for p in WEB.rglob("*") if p.suffix in {".html", ".js", ".css", ".json", ".md"}]
-    # this file holds the guard's own samples, so it is the one file not scanned
-    files += [p for p in (ROOT / "tests" / "web").rglob("*") if p.suffix in {".py", ".js"} and p.resolve() != Path(__file__).resolve()]
-    return sorted(files)
+def test_fixtures_carry_no_internal_reference():
+    # the repository's own guard (tests/test_public_repo_guard.py) skips web/fixtures; here it reads them
+    from tests.test_public_repo_guard import find
 
-
-def test_no_vendor_words_in_web():
-    hits = []
-    for p in web_text_files():
-        for n, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
-            if VENDOR_WORDS.search(line):
-                hits.append(f"{p.relative_to(ROOT)}:{n}")
+    files = sorted(FX.rglob("*.json"))
+    assert len(files) > 20
+    hits = [f"{p.relative_to(ROOT)}:{n}: {find(line)}" for p in files
+            for n, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1) if find(line)]
     assert hits == []
 
 
-def test_vendor_word_guard_is_not_blind():
-    # must-light: synthetic samples the guard has to catch
-    for sample in ("made with a vendor tool", "VENDOR", "an AI helper", "LLM call"):
-        assert VENDOR_WORDS.search(sample), sample
-    assert not VENDOR_WORDS.search("Riverside Aquatic Center · whisper on Vultr")
-    assert len(web_text_files()) >= 10
+def test_week_follows_its_threshold_and_legend():
+    w = load("week.json")
+    t = w["threshold"]
+    levels = {it["level"]: it for it in w["legend"]}
+    assert set(levels) == {"at_risk", "fragile", "safe"}
+    assert levels["fragile"]["max"] == t and levels["safe"]["min"] == t + 1 and levels["at_risk"]["max"] == 0
+    cells = [c for d in w["days"] for c in d["cells"]]
+    assert len(cells) == w["counts"]["shifts"]
+    for c in cells:
+        if c["past"]:
+            assert c["level"] == "past" and c["backups"] is None
+        else:
+            want = "at_risk" if c["backups"] == 0 else "fragile" if c["backups"] <= t else "safe"
+            assert c["level"] == want, c["shift_id"]
+    fragile = [c["shift_id"] for c in cells if c["level"] in ("at_risk", "fragile")]
+    assert sorted(fragile) == sorted(w["fragile"]) and len(fragile) == w["counts"]["fragile_total"]
+    assert w["fixes"]["standby"] and w["fixes"]["training"]["best"]["text"]
 
 
-def test_pages_declare_charset_first():
-    for page in ("index.html", "offer.html", "case.html"):
-        head = (WEB / page).read_text(encoding="utf-8").split("<head>", 1)[1].lstrip()
-        assert head.startswith('<meta charset="UTF-8">'), page
+LOAN_STATES = {"candidate": ("awaiting_approval", 0), "one_approval": ("awaiting_approval", 1),
+               "one_approval_lender": ("awaiting_approval", 1), "assigned": ("assigned", 2),
+               "declined_site_short": ("declined", 0), "rejected_rules": ("rejected", 0)}
+
+
+def test_loans_in_every_state():
+    m = load("network_mocks.json")
+    assert set(m["loan_files"]) == set(LOAN_STATES)
+    for name, (status, approvals) in LOAN_STATES.items():
+        loan = load(m["loan_files"][name])
+        assert (loan["status"], loan["approvals"]) == (status, approvals), name
+        stamps = [s["at"] for s in loan["steps"]]
+        assert all(re.match(r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?Z$", a) for a in stamps), name
+        assert [s["seq"] for s in loan["steps"]] == list(range(1, len(loan["steps"]) + 1)), name
+    one = load(m["loan_files"]["one_approval"])
+    assert one["borrower"]["approved"] and not one["lender"]["approved"]
+    lender_first = load(m["loan_files"]["one_approval_lender"])
+    assert lender_first["lender"]["approved"] and not lender_first["borrower"]["approved"]
+    done = load(m["loan_files"]["assigned"])
+    assert done["candidate"]["name"] and done["case"]["ref"] and done["lender"]["approved"] and done["borrower"]["approved"]
+    short = load(m["loan_files"]["declined_site_short"])
+    assert any(s["kind"] == "declined" and s["side"] == "lender" for s in short["steps"])
+    rejected = load(m["loan_files"]["rejected_rules"])
+    assert any(s["kind"] == "checked_offer" and s["side"] == "borrower" for s in rejected["steps"])
+
+
+def test_loan_answers_and_the_judges_scene():
+    m = load("network_mocks.json")
+    a = m["approve"]
+    assert a["first"]["approvals"] == 1 and a["second"]["status"] == "assigned"
+    assert "already approved" in a["repeat"]["error"] and "assigned" in a["closed"]["error"] and "declined" in a["declined"]["error"]
+    assert "can approve" in a["forbidden"]["error"]
+    assert m["ask"]["created"]["status"] == "awaiting_approval" and m["ask"]["conflict"]["error"]
+    run = m["judge_run"]
+    assert run["scenario"] == "network_loan" and run["loan_status"] == "assigned"
+    t = load("today.network_assigned.json")
+    loan = load(m["loan_files"]["assigned"])
+    assert t["outcome"]["covered_by"] == loan["candidate"]["name"] and t["outcome"]["covered_via"] == "network_loan"
+    assert load(f"cases/{run['case_id']}.network_loan.json")["case_id"] == run["case_id"]
+    members = load("network.json")["members"]
+    assert {mm["manager"] for mm in members} >= {loan["borrower"]["manager"], loan["lender"]["manager"]}
