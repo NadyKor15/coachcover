@@ -130,7 +130,7 @@ def _shift_labels(info: dict, shift, preset: Preset, co_teachers: list[str] | No
     if shift.groups and info.get("private"):
         g = shift.groups[0]
         lanes += f" + {info['groups'][0]['name']}"  # "Private · Lily, age 6, Level 2": one child, no count
-        program = preset.programs[g.program].needs(g.level)
+        program = preset.programs[g.program].title(g.level)
     elif shift.groups:
         g = shift.groups[0]
         prog = preset.programs[g.program]
@@ -549,7 +549,7 @@ def _family_case_steps(events: list, tz: ZoneInfo) -> list[dict]:
     for _, at, kind, data in events:
         name = (data.get("name") or "").split(" ")[0]
         if kind == "family_asked":
-            by = _short_clock(data["answer_by"], tz)
+            by = _clock(datetime.fromisoformat(data["answer_by"]), tz)
             source = "written by the text model" if data.get("text_source") == "model" else "standard text"
             if data.get("kind") == "cover":
                 add(at, "family", "Asked the parent", f"“{data['text']}” · {name} is held for this time · "
@@ -698,8 +698,88 @@ def offer_phone(conn: psycopg.Connection, policy_id: str, offer_ref: str, now: d
         "needs_label": labels["needs_label"],
         "why": why,
         "why_first": (place or {}).get("line"),
+        "private": bool(info.get("private")),  # a private lesson: a yes waits for the family
         "expires_in_s": max(0, int((expires - now).total_seconds())) if status == "pending" else 0,
         "window_s": int((expires - sent).total_seconds()),
+        "manager": {"name": manager, "role": "Manager"} if manager else None,
+    })
+
+
+def client_page(conn: psycopg.Connection, policy_id: str, ask_ref: str, now: datetime) -> dict:
+    """The family's page of a private lesson (`/client?id=Q-n`): what is asked, the thread with the school, and the
+    answer buttons while the question is open. Signed "Parent of <child>": the parent is never named."""
+    qid = str(ask_ref).removeprefix("Q-")
+    row = conn.execute(
+        "SELECT a.id, a.case_id, a.kind, a.staff_id, a.status, a.proposed_start, a.proposed_end, a.asked_at, a.answer_by,"
+        " a.group_id, c.shift_id, c.absent_staff_id FROM client_ask a JOIN cover_case c ON c.id = a.case_id"
+        " JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id WHERE a.id::text = %s AND v.policy_id = %s",
+        (qid, policy_id),
+    ).fetchone()
+    if row is None:
+        raise NotFound(f"unknown question {ask_ref}")
+    ask_id, case_id, kind, staff_id, status, p_start, p_end, asked_at, answer_by, group_id, shift_id, absent = row
+    p = Pipeline(conn, None, policy_id)  # type: ignore[arg-type] - read-only use
+    info = p.shift_info(shift_id)
+    tz = ZoneInfo(info["tz"])
+    child = info["groups"][0]["participant"] or info["groups"][0]["name"]
+    names = dict(conn.execute("SELECT id, full_name FROM staff WHERE policy_id = %s", (policy_id,)).fetchall())
+
+    def day_label(when: datetime) -> str:
+        local = when.astimezone(tz)
+        today_local = now.astimezone(tz).date()
+        if local.date() == today_local:
+            return "today"
+        if local.date() == today_local + timedelta(days=1):
+            return "tomorrow"
+        return f"{local:%a}, {local:%b} {local.day}"
+
+    start, end = (p_start, p_end) if kind == "reschedule" else (info["start"], info["end"])
+    thread = []
+    for at, body in conn.execute("SELECT created_at, body FROM message WHERE case_id = %s AND audience = 'family'"
+                                 " AND group_id = %s ORDER BY created_at, id", (case_id, group_id)):
+        text = body.removeprefix("CoachCover: ")
+        thread.append({"from": "school", "time_label": _clock(at, tz), "text": text[:1].upper() + text[1:], "_at": at})
+    for at, akind, astatus in conn.execute("SELECT answered_at, kind, status FROM client_ask WHERE case_id = %s"
+                                           " AND status IN ('yes', 'no') ORDER BY id", (case_id,)):
+        thread.append({"from": "family", "time_label": _clock(at, tz), "text": "Yes" if astatus == "yes" else "No",
+                       "_at": at})
+    thread.sort(key=lambda m: (m.pop("_at"), m["from"] == "school"))  # an answer comes before the reply to it
+    current = conn.execute("SELECT id FROM client_ask WHERE case_id = %s AND status = 'asked' ORDER BY id DESC LIMIT 1",
+                           (case_id,)).fetchone()
+    outcome = None
+    for _, kind_e, data in conn.execute("SELECT seq, kind, data FROM case_event WHERE case_id = %s AND kind IN"
+                                        " ('shift_covered', 'private_moved', 'private_credit') ORDER BY seq DESC LIMIT 1",
+                                        (case_id,)).fetchall():
+        if kind_e == "shift_covered":
+            outcome = {"kind": "covered", "line": f"{data['name'].split()[0]} teaches {child} {day_label(info['start'])}"
+                                                  f" at {_clock(info['start'], tz)}"}
+        elif kind_e == "private_moved":
+            local = datetime.fromisoformat(data["start"]).astimezone(tz)
+            outcome = {"kind": "moved", "line": f"{child}'s lesson with {data['name'].split()[0]} is on "
+                                               f"{local:%a}, {local:%b} {local.day} at {local:%H:%M}"}
+        else:
+            outcome = {"kind": "credit", "line": f"A credit for one lesson (${data['amount_usd']:g})"}
+    manager = conn.execute("SELECT manager_name FROM policy WHERE id = %s", (policy_id,)).fetchone()[0]
+    coach = names.get(staff_id, staff_id)
+    return plain({
+        "ask_id": f"Q-{ask_id}",
+        "kind": kind,
+        "state": status,
+        "signed": f"Parent of {child}",
+        "child": child,
+        "lesson": info["groups"][0]["name"],
+        "venue": info["venue"],
+        "question": (f"Can {coach.split()[0]} teach {child} {day_label(start)}?" if kind == "cover"
+                     else f"Move {child}'s lesson to {day_label(start)}?"),
+        "coach": coach,
+        "instead_of": names.get(absent) if kind == "cover" else None,
+        "day_label": day_label(start),
+        "time_label": f"{_clock(start, tz)}–{_clock(end, tz)}",
+        "answer_in_s": max(0, int((answer_by - now).total_seconds())) if status == "asked" else 0,
+        "answer_by_label": _clock(answer_by, tz),
+        "thread": thread,
+        "current": f"Q-{current[0]}" if current else None,
+        "outcome": outcome,
         "manager": {"name": manager, "role": "Manager"} if manager else None,
     })
 

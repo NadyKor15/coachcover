@@ -22,7 +22,7 @@
     e.hidden = !text;
   }
 
-  function showResult(tone, text) {
+  function showResult(tone, text, ringLabel) {
     const r = $('#result');
     r.className = 'result ' + tone;
     r.innerHTML = RESULT_ICON[tone];
@@ -32,8 +32,8 @@
     r.appendChild(t);
     r.hidden = false;
     // an answered offer has no countdown: the ring says where it stands instead of a frozen 0:00
-    setText('timer-label', tone === 'ok' ? 'You are on' : 'Offer closed');
-    setText('expires-in', tone === 'ok' ? '✓' : '—');
+    setText('timer-label', ringLabel || (tone === 'ok' ? 'You are on' : 'Offer closed'));
+    setText('expires-in', ringLabel ? '…' : tone === 'ok' ? '✓' : '—');
     $('#buttons').hidden = true;
   }
 
@@ -92,6 +92,7 @@
     if (o.state && o.state !== 'pending') {  // already answered or closed: show where it stands, no buttons
       state.answered = true;
       paint(0, Number(o.window_s) || 1);
+      if (o.state === 'held' && o.private) { showFamilyWait(); return; }
       const done = STATE_TEXT[o.state];
       showResult(done ? done[0] : 'neutral', done ? done[1](o) : 'Offer is ' + String(o.state).replace(/_/g, ' ') + '.');
       return;
@@ -108,6 +109,12 @@
     expired: ['neutral', () => 'This offer has expired.'],
     withdrawn: ['neutral', () => 'This offer was withdrawn: the shift no longer needs you.']
   };
+
+  // a private lesson: the coach's yes waits for the family's yes before anything is booked
+  function showFamilyWait() {
+    showResult('neutral', 'Thanks for saying yes. It’s a private lesson, so we’re checking with the family first.',
+      'Waiting for the family');
+  }
 
   async function load() {
     if (!offerId) {
@@ -137,6 +144,8 @@
       clearInterval(state.timer);
       const st = r.body && r.body.state;
       if (st === 'accepted' || (action === 'accept' && !st)) showResult('ok', 'Accepted. You cover ' + when + '.');
+      else if (st === 'held' && o.private) showFamilyWait();
+      else if (st === 'held') showResult('ok', STATE_TEXT.held[1](o));
       else if (st === 'declined' || (action === 'decline' && !st)) showResult('neutral', 'Declined. Thank you for answering.');
       else showResult('neutral', 'Offer is ' + String(st).replace(/_/g, ' ') + '.');
       showError('');
