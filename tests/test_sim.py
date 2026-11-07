@@ -145,8 +145,19 @@ def test_baseline_takes_the_first_yes_and_coachcover_only_eligible_people(result
 def test_what_if_rows(result):
     checks_role = result["what_if"]["baseline_manager_checks_role"]["summary"]
     assert checks_role["violations_by_reason"]["role"] == 0 and checks_role["violations"] > 0
-    batch = result["what_if"]["coachcover_three_offers_at_once"]["summary"]
-    assert batch["violations"] == 0 and batch["cases"] == result["summary"][COACHCOVER]["cases"]
+    before = result["what_if"]["coachcover_one_offer_at_a_time"]["summary"]
+    assert before["violations"] == 0 and before["cases"] == result["summary"][COACHCOVER]["cases"]
+
+
+def test_before_after_waves_keep_zero_violations_and_close_sooner(result):
+    """a product decision: the same 50 mornings, one offer at a time (before) against waves + plan B by the deadline (after)."""
+    table = {title: (b, a) for title, b, a in result["before_after"]["rows"]}
+    assert table["Placements that break a rule"] == (0, 0)
+    before_median, after_median = table["Minutes from call-out to closed, median"]
+    assert after_median < before_median
+    assert table["Closed after the shift started"][1] == 0  # plan B by the deadline: nothing is late
+    assert table["Shifts that needed cover"][0] == table["Shifts that needed cover"][1]
+    assert "## Before / after: offer waves (product decision)" in sim.report_markdown(result)
 
 
 def test_stats_block_follows_the_contract(result):
@@ -171,5 +182,5 @@ def test_cli_writes_both_files(tmp_path, capsys):
 def test_bad_arguments():
     with pytest.raises(ValueError, match="mornings"):
         run(0)
-    with pytest.raises(ValueError, match="offer_batch"):
-        run(1, params=SimParams(offer_batch=0))
+    with pytest.raises(ValueError, match="offers"):
+        run(1, params=SimParams(offers="all"))

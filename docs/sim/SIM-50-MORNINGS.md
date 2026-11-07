@@ -18,17 +18,17 @@ The school is fictional (`coachcover/seed.py`): 3 venues, 40 staff, 204 shifts i
 |   of them: group norm broken | 0 | 0 |
 | Placements with an expired certificate (any reason list) | 14 | 0 |
 | People placed (cover, merge, reserve, overtime) | 85 | 85 |
-| Median minutes from call-out to a closed shift | 13.3 | 21.1 |
-| 90th percentile, minutes | 15.4 | 44.0 |
-| Closed after the shift had started | 1 | 5 |
-| Closed without a person (no manager step), % | 0.0 | 75.3 |
+| Median minutes from call-out to a closed shift | 13.3 | 11.0 |
+| 90th percentile, minutes | 15.4 | 27.0 |
+| Closed after the shift had started | 1 | 0 |
+| Closed without a person (no manager step), % | 0.0 | 67.1 |
 | Lessons cancelled or moved | 0 | 0 |
 | Participants left without their lesson | 0 | 0 |
 | Shifts without groups left empty | 0 | 0 |
 | Approved overtime | 0 | 0 |
 | Manager minutes, median per morning | 6.0 | 0.0 |
 
-Outcomes, baseline: {'covered': 85}; CoachCover: {'covered': 64, 'reserve': 21}.
+Outcomes, baseline: {'covered': 85}; CoachCover: {'covered': 57, 'reserve': 28}.
 Blocking codes behind the baseline violations: {'CERT_EXPIRED': 14, 'CERT_MISSING': 10, 'CERT_NEEDS_REVIEW': 3, 'CERT_REVOKED': 1, 'HOURS_LIMIT_EXCEEDED': 3, 'LEVEL_MISSING': 19, 'PROGRAM_MISSING': 10, 'PROGRAM_RENEWAL_OVERDUE': 3, 'REST_TOO_SHORT': 9, 'ROLE_MISSING': 9}.
 
 A placement is one person put on a shift (cover, the teacher of a merged group, a reserve person, approved overtime). It is a violation when `rules.eligible` returns a blocking reason for that person and shift at the moment of booking. The breakdown counts each violation once, under the first of: role, certificate, program, hours, group norm. CoachCover's approved overtime is not counted as a violation: the manager approved it with its price, as the core does.
@@ -36,21 +36,47 @@ A placement is one person put on a shift (cover, the teacher of a merged group, 
 ## The two strategies
 
 - **Group chat + phone tree.** The manager sees the call-out after 10.0 min, posts in the staff chat (2.0 min per post) and books the first "yes" that comes before the shift starts (+1.0 min). After 10.0 min without a "yes" the manager also phones free people who hold the shift's role, in a random order, 3.0 min per call. Cards, programs, weekly hours and the group norm are not checked: that is how a chat and a general scheduler work. Nobody by the start: a lesson goes into the group next to it without checking the norm, otherwise it is cancelled; a shift without groups stays empty.
-- **CoachCover.** 1.0 min after the call-out the case opens. The rules rank every non-reserve person; offers go to eligible people only, one at a time, with the policy's timer (5 min); the rules run again at "yes". When nobody is left, plan B in the core's order: merge into the group next to it within the norm, a reserve person, overtime (an offer to a person blocked only by hours), move the lesson, close. Plan B is `propose` in the policy, so the manager approves it (10.0 min to see the card, 1.0 min to decide). If an overtime offer is not taken, the manager goes to the next option.
+- **CoachCover.** 1.0 min after the call-out the case opens. The rules rank every non-reserve person; offers go to eligible people only, in waves of 3 in queue order, with the policy's timer (5 min); the highest "yes" wins once nobody above it can still answer, at most 60 s after the first "yes"; the rules run again at "yes". Plan B goes to the manager 20 min before the shift starts even while offers are out (a "yes" before the manager acts still covers the shift), or earlier when nobody is left, in the core's order: merge into the group next to it within the norm, a reserve person, overtime (an offer to a person blocked only by hours), move the lesson, close. Plan B is `propose` in the policy, so the manager approves it (10.0 min to see the card, 1.0 min to decide). If an overtime offer is not taken, the manager goes to the next option.
+
+## Before / after: offer waves (product decision)
+
+CoachCover on the same 50 mornings, before (one offer at a time) and after (waves + plan B by the deadline). The baseline does not change.
+
+| Metric | Before: one offer at a time, plan B when the queue is empty | After: waves of 3, highest yes in 60 s, plan B 20 min before the start |
+|---|---:|---:|
+| Shifts that needed cover | 85 | 85 |
+| People placed | 85 | 85 |
+| Placements that break a rule | 0 | 0 |
+| Placements with an expired card | 0 | 0 |
+| Minutes from call-out to closed, median | 21.1 | 11.0 |
+| Minutes from call-out to closed, p90 | 44.0 | 27.0 |
+| Minutes from call-out to closed, mean | 23.7 | 13.1 |
+| Closed after the shift started | 5 | 0 |
+| Closed without a person | 64 | 57 |
+| Closed without a person, % | 75.3 | 67.1 |
+| Covered by a person | 85 | 85 |
+| Lessons cancelled or moved | 0 | 0 |
+| Children without their lesson | 0 | 0 |
+| Shifts without groups left empty | 0 | 0 |
+| Approved overtime | 0 | 0 |
+| Offers sent (people asked) | 415 | 507 |
+| Manager minutes, total | 21.0 | 28.0 |
+
+Outcomes before: {'covered': 64, 'reserve': 21}; after: {'covered': 57, 'reserve': 28}.
 
 ## What if (not the main table)
 
-| Metric | `baseline_manager_checks_role` | `coachcover_three_offers_at_once` |
+| Metric | `baseline_manager_checks_role` | `coachcover_one_offer_at_a_time` |
 |---|---:|---:|
 | Placements without permission | 47 | 0 |
 |   no role / certificate / program / hours / group norm | 0 / 21 / 20 / 6 / 0 | 0 / 0 / 0 / 0 / 0 |
-| Median minutes to close | 13.4 | 10.1 |
-| 90th percentile, minutes | 15.7 | 27.0 |
-| Closed after the shift had started | 1 | 3 |
-| Closed without a person, % | 0.0 | 69.4 |
+| Median minutes to close | 13.4 | 21.1 |
+| 90th percentile, minutes | 15.7 | 44.0 |
+| Closed after the shift had started | 1 | 5 |
+| Closed without a person, % | 0.0 | 75.3 |
 
 - `baseline_manager_checks_role`: Baseline where the manager takes only people who hold the shift's role (job title); cards, programs, hours and the group norm are still not checked.
-- `coachcover_three_offers_at_once`: CoachCover with three offers open at once instead of one (the first eligible yes wins). Not what the core does today; shown to size that change.
+- `coachcover_one_offer_at_a_time`: CoachCover before 2026-11-07: one offer at a time, plan B only when the queue is empty (the 'before' column of the before/after table).
 
 ## Assumptions
 
@@ -95,9 +121,9 @@ Policy of the preset: offer timer 5 min, weekly limit 40 h, autonomy {'assign_co
 
 - Synthetic data: one fictional school, one week, changed per morning. Real numbers need a real school's schedule.
 - The cases of one morning are worked one after another in call-out order; a person booked for an earlier case is busy for a later one that overlaps.
-- People answer the chat, a call and an offer with the same delay and the same wish; the chat reaches everyone at once, CoachCover asks one person at a time.
+- People answer the chat, a call and an offer with the same delay and the same wish; the chat reaches everyone at once, CoachCover asks a wave of three at a time.
 - The baseline manager never checks anything. A careful manager would check some things; the replay counts what nobody checks.
 - A shift counts as closed when a person is booked or the fallback is decided; the time runs from the call-out.
 - In plan B a reserve person is booked on the manager's approval without being asked, as the core does; the baseline manager never calls a reserve person.
 - "Closed without a person" is 0 for the baseline by construction: the manager books every shift by hand.
-- CoachCover keeps sending offers until the queue is empty, as the core does: there is no deadline before the shift starts.
+- Plan B by the deadline: the manager acts on it after noticing the card; the offers of the open wave keep running until then.

@@ -24,10 +24,12 @@ COACHCOVER_TEST_DSN=postgresql://postgres@127.0.0.1:<port>/postgres uv run pytes
   first "yes" before the start is booked. After `chat_wait_minutes` the manager also phones free people who hold
   the role, in random order. Nothing is checked. With nobody by the start, a lesson goes into the group next to
   it with the norm unchecked; otherwise it is cancelled. A shift without groups stays empty.
-- **CoachCover.** It follows the core: `assess` + `rank` over non-reserve people, then offers to eligible people,
-  one at a time, on the policy's timer. The rules run again at "yes". When the queue is empty, plan B
-  (`plan_b_options`) runs in the order of `Pipeline._plan_facts`: merge, reserve person, overtime, reschedule,
-  close. Each option's mode comes from the policy's autonomy: `propose` waits for the manager, `auto` acts at once.
+- **CoachCover.** It follows the core: `assess` + `rank` over non-reserve people, then offers to eligible people
+  in waves (the preset's `offers`: 3 at once, the highest "yes" wins once nobody above it can still answer, at
+  most 60 s after the first "yes"), on the policy's timer. The rules run again at "yes". Plan B
+  (`plan_b_options`, people already asked excluded) runs when the queue is empty or at the preset's deadline
+  (20 min before the start), whichever is first; a "yes" before the manager acts on the plan still covers the
+  shift. Order of `Pipeline._plan_facts`: merge, reserve person, overtime, reschedule, close. Each option's mode comes from the policy's autonomy: `propose` waits for the manager, `auto` acts at once.
 - **The audit.** Every placement of both strategies goes through `rules.eligible` at the moment of booking. Any
   blocking reason makes it a violation, counted once under the first of role, certificate, program, hours, group
   norm. Approved overtime is excluded, as in the core. Tests prove the audit can see `CERT_EXPIRED`,
@@ -37,8 +39,10 @@ COACHCOVER_TEST_DSN=postgresql://postgres@127.0.0.1:<port>/postgres uv run pytes
   `sim_stats()` gives the same block from an in-process run cached with `lru_cache`. The Docker image has no
   `docs/`, and one run takes about 0.5 s. A test fails if the committed report differs from a fresh run.
 - **What-if rows.** These are not in the main table: `baseline_manager_checks_role` (the manager takes only
-  people with the role) and `coachcover_three_offers_at_once` (three open offers instead of one; the core does
-  not do this today).
+  people with the role) and `coachcover_one_offer_at_a_time` (`SimParams(offers="one")`: the core before
+  2026-11-07, one offer at a time, plan B only when the queue is empty).
+- **Before / after (product decision).** `result["before_after"]` and the report's "Before / after" section put every metric
+  of CoachCover one offer at a time next to waves + plan B by the deadline, on the same 50 mornings.
 
 Every parameter is an assumption. All of them are listed with their values in `docs/sim/SIM-50-MORNINGS.md`.
 
@@ -57,11 +61,12 @@ Every parameter is an assumption. All of them are listed with their values in `d
   `card`, the "If nobody had accepted" block. The cost covers today's call-out shifts as if nobody had taken
   them; `case_cost_cents` is for the first case of the day, the one the screen shows.
 
-Default prices, each marked `assumption` and returned in `card.assumptions`:
+Prices live in the preset's `money` block (strict loader in `coachcover/presets.py`); each says whether it is an
+`assumption` and is returned in `card.assumptions`. Swim school:
 
 | Parameter | Default | Source |
 |---|---|---|
-| `lesson_price` | $15 per participant per lesson | assumption: conservative placeholder, no school price list was available |
+| `lesson_price` | $30 per child per group lesson | not an assumption: from the founder's coaching experience (product decision) |
 | `refund_share` | 1.0 | assumption: every participant of a lesson that does not run gets a refund or a credit |
 | `hourly_wage` | policy `overtime_cost_per_hour` / 1.5 ($22.67 with the preset's $34) | assumption: the preset calls $34 an example; keeping it means the money card and the plan B overtime card use the same rate |
 | `overtime_multiplier` | 1.5 | US Fair Labor Standards Act, time and a half over 40 h a week. Every hour of an uncovered shift counts as overtime, which is an upper bound; set 1.0 if the person covering stays under 40 h |
