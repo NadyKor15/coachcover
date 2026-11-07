@@ -5,18 +5,18 @@
     "name": "Riverside Aquatic Center",
     "term": "pool"
   },
-  "now_label": "Mon, Nov 9 · 08:46",
+  "now_label": "Mon, Nov 9 · 12:16",
   "user_label": "Natalie Brooks · Manager",
   "lang": "en",
   "callout": {
-    "case_id": "C-1109-02",
-    "time_label": "08:40",
+    "case_id": "C-1109-01",
+    "time_label": "12:10",
     "staff": "Marina Petrova · Instructor",
-    "audio_url": "/media/callouts/C-1109-02.ogg",
-    "duration_label": "0:09",
+    "audio_url": "/media/callouts/C-1109-01.ogg",
+    "duration_label": "0:07",
     "language": "Russian",
-    "transcript_original": "Привет, это Марина. У меня температура 38, к 9:30 я не выйду. У меня в 9:30 занятие с малышами. Простите.",
-    "transcript_en": "Hi, it's Marina. I have a fever of 38, I can't make it by nine thirty. I have the nine thirty class with the little ones. Sorry.",
+    "transcript_original": "Привет, это Марина. Я заболела, в 5 не смогу провести индивидуальное занятие с Лили. Простите.",
+    "transcript_en": "Hi, it's Marina. I'm sick, so I can't do the private lesson with Lily at five. Sorry.",
     "asr_label": "whisper · prepared demo answer"
   },
   "shift": {
@@ -171,18 +171,18 @@
         "reason_label": "Role: not an instructor"
       },
       {
-        "id": "S05",
-        "name": "Marina Petrova",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Called out"
-      },
-      {
         "id": "S07",
         "name": "Javier Morales",
         "eligible": false,
         "highlight": false,
         "reason_label": "Certificate expired Nov 8"
+      },
+      {
+        "id": "S05",
+        "name": "Marina Petrova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Called out"
       },
       {
         "id": "S08",
@@ -382,24 +382,24 @@
   },
   "timeline": [
     {
-      "time_label": "08:40",
+      "time_label": "12:10",
       "kind": "callout",
       "label": "Call-out"
     },
     {
-      "time_label": "08:42",
+      "time_label": "12:12",
       "kind": "accepted",
       "label": "Chloe Hayes said yes"
     },
     {
       "kind": "family",
       "label": "Asked the parent",
-      "time_label": "08:42"
+      "time_label": "12:12"
     },
     {
       "kind": "family",
       "label": "Parent said yes",
-      "time_label": "08:46"
+      "time_label": "12:16"
     },
     {
       "time_label": "17:00",
@@ -408,24 +408,24 @@
   ],
   "offers": [
     {
-      "id": "O-4",
-      "time_label": "08:42",
+      "id": "O-1",
+      "time_label": "12:12",
       "staff": "Chloe Hayes",
       "result": "accepted",
-      "why_first": "Chloe first: 5.75 h this week, Level 2, 21.7 km away",
+      "why_first": "Chloe first: 5 h 45 min this week, Level 2, 21.7 km away",
       "result_label": "said yes"
     },
     {
-      "id": "O-5",
-      "time_label": "08:42",
+      "id": "O-2",
+      "time_label": "12:12",
       "staff": "Diego Navarro",
       "result": "no_reply",
-      "why_first": "Diego second: 5.75 h this week, Level 2, 21.7 km away",
+      "why_first": "Diego second: 5 h 45 min this week, Level 2, 21.7 km away",
       "result_label": "no reply, Chloe said yes first"
     },
     {
-      "id": "O-6",
-      "time_label": "08:42",
+      "id": "O-3",
+      "time_label": "12:12",
       "staff": "Sofia Reyes",
       "result": "no_reply",
       "why_first": "Sofia third: 6 h this week, Level 2, same pool",
@@ -435,7 +435,7 @@
   "outcome": {
     "covered_by": "Chloe Hayes",
     "covered_via": null,
-    "covered_time": "08:46",
+    "covered_time": "12:16",
     "lessons_cancelled": 0,
     "private_line": null,
     "family_wait_until": null
@@ -444,7 +444,7 @@
     "id": "P-standby",
     "state": "standby",
     "text": "Move it to Marina, Wed 17:00 · Cancel: credit for one lesson ($50)",
-    "hash": "73fa2907ff572011592543aee789ad49865b68b7b5dcdffa818c408f34b63834",
+    "hash": "1e45b2d9cfec37ff363d8a41a932c4b8f019e6eaf8a90ce6bb512e6a1c016ec1",
     "autonomy": "propose"
   },
   "summary_cards": [
@@ -464,15 +464,15 @@
   "money": {
     "uncovered_morning_usd": 50.0,
     "uncovered_morning_label": "If nobody had accepted: $50 (Private lesson credit: 1 × $50)",
-    "case_cost_cents": 0.0302,
+    "case_cost_cents": 0.0441,
     "manager_hour_usd": 25.0,
-    "case_cost_label": "0.030¢",
+    "case_cost_label": "0.044¢",
     "source": "from the founder's coaching practice"
   },
   "model_log": {
-    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.030¢ · replay mode: recorded and prepared demo answers",
+    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.044¢ · replay mode: recorded and prepared demo answers",
     "calls": 5,
-    "usd": 0.000302
+    "usd": 0.000441
   },
   "flagged": [],
   "night_check": null,
@@ -480,6 +480,6 @@
   "ratio_alert": null,
   "judge": {
     "running": false,
-    "case_id": "C-1109-02"
+    "case_id": "C-1109-01"
   }
 }

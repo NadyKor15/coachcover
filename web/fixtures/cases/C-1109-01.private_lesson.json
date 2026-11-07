@@ -1,9 +1,9 @@
 {
-  "case_id": "C-1109-02",
-  "status": "plan_b",
-  "status_label": "Moved",
-  "covered_time_label": null,
-  "covered_by": null,
+  "case_id": "C-1109-01",
+  "status": "covered",
+  "status_label": "Covered",
+  "covered_time_label": "12:16",
+  "covered_by": "Chloe Hayes",
   "covered_via": null,
   "shift_label": "17:00 Teaching pool · Private lesson · Lily, age 6, Level 2",
   "venue": {
@@ -12,25 +12,25 @@
   },
   "date_label": "Mon, Nov 9",
   "user_label": "Natalie Brooks · Manager",
-  "opened_at": "2026-11-09T13:40:10Z",
-  "closed_at": "2026-11-09T13:46:00Z",
+  "opened_at": "2026-11-09T17:10:10Z",
+  "closed_at": "2026-11-09T17:16:00Z",
   "steps": [
     {
       "kind": "callout",
-      "at": "2026-11-09T13:40:10Z",
-      "time_label": "08:40:10 ET",
+      "at": "2026-11-09T17:10:10Z",
+      "time_label": "12:10:10 ET",
       "title": "Voice call-out",
       "staff": "Marina Petrova · Instructor",
       "language": "Russian",
-      "audio_url": "/media/callouts/C-1109-02.ogg",
-      "transcript_original": "Привет, это Марина. У меня температура 38, к 9:30 я не выйду. У меня в 9:30 занятие с малышами. Простите.",
-      "transcript_en": "Hi, it's Marina. I have a fever of 38, I can't make it by nine thirty. I have the nine thirty class with the little ones. Sorry.",
+      "audio_url": "/media/callouts/C-1109-01.ogg",
+      "transcript_original": "Привет, это Марина. Я заболела, в 5 не смогу провести индивидуальное занятие с Лили. Простите.",
+      "transcript_en": "Hi, it's Marina. I'm sick, so I can't do the private lesson with Lily at five. Sorry.",
       "model_tag": "whisper-large-v3-turbo · prepared demo answer"
     },
     {
       "kind": "shift",
-      "at": "2026-11-09T13:40:10Z",
-      "time_label": "08:40:10 ET",
+      "at": "2026-11-09T17:10:10Z",
+      "time_label": "12:10:10 ET",
       "title": "Shift identified",
       "shift_id": "L-1109-P001",
       "summary": "17:00–17:30 · Needs: Instructor · Learn-to-Swim Level 2",
@@ -38,8 +38,8 @@
     },
     {
       "kind": "allowed",
-      "at": "2026-11-09T13:40:10Z",
-      "time_label": "08:40:10 ET",
+      "at": "2026-11-09T17:10:10Z",
+      "time_label": "12:10:10 ET",
       "title": "Who is allowed",
       "total": 40,
       "allowed": 10,
@@ -177,16 +177,16 @@
           "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S05",
-          "name": "Marina Petrova",
-          "allowed": false,
-          "reason_label": "Called out"
-        },
-        {
           "id": "S07",
           "name": "Javier Morales",
           "allowed": false,
           "reason_label": "Certificate expired Nov 8"
+        },
+        {
+          "id": "S05",
+          "name": "Marina Petrova",
+          "allowed": false,
+          "reason_label": "Called out"
         },
         {
           "id": "S08",
@@ -354,29 +354,29 @@
     },
     {
       "kind": "offers",
-      "at": "2026-11-09T13:40:10Z",
-      "time_label": "08:40:10 ET",
+      "at": "2026-11-09T17:10:10Z",
+      "time_label": "12:10:10 ET",
       "title": "Offers in order",
       "offers": [
         {
-          "id": "O-4",
-          "time_label": "08:42",
+          "id": "O-1",
+          "time_label": "12:12",
           "staff": "Chloe Hayes",
-          "result": "stood_down",
-          "result_label": "said yes, the family kept their own coach",
-          "why_first": "Chloe first: 5.75 h this week, Level 2, 21.7 km away"
+          "result": "accepted",
+          "result_label": "said yes, the family agreed",
+          "why_first": "Chloe first: 5 h 45 min this week, Level 2, 21.7 km away"
         },
         {
-          "id": "O-5",
-          "time_label": "08:42",
+          "id": "O-2",
+          "time_label": "12:12",
           "staff": "Diego Navarro",
           "result": "no_reply",
           "result_label": "no reply, Chloe said yes first",
-          "why_first": "Diego second: 5.75 h this week, Level 2, 21.7 km away"
+          "why_first": "Diego second: 5 h 45 min this week, Level 2, 21.7 km away"
         },
         {
-          "id": "O-6",
-          "time_label": "08:42",
+          "id": "O-3",
+          "time_label": "12:12",
           "staff": "Sofia Reyes",
           "result": "no_reply",
           "result_label": "no reply, Chloe said yes first",
@@ -386,106 +386,102 @@
     },
     {
       "kind": "family",
-      "at": "2026-11-09T13:42:00Z",
-      "time_label": "08:42:00 ET",
+      "at": "2026-11-09T17:12:00Z",
+      "time_label": "12:12:00 ET",
       "title": "Asked the parent",
-      "summary": "“Hi! Marina can't make it today, so Chloe can teach Lily's private lesson at 17:00 instead. Same time, same place at Riverside Aquatic Center. Is that OK? Reply YES or NO.” · Chloe is held for this time · answer by 09:12 · written by the text model"
+      "summary": "“Hi! Marina can't make it today, so Chloe can teach Lily's private lesson at 17:00 instead. Same time, same place at Riverside Aquatic Center. Is that OK? Reply YES or NO.” · Chloe is held for this time · answer by 12:42 · written by the text model"
     },
     {
       "kind": "family",
-      "at": "2026-11-09T13:44:30Z",
-      "time_label": "08:44:30 ET",
-      "title": "Parent said no",
-      "summary": "No to Chloe instead"
-    },
-    {
-      "kind": "family",
-      "at": "2026-11-09T13:44:30Z",
-      "time_label": "08:44:30 ET",
-      "title": "Chloe Hayes let go, with thanks",
-      "summary": "Free for other offers again"
-    },
-    {
-      "kind": "family",
-      "at": "2026-11-09T13:44:30Z",
-      "time_label": "08:44:30 ET",
-      "title": "Marina Petrova: nearest free time at the same hour",
-      "summary": "Tue 17:00: busy · Wed 17:00: free"
-    },
-    {
-      "kind": "family",
-      "at": "2026-11-09T13:44:30Z",
-      "time_label": "08:44:30 ET",
-      "title": "Asked the parent about Marina, Wed 17:00",
-      "summary": "“No problem, Lily stays with Marina. The lesson moves to Wed, Nov 11 at 17:00. Does that work? Reply YES or NO.” · answer by 09:14 · written by the text model"
-    },
-    {
-      "kind": "family",
-      "at": "2026-11-09T13:46:00Z",
-      "time_label": "08:46:00 ET",
+      "at": "2026-11-09T17:16:00Z",
+      "time_label": "12:16:00 ET",
       "title": "Parent said yes",
-      "summary": "Yes to the new time"
+      "summary": "Yes to Chloe instead"
     },
     {
-      "kind": "family",
-      "at": "2026-11-09T13:46:00Z",
-      "time_label": "08:46:00 ET",
-      "title": "Moved to Marina, Wed 17:00",
-      "summary": "Marina Petrova teaches it; the old time is cancelled; nothing charged"
+      "kind": "covered",
+      "at": "2026-11-09T17:16:00Z",
+      "time_label": "12:16:00 ET",
+      "title": "Schedule covered",
+      "summary": "17:00 covered by Chloe Hayes · 0 lessons cancelled"
     }
   ],
   "proof": {
     "plan_id": null,
-    "plan_hash": null,
+    "plan_hash": "1e45b2d9cfec37ff363d8a41a932c4b8f019e6eaf8a90ce6bb512e6a1c016ec1",
     "policy_label": "cover = auto · plan B = propose"
   },
   "model_calls": [
     {
-      "at": "2026-11-09T13:40:10Z",
+      "at": "2026-11-09T17:10:10Z",
       "purpose": "transcribe",
       "model": "whisper-large-v3-turbo",
       "model_label": "whisper-large-v3-turbo",
-      "ms": 1050,
+      "ms": 820,
       "input_tokens": null,
       "output_tokens": null,
-      "cost_usd": 5.15e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-transcribe-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
+      "cost_usd": 7.5e-05,
+      "source": "recorded answer tests/fixtures/models/synthetic-transcribe-ru-private-1700.json (synthetic)",
+      "time_label": "12:10:10 ET",
+      "purpose_label": "Voice note to text",
+      "seconds_label": "0.8 s",
+      "shared_label": null,
+      "source_label": "prepared",
+      "cost_label": "0.008¢"
     },
     {
-      "at": "2026-11-09T13:40:10Z",
+      "at": "2026-11-09T17:10:10Z",
       "purpose": "screen_message",
       "model": "nemotron-3.5-content-safety",
       "model_label": "nemotron-safety",
-      "ms": 600,
-      "input_tokens": 480,
+      "ms": 580,
+      "input_tokens": 470,
       "output_tokens": 5,
-      "cost_usd": 1.25e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-filter-voice-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
+      "cost_usd": 2.4e-05,
+      "source": "recorded answer tests/fixtures/models/synthetic-filter-voice-ru-private-1700.json (synthetic)",
+      "time_label": "12:10:10 ET",
+      "purpose_label": "Message check",
+      "seconds_label": "0.6 s",
+      "shared_label": null,
+      "source_label": "prepared",
+      "cost_label": "0.002¢"
     },
     {
-      "at": "2026-11-09T13:40:10Z",
+      "at": "2026-11-09T17:10:10Z",
       "purpose": "extract_callout",
       "model": "muse-glimmer-30b",
       "model_label": "muse-glimmer-30b",
-      "ms": 1400,
-      "input_tokens": 445,
-      "output_tokens": 60,
-      "cost_usd": 8.55e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-extract-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
+      "ms": 1350,
+      "input_tokens": 441,
+      "output_tokens": 55,
+      "cost_usd": 0.000165,
+      "source": "recorded answer tests/fixtures/models/synthetic-extract-ru-private-1700.json (synthetic)",
+      "time_label": "12:10:10 ET",
+      "purpose_label": "Read the call-out",
+      "seconds_label": "1.4 s",
+      "shared_label": null,
+      "source_label": "prepared",
+      "cost_label": "0.016¢"
     },
     {
-      "at": "2026-11-09T13:40:10Z",
+      "at": "2026-11-09T17:10:10Z",
       "purpose": "translate",
       "model": "muse-glimmer-30b",
       "model_label": "muse-glimmer-30b",
-      "ms": 900,
-      "input_tokens": 140,
-      "output_tokens": 36,
-      "cost_usd": 3.55e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-translate-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
+      "ms": 850,
+      "input_tokens": 130,
+      "output_tokens": 28,
+      "cost_usd": 6e-05,
+      "source": "recorded answer tests/fixtures/models/synthetic-translate-ru-private-1700.json (synthetic)",
+      "time_label": "12:10:10 ET",
+      "purpose_label": "Translate to English",
+      "seconds_label": "0.8 s",
+      "shared_label": null,
+      "source_label": "prepared",
+      "cost_label": "0.006¢"
     },
     {
-      "at": "2026-11-09T13:42:00Z",
+      "at": "2026-11-09T17:12:00Z",
       "purpose": "family_question",
       "model": "muse-glimmer-30b",
       "model_label": "muse-glimmer-30b",
@@ -493,22 +489,18 @@
       "input_tokens": 260,
       "output_tokens": 52,
       "cost_usd": 0.000117,
-      "source": "recorded answer tests/fixtures/models/synthetic-family-question-lily-cover-en.json (synthetic)"
-    },
-    {
-      "at": "2026-11-09T13:44:30Z",
-      "purpose": "family_question",
-      "model": "muse-glimmer-30b",
-      "model_label": "muse-glimmer-30b",
-      "ms": 1000,
-      "input_tokens": 250,
-      "output_tokens": 44,
-      "cost_usd": 0.000107,
-      "source": "recorded answer tests/fixtures/models/synthetic-family-question-lily-reschedule-en.json (synthetic)"
+      "source": "recorded answer tests/fixtures/models/synthetic-family-question-lily-cover-en.json (synthetic)",
+      "time_label": "12:12:00 ET",
+      "purpose_label": "Question to the family",
+      "seconds_label": "1.1 s",
+      "shared_label": null,
+      "source_label": "prepared",
+      "cost_label": "0.012¢"
     }
   ],
-  "model_cost_usd": 0.000409,
-  "model_cost_label": "0.041¢",
+  "model_cost_usd": 0.000441,
+  "model_cost_label": "0.044¢",
+  "model_calls_total_label": "5 calls · 0.044¢",
   "risk": {
     "kids": null,
     "private": true,

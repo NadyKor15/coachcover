@@ -41,8 +41,10 @@ RATIO_KEYS = {"case_id", "status", "tone", "label", "action_label"}
 OFFER_KEYS = {"offer_id", "shift_day", "shift_start", "shift_end", "venue", "shift_detail", "why", "expires_in_s", "window_s", "manager"}
 CASE_KEYS = {"case_id", "status", "status_label", "covered_time_label", "shift_label", "venue", "date_label", "user_label",
              "opened_at", "closed_at", "steps", "proof", "model_calls", "model_cost_usd", "model_cost_label", "risk",
-             "covered_by", "covered_via"}
-CALL_KEYS = {"at", "purpose", "model", "model_label", "ms", "input_tokens", "output_tokens", "cost_usd", "source"}
+             "covered_by", "covered_via", "model_calls_total_label"}
+# a model call on the case page: machine fields, and the Proof table's words (ET time, why, seconds, cents, share, source)
+CALL_KEYS = {"at", "purpose", "model", "model_label", "ms", "input_tokens", "output_tokens", "cost_usd", "source",
+             "time_label", "purpose_label", "seconds_label", "cost_label", "shared_label", "source_label"}
 UTC_STAMP = re.compile(r"^\d{4}-\d\d-\d\dT(\d\d:\d\d:\d\d)Z$")
 
 
@@ -55,7 +57,7 @@ def today_files() -> list[str]:
 
 
 def hours(text: str | None) -> str | None:
-    m = re.search(r"(\d+(?:\.\d+)?) h this week", text or "")
+    m = re.search(r"((?:\d+ h)?(?: ?\d+ min)?) this week", text or "")  # "5 h 45 min", "6 h", "30 min"
     return m.group(1) if m else None
 
 
@@ -127,7 +129,7 @@ def test_morning_story():
     codes = {r["code"]: r["label"] for r in e["reasons"]}
     assert "REVOKED by issuer" in codes["CERT_REVOKED"] and "(simulated registry)" in codes["CERT_REVOKED"]
     if "REST_TOO_SHORT" in codes:  # the 09:30 morning has nobody short of rest; the label shape still holds when it does
-        assert re.match(r"Only \d+(\.\d+)? h rest since \d+:\d\d$", codes["REST_TOO_SHORT"])
+        assert re.match(r"Only (\d+ h|\d+ h \d+ min|\d+ min) rest since \d+:\d\d$", codes["REST_TOO_SHORT"])
     assert d["ratio_alert"] is None and d["night_check"] is None
 
 
@@ -192,6 +194,15 @@ def test_case_follows_the_morning():
     assert len(d["model_calls"]) == t["model_log"]["calls"]
     assert round(sum(c["cost_usd"] or 0 for c in d["model_calls"]), 6) == d["model_cost_usd"]
     assert d["risk"]["total_usd"] == t["money"]["uncovered_morning_usd"]
+    # the Proof table: every row in the venue's time, cents that add up to the Models line, the call-out's share named
+    for c in d["model_calls"]:
+        local = datetime.fromisoformat(c["at"].replace("Z", "+00:00")).astimezone(VENUE_TZ)
+        assert c["time_label"] == f"{local:%H:%M:%S} ET" and c["seconds_label"] == f"{c['ms'] / 1000:.1f} s", c
+        assert c["source_label"] == "prepared" and c["purpose_label"][0].isupper() and "_" not in c["purpose_label"]
+    cents = [round(float(c["cost_label"].rstrip("¢")) * 1000) for c in d["model_calls"]]
+    assert sum(cents) == round(float(d["model_cost_label"].rstrip("¢")) * 1000)
+    assert d["model_calls_total_label"] == f"{len(d['model_calls'])} calls · {d['model_cost_label']}"
+    assert {c["shared_label"] for c in d["model_calls"]} == {"shared by 2 cases", None}  # Anna's message check is its own
 
 
 def test_model_calls_are_recorded_answers():

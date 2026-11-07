@@ -29,6 +29,11 @@ STARTS = {"preschool": NOW, "deck": DECK_NOW}  # the demo clock after a reset
 # the voice note comes 10 s after the reset clock (08:40:10): the offers' 5-minute timers then end after Zoe's
 # 60-second window (08:44 + 60 s = 08:45:00), so Leo stands down instead of timing out at the same second
 CALLOUT_DELAY = {"preschool": timedelta(seconds=10), "deck": timedelta(0)}
+# the private-lesson scenes: Marina taught her 09:30 lesson and fell ill by midday. Her note (also say -v Milena):
+# "Привет, это Марина. Я заболела, в пять не смогу провести индивидуальное занятие с Лили. Простите." Her 17:00 private
+# lesson with Lily is the only shift of her day still ahead, so the whole-day rule opens one case.
+PRIVATE_VOICE = AUDIO / "ru-callout-private-1700.ogg"
+PRIVATE_NOW = NOW.replace(hour=12, minute=10)  # 12:10 ET: the scene's own clock; the note comes 10 s later
 RESET_LOCK = 0x636F6163  # exclusive while the school is rebuilt; the worker takes it shared per tick
 
 
@@ -113,39 +118,36 @@ def dangerous_morning(conn: psycopg.Connection, models: ModelClient) -> dict:
     return {"case": case, "ended_at": end}
 
 
-def _private_morning(p: Pipeline, conn: psycopg.Connection) -> tuple[int, int]:
-    """Marina's call-out also opens her 17:00 private lesson with Lily (she is out all day). Chloe, first in its wave,
-    says yes at 08:42 and is held; the agent asks Lily's family. Meanwhile the 09:30 lesson goes to Zoe at 08:45, as in
-    dangerous_morning. Returns (the private lesson's case, the question to the family)."""
-    hero, _ = _morning(p, conn)
-    case = conn.execute("SELECT id FROM cover_case WHERE shift_id = %s AND status = 'open'", (HERO_PRIVATE,)).fetchone()[0]
-    p.respond(_offer_of(conn, case, "S18"), True, NOW + timedelta(minutes=2))  # 08:42 Chloe: yes, the family is asked
-    p.respond(_offer_of(conn, hero, "S25"), False, NOW + timedelta(minutes=3))  # 08:43 Sofia: no to 09:30
-    yes = NOW + timedelta(minutes=4)
-    p.respond(_offer_of(conn, hero, "S17"), True, yes)  # 08:44 Zoe: yes to 09:30
-    p.expire_due(yes + timedelta(seconds=p._policy().preset.offer_collect_seconds))  # 08:45 Zoe gets 09:30
+def _private_callout(p: Pipeline, conn: psycopg.Connection) -> tuple[int, int]:
+    """Marina's midday voice note (12:10:10) names her 17:00 private lesson with Lily, the one shift of her day still
+    ahead: one case. Chloe, first in its wave, says yes at 12:12 and is held; the agent asks Lily's family (answer within
+    30 min, at the latest 60 min before 17:00). Returns (the case, the question to the family)."""
+    at = PRIVATE_NOW + CALLOUT_DELAY["preschool"]
+    callout = p.callout("S05", now=at, audio=PRIVATE_VOICE.read_bytes(), filename=PRIVATE_VOICE.name)
+    case = next(c["case_id"] for c in callout["cases"] if c["shift_id"] == HERO_PRIVATE)
+    p.respond(_offer_of(conn, case, "S18"), True, PRIVATE_NOW + timedelta(minutes=2))  # 12:12 Chloe: yes, family asked
     ask = conn.execute("SELECT id FROM client_ask WHERE case_id = %s AND status = 'asked'", (case,)).fetchone()[0]
     return case, ask
 
 
 def private_lesson(conn: psycopg.Connection, models: ModelClient) -> dict:
-    """Lily's family says yes at 08:46: the rules run again for Chloe, and only then is she booked for 17:00."""
+    """Lily's family says yes at 12:16: the rules run again for Chloe, and only then is she booked for 17:00."""
     p = Pipeline(conn, models, POLICY_ID)
-    case, ask = _private_morning(p, conn)
-    end = NOW + timedelta(minutes=6)
+    case, ask = _private_callout(p, conn)
+    end = PRIVATE_NOW + timedelta(minutes=6)
     p.family_respond(ask, True, end)
     return {"case": case, "ended_at": end}
 
 
 def private_declined(conn: psycopg.Connection, models: ModelClient) -> dict:
-    """Lily's family says no to another coach at 08:44: Chloe is let go with thanks; Marina's nearest free time at the
-    same hour is Wednesday 17:00 (Tuesday 17:00 is her lesson with Vera); the family says yes at 08:46 and the lesson
+    """Lily's family says no to another coach at 12:14:30: Chloe is let go with thanks; Marina's nearest free time at
+    the same hour is Wednesday 17:00 (Tuesday 17:00 is her lesson with Vera); the family says yes at 12:16 and the lesson
     moves. Had they said no again, or had Marina had no free time, they would get a credit for one lesson."""
     p = Pipeline(conn, models, POLICY_ID)
-    case, ask = _private_morning(p, conn)
-    p.family_respond(ask, False, NOW + timedelta(minutes=4, seconds=30))
+    case, ask = _private_callout(p, conn)
+    p.family_respond(ask, False, PRIVATE_NOW + timedelta(minutes=4, seconds=30))
     again = conn.execute("SELECT id FROM client_ask WHERE case_id = %s AND status = 'asked'", (case,)).fetchone()[0]
-    end = NOW + timedelta(minutes=6)
+    end = PRIVATE_NOW + timedelta(minutes=6)
     p.family_respond(again, True, end)
     return {"case": case, "ended_at": end}
 

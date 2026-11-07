@@ -1,0 +1,27 @@
+{
+ "purpose": "translate",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "text": "Привет, это Марина. Я заболела, в 5 не смогу провести индивидуальное занятие с Лили. Простите.",
+  "to": "en"
+ },
+ "input_sha256": "b8a972e265d2d47364827d6bb22ddf5ed8b5c7eb77d8987ca87813fcb0081568",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: written by hand to the translate schema for ru-callout-private-1700.ogg (synthesized locally with macOS say -v Milena); to be recorded live on Vultr",
+ "duration_ms": 850,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 130,
+   "completion_tokens": 28
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"text\": \"Hi, it's Marina. I'm sick, so I can't do the private lesson with Lily at five. Sorry.\"}"
+    }
+   }
+  ]
+ }
+}

@@ -5,6 +5,7 @@ Every number and name comes from the database and the case file. Unknown values 
 
 from __future__ import annotations
 
+import re
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -16,7 +17,7 @@ from coachcover.checks import night_report
 from coachcover.model import Preset
 from coachcover.models import MODEL_LABELS, SHORT_NAMES, canonical_key
 from coachcover.pipeline import NotFound, Pipeline, plain
-from coachcover.reasons_text import local_stamp
+from coachcover.reasons_text import hours_words, local_stamp
 from coachcover.repo import load_policy, load_shift, load_staff
 from coachcover.rules import cert_expiry, group_norm, required_certs
 
@@ -91,7 +92,7 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
         program = preset.programs.get(params["program"])
         return f"{program.label if program else params['program']} renewal overdue"
     if code == "HOURS_LIMIT_EXCEEDED":
-        return f"Over {params['limit_hours']:g} h this week"
+        return f"Over {hours_words(params['limit_hours'])} this week"
     if code == "OVERLAPS_COMMITMENT":
         teaching = conn.execute("SELECT EXISTS (SELECT 1 FROM shift_group WHERE shift_id = %s)", (params["ref"],)).fetchone()[0]
         return f"{'Teaching' if teaching else 'On deck'} at {_short_clock(params['start'], tz)}"
@@ -99,10 +100,10 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
         until = date.fromisoformat(params["expires_on"])
         return f"Valid until {until:%b %Y} — REVOKED by issuer on {_day(params['revoked_on'])} ({REGISTRY_NOTE})"
     if code == "REST_TOO_SHORT":
-        hours = f"{params['rest_hours']:g}"
+        hours = hours_words(params["rest_hours"], rounding="down")  # "Only 9 h 30 min rest since 21:00"
         if params.get("side") == "after":
-            return f"Only {hours} h rest before {_short_clock(params['until'], tz)}"
-        return f"Only {hours} h rest since {_short_clock(params['since'], tz)}"
+            return f"Only {hours} rest before {_short_clock(params['until'], tz)}"
+        return f"Only {hours} rest since {_short_clock(params['since'], tz)}"
     if code == "RATIO_EXCEEDED":
         return f"Over the 1:{params['max_per_instructor']} norm"
     if code == "IS_THE_ABSENT_PERSON":
@@ -412,7 +413,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
     autonomy = policy.autonomy["plan_b"]
     if plans:
         pid, snap, digest, pstatus, created, decided = plans
-        text = " · ".join(snap.get("text", {}).get("lines", [])) or _plan_text(snap, preset)
+        text = _glued(snap.get("text", {}).get("lines", [])) or _plan_text(snap, preset)
         out["plan_b"] = {"id": f"P-{pid}", "state": pstatus, "text": text, "hash": digest, "autonomy": autonomy}
         when = decided if pstatus == "approved" and decided else created
         timeline.append({"time_label": _clock(when, tz), "kind": "plan_b",
@@ -729,7 +730,7 @@ def offer_phone(conn: psycopg.Connection, policy_id: str, offer_ref: str, now: d
             why.append(f"{prog.needs(g[1])} — current" if prog is not None and prog.clearance
                        else f"{prog.title(g[1]) if prog is not None else g[0]} — current")
     if place and place.get("week_hours") is not None:
-        why.append(f"{place['week_hours']:g} h this week")
+        why.append(f"{hours_words(place['week_hours'])} this week")  # "5 h 45 min", as on Today
     manager = conn.execute("SELECT manager_name FROM policy WHERE id = %s", (policy_id,)).fetchone()[0]
     labels = _shift_labels(info, shift, preset, _co_teachers(conn, shift_id))
     return plain({
@@ -849,14 +850,36 @@ def _utc(value: datetime) -> str:
     return value.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _glued(lines: list[str]) -> str:
+    """Plan lines glued into one strip: "Liam Foster (reserve) steps in · Camila Herrera works 15 minutes of overtime
+    ($8.50) · …", never "steps in. · Camila". A line's own end period goes; the stored plan keeps its sentences."""
+    return " · ".join(re.sub(r"\.\s*$", "", line.strip()) for line in lines if line and line.strip())
+
+
 def _local_label(value: datetime, tz: ZoneInfo) -> str:
     return local_stamp(value, tz)  # "08:40:10 ET": the venue's time; machine fields stay in UTC
 
 
-def model_calls(conn: psycopg.Connection, case_id: int, callout_id) -> list[dict]:
+# why each model was called, in the words of the case page's Proof table
+PURPOSE_LABELS = {
+    "transcribe": "Voice note to text",
+    "screen_message": "Message check",
+    "extract_callout": "Read the call-out",
+    "translate": "Translate to English",
+    "family_question": "Question to the family",
+    "family_message": "Message to the family",
+    "plan_b_text": "Plan B in plain words",
+    "read_card": "Read a certificate card",
+    "whatif_parse": "Read a what-if question",
+}
+
+
+def model_calls(conn: psycopg.Connection, case_id: int, callout_id, tz: ZoneInfo | None = None) -> list[dict]:
     """The case's model calls, each priced as money.case_cost prices it: the case's own calls in full, the call-out's
     calls (made once for the whole message) at an equal share between the cases that message opened. So the case page,
-    Today and the downloaded case show one cost, and the cases of a call-out add up to the ledger."""
+    Today and the downloaded case show one cost, and the cases of a call-out add up to the ledger. Each row also
+    carries its words for the Proof table: the step's time in the venue's zone, why the model was called, seconds,
+    cents (rounded so the rows add up to the case's cost label), "shared by N cases" and where the answer came from."""
     rows = conn.execute(
         "SELECT at, purpose, model_requested, model_returned, duration_ms, input_tokens, output_tokens, cost_usd, source,"
         " ref->>'recording', coalesce((ref->>'synthetic')::boolean, false), ok, error, case_id FROM model_call"
@@ -883,7 +906,16 @@ def model_calls(conn: psycopg.Connection, case_id: int, callout_id) -> list[dict
             "cost_usd": round(price * share, 10) if price is not None else None,
             "source": (where if ok else f"{where} · failed: {error}")
             + (f" · the call-out's call, shared by {shared_by} cases" if share < 1 else ""),
+            "time_label": local_stamp(at, tz) if tz is not None else None,
+            "purpose_label": PURPOSE_LABELS.get(purpose, purpose.replace("_", " ").capitalize()),
+            "seconds_label": f"{ms / 1000:.1f} s" if ms is not None else None,
+            "shared_label": f"shared by {shared_by} cases" if share < 1 else None,
+            "source_label": ("live" if source == "live" else "prepared" if synthetic else "recorded" if recording
+                             else "no answer") + ("" if ok else " · failed"),
         })
+    total = money_model.case_cost(conn, case_id)["usd"]
+    for row, cents in zip(out, money_model.split_cents([r["cost_usd"] for r in out], total)):
+        row["cost_label"] = cents
     return out
 
 
@@ -1023,12 +1055,12 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         lines = snap.get("text", {}).get("lines", [])
         if pstatus == "approved":
             option = snap["options"][chosen]
-            text = lines[chosen] if chosen < len(lines) else option["kind"]
+            text = _glued([lines[chosen]]) if chosen < len(lines) else option["kind"]
             steps.append({"kind": "plan_b", "at": _utc(decided), "time_label": _local_label(decided, tz),
                           "title": "Plan B approved by hash", "summary": f"{text} · approved by {decided_by} · P-{pid}"})
         else:
             steps.append({"kind": "plan_b", "at": _utc(created), "time_label": _local_label(created, tz),
-                          "title": "Plan B waiting for approval", "summary": " · ".join(lines) or _plan_text(snap, preset)})
+                          "title": "Plan B waiting for approval", "summary": _glued(lines) or _plan_text(snap, preset)})
         proof = {"plan_id": f"P-{pid}", "plan_hash": digest}
     elif status in ("open", "covered"):
         proof = {"plan_id": None, "plan_hash": canonical_key(p._plan_facts(case_id, closed or opened))}
@@ -1036,7 +1068,7 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         proof = {"plan_id": None, "plan_hash": None}
     proof["policy_label"] = f"cover = {policy.autonomy['assign_cover']} · plan B = {policy.autonomy['plan_b']}"
     steps.sort(key=lambda s: s["at"])
-    calls = model_calls(conn, case_id, callout_id)
+    calls = model_calls(conn, case_id, callout_id, tz)
     bill = money_model.case_cost(conn, case_id)
     local_day = info["start"].astimezone(tz)
     private_end = next((k for _, _, k, _ in reversed(events) if k in ("private_moved", "private_credit")), None)
@@ -1060,5 +1092,9 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         # one cost of this cover on every screen: money.case_cost (its own calls + its share of the call-out's)
         "model_cost_usd": round(bill["usd"], 6),
         "model_cost_label": money_model.cost_label(bill["usd"]),
+        # the Proof table's last line: the same count and cost as the "Models:" line above it
+        "model_calls_total_label": f"{len(calls)} call{'s' if len(calls) != 1 else ''} · "
+                                   f"{money_model.cost_label(bill['usd'])}"
+                                   + (f" ({bill['usd'] * 100:.2f}¢)" if bill["usd"] >= 0.01 else ""),
         "risk": case_risk(shift, policy),
     })

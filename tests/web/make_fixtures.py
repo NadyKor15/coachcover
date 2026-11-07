@@ -15,11 +15,12 @@ Order of calls (each judge run resets the training school):
   2. judge nobody_accepts → today.nobody_accepts.json; approve the plan with a wrong hash (real 409), then with its own
      hash (real 200).
   3. judge nightly_check → today.nightly_check.json.
-  4. private lessons (--setup-cmd): Marina's 17:00 private lesson with Lily, Chloe said yes, the family is asked →
+  4. private lessons (--setup-cmd): Marina's midday note, her 17:00 private lesson with Lily, Chloe said yes, the family is asked →
      clients/Q-1.json; the family's real answers: yes → Q-1.covered.json (again → the real 409, clients/mocks.json);
      no → Q-1.no.json and the second question Q-2.json; its yes → Q-2.moved.json and Q-1.moved.json; its no →
      Q-2.credit.json and Q-1.credit.json. Judge private_lesson and private_declined → today.private_*.json,
-     cases/C-1109-02.private_*.json, the coach's offer page.
+     cases/C-1109-01.private_*.json and offers/<Chloe's>.private_lesson.json (the scene's own files: its case and offer
+     share their ids with the morning's).
   5. judge dangerous_morning again, so the stack is left on the main story.
 Standard library only.
 """
@@ -102,8 +103,8 @@ for i, (day, begin, finish) in enumerate((("2026-11-15", "06:00", "14:00"), ("20
 """
 
 
-# a private lesson: Marina's call-out, Chloe says yes to Lily's 17:00 lesson, the family is asked (judge private_* until
-# the family's answer); the clock stops just after, so the question is still open
+# a private lesson: Marina's midday call-out, Chloe says yes to Lily's 17:00 lesson, the family is asked (judge private_*
+# until the family's answer); the clock stops just after, so the question is still open
 PRIVATE_ASKED = """
 import os
 from datetime import timedelta
@@ -111,12 +112,12 @@ import psycopg
 from coachcover import demo
 from coachcover.models import DbLedger, ModelClient
 from coachcover.pipeline import Pipeline
-from coachcover.seed import NOW, POLICY_ID
+from coachcover.seed import POLICY_ID
 conn = psycopg.connect(os.environ["DATABASE_URL"], autocommit=True)
 demo.reset_school(conn)
 p = Pipeline(conn, ModelClient(DbLedger(conn), mode="replay"), POLICY_ID)
-demo._private_morning(p, conn)
-demo.set_clock(conn, NOW + timedelta(minutes=5), speed=0.01)  # nearly stopped: the question stays open
+demo._private_callout(p, conn)
+demo.set_clock(conn, demo.PRIVATE_NOW + timedelta(minutes=5), speed=0.01)  # nearly stopped: the question stays open
 """
 
 
@@ -157,12 +158,12 @@ def private_fixtures(base: str, setup_cmd: list[str], save, mocks: dict) -> None
         today = ok(base, "GET", "/api/today")
         save(f"today.{scenario}.json", today)
         mocks["today_by_scenario"][scenario] = f"today.{scenario}.json"
-        # the yes path is the case's own file (Today links to it); the no path opens with &mock=private_declined
-        suffix = "" if scenario == "private_lesson" else f".{scenario}"
-        save(f"cases/{run['case_id']}{suffix}.json", ok(base, "GET", f"/api/cases/{run['case_id']}"))
+        # the scene's case shares its id with the morning's (one case each, C-1109-01): its own file, opened with
+        # &mock=<scene> (Today's links add it after a judge run of that scene); so does Chloe's offer
+        save(f"cases/{run['case_id']}.{scenario}.json", ok(base, "GET", f"/api/cases/{run['case_id']}"))
         if scenario == "private_lesson":
             chloe = next(o["id"] for o in today["offers"] if o["result"] == "accepted")
-            save(f"offers/{chloe}.json", ok(base, "GET", f"/api/offers/{chloe}"))
+            save(f"offers/{chloe}.{scenario}.json", ok(base, "GET", f"/api/offers/{chloe}"))
 
 
 def run_setup(setup_cmd: list[str], code: str) -> None:

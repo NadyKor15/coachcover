@@ -204,3 +204,20 @@ def test_one_cost_of_a_cover_on_today_the_case_and_the_downloaded_case(new_datab
     total = float(conn.execute("SELECT sum(cost_usd) FROM model_call").fetchone()[0])
     cases = [c for (c,) in conn.execute("SELECT id FROM cover_case")]
     assert sum(case_cost(conn, c)["usd"] for c in cases) == pytest.approx(total, abs=2e-6)
+
+
+def test_the_proof_table_cents_add_up_to_the_case_cost_label():
+    """The case page's Proof rows show each call in cents with the total's own decimals; plain rounding of three equal
+    thirds would show 0.003 + 0.003 + 0.003 = 0.009 under a total of 0.010¢. The rows add up to the label exactly."""
+    from coachcover.money import cost_label, split_cents
+
+    thirds = [0.0001 / 3] * 3  # 0.00333…¢ each
+    assert cost_label(sum(thirds)) == "0.010¢"
+    labels = split_cents(thirds, sum(thirds))
+    assert sorted(labels) == ["0.003¢", "0.003¢", "0.004¢"]
+    assert sum(round(float(x.rstrip("¢")) * 1000) for x in labels) == 10
+    morning = [2.575e-05, 6.25e-06, 4.275e-05, 3.5e-05, 1.75e-05]  # the 09:30 case: the call-out's four halves + Anna's
+    labels = split_cents(morning, sum(morning))
+    assert sum(round(float(x.rstrip("¢")) * 1000) for x in labels) == round(float(cost_label(sum(morning)).rstrip("¢")) * 1000)
+    assert split_cents([None, 0.0001], 0.0001) == ["no price", "0.010¢"]
+    assert split_cents([0.004, 0.0071], 0.0111) == ["0.40¢", "0.71¢"]  # from a cent up: two decimals

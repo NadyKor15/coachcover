@@ -7,7 +7,9 @@
  *   &mock=ratio_open | ratio_covered   GET /api/today with the children-per-instructor banner open or covered
  *   &mock=client_declined | client_credit   GET /api/client/{id}: the family's case after its last answer (moved / credit)
  *   &mock=client_closed  POST /api/client/{id}/respond answers 409 (the family already answered by text)
- *   &mock=private_declined   GET /api/cases/C-1109-02: the private lesson the family moved to their own coach
+ *   &mock=private_lesson | private_declined | network_loan   GET /api/cases/{id} (and, private_lesson, the coach's
+ *                        offer) from that judge scene's own file: its case shares an id with the morning's (C-1109-01);
+ *                        after a judge run of that scene, Today's links carry the same mock
  * Every call resolves to {status, body}; network and parse failures resolve to status 0 with body.error,
  * so a screen always has something to show instead of failing silently.
  */
@@ -21,6 +23,9 @@
 
   // in-memory state of the fixture "server" (lives as long as the page)
   const fx = { scenario: null, approved: {}, mocks: null };
+  // judge scenes whose case (and offers) have their own fixture files: <id>.<scene>.json
+  const VARIANTS = ['network_loan', 'private_lesson', 'private_declined'];
+  const variant = () => VARIANTS.find(v => MOCKS.has(v)) || (VARIANTS.includes(fx.scenario) ? fx.scenario : null);
 
   async function http(method, path, body) {
     const init = { method, headers: { Accept: 'application/json' } };
@@ -118,12 +123,11 @@
     let m = p.match(/^\/api\/network\/loans\/([^/]+)$/);
     if (m) return fixtureFile((await netMocks()).loan_files[fx.loan || initialLoan()]);
     m = p.match(/^\/api\/offers\/([^/]+)$/);
-    if (m) return fixtureFile('offers/' + encodeURIComponent(decodeURIComponent(m[1])) + '.json');
+    if (m) return fixtureFile('offers/' + encodeURIComponent(decodeURIComponent(m[1])) + (variant() === 'private_lesson' ? '.private_lesson' : '') + '.json');
     m = p.match(/^\/api\/client\/([^/]+)$/);
     if (m) { await clientMocks(); return fixtureFile(askFile(decodeURIComponent(m[1]))); }
     m = p.match(/^\/api\/cases\/([^/]+)$/);
-    if (m) return fixtureFile('cases/' + encodeURIComponent(decodeURIComponent(m[1])) + (MOCKS.has('network_loan') ? '.network_loan'
-      : MOCKS.has('private_declined') ? '.private_declined' : '') + '.json');
+    if (m) return fixtureFile('cases/' + encodeURIComponent(decodeURIComponent(m[1])) + (variant() ? '.' + variant() : '') + '.json');
     return { status: 404, body: { error: 'no fixture for GET ' + p } };
   }
 
@@ -199,5 +203,8 @@
     return (r.status ? 'HTTP ' + r.status : 'no connection') + (b.error || b.detail || b.reason ? ': ' + (b.error || b.detail || b.reason) : '');
   }
 
-  global.CC = { FIXTURE, MOCKS, get, post, errorText, params };
+  // fixture mode: what a link to another screen adds so it opens the same scene ("" in live mode)
+  const fixtureQuery = () => FIXTURE ? 'fixture=1' + (variant() ? '&mock=' + variant() : '') : '';
+
+  global.CC = { FIXTURE, MOCKS, get, post, errorText, params, fixtureQuery };
 })(window);

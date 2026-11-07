@@ -99,17 +99,24 @@ body[data-state="loading"] .main{visibility:hidden}
 
 /* ---------- right column ---------- */
 .rcol{display:flex;flex-direction:column}
-.proof{position:relative;margin-top:1px;height:442px;padding:21.5px 0 0 23px}
+.proof{position:relative;margin-top:1px;min-height:442px;padding:21.5px 0 22px 23px}
 .proof h2{letter-spacing:0;font-size:34.5px;line-height:42px;font-weight:750;color:var(--ink)}
 .stamp{position:absolute;left:345px;top:9px;width:156px;height:156px}
 .facts{margin-top:47.1px;list-style:none}
 .facts li{font-size:23.2px;letter-spacing:calc(-0.026em + 0.08px);line-height:44.2px;color:var(--ink-2);white-space:nowrap}
 .facts li[hidden]{display:none}
-.calls{margin-top:15.9px;width:472px;border:1px solid var(--tbl-line);border-radius:7px;border-collapse:separate;border-spacing:0;overflow:hidden}
-.calls td{height:49px;font-size:22.26px;letter-spacing:calc(-0.026em - 0.05px);color:var(--ink-2);white-space:nowrap;vertical-align:middle}
-.calls tr + tr td{border-top:1px solid var(--tbl-line)}
-.calls td:first-child{width:350px;padding-left:19.5px;border-right:1px solid var(--tbl-line)}
-.calls td:last-child{padding-left:21px}
+/* one row per model call (time · why · seconds · cents), its model and source on a small line below, a total last */
+.calls{margin-top:15.9px;width:474px;table-layout:fixed;border:1px solid var(--tbl-line);border-radius:7px;border-collapse:separate;border-spacing:0;overflow:hidden}
+.calls td{font-size:16px;letter-spacing:-0.01em;color:var(--ink-2);white-space:nowrap;vertical-align:middle;padding:0 10px;overflow:hidden;text-overflow:ellipsis}
+.calls tr.call td{height:31px;padding-top:5px;font-variant-numeric:tabular-nums}
+.calls tr.call + tr.call-meta td{height:24px;padding:0 10px 5px 14px;font-size:13.5px;color:var(--muted-2)}
+.calls tr.call:not(:first-child) td,.calls tr.call-total td{border-top:1px solid var(--tbl-line)}
+.calls td.c-time{width:118px;padding-left:14px;color:var(--muted)}
+.calls td.c-what{width:204px}
+.calls td.c-sec{width:58px;text-align:right;color:var(--muted)}
+.calls td.c-cost{width:94px;text-align:right;padding-right:14px}
+.calls tr.call-total td{height:38px;font-weight:650;color:var(--ink);padding-left:14px;font-variant-numeric:tabular-nums}
+.calls tr.call-total td.c-cost{padding-left:0}
 .risk{margin-top:25px;min-height:144px;padding:22.5px 16px 18px 23.5px}
 .risk[hidden]{display:none}
 .risk h2{font-size:33.3px;letter-spacing:calc(-0.026em - 0.19px);line-height:40px;font-weight:750;color:var(--ink);white-space:nowrap}

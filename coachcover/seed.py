@@ -241,7 +241,9 @@ PRESCHOOL_GROUPS = {
 PRIVATE_LESSON_USD = 50  # one private lesson (30 min): price from the founder's coaching practice; = the preset's
 #                          money.private_lesson_price (a test checks they match)
 PRIVATE_MINUTES = 30
-HERO_PRIVATE = "L-1109-P001"  # Marina's Monday 17:00 private lesson: the second case of her call-out (she is out all day)
+# Marina's Monday 17:00 private lesson: the second case of her 08:40 call-out (she is out all day); in the private-lesson
+# scenes her midday note opens it alone (her 09:30 lesson is over by then)
+HERO_PRIVATE = "L-1109-P001"
 # Marina's own private lessons: (weekday, start, child, age, level, family language). Lily on Monday 17:00 is the story;
 # Tuesday 17:00 is taken too, so the nearest free time at the same hour, if Lily's family says no to another coach,
 # is Wednesday 17:00.

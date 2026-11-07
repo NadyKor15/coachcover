@@ -106,8 +106,17 @@ Industry words (swim, pool, lifeguard, WSI...) are allowed only in presets and t
 - A private lesson is never a merge partner or a move target of a ratio plan; the morning money card leaves it out
   (Today shows its own card when the screen's case is a private lesson).
 - API: `GET /api/client/{Q-n}` (the family's page), `POST /api/client/{Q-n}/respond {"accept"}` (409 once closed). Judge
-  scenarios `private_lesson` (the family says yes at 08:46) and `private_declined` (no at 08:44:30 → Wed 17:00 with Marina,
-  yes at 08:46). MCP: `get_case` shows `family_questions`; `answer_for_family` is always refused.
+  scenarios `private_lesson` and `private_declined` play Marina's own midday note (`tests/fixtures/audio/ru-callout-private-1700.ogg`,
+  `say -v Milena`: "…Я заболела, в пять не смогу провести индивидуальное занятие с Лили…", prepared answers
+  `synthetic-*-ru-private-1700.json`) at 12:10:10: her 09:30 lesson is over, so the whole-day rule opens one case, the 17:00
+  private lesson (C-1109-01). Chloe says yes 12:12, the family is asked (answer by 12:42); `private_lesson`: yes at 12:16;
+  `private_declined`: no at 12:14:30 → Wed 17:00 with Marina, yes at 12:16. The morning scenarios keep the 08:40 note (two
+  cases). Web fixtures of these scenes: `cases/C-1109-01.private_*.json`, `offers/<Chloe's>.private_lesson.json`
+  (`&mock=private_lesson|private_declined`; Today's links add it after a judge run of that scene). MCP: `get_case` shows
+  `family_questions`; `answer_for_family` is always refused.
+- Case page Proof: one row per model call (`model_calls[]`: `time_label` "08:40:10 ET", `purpose_label`, `seconds_label`,
+  `cost_label` in cents rounded so the rows add up to `model_cost_label`, `shared_label` "shared by 2 cases" for a
+  call-out's call, `source_label` live / recorded / prepared) and a total `model_calls_total_label` = the Models line.
 
 ## API
 

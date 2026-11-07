@@ -420,7 +420,13 @@
       "input_tokens": null,
       "output_tokens": null,
       "cost_usd": 5.15e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-transcribe-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
+      "source": "recorded answer tests/fixtures/models/synthetic-transcribe-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases",
+      "time_label": "08:40:10 ET",
+      "purpose_label": "Voice note to text",
+      "seconds_label": "1.1 s",
+      "shared_label": "shared by 2 cases",
+      "source_label": "prepared",
+      "cost_label": "0.005¢"
     },
     {
       "at": "2026-11-09T13:40:10Z",
@@ -431,7 +437,13 @@
       "input_tokens": 480,
       "output_tokens": 5,
       "cost_usd": 1.25e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-filter-voice-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
+      "source": "recorded answer tests/fixtures/models/synthetic-filter-voice-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases",
+      "time_label": "08:40:10 ET",
+      "purpose_label": "Message check",
+      "seconds_label": "0.6 s",
+      "shared_label": "shared by 2 cases",
+      "source_label": "prepared",
+      "cost_label": "0.001¢"
     },
     {
       "at": "2026-11-09T13:40:10Z",
@@ -442,7 +454,13 @@
       "input_tokens": 445,
       "output_tokens": 60,
       "cost_usd": 8.55e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-extract-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
+      "source": "recorded answer tests/fixtures/models/synthetic-extract-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases",
+      "time_label": "08:40:10 ET",
+      "purpose_label": "Read the call-out",
+      "seconds_label": "1.4 s",
+      "shared_label": "shared by 2 cases",
+      "source_label": "prepared",
+      "cost_label": "0.009¢"
     },
     {
       "at": "2026-11-09T13:40:10Z",
@@ -453,7 +471,13 @@
       "input_tokens": 140,
       "output_tokens": 36,
       "cost_usd": 3.55e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-translate-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
+      "source": "recorded answer tests/fixtures/models/synthetic-translate-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases",
+      "time_label": "08:40:10 ET",
+      "purpose_label": "Translate to English",
+      "seconds_label": "0.9 s",
+      "shared_label": "shared by 2 cases",
+      "source_label": "prepared",
+      "cost_label": "0.004¢"
     },
     {
       "at": "2026-11-09T13:40:50Z",
@@ -464,11 +488,18 @@
       "input_tokens": 481,
       "output_tokens": 5,
       "cost_usd": 2.5e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-filter-anna-wsi-en.json (synthetic)"
+      "source": "recorded answer tests/fixtures/models/synthetic-filter-anna-wsi-en.json (synthetic)",
+      "time_label": "08:40:50 ET",
+      "purpose_label": "Message check",
+      "seconds_label": "0.7 s",
+      "shared_label": null,
+      "source_label": "prepared",
+      "cost_label": "0.002¢"
     }
   ],
   "model_cost_usd": 0.00021,
   "model_cost_label": "0.021¢",
+  "model_calls_total_label": "5 calls · 0.021¢",
   "risk": {
     "kids": 8,
     "private": false,

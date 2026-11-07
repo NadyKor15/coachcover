@@ -1,0 +1,26 @@
+{
+ "purpose": "screen_message",
+ "model": "nemotron-3.5-content-safety",
+ "input": {
+  "text": "Привет, это Марина. Я заболела, в 5 не смогу провести индивидуальное занятие с Лили. Простите."
+ },
+ "input_sha256": "df103272f131c3318c6d64d98ef815710efc9c425c25f238c7edd870be36caee",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: the filter's own answer format (as in model check no. 2) for the transcript of ru-callout-private-1700.ogg; to be recorded live on Vultr",
+ "duration_ms": 580,
+ "response": {
+  "model": "nemotron-3.5-content-safety",
+  "usage": {
+   "prompt_tokens": 470,
+   "completion_tokens": 5
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "User Safety: safe"
+    }
+   }
+  ]
+ }
+}

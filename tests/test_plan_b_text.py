@@ -155,3 +155,34 @@ def test_a_line_without_a_verb_is_not_shown():
     text, source = p._plan_text(facts(options), datetime(2026, 11, 9, 8, 47, tzinfo=NY), 1)
     assert source == "template" and text["lines"][0] == "Camila Herrera works 15 minutes of overtime ($8.50)."
     assert text["model_text_rejected"] == ["line 1: does not say what happens (overtime)"]
+
+
+def test_the_today_strip_glues_plan_lines_without_their_end_periods():
+    """Live, 2026-11-07: "Liam Foster (reserve) steps in. · Camila Herrera works 15 minutes of overtime ($8.50). · Move
+    the lesson…". Glued into one strip, a line loses its own end period; money and other dots inside stay."""
+    from coachcover.screens import _glued
+
+    lines = ["Liam Foster (reserve) steps in.", "Camila Herrera works 15 minutes of overtime ($8.50).",
+             "Move the lesson: 8 families book a makeup by Dec 9. ", "Cancel it: 8 families get a credit"]
+    assert _glued(lines) == ("Liam Foster (reserve) steps in · Camila Herrera works 15 minutes of overtime ($8.50) · "
+                             "Move the lesson: 8 families book a makeup by Dec 9 · Cancel it: 8 families get a credit")
+    assert _glued([]) == "" and _glued(["", "  "]) == ""
+
+
+def test_the_plan_reads_without_dot_bullets_on_today_and_the_case_page_but_keeps_its_sentences(new_database):
+    """nobody_accepts on its prepared answers: the proposed plan's lines are sentences with periods. Today's strip and
+    the case page glue them with " · " and never show ". ·"; the stored plan (the case file) keeps every sentence."""
+    from coachcover.demo import run_scenario
+    from coachcover.screens import case_page, today
+
+    conn = new_database()
+    result = run_scenario(conn, ModelClient(DbLedger(conn), mode="replay"), "nobody_accepts")
+    stored = conn.execute("SELECT snapshot->'text'->'lines' FROM plan_b WHERE status = 'proposed'").fetchone()[0]
+    assert len(stored) >= 2 and all(line.endswith(".") for line in stored)  # the full text keeps its periods
+    strip = today(conn, seed.POLICY_ID, result["ended_at"], None, live=False)["plan_b"]["text"]
+    assert ". ·" not in strip and not strip.endswith(".") and strip.count(" · ") == len(stored) - 1
+    assert "$8.50" in strip  # a dot inside a line stays
+    case = conn.execute("SELECT id FROM cover_case WHERE code = %s", (result["case_id"],)).fetchone()[0]
+    page = case_page(conn, seed.POLICY_ID, case, False)
+    shown = [s["summary"] for s in page["steps"] if s["kind"] == "plan_b"]
+    assert shown and all(". ·" not in s and not s.endswith(".") for s in shown)

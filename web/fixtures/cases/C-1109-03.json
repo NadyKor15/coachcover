@@ -356,7 +356,7 @@
           "staff": "Grace Sullivan",
           "result": "pending",
           "result_label": "asked, waiting",
-          "why_first": "Grace first: 5.25 h this week, Level 1 (beginner), same pool"
+          "why_first": "Grace first: 5 h 15 min this week, Level 1 (beginner), same pool"
         },
         {
           "id": "O-8",
@@ -364,7 +364,7 @@
           "staff": "Diego Navarro",
           "result": "pending",
           "result_label": "asked, waiting",
-          "why_first": "Diego second: 5.75 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
+          "why_first": "Diego second: 5 h 45 min this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
         },
         {
           "id": "O-9",
@@ -385,6 +385,7 @@
   "model_calls": [],
   "model_cost_usd": 0.0,
   "model_cost_label": "0.0000¢",
+  "model_calls_total_label": "0 calls · 0.0000¢",
   "risk": {
     "kids": 6,
     "private": false,
