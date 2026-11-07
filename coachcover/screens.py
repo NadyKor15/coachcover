@@ -100,10 +100,10 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
         until = date.fromisoformat(params["expires_on"])
         return f"Valid until {until:%b %Y} — REVOKED by issuer on {_day(params['revoked_on'])} ({REGISTRY_NOTE})"
     if code == "REST_TOO_SHORT":
-        hours = f"{params['rest_hours']:g}"
+        hours = hours_words(params["rest_hours"], rounding="down")  # "Only 9 h 30 min rest since 21:00"
         if params.get("side") == "after":
-            return f"Only {hours} h rest before {_short_clock(params['until'], tz)}"
-        return f"Only {hours} h rest since {_short_clock(params['since'], tz)}"
+            return f"Only {hours} rest before {_short_clock(params['until'], tz)}"
+        return f"Only {hours} rest since {_short_clock(params['since'], tz)}"
     if code == "RATIO_EXCEEDED":
         return f"Over the 1:{params['max_per_instructor']} norm"
     if code == "IS_THE_ABSENT_PERSON":

@@ -13,7 +13,8 @@ from coachcover.mcp_server import allowed
 from coachcover.models import DbLedger, ModelClient
 from coachcover.reasons_text import describe, hours_words
 from coachcover.rules import Code, Reason
-from coachcover.screens import offer_phone, today
+from coachcover.presets import default_policy
+from coachcover.screens import offer_phone, reason_label, today
 from tests.test_network_loan_scenario import api  # noqa: F401  (the API with both agents in-process)
 
 DECIMAL_HOURS = re.compile(r"\b\d+\.\d+ ?(h|ч)\b")
@@ -23,8 +24,10 @@ def test_hours_words():
     assert [hours_words(x) for x in (6, 6.0, 5.75, 1.75, 0.5, 0, 41.25, 40)] == \
         ["6 h", "6 h", "5 h 45 min", "1 h 45 min", "30 min", "0 h", "41 h 15 min", "40 h"]
     assert [hours_words(x, "ru") for x in (6, 5.75, 0.25)] == ["6 ч", "5 ч 45 мин", "15 мин"]
-    assert hours_words(40 + 10 / 3600, up=True) == "40 h 1 min" and hours_words(40 + 10 / 3600) == "40 h"
-    assert hours_words(40.5, up=True) == "40 h 30 min" and hours_words(40, up=True) == "40 h"
+    assert hours_words(40 + 10 / 3600, rounding="up") == "40 h 1 min" and hours_words(40 + 10 / 3600) == "40 h"
+    assert hours_words(40.5, rounding="up") == "40 h 30 min" and hours_words(40, rounding="up") == "40 h"
+    assert hours_words(9.99, rounding="down") == "9 h 59 min" and hours_words(9.99) == "9 h 59 min"
+    assert hours_words(9 + 59.9 / 60, rounding="down") == "9 h 59 min" and hours_words(9 + 59.9 / 60) == "10 h"
     assert DECIMAL_HOURS.search("Chloe first: 5.75 h this week") and DECIMAL_HOURS.search("5.75 ч")  # the sweep can see it
 
 
@@ -89,3 +92,25 @@ def test_no_decimal_hours_in_any_text_a_person_reads(api):  # noqa: F811
             walk(f"{scenario} {label}", res.json())
     walk("mcp who_is_allowed", allowed(conn, seed.POLICY_ID, seed.HERO_PRIVATE))
     assert seen == [] and checked > 1000, (seen[:5], checked)
+
+
+def test_rest_reads_in_hours_and_minutes_and_never_reaches_the_minimum():
+    """Rest between days: "Only 9 h 30 min rest since 21:00" on the chip, "only 9 h 30 min of rest since 21:00 (needs
+    10 h)" in reports; rest short of the minimum by seconds still reads short of it."""
+    from zoneinfo import ZoneInfo
+
+    from coachcover.rules import _hours_down
+
+    preset, ny = default_policy("swim_school").preset, ZoneInfo("America/New_York")
+    half = {"side": "before", "rest_hours": 9.5, "min_rest_hours": 10, "since": "2026-11-08T21:00:00-05:00"}
+    assert reason_label("REST_TOO_SHORT", half, preset, None, ny) == "Only 9 h 30 min rest since 21:00"
+    after = {**half, "side": "after", "until": "2026-11-10T06:00:00-05:00"}
+    assert reason_label("REST_TOO_SHORT", after, preset, None, ny) == "Only 9 h 30 min rest before 6:00"
+    assert describe(Reason(Code.REST_TOO_SHORT, half), "en") == "only 9 h 30 min of rest since 21:00 (needs 10 h)"
+    assert describe(Reason(Code.REST_TOO_SHORT, half), "ru") == "отдых только 9 ч 30 мин после 21:00 (нужно 10 ч)"
+    assert describe(Reason(Code.REST_TOO_SHORT, after), "en") == "only 9 h 30 min of rest before 06:00 (needs 10 h)"
+    almost = {**half, "rest_hours": _hours_down(10 * 3600 - 10)}  # ten seconds short of 10 h: still blocked
+    assert almost["rest_hours"] < 10
+    assert reason_label("REST_TOO_SHORT", almost, preset, None, ny) == "Only 9 h 59 min rest since 21:00"
+    assert describe(Reason(Code.REST_TOO_SHORT, almost), "en").startswith("only 9 h 59 min of rest")
+    assert not DECIMAL_HOURS.search(reason_label("REST_TOO_SHORT", half, preset, None, ny))

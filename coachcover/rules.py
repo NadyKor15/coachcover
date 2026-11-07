@@ -146,6 +146,11 @@ def _hours_up(seconds: int) -> float:
     return math.ceil(seconds / 36) / 100
 
 
+def _hours_down(seconds: int) -> float:
+    """Hours rounded down to 0.01, so rest short of the minimum never prints as the minimum."""
+    return math.floor(seconds / 36) / 100
+
+
 def _merged(intervals: Iterable[tuple[datetime, datetime]]) -> list[tuple[datetime, datetime]]:
     out: list[tuple[datetime, datetime]] = []
     for a, b in sorted(intervals):
@@ -422,7 +427,7 @@ def _check_rest(own: Sequence[Commitment], shift: Shift, tz: ZoneInfo, preset: P
         gap = start - _utc(c.end)
         if gap < need:
             reasons.append(Reason(Code.REST_TOO_SHORT, {
-                "side": "before", "rest_hours": _hours(int(gap.total_seconds())), "min_rest_hours": preset.min_rest_hours,
+                "side": "before", "rest_hours": _hours_down(int(gap.total_seconds())), "min_rest_hours": preset.min_rest_hours,
                 "since": c.end.astimezone(tz).isoformat(), "kind": c.kind, "ref": c.ref,
             }))
     after = [c for c in own if _local_day(c.start, tz) > day and _utc(c.start) >= end]
@@ -431,7 +436,7 @@ def _check_rest(own: Sequence[Commitment], shift: Shift, tz: ZoneInfo, preset: P
         gap = _utc(c.start) - end
         if gap < need:
             reasons.append(Reason(Code.REST_TOO_SHORT, {
-                "side": "after", "rest_hours": _hours(int(gap.total_seconds())), "min_rest_hours": preset.min_rest_hours,
+                "side": "after", "rest_hours": _hours_down(int(gap.total_seconds())), "min_rest_hours": preset.min_rest_hours,
                 "until": c.start.astimezone(tz).isoformat(), "kind": c.kind, "ref": c.ref,
             }))
     return reasons

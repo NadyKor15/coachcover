@@ -31,18 +31,18 @@
   "candidate": null,
   "approvals": 0,
   "approvals_needed": 2,
-  "created_at": "2026-11-09T13:43:30.104Z",
-  "closed_at": "2026-11-09T13:43:36.104Z",
+  "created_at": "2026-11-09T13:43:30.052Z",
+  "closed_at": "2026-11-09T13:43:36.052Z",
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "902334dd-4ef2-4bc4-af25-2f6138b52b4c",
-    "task_id": "64366e54-f750-4802-a6b8-63aca44e6f50",
+    "context_id": "0e8a0f62-2ca2-4fe2-99f8-70babbbe15a3",
+    "task_id": "676c4194-9929-4aef-98e6-72704acee9c4",
     "task_state": "TASK_STATE_REJECTED"
   },
   "steps": [
     {
       "seq": 1,
-      "at": "2026-11-09T13:43:30.104Z",
+      "at": "2026-11-09T13:43:30.052Z",
       "at_label": "08:43:30 ET",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -63,7 +63,7 @@
     },
     {
       "seq": 2,
-      "at": "2026-11-09T13:43:30.104Z",
+      "at": "2026-11-09T13:43:30.052Z",
       "at_label": "08:43:30 ET",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -81,7 +81,7 @@
     },
     {
       "seq": 3,
-      "at": "2026-11-09T13:43:31.104Z",
+      "at": "2026-11-09T13:43:31.052Z",
       "at_label": "08:43:31 ET",
       "venue_id": "N1",
       "venue": "Northside",
@@ -121,7 +121,7 @@
     },
     {
       "seq": 4,
-      "at": "2026-11-09T13:43:31.104Z",
+      "at": "2026-11-09T13:43:31.052Z",
       "at_label": "08:43:31 ET",
       "venue_id": "N1",
       "venue": "Northside",
@@ -155,7 +155,7 @@
     },
     {
       "seq": 5,
-      "at": "2026-11-09T13:43:32.104Z",
+      "at": "2026-11-09T13:43:32.052Z",
       "at_label": "08:43:32 ET",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -178,7 +178,7 @@
     },
     {
       "seq": 6,
-      "at": "2026-11-09T13:43:33.104Z",
+      "at": "2026-11-09T13:43:33.052Z",
       "at_label": "08:43:33 ET",
       "venue_id": "N1",
       "venue": "Northside",
@@ -196,7 +196,7 @@
     },
     {
       "seq": 7,
-      "at": "2026-11-09T13:43:34.104Z",
+      "at": "2026-11-09T13:43:34.052Z",
       "at_label": "08:43:34 ET",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -216,7 +216,7 @@
     },
     {
       "seq": 8,
-      "at": "2026-11-09T13:43:35.104Z",
+      "at": "2026-11-09T13:43:35.052Z",
       "at_label": "08:43:35 ET",
       "venue_id": "N1",
       "venue": "Northside",
@@ -258,7 +258,7 @@
     },
     {
       "seq": 9,
-      "at": "2026-11-09T13:43:35.104Z",
+      "at": "2026-11-09T13:43:35.052Z",
       "at_label": "08:43:35 ET",
       "venue_id": "N1",
       "venue": "Northside",
@@ -289,7 +289,7 @@
     },
     {
       "seq": 10,
-      "at": "2026-11-09T13:43:36.104Z",
+      "at": "2026-11-09T13:43:36.052Z",
       "at_label": "08:43:36 ET",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -307,7 +307,7 @@
     },
     {
       "seq": 11,
-      "at": "2026-11-09T13:43:36.104Z",
+      "at": "2026-11-09T13:43:36.052Z",
       "at_label": "08:43:36 ET",
       "venue_id": "V1",
       "venue": "Riverside",

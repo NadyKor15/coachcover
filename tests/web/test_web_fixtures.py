@@ -129,7 +129,7 @@ def test_morning_story():
     codes = {r["code"]: r["label"] for r in e["reasons"]}
     assert "REVOKED by issuer" in codes["CERT_REVOKED"] and "(simulated registry)" in codes["CERT_REVOKED"]
     if "REST_TOO_SHORT" in codes:  # the 09:30 morning has nobody short of rest; the label shape still holds when it does
-        assert re.match(r"Only \d+(\.\d+)? h rest since \d+:\d\d$", codes["REST_TOO_SHORT"])
+        assert re.match(r"Only (\d+ h|\d+ h \d+ min|\d+ min) rest since \d+:\d\d$", codes["REST_TOO_SHORT"])
     assert d["ratio_alert"] is None and d["night_check"] is None
 
 

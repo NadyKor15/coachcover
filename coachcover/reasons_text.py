@@ -34,8 +34,8 @@ TEMPLATES: dict[str, dict[str, str]] = {
         Code.PROGRAM_RENEWAL_OVERDUE: "{program} renewal was due on {due_on}",
         Code.HOURS_LIMIT_EXCEEDED: "would have {hours_after} in the week of {week_start} (limit {limit_hours})",
         Code.OVERLAPS_COMMITMENT: "already booked {start}-{end}",
-        Code.REST_TOO_SHORT: "only {rest_hours} h of rest since {since} (needs {min_rest_hours} h)",
-        "REST_TOO_SHORT_AFTER": "only {rest_hours} h of rest before {until} (needs {min_rest_hours} h)",
+        Code.REST_TOO_SHORT: "only {rest_hours} of rest since {since} (needs {min_rest_hours})",
+        "REST_TOO_SHORT_AFTER": "only {rest_hours} of rest before {until} (needs {min_rest_hours})",
         Code.RATIO_EXCEEDED: "{participants} participants for {instructors} instructor(s), the limit is {capacity}",
     },
     "ru": {
@@ -55,8 +55,8 @@ TEMPLATES: dict[str, dict[str, str]] = {
         Code.PROGRAM_RENEWAL_OVERDUE: "обновление программы {program} просрочено с {due_on}",
         Code.HOURS_LIMIT_EXCEEDED: "будет {hours_after} за неделю с {week_start} (лимит {limit_hours})",
         Code.OVERLAPS_COMMITMENT: "уже занят {start}–{end}",
-        Code.REST_TOO_SHORT: "отдых только {rest_hours} ч после {since} (нужно {min_rest_hours} ч)",
-        "REST_TOO_SHORT_AFTER": "отдых только {rest_hours} ч до {until} (нужно {min_rest_hours} ч)",
+        Code.REST_TOO_SHORT: "отдых только {rest_hours} после {since} (нужно {min_rest_hours})",
+        "REST_TOO_SHORT_AFTER": "отдых только {rest_hours} до {until} (нужно {min_rest_hours})",
         Code.RATIO_EXCEEDED: "{participants} участников на {instructors} инстр., норма {capacity}",
     },
 }
@@ -77,11 +77,13 @@ def _number(value: object) -> str:
     return str(value)
 
 
-def hours_words(value: object, lang: str = "en", up: bool = False) -> str:
-    """Hours of a week for people, never as a fraction: 6 -> "6 h", 5.75 -> "5 h 45 min", 0.5 -> "30 min", 0 -> "0 h"
-    (ru: "5 ч 45 мин"). `up` rounds up to the minute: ten seconds over a 40 h limit read "40 h 1 min", not "40 h"."""
+def hours_words(value: object, lang: str = "en", rounding: str = "nearest") -> str:
+    """Hours for people, never as a fraction: 6 -> "6 h", 5.75 -> "5 h 45 min", 0.5 -> "30 min", 0 -> "0 h" (ru: "5 ч
+    45 мин"). To the minute: "up" for hours over a limit (ten seconds over 40 h read "40 h 1 min", not "40 h"), "down"
+    for rest short of a minimum (9 h 59 min 50 s of rest read "9 h 59 min", not "10 h")."""
     minutes = round(float(value) * 60, 6)
-    h, m = divmod(math.ceil(minutes) if up else round(minutes), 60)
+    whole = {"up": math.ceil, "down": math.floor, "nearest": round}[rounding](minutes)
+    h, m = divmod(int(whole), 60)
     hours, minutes = ("ч", "мин") if lang == "ru" else ("h", "min")
     if m == 0:
         return f"{h} {hours}"
@@ -115,12 +117,11 @@ def describe(reason: Reason, lang: str = "en", preset: Preset | None = None) -> 
     for name in ("start", "end", "since", "until"):
         if name in params:
             params[name] = _time_text(params[name])
-    for name in ("hours_after", "limit_hours"):  # hours of the week: "41 h 15 min", never "41.25"
+    # hours in hours and minutes, never "41.25": over a limit reads over it, rest short of the minimum reads short
+    for name, rounding in (("hours_after", "up"), ("limit_hours", "nearest"), ("rest_hours", "down"),
+                           ("min_rest_hours", "nearest")):
         if name in params:
-            params[name] = hours_words(params[name], lang, up=name == "hours_after")  # over the limit reads over it
-    for name in ("rest_hours", "min_rest_hours"):
-        if name in params:
-            params[name] = _number(params[name])
+            params[name] = hours_words(params[name], lang, rounding)
     return TEMPLATES[lang][key].format(**params)
 
 
