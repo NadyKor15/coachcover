@@ -288,6 +288,161 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('P2 live: 409 reason from the server', await text(p, '#result') === 'You are no longer eligible for this shift: WSI certificate expired Nov 5');
     await p.close();
 
+    /* ---------- the family's page of a private lesson ---------- */
+    const cfx = name => fx('clients/' + name + '.json');
+    const q1 = cfx('Q-1'), q1yes = cfx('Q-1.covered'), q1no = cfx('Q-1.no'), q2 = cfx('Q-2'), q2moved = cfx('Q-2.moved'),
+      q2credit = cfx('Q-2.credit'), q1moved = cfx('Q-1.moved'), q1credit = cfx('Q-1.credit'), cmocks = cfx('mocks');
+    const first = s => String(s).split(' ')[0];
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const sides = page => page.$$eval('[data-slot="message"]', es => es.map(e => e.dataset.from).join(','));
+    const fromOf = q => q.thread.map(m => m.from).join(',');
+    const creditLine = q => q.child + "'s lesson is cancelled. You have " + q.outcome.line.charAt(0).toLowerCase() + q.outcome.line.slice(1) + '.';
+    // the page never names a question, an offer or a staff member by id
+    const noIds = page => page.evaluate(() => !/\bQ-\d|\bO-\d|\bS[01]\d\b/.test(document.body.innerText));
+    // every visible box stays inside the 430 px phone, nothing in the card sticks out of it, no block text is cut
+    const overflow = page => page.evaluate(() => {
+      const card = document.querySelector('.card').getBoundingClientRect();
+      const bad = [...document.querySelectorAll('body *')].filter(e => {
+        if (!e.getClientRects().length) return false;
+        const r = e.getBoundingClientRect();
+        const block = getComputedStyle(e).display !== 'inline';
+        return r.right > 430.5 || r.left < -0.5 || (block && e.scrollWidth > e.clientWidth + 1) ||
+          (e.closest('.card') && (r.right > card.right + 0.5 || r.bottom > card.bottom + 0.5));
+      });
+      return bad.map(e => e.tagName + '.' + (typeof e.className === 'string' ? e.className : '') + ': ' + e.textContent.trim().slice(0, 30))
+        .concat(document.documentElement.scrollWidth > 430 ? ['the page scrolls sideways'] : []);
+    });
+
+    p = await newPage(browser, 430, 1080);
+    await p.goto(base + 'client.html?id=Q-1&fixture=1');
+    await ready(p);
+    check('family: the open question from data', await text(p, '[data-slot="question"]') === q1.question, await text(p, '[data-slot="question"]'));
+    check('family: signed as the parent of the child, never by name', await text(p, '[data-slot="signed"]') === q1.signed && q1.signed === 'Parent of ' + q1.child);
+    check('family: when, where, lesson, instead of whom', JSON.stringify(await texts(p, '.fact:not([hidden]) .fact-text')) ===
+      JSON.stringify([cap(q1.day_label) + ' · ' + q1.time_label, q1.venue, q1.lesson, 'Instead of ' + q1.instead_of]), await texts(p, '.fact:not([hidden]) .fact-text'));
+    check('family: Yes and No while the question is open', await visible(p, '#buttons') && JSON.stringify(await texts(p, '[data-action]')) === '["Yes","No"]');
+    check('family: answer-by time from data', await text(p, '#answerBy') === 'Please answer by ' + q1.answer_by_label);
+    check('family: the thread so far', await sides(p) === fromOf(q1) &&
+      JSON.stringify(await texts(p, '[data-slot="message-text"]')) === JSON.stringify(q1.thread.map(m => m.text)));
+    check('family: sent for the manager', await text(p, '.sent-by') === 'Sent by CoachCover for ' + q1.manager.name + ', ' + q1.manager.role);
+    check('family asked: no ids on the page', await noIds(p));
+    check('family asked: nothing overflows', (await overflow(p)).length === 0, await overflow(p));
+    await shot(p, 'client-fixture-asked.png');
+    await p.click('[data-action="yes"]');
+    await p.waitForSelector('#result:not([hidden])');
+    check('family yes: the line from the API names the coach', await text(p, '#result') === 'Thank you! ' + q1yes.outcome.line + '.' &&
+      (await text(p, '#result')).includes(first(q1yes.coach)), await text(p, '#result'));
+    check('family yes: ok tone, no buttons, no answer-by', await p.$eval('#result', r => r.classList.contains('ok')) && !(await visible(p, '#buttons')) && !(await visible(p, '#answerBy')));
+    check('family yes: the thread has the answer and the reply', await sides(p) === fromOf(q1yes) &&
+      JSON.stringify(await texts(p, '[data-slot="message-time"]')) === JSON.stringify(q1yes.thread.map(m => (m.from === 'family' ? 'You · ' : '') + m.time_label)));
+    check('family yes: nothing overflows', (await overflow(p)).length === 0, await overflow(p));
+    check('family yes: no console errors', p._errors.length === 0, p._errors);
+    await shot(p, 'client-fixture-yes.png');
+    await p.close();
+
+    /* "no" to another coach: the page moves to the new time with the family's own coach, then yes */
+    p = await newPage(browser, 430, 1080);
+    await p.goto(base + 'client.html?id=Q-1&fixture=1');
+    await ready(p);
+    await p.click('[data-action="no"]');
+    await p.waitForFunction(t => document.querySelector('[data-slot="question"]').textContent === t, q2.question);
+    check('family no: the follow-up question opens (the API names it in current)', q1no.state === 'no' && q1no.current === q2.ask_id && q2.kind === 'reschedule' &&
+      await text(p, '[data-slot="question"]') === q2.question);
+    check('family no: a note above points to the new time', await visible(p, '#notice') &&
+      await text(p, '#notice') === 'Got it. ' + q2.child + ' stays with ' + first(q2.coach) + ' — see the new time below.', await text(p, '#notice'));
+    check('family no: the new time from data, no "instead of"', JSON.stringify(await texts(p, '.fact:not([hidden]) .fact-text')) ===
+      JSON.stringify([cap(q2.day_label) + ' · ' + q2.time_label, q2.venue, q2.lesson]), await texts(p, '.fact:not([hidden]) .fact-text'));
+    check('family no: Yes and No again, answer-by from data', await visible(p, '#buttons') && !(await visible(p, '#result')) &&
+      await text(p, '#answerBy') === 'Please answer by ' + q2.answer_by_label);
+    check('family no: the thread keeps the whole story', await sides(p) === fromOf(q2));
+    check('family no: no ids on the page', await noIds(p));
+    check('family no: nothing overflows', (await overflow(p)).length === 0, await overflow(p));
+    await shot(p, 'client-fixture-follow-up.png');
+    await p.click('[data-action="yes"]');
+    await p.waitForSelector('#result:not([hidden])');
+    check('family new time yes: moved, line from the API', await text(p, '#result') === 'All set. ' + q2moved.outcome.line + '.' &&
+      await p.$eval('#result', r => r.classList.contains('ok')), await text(p, '#result'));
+    check('family new time yes: the note goes, the thread is complete', !(await visible(p, '#notice')) && await sides(p) === fromOf(q2moved) && !(await visible(p, '#buttons')));
+    check('family new time yes: no ids, nothing overflows', await noIds(p) && (await overflow(p)).length === 0, await overflow(p));
+    check('family no then yes: no console errors', p._errors.length === 0, p._errors);
+    await shot(p, 'client-fixture-moved.png');
+    await p.close();
+
+    /* "no" twice: a credit for one lesson */
+    p = await newPage(browser, 430, 1080);
+    await p.goto(base + 'client.html?id=Q-1&fixture=1');
+    await ready(p);
+    await p.click('[data-action="no"]');
+    await p.waitForSelector('#notice:not([hidden])');
+    await p.click('[data-action="no"]');
+    await p.waitForSelector('#result:not([hidden])');
+    check('family second no: a credit, line from the API', await text(p, '#result') === creditLine(q2credit) && await p.$eval('#result', r => r.classList.contains('neutral')), await text(p, '#result'));
+    check('family second no: the cancellation is the last message', (await texts(p, '[data-slot="message-text"]')).pop() === q2credit.thread[q2credit.thread.length - 1].text);
+    await p.close();
+
+    /* opened after the last answer: final state, no buttons */
+    for (const [mock, q, line, tone, name] of [['client_credit', q1credit, creditLine(q1credit), 'neutral', 'credit'],
+      ['client_declined', q1moved, 'All set. ' + q1moved.outcome.line + '.', 'ok', 'moved-final']]) {
+      p = await newPage(browser, 430, 1080);
+      await p.goto(base + 'client.html?id=Q-1&fixture=1&mock=' + mock);
+      await ready(p);
+      check('family ' + mock + ': no buttons, the outcome line', !(await visible(p, '#buttons')) && !(await visible(p, '#answerBy')) &&
+        await text(p, '#result') === line && await p.$eval('#result', (r, t) => r.classList.contains(t), tone), await text(p, '#result'));
+      check('family ' + mock + ': the whole thread', await sides(p) === fromOf(q));
+      check('family ' + mock + ': no ids, nothing overflows', await noIds(p) && (await overflow(p)).length === 0, await overflow(p));
+      check('family ' + mock + ': no console errors', p._errors.length === 0, p._errors);
+      await shot(p, 'client-fixture-' + name + '.png');
+      await p.close();
+    }
+
+    /* 409: the family already answered by text; the page says so and loads the question again */
+    p = await newPage(browser, 430, 1080);
+    await p.goto(base + 'client.html?id=Q-1&fixture=1&mock=client_closed');
+    await ready(p);
+    check('family 409: the question looks open at first', await visible(p, '#buttons'));
+    await p.click('[data-action="yes"]');
+    await p.waitForSelector('#result:not([hidden])');
+    check('family 409: "already closed", calm tone, no buttons', await text(p, '#result') === 'This question is already closed.' &&
+      await p.$eval('#result', r => r.classList.contains('neutral')) && !(await visible(p, '#buttons')), await text(p, '#result'));
+    check('family 409: loaded again, the thread shows the answer given', await sides(p) === fromOf(q1yes));
+    check('family 409 mock: the API\'s refusal', cmocks.closed.body.reason.startsWith('Thanks — this question was already closed'));
+    check('family 409: no ids, nothing overflows', await noIds(p) && (await overflow(p)).length === 0, await overflow(p));
+    await shot(p, 'client-fixture-closed-409.png');
+    await p.close();
+
+    /* live wiring: the answer body, the follow-up GET, a 500 keeps the buttons */
+    p = await newPage(browser, 430, 1080);
+    let respondBody = null;
+    await p.route('**/api/client/Q-1', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(q1) }));
+    await p.route('**/api/client/Q-1/respond', r => { respondBody = r.request().postDataJSON(); r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(q1no) }); });
+    await p.route('**/api/client/Q-2', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(q2) }));
+    await p.route('**/api/client/Q-2/respond', r => r.fulfill({ status: 500, body: '' }));
+    await p.goto(base + 'client.html?id=Q-1');
+    await ready(p);
+    await p.click('[data-action="no"]');
+    await p.waitForFunction(t => document.querySelector('[data-slot="question"]').textContent === t, q2.question);
+    check('family live: No sends accept false, then the follow-up is loaded', respondBody && respondBody.accept === false, respondBody);
+    await p.click('[data-action="yes"]');
+    await p.waitForSelector('#loadErr:not([hidden])');
+    check('family live: 500 shown, buttons stay', (await text(p, '#loadErr')).includes('HTTP 500') && await visible(p, '#buttons') &&
+      !(await p.$eval('[data-action="yes"]', b => b.disabled)));
+    await p.close();
+
+    /* load errors in words a parent understands, still without ids */
+    p = await newPage(browser, 430, 1080);
+    await p.goto(base + 'client.html?fixture=1');
+    await p.waitForFunction(() => document.body.dataset.state === 'error');
+    check('family: no id -> a line about the link', (await text(p, '#loadErr')).startsWith('This link has no question in it.'));
+    await p.goto(base + 'client.html?id=Q-9&fixture=1');
+    await p.waitForFunction(() => document.body.dataset.state === 'error');
+    check('family: unknown question -> a line about the link, no id', (await text(p, '#loadErr')).startsWith('This link does not open a question') && await noIds(p));
+    // must-light: the id and overflow checks fail on a page that shows ids and a box wider than the phone
+    await p.goto(base + 'client.html?id=Q-1&fixture=1');
+    await ready(p);
+    await p.evaluate(() => { const d = document.createElement('div'); d.textContent = 'Q-1 · S07'; d.style.width = '480px'; document.querySelector('.card').appendChild(d); });
+    check('family checks can fail (ids and a too-wide box)', !(await noIds(p)) && (await overflow(p)).length > 0, await overflow(p));
+    await p.close();
+
     /* ---------- case page ---------- */
     p = await newPage(browser, 1920, 1080);
     await p.goto(base + 'case.html?id=' + caseId + '&fixture=1');
@@ -396,6 +551,31 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await p.waitForFunction(() => (document.querySelector('[data-slot="tip-result"]') || {}).textContent);
     check('week: Propose standby 409 -> the reason, button back', await text(p, '[data-slot="tip-result"]') === 'Not proposed — ' + wm.not_cleared.error &&
       !(await p.$eval('[data-slot="tip-action"]', b => b.disabled)));
+    await p.close();
+    /* week: a private lesson's cell carries a 1:1 tag (the API flag "private"); the fixture has none, so it is added here */
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'week.html?fixture=1');
+    await ready(p);
+    check('week: 1:1 tags only where the data says private', (await p.$$('[data-slot="private-tag"]')).length ===
+      week.days.flatMap(d => d.cells).filter(c => c.private).length);
+    const privPick = await p.$$eval('[data-slot="cell"][data-shift]', es => ['safe', 'fragile', 'risk']
+      .map(l => es.find(e => e.dataset.level === l)).filter(Boolean).map(e => e.dataset.shift));
+    const weekPriv = JSON.parse(JSON.stringify(week));
+    weekPriv.days.forEach(d => d.cells.forEach(c => { if (privPick.includes(c.shift_id)) c.private = true; }));
+    await p.route('**/fixtures/week.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(weekPriv) }));
+    await p.reload();
+    await ready(p);
+    const tagged = await p.$$eval('[data-slot="private-tag"]', es => es.map(e => ({ shift: e.closest('.cell').dataset.shift, txt: e.textContent })));
+    check('week: 1:1 tag on each private lesson cell (safe, fragile, at risk)', privPick.length === 3 && tagged.length === 3 &&
+      tagged.every(t => t.txt === '1:1' && privPick.includes(t.shift)), tagged);
+    check('week: the 1:1 tag sits inside its cell, clear of the number and the level', await p.$$eval('[data-slot="private-tag"]', es => es.every(e => {
+      const t = e.getBoundingClientRect(), c = e.closest('.cell'), cr = c.getBoundingClientRect();
+      return t.left >= cr.left && t.right <= cr.right && t.top >= cr.top && t.bottom <= cr.bottom &&
+        [...c.querySelectorAll('.num, .tag')].every(x => { const r = x.getBoundingClientRect(); return r.right <= t.left || r.left >= t.right || r.bottom <= t.top || r.top >= t.bottom; });
+    })));
+    check('week: no console errors with private lessons', p._errors.length === 0, p._errors);
+    await shot(p, 'week-fixture-private.png');
+    if (SHOTS) await p.locator('.gcard').screenshot({ path: path.join(SHOTS, 'week-fixture-private-grid.png') });
     await p.close();
     p = await newPage(browser, 1920, 1080);
     let sbBody = null;
@@ -632,6 +812,30 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await p.click('[data-action="accept"]');
     await p.waitForSelector('#result:not([hidden])');
     await contrast(p, [T('Phone: no longer eligible line', '#result')]);
+    await p.close();
+
+    p = await newPage(browser, 1920, 1080);
+    await p.route('**/fixtures/week.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(weekPriv) }));
+    await p.goto(base + 'week.html?fixture=1');
+    await ready(p);
+    await contrast(p, [T('Week: 1:1 tag (brand teal)', '.cell .one')]);
+    await p.close();
+
+    p = await newPage(browser, 430, 1080);
+    await p.goto(base + 'client.html?id=Q-1&fixture=1');
+    await ready(p);
+    await contrast(p, [T('Family: school message', '.bubble.school'), T('Family: message time', '.msg-time'), T('Family: Yes button (brand teal)', '.btn-accept')]);
+    await p.click('[data-action="yes"]');
+    await p.waitForSelector('#result:not([hidden])');
+    await contrast(p, [T('Family: covered line', '#result'), T('Family: own answer (brand teal)', '.bubble.family')]);
+    await p.goto(base + 'client.html?id=Q-1&fixture=1');
+    await ready(p);
+    await p.click('[data-action="no"]');
+    await p.waitForSelector('#notice:not([hidden])');
+    await contrast(p, [T('Family: new time note', '#notice')]);
+    await p.goto(base + 'client.html?id=Q-1&fixture=1&mock=client_credit');
+    await ready(p);
+    await contrast(p, [T('Family: credit line', '#result')]);
     await p.close();
 
     // must-light: the same measure on a deliberately pale ink has to fall below 4.5:1
