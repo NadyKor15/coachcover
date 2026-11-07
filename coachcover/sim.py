@@ -210,7 +210,7 @@ def _needs_review(row: dict) -> bool:
 def load_world() -> World:
     """The training school from coachcover/seed.py as plain rule types."""
     school = school_seed.build_school()
-    policy = default_policy(school_seed.PRESET)
+    policy = default_policy(school_seed.PRESET, week_start=school_seed.WEEK_DAY)
     if len(policy.preset.programs) != 1:
         raise ValueError("the training school expects a preset with exactly one program")
     program = next(iter(policy.preset.programs))

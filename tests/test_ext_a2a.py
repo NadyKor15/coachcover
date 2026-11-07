@@ -167,7 +167,8 @@ def test_borrower_rejects_the_offered_person_by_its_own_rules(net):
     role = conn.execute("SELECT role_id FROM shift WHERE id = 'N-1110-1000'").fetchone()[0]
     # Kai: 8 h booked + 32 h = 40 h this week. Northside allows 44 h, the borrower's rules 40 h.
     # The extra blocks keep well clear of Monday morning (rest rules, if any, stay out of it).
-    for i, (day, begin, finish) in enumerate((("2026-11-08", "06:00", "14:00"), ("2026-11-11", "13:00", "21:00"),
+    # Riverside's week is Mon 9 - Sun 15; Northside's (the preset's) Sun 8 - Sat 14: the Sunday block counts only here
+    for i, (day, begin, finish) in enumerate((("2026-11-15", "06:00", "14:00"), ("2026-11-11", "13:00", "21:00"),
                                            ("2026-11-13", "06:00", "14:00"), ("2026-11-14", "06:00", "14:00"))):
         conn.execute(
             "INSERT INTO shift (id, venue_id, zone_id, role_id, starts_at, ends_at, staff_id)"

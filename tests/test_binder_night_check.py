@@ -1,7 +1,7 @@
 """Inspection binder and the night check's trap (S07, Monday 16:00, CPR ended Nov 8): caught and covered before the
 shift, it is a line of its own, not a violation; without the night check it is an honest violation."""
 
-from datetime import timedelta
+from datetime import date, timedelta
 
 import pytest
 
@@ -38,7 +38,7 @@ def test_caught_by_the_night_check_and_covered_is_not_a_violation(school):
     run = run_scenario(school, models, "nightly_check")  # Sunday 21:30: case for S07's lesson, approval pending
     p = Pipeline(school, models, POLICY_ID)
     at = run["ended_at"] + timedelta(minutes=2)
-    pending_case = binder.build(school, POLICY_ID, "V1", None, None, at)
+    pending_case = binder.build(school, POLICY_ID, "V1", date(2026, 11, 9), date(2026, 11, 15), at)
     assert pending_case["summary"]["violations"] == 1  # caught but not yet covered: still honest
     approval = school.execute("SELECT id FROM approval WHERE action = 'night_cover' AND status = 'pending'").fetchone()[0]
     p.decide_approval(approval, True, at, by="manager:Dana")

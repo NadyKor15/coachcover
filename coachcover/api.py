@@ -24,7 +24,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from coachcover import ext_api, screens, views
+from coachcover import a2a, ext_api, screens, views
 from coachcover.db import migrate
 from coachcover.demo import SCENARIOS, clock_now, reset_school, run_scenario
 from coachcover.models import DbLedger, ModelClient, ModelError
@@ -62,6 +62,12 @@ class EnrollBody(BaseModel):
     add: int = Field(ge=1, le=100)
     language: str | None = Field(default=None, pattern=r"^[a-z]{2}$")
     by: str = Field(default="front desk", min_length=1, max_length=80)
+
+
+class StandbyBody(BaseModel):
+    shift_id: str = Field(min_length=1, max_length=80)
+    staff_id: str = Field(min_length=1, max_length=40)
+    by: str = Field(default="manager", min_length=1, max_length=80)
 
 
 class JudgeBody(BaseModel):
@@ -220,6 +226,10 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
     def enroll(group_id: str, body: EnrollBody, conn: psycopg.Connection = Depends(get_conn)):
         return pipeline(conn).enroll(group_id, body.add, clock_now(conn), language=body.language, by=body.by)
 
+    @app.post("/api/standby", status_code=201)
+    def standby(body: StandbyBody, conn: psycopg.Connection = Depends(get_conn)):
+        return pipeline(conn).propose_standby(body.shift_id, body.staff_id, clock_now(conn), by=body.by)
+
     @app.post("/api/import", status_code=201)
     async def post_import(file: UploadFile = File(...), tz: str | None = Form(default=None),
                           date_order: str = Form(default="MDY"), venue_id: str | None = Form(default=None),
@@ -259,6 +269,12 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
         if scenario not in SCENARIOS:
             raise ValueError(f"scenario must be one of {SCENARIOS}")
         client = request.client.host if request.client else "unknown"
+        base_url = os.environ.get("COACHCOVER_SELF_URL") or str(request.base_url)
+        if scenario == "network_loan":
+            try:  # the lending venue's agent must be up before the school is reset or a run is counted
+                a2a.wait_for_lenders(conn, "V1", base_url)
+            except a2a.AgentStarting as exc:
+                return JSONResponse(status_code=503, headers={"Retry-After": "5"}, content={"error": str(exc), **exc.detail})
         migrate(conn)
         with conn.transaction():
             conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (f"judge:{client}",))
@@ -274,8 +290,7 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
                 return JSONResponse(status_code=429, headers={"Retry-After": str(int(retry or 60))},
                                     content={"error": f"limit of {runs_per_hour} judge runs per hour reached"})
             conn.execute("INSERT INTO ops.judge_run (client) VALUES (%s)", (client,))
-        result = run_scenario(conn, ModelClient(DbLedger(conn)), scenario,
-                              base_url=os.environ.get("COACHCOVER_SELF_URL") or str(request.base_url))
+        result = run_scenario(conn, ModelClient(DbLedger(conn)), scenario, base_url=base_url)
         return {**result, "runs_left_this_hour": runs_per_hour - used - 1}
 
     # the extensions (network loans over A2A, MCP, week, what-if, binder, team posts) come before the static

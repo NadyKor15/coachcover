@@ -47,7 +47,8 @@ TZ_NAME = "America/New_York"
 TZ = ZoneInfo(TZ_NAME)
 TODAY = date(2026, 11, 9)
 NOW = datetime(2026, 11, 9, 5, 12, tzinfo=TZ)
-WEEK_START = date(2026, 11, 8)  # Sunday: the swim preset's week starts on Sunday
+WEEK_START = date(2026, 11, 9)  # Monday: the training school's week is Mon 9 - Sun 15, as on the week screen
+WEEK_DAY = "monday"  # the school's policy week (the swim preset's default is Sunday)
 MONDAY = date(2026, 11, 9)
 GREEDY_HOURS_CAP = 32.0  # ordinary staff stay well below the 40 h limit
 MIN_REST = timedelta(hours=10)  # the preset's min_rest_hours: the greedy fill never breaks it
@@ -139,25 +140,25 @@ FIXED_BLOCKS = {
     "S17": [(2, "V1", time(14, 0)), (4, "V1", time(14, 0)), (5, "V1", time(14, 0))],
     "S20": [(0, "V2", time(14, 0)), (1, "V2", time(10, 0)), (2, "V2", time(14, 0)), (3, "V2", time(18, 0))],
     "S22": [(1, "V2", time(14, 0)), (3, "V2", time(14, 0)), (5, "V2", time(10, 0)), (6, "V2", time(10, 0))],
-    "S24": [(0, "V3", time(18, 0)), (2, "V3", time(5, 30)), (4, "V3", time(5, 30)), (6, "V3", time(5, 30))],
+    "S24": [(2, "V3", time(5, 30)), (4, "V3", time(5, 30)), (6, "V3", time(5, 30))],
     "S11": [
         (0, "V2", time(5, 30)), (0, "V2", time(10, 0)),
         (2, "V2", time(5, 30)), (2, "V2", time(10, 0)),
         (3, "V2", time(5, 30)), (3, "V2", time(10, 0)),
         (4, "V2", time(10, 0)), (4, "V2", time(14, 0)),
-        (5, "V2", time(18, 0)), (6, "V2", time(18, 0)),
+        (5, "V2", time(18, 0)), (0, "V2", time(18, 0)),  # Sunday evening, not Saturday: 10 h of rest before Sunday 05:30
     ],
     "S29": [
         (0, "V1", time(5, 30)), (0, "V1", time(10, 0)),
         (2, "V1", time(5, 30)), (2, "V1", time(10, 0)),
         (3, "V1", time(10, 0)), (3, "V1", time(14, 0)),
         (4, "V1", time(10, 0)), (4, "V1", time(18, 0)),
-        (5, "V1", time(18, 0)), (6, "V1", time(18, 0)),
+        (5, "V1", time(18, 0)), (0, "V1", time(18, 0)),  # Sunday evening, not Saturday: 10 h of rest before Sunday 05:30
     ],
 }
 FIXED_ONLY = set(FIXED_BLOCKS) | {DEMO_ABSENT}  # no greedy work at all
 FREE_MONDAY = {"S07", "S10", "S13", "S14"}  # the night check meets only S07's fixed Monday lesson
-FREE_MONDAY_MORNING = {"S06", "S12", "S23"}  # head coaches in reserve, free for plan B
+RESERVE_EARLY = {"S06", "S12", "S23"}  # head coaches in reserve: free before 08:00 every day, for plan B
 
 GUARD_BLOCKS = [(time(5, 30), 4.5), (time(10, 0), 4.0), (time(14, 0), 4.0), (time(18, 0), 3.0)]
 MORNING_TIMES = (time(6, 0), time(7, 0))  # two groups side by side, 30 min unless fixed below
@@ -231,6 +232,15 @@ def _levels(spec: str) -> list[str]:
     return [str(n) for n in range(low, high + 1)]
 
 
+# The evening before the week: Gabriela closes Lakeview on Sunday Nov 8 at 21:00, 9 h before the 06:00 hero shift.
+EVE_BLOCKS = {"S24": [("V3", time(18, 0))]}
+
+
+def block_day(offset: int) -> date:
+    """FIXED_BLOCKS offsets: 0 = Sunday ... 6 = Saturday; the week runs Monday 9 to Sunday 15."""
+    return WEEK_START + timedelta(days=(offset - 1) % 7)
+
+
 def _at(day: date, start: time) -> datetime:
     return datetime.combine(day, start, tzinfo=TZ)
 
@@ -272,7 +282,8 @@ def _off(staff_id: str, start: datetime) -> bool:
         return True
     if start.date() == MONDAY and staff_id in FREE_MONDAY:
         return True
-    return start.date() == MONDAY and start.time() < time(8, 0) and staff_id in FREE_MONDAY_MORNING
+    # head coaches in reserve stay free before 08:00 every day: plan B's reserve for the early lessons
+    return start.time() < time(8, 0) and staff_id in RESERVE_EARLY
 
 
 def _cert(staff_id: str, n: int, i: int, ctype: str) -> dict:
@@ -362,7 +373,7 @@ def build_school() -> School:
     fixed_blocks = {}
     for sid, blocks in FIXED_BLOCKS.items():
         for offset, vid, start in blocks:
-            key = (WEEK_START + timedelta(days=offset), vid, start)
+            key = (block_day(offset), vid, start)
             if key in fixed_blocks:
                 raise RuntimeError(f"seed design error: block {key} given twice")
             fixed_blocks[key] = sid
@@ -443,6 +454,17 @@ def build_school() -> School:
         school.groups.append(placed[k]["group"])
         school.shifts.append(placed[k]["shift"])
 
+    eve = WEEK_START - timedelta(days=1)
+    for sid, blocks in EVE_BLOCKS.items():
+        for vid, start in blocks:
+            length = dict(GUARD_BLOCKS)[start]
+            block_start = _at(eve, start)
+            book(sid, block_start, block_start + timedelta(hours=length))
+            school.shifts.append({
+                "id": f"G-{eve:%m%d}-{vid}-{start:%H%M}", "venue_id": vid, "zone_id": deck_zone[vid], "role": "lifeguard",
+                "extra_certs": [], "instructors": 1, "starts_at": block_start,
+                "ends_at": block_start + timedelta(hours=length), "staff_id": sid, "groups": [],
+            })
     for offset in range(7):
         day = WEEK_START + timedelta(days=offset)
         for start, length in GUARD_BLOCKS:
@@ -498,7 +520,7 @@ def load_school(conn: psycopg.Connection, school: School | None = None) -> None:
     migrate(conn)
     install_preset(conn, PRESET)
     with conn.transaction():
-        insert_policy(conn, POLICY_ID, POLICY_NAME, default_policy(PRESET), manager_name=MANAGER)
+        insert_policy(conn, POLICY_ID, POLICY_NAME, default_policy(PRESET, week_start=WEEK_DAY), manager_name=MANAGER)
         role_ids = dict(conn.execute("SELECT code, id FROM role WHERE preset_code = %s", (PRESET,)).fetchall())
         cert_ids = dict(conn.execute("SELECT code, id FROM cert_type WHERE preset_code = %s", (PRESET,)).fetchall())
         program_ids = dict(conn.execute("SELECT code, id FROM program WHERE preset_code = %s", (PRESET,)).fetchall())

@@ -277,7 +277,7 @@ def test_imported_schedule_gets_the_certification_layer():
         if sh.assignee:
             others.setdefault(sh.assignee, []).append(Commitment(sh.id, "shift", sh.start, sh.end))
     context = import_context(shifts, world.venues, others)
-    rows = {row["staff_id"]: row for row in check_import(shifts, list(world.staff.values()), SWIM, context,
+    rows = {row["staff_id"]: row for row in check_import(shifts, list(world.staff.values()), world.policy, context,
                                                            datetime(2026, 11, 9, 5, 0, tzinfo=NY))}
     assert rows["S27"]["ok"] is False and "CERT_EXPIRED" in rows["S27"]["blocking"]  # Anna: lifeguard card ended Nov 5
     assert rows["S07"]["ok"] is False and "CERT_EXPIRED" in rows["S07"]["blocking"]  # Javier: CPR expired Nov 8

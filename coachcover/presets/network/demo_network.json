@@ -1,6 +1,6 @@
 {
   "note": "Fictional training network for the staff-loan demo (A2A). Every name is invented. Riverside is the training school's venue V1; Northside is a second training venue with its own rules (a 44 h week instead of 40) and its own manager. Both run on one machine.",
-  "network": {"id": "demo-network", "name": "Demo aquatics network (fictional)"},
+  "network": {"id": "demo-network", "name": "Bay Swim Network"},
   "guard_role": "lifeguard",
   "members": [
     {
@@ -14,7 +14,7 @@
       "policy_id": "northside",
       "manager_name": "Omar Haddad",
       "min_guards": 3,
-      "policy": {"preset": "swim_school", "name": "Northside Aquatic Center (fictional)", "overrides": {"max_weekly_hours": 44}},
+      "policy": {"preset": "swim_school", "name": "Northside Aquatic Center", "overrides": {"max_weekly_hours": 44}},
       "venue": {"name": "Northside Aquatic Center", "tz": "America/New_York", "lat": 34.02, "lon": -84.36,
                 "zones": [["N1-MAIN", "Main pool"]]},
       "staff": [

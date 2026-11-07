@@ -145,4 +145,5 @@ def test_every_plan_b_option_for_every_group_of_the_training_school_keeps_the_no
                         applied += 1
                         raise psycopg.Rollback(inner)
             raise psycopg.Rollback(outer)
-    assert len(groups) == 120 and applied >= len(groups) and seen == ALLOWED  # 228 options applied on 2026-11-07
+    # every group has an admissible option on the training week (cancel_lesson: the dedicated test above)
+    assert len(groups) == 120 and applied >= len(groups) and {"lead", "split", "move"} <= seen <= ALLOWED

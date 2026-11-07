@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from functools import lru_cache
 from pathlib import Path
+from time import monotonic, sleep
 from typing import Any, Callable
 from zoneinfo import ZoneInfo
 
@@ -76,6 +77,10 @@ class NotAllowed(LoanError):
     status = 403
 
 
+class AgentStarting(LoanError):
+    status = 503
+
+
 class RpcError(Exception):
     def __init__(self, code: int, message: str, reason: str | None = None, metadata: dict | None = None):
         super().__init__(message)
@@ -112,6 +117,42 @@ def send(url: str, method: str, params: dict) -> dict:
 
 
 # --- wire objects (A2A 1.0: camelCase, enum names, member name as the part discriminator) ----------------
+
+HOP = timedelta(seconds=1)  # each message happens after the one it answers, on the shared demo clock
+
+
+def later(at: datetime, stamp: str | None) -> datetime:
+    """Causal order between two agents: an event after a message is at least one second after the message's time
+    (the lender's clock may lag the borrower's scenario time)."""
+    if not stamp:
+        return at
+    other = datetime.fromisoformat(stamp) + HOP
+    return other if other > at else at
+
+
+def wait_for_lenders(conn: psycopg.Connection, borrower_venue: str, base_url: str, timeout: float | None = None) -> None:
+    """Before a network loan: every lending venue's agent answers its agent card, waiting up to `timeout` seconds
+    (COACHCOVER_AGENT_WAIT_SECONDS, default 10) for an agent that is still starting."""
+    ensure_network(conn)
+    if timeout is None:
+        timeout = float(os.environ.get("COACHCOVER_AGENT_WAIT_SECONDS", "10"))
+    borrower = member(conn, borrower_venue)
+    deadline = monotonic() + timeout
+    for m in members(conn).values():
+        if m.network_id != borrower.network_id or m.venue_id == borrower.venue_id or not m.lends:
+            continue
+        card = agent_url(m.venue_id, base_url).split("/a2a/")[0] + "/.well-known/agent-card.json"
+        while True:
+            try:
+                with HTTP_CLIENT() as client:
+                    if client.get(card).status_code == 200:
+                        break
+            except httpx.HTTPError:
+                pass
+            if monotonic() >= deadline:
+                raise AgentStarting(f"{m.short()} agent is starting, try again in a few seconds", {"venue": m.venue_id})
+            sleep(0.5)
+
 
 def iso_z(value: datetime) -> str:
     return value.astimezone(UTC).isoformat(timespec="milliseconds").replace("+00:00", "Z")
@@ -659,6 +700,7 @@ def handle_rpc(conn: psycopg.Connection, venue_id: str, body: Any, version: str 
         if data is None:
             raise RpcError(INVALID_PARAMS, "Invalid parameters: send a JSON data part with a 'type'", "NO_DATA_PART")
         kind = data.get("type")
+        at = later(at, data.get("at") if isinstance(data.get("at"), str) else None)
         context_id = msg.get("contextId") or str(uuid.uuid4())
         if kind in ("loan.approve", "loan.approval"):
             raise RpcError(UNSUPPORTED_OPERATION,
@@ -784,7 +826,7 @@ def start_loan(conn: psycopg.Connection, policy_id: str, shift_id: str, at: date
         url = agent_url(lender.venue_id, base_url)
         for _ in range(MAX_OFFERS):
             request = {"type": "loan.request", "loan": code, "shift": wire, "exclude": exclude,
-                       "from_venue": {"id": borrower.venue_id, "name": borrower.venue_name}}
+                       "from_venue": {"id": borrower.venue_id, "name": borrower.venue_name}, "at": iso_z(at)}
             msg = message("ROLE_USER", [text_part(f"{borrower.venue_name} needs a cleared person for {label}."),
                                         data_part(request)], context_id)
             step(conn, loan_id, borrower.venue_id, "agent", "request_sent",
@@ -796,6 +838,7 @@ def start_loan(conn: psycopg.Connection, policy_id: str, shift_id: str, at: date
                 break
             conn.execute("UPDATE ext_loan SET lender_venue = %s, a2a_task_id = %s WHERE id = %s",
                          (lender.venue_id, task["id"], loan_id))
+            at = later(at, task["status"].get("timestamp"))
             state = task["status"]["state"]
             reply = message_data(task["status"].get("message")) or {}
             if state != STATE_INPUT_REQUIRED or reply.get("type") != "loan.offer":
@@ -807,10 +850,10 @@ def start_loan(conn: psycopg.Connection, policy_id: str, shift_id: str, at: date
             step(conn, loan_id, borrower.venue_id, "agent", "checked_offer",
                  {"staff_id": person["id"], "name": person["name"], **check}, at)
             answer = message("ROLE_USER", [data_part({"type": "loan.recheck", "accepted": check["ok"],
-                                                      "codes": check["codes"], "why": check["why"]})],
+                                                      "codes": check["codes"], "why": check["why"], "at": iso_z(at)})],
                              context_id, task["id"])
             try:
-                send(url, "SendMessage", {"message": answer})
+                at = later(at, send(url, "SendMessage", {"message": answer})["task"]["status"].get("timestamp"))
             except (RpcError, httpx.HTTPError) as exc:
                 step(conn, loan_id, borrower.venue_id, "agent", "lender_unreachable", {"to": lender.venue_id, "error": str(exc)}, at)
                 break
@@ -888,7 +931,7 @@ def _finalize(conn: psycopg.Connection, loan: dict, at: datetime, base_url: str)
     label, time_label, venue, venue_name = _shift_label(conn, loan["shift_id"])
     if not check["ok"]:
         cancel = message("ROLE_USER", [data_part({"type": "loan.recheck", "accepted": False, "codes": check["codes"],
-                                                  "why": check["why"]})], loan["context_id"], loan["task_id"])
+                                                  "why": check["why"], "at": iso_z(at)})], loan["context_id"], loan["task_id"])
         try:
             send(url, "SendMessage", {"message": cancel})
         except (RpcError, httpx.HTTPError):
@@ -896,7 +939,7 @@ def _finalize(conn: psycopg.Connection, loan: dict, at: datetime, base_url: str)
         _fail(conn, loan, at, check["why"], {"codes": check["codes"]})
         return
     confirm = message("ROLE_USER", [data_part({"type": "loan.confirm", "loan": loan["code"],
-                                               "shift": shift_wire(shift, venue, venue_name, label)})],
+                                               "shift": shift_wire(shift, venue, venue_name, label), "at": iso_z(at)})],
                       loan["context_id"], loan["task_id"])
     step(conn, loan["id"], borrower.venue_id, "agent", "confirm_sent", {"to": lender.venue_id, "url": url}, at)
     try:
@@ -904,6 +947,7 @@ def _finalize(conn: psycopg.Connection, loan: dict, at: datetime, base_url: str)
     except (RpcError, httpx.HTTPError) as exc:
         _fail(conn, loan, at, f"lender agent did not confirm: {exc}")
         return
+    at = later(at, task["status"].get("timestamp"))
     if task["status"]["state"] != STATE_COMPLETED:
         why = (message_data(task["status"].get("message")) or {}).get("why") or task["status"]["state"]
         _fail(conn, loan, at, f"{lender.venue_name} refused at confirmation: {why}")
@@ -988,8 +1032,8 @@ def _step_text(kind: str, data: dict, venue: str, names: dict[str, str]) -> tupl
     if kind == "declined":
         return f"{venue} agent declines", data.get("why", "")
     if kind == "checked_offer":
-        verdict = "cleared" if data.get("ok") else "blocked"
-        return f"{venue} agent re-checked {data.get('name')} by {venue} rules: {verdict}", data.get("why", "")
+        verdict = f"cleared by {venue} rules" if data.get("ok") else f"blocked by {venue} rules: {data.get('why', '')}"
+        return f"{venue} agent re-checked {data.get('name')}", verdict
     if kind == "awaiting_approval":
         return "Waiting for both managers", ", ".join(f"{names.get(v, v)}: {mgr}" for v, mgr in data.get("managers") or [])
     if kind == "borrower_accepted":
@@ -1001,7 +1045,8 @@ def _step_text(kind: str, data: dict, venue: str, names: dict[str, str]) -> tupl
     if kind == "approved":
         return f"{data.get('manager')} ({venue} manager) approved", ""
     if kind == "checked_again":
-        return f"{venue} agent checked again before booking: {'cleared' if data.get('ok') else 'blocked'}", data.get("why", "")
+        verdict = f"cleared by {venue} rules" if data.get("ok") else f"blocked by {venue} rules: {data.get('why', '')}"
+        return f"{venue} agent checked again before booking", verdict
     if kind == "confirm_sent":
         return f"{venue} agent → {names.get(data.get('to'), data.get('to'))} agent: confirm", data.get("url", "")
     if kind == "lent":

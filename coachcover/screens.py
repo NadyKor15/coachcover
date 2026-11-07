@@ -54,6 +54,12 @@ def tone(code: str) -> str:
     return "red" if code in RED else "amber" if code in AMBER else "plain"
 
 
+def case_tone(code: str) -> str:
+    """The case file's two kinds of refusal, from the same lists as the morning chips: "fragile" where a person must
+    check something (readers disagree, renewal overdue, too little rest), "risk" for every other block."""
+    return "fragile" if code in AMBER else "risk"
+
+
 def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connection, tz: ZoneInfo) -> str:
     if code == "CERT_EXPIRED":
         return f"Certificate expired {_day(params['expires_on'])}"
@@ -384,6 +390,8 @@ def _manager_minutes() -> tuple[float | None, str | None]:
 def today_money_block(conn: psycopg.Connection, policy_id: str, now: datetime) -> dict:
     minutes, source = _manager_minutes()
     money = money_model.today_money(conn, policy_id, now, manager_minutes=minutes, manager_minutes_source=source)["money"]
+    cents = money.get("case_cost_cents")
+    money["case_cost_label"] = money_model.cost_label(cents / 100) if cents is not None else None
     price = load_policy(conn, policy_id).preset.money.get("lesson_price", {})
     money["source"] = "assumption" if price.get("assumption", True) else price.get("source")
     return money
@@ -666,7 +674,8 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
             label = None
             if person["first"]:
                 label = reason_label(person["first"]["code"], person["first"]["params"], preset, conn, tz)
-                chips.setdefault(label, {"code": person["first"]["code"], "label": label, "count": 0})["count"] += 1
+                chips.setdefault(label, {"code": person["first"]["code"], "label": label, "count": 0,
+                                         "tone": case_tone(person["first"]["code"])})["count"] += 1
             staff_rows.append({"id": person["staff_id"], "name": person["name"], "allowed": person["eligible"],
                                "reason_label": label})
         refusal = _first_refusal(events, grid, shift, preset, conn, tz)
