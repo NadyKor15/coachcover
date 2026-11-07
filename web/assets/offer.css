@@ -78,9 +78,9 @@ body[data-state="loading"] .card, body[data-state="loading"] .actions { visibili
 .result { margin: 0 17.8px; min-height: 41.1px; border-radius: 8px; display: flex; align-items: center; gap: 10px; padding: 3px 12px; font: 600 15.5px/19px "Figtree", sans-serif; letter-spacing: -.2px; }
 .result[hidden] { display: none; }
 .result svg { flex: none; }
-.result.ok { background: #E3EFEC; color: #06545A; }
+.result.ok { background: var(--st-safe-bg); color: var(--st-safe-ink); border: 1px solid var(--st-safe-line); }
 .result.neutral { background: #F3EEE6; color: var(--ink); }
-.result.bad { background: #FBE9E6; color: #8F2A20; border: 1px solid #EBBDB5; }
+.result.bad { background: var(--st-risk-bg); color: var(--st-risk-ink); border: 1px solid var(--st-risk-line); }
 
 .load-err { position: absolute; left: 13px; right: 13px; top: 50px; z-index: 5; padding: 10px 14px; border-radius: 10px; background: #FBE9E6; border: 1px solid #E7B9B1; color: #8F2A20; font: 500 15px/19px "Figtree", sans-serif; }
 .load-err[hidden] { display: none; }

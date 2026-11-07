@@ -21,6 +21,16 @@
   /* ---------- steps ---------- */
   function line(cls, text, slot) { return slotted(el('div', 's-line ' + cls, text), slot); }
 
+  // a chip's status: the answer's tone when it has one, else the same code groups the Today screen gets as red / amber
+  const RISK_CODES = new Set(['CERT_EXPIRED', 'CERT_EXPIRES_DURING_SHIFT', 'CERT_NOT_YET_VALID', 'CERT_REVOKED', 'RATIO_EXCEEDED']);
+  const FRAGILE_CODES = new Set(['CERT_NEEDS_REVIEW', 'PROGRAM_RENEWAL_OVERDUE', 'REST_TOO_SHORT']);
+  function toneClass(r) {
+    const t = String(r.tone || '').toLowerCase();
+    if (t === 'red' || (!t && RISK_CODES.has(r.code))) return ' tone-risk';
+    if (t === 'amber' || (!t && FRAGILE_CODES.has(r.code))) return ' tone-fragile';
+    return '';
+  }
+
   const BODY = {
     callout(s, body) {
       if (s.transcript_original) body.appendChild(line('first wrap', '“' + s.transcript_original + '”', 'callout-original'));
@@ -45,7 +55,7 @@
       }
       const chips = el('div', 'reasons');
       (s.reasons || []).forEach(r => {
-        const c = slotted(el('span', 'reason', r.label + ' '), 'reason-chip');
+        const c = slotted(el('span', 'reason' + toneClass(r), r.label + ' '), 'reason-chip');
         c.appendChild(slotted(el('span', null, '×' + r.count), 'reason-count'));
         chips.appendChild(c);
       });
@@ -54,7 +64,8 @@
     offers(s, body) {
       (s.offers || []).forEach(o => {
         const accepted = o.result === 'accepted';
-        const row = slotted(el('div', 'offer' + (accepted ? ' accepted' : '')), 'offer-row');
+        const status = accepted ? ' accepted' : o.result === 'declined' ? ' declined' : (o.result === 'no_reply' || o.result === 'expired') ? ' noreply' : '';
+        const row = slotted(el('div', 'offer' + status), 'offer-row');
         row.dataset.offerId = o.id || '';
         if (accepted) row.innerHTML = ICON_OK;
         const t = el('span');
