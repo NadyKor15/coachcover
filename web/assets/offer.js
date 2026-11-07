@@ -86,8 +86,25 @@
     });
     setText('manager-name', o.manager && o.manager.name);
     setText('manager-role', o.manager && o.manager.role);
+    if (o.state && o.state !== 'pending') {  // already answered or closed: show where it stands, no buttons
+      state.answered = true;
+      paint(0, Number(o.window_s) || 1);
+      const done = STATE_TEXT[o.state];
+      showResult(done ? done[0] : 'neutral', done ? done[1](o) : 'Offer is ' + String(o.state).replace(/_/g, ' ') + '.');
+      return;
+    }
     startTimer(o);
   }
+
+  const shiftWhen = o => (o.shift_start || '') + '–' + (o.shift_end || '') + (o.shift_day ? ' ' + o.shift_day : '');
+  const STATE_TEXT = {
+    accepted: ['ok', o => 'Accepted. You cover ' + shiftWhen(o) + '.'],
+    released: ['neutral', () => 'You accepted, then gave the shift back.'],
+    held: ['ok', () => 'You said yes. Waiting a moment for anyone higher in the queue.'],
+    declined: ['neutral', () => 'You declined this offer.'],
+    expired: ['neutral', () => 'This offer has expired.'],
+    withdrawn: ['neutral', () => 'This offer was withdrawn: the shift no longer needs you.']
+  };
 
   async function load() {
     if (!offerId) {

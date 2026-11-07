@@ -104,11 +104,13 @@ body[data-state="loading"] .main{visibility:hidden}
 .calls tr + tr td{border-top:1px solid var(--tbl-line)}
 .calls td:first-child{width:350px;padding-left:19.5px;border-right:1px solid var(--tbl-line)}
 .calls td:last-child{padding-left:21px}
-.risk{margin-top:25px;height:144px;padding:22.5px 0 0 23.5px}
+.risk{margin-top:25px;min-height:144px;padding:22.5px 16px 18px 23.5px}
 .risk[hidden]{display:none}
 .risk h2{font-size:33.3px;letter-spacing:calc(-0.026em - 0.19px);line-height:40px;font-weight:750;color:var(--ink);white-space:nowrap}
 .risk p{margin-top:21.3px;font-size:20.9px;letter-spacing:calc(-0.026em + 0.06px);line-height:28px;color:var(--ink-2);white-space:nowrap}
 .risk p [hidden]{display:none}
+.risk p.risk-src{margin-top:6px;font-size:16px;line-height:21px;color:var(--muted-2);font-style:italic;white-space:normal}
+.risk p.risk-src[hidden]{display:none}
 
 .foot{margin:23px 11px 0 9px;border-top:1px solid var(--line);padding-top:11.35px;padding-bottom:16px}
 .foot p{margin-left:0;font-size:22.28px;letter-spacing:calc(-0.026em + 0.09px);line-height:30px;color:#47484E;white-space:nowrap}
