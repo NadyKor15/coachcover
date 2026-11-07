@@ -21,7 +21,7 @@ The school is fictional (`coachcover/seed.py`): 3 venues, 40 staff, 229 shifts i
 | Median minutes from call-out to a closed shift | 13.5 | 10.5 |
 | 90th percentile, minutes | 16.3 | 25.0 |
 | Closed after the shift had started | 0 | 0 |
-| Closed without a person (no manager step), % | 0.0 | 66.3 |
+| Closed by CoachCover with no manager step, % | 0.0 | 66.3 |
 | Group lessons cancelled or moved | 0 | 0 |
 | Participants left without their group lesson | 0 | 0 |
 | Private lessons (one child, one coach) that needed cover | 11 | 11 |
@@ -57,8 +57,8 @@ CoachCover on the same 50 mornings, before (one offer at a time) and after (wave
 | Minutes from call-out to closed, p90 | 46.6 | 25.0 |
 | Minutes from call-out to closed, mean | 23.5 | 13.2 |
 | Closed after the shift started | 16 | 0 |
-| Closed without a person | 66 | 65 |
-| Closed without a person, % | 67.3 | 66.3 |
+| Closed by CoachCover with no manager step | 66 | 65 |
+| Closed by CoachCover with no manager step, % | 67.3 | 66.3 |
 | Shifts covered (offer or plan B) | 95 | 95 |
 | Group lessons cancelled or moved | 0 | 0 |
 | Children without their lesson | 0 | 0 |
@@ -78,7 +78,7 @@ Outcomes before: {'covered': 66, 'credit': 1, 'moved_own': 2, 'reserve': 29}; af
 | Median minutes to close | 13.5 | 21.2 |
 | 90th percentile, minutes | 16.4 | 46.6 |
 | Closed after the shift had started | 0 | 16 |
-| Closed without a person, % | 0.0 | 67.3 |
+| Closed by CoachCover with no manager step, % | 0.0 | 67.3 |
 
 - `baseline_manager_checks_role`: Baseline where the manager takes only people who hold the shift's role (job title); cards, programs, hours and the group norm are still not checked.
 - `coachcover_one_offer_at_a_time`: CoachCover before 2026-11-07: one offer at a time, plan B only when the queue is empty (the 'before' column of the before/after table).
@@ -134,6 +134,6 @@ Policy of the preset: offer timer 5 min, weekly limit 40 h, autonomy {'assign_co
 - The baseline manager never checks anything. A careful manager would check some things; the replay counts what nobody checks.
 - A shift counts as closed when a person is booked or the fallback is decided; the time runs from the call-out.
 - In plan B a reserve person is booked on the manager's approval without being asked, as the core does; the baseline manager never calls a reserve person.
-- "Closed without a person" is 0 for the baseline by construction: the manager books every shift by hand.
+- "Closed by CoachCover with no manager step" is 0 for the baseline by construction: the manager books every shift by hand.
 - Plan B by the deadline: the manager acts on it after noticing the card; the offers of the open wave keep running until then.
 - Private lessons: how families answer is assumed, not measured (the parameters above). While the family is asked, the held coach is not blocked for the morning's other cases in this replay (the core blocks that time). A lesson moved to another day is not booked into this morning's schedule.

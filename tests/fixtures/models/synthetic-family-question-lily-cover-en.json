@@ -5,20 +5,21 @@
   "kind": "cover",
   "language": "en",
   "child": "Lily",
-  "absent": "Marina",
   "coach": "Chloe",
+  "day": "today",
   "time": "17:00",
-  "date": "2026-11-09",
-  "venue": "Riverside Aquatic Center"
+  "venue": "Riverside Aquatic Center",
+  "absent": "Marina",
+  "say": "Marina can't teach Lily's private lesson today at 17:00. Chloe can teach it instead, same time and same place. Ask the parent if that is OK."
  },
- "input_sha256": "30a7628e3f602815f24366a3d0ed0a20aafcd51bb8b517b2e319c7b7232238d2",
+ "input_sha256": "6908797aaf31009e32841d6e92719971eb526d9f7eaf6d3ee138d3dfe060d400",
  "synthetic": true,
  "source": "synthetic: written by hand to the family_question schema, only facts from input",
  "duration_ms": 1100,
  "response": {
   "model": "muse-glimmer-30b",
   "usage": {
-   "prompt_tokens": 240,
+   "prompt_tokens": 260,
    "completion_tokens": 52
   },
   "choices": [

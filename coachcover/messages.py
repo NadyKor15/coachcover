@@ -7,6 +7,9 @@ sent anywhere: messages are stored with channel "simulated".
 
 from __future__ import annotations
 
+import re
+from datetime import date, timedelta
+
 LANGS = ("en", "es", "ru")
 
 OFFER = {
@@ -91,17 +94,19 @@ PRIVATE_MOVED_COACH = {
 # a private lesson: what the family is asked and told (the model writes the question in the family's language;
 # these are the texts when no model answer is available). The child is named; the parent is not.
 CLIENT_COVER = {
-    "en": "CoachCover: {absent} can't make it today, so {coach} would teach {child}'s private lesson at {time} instead. "
+    "en": "CoachCover: {absent} can't make it {day}, so {coach} would teach {child}'s private lesson at {time} instead. "
           "Same time, same place. Is that OK? Reply YES or NO.",
-    "es": "CoachCover: {absent} no puede venir hoy, así que {coach} daría la clase privada de {child} a las {time}. "
-          "Misma hora, mismo lugar. ¿Te parece bien? Responde SÍ o NO.",
-    "ru": "CoachCover: тренер {absent} сегодня не выйдет. Индивидуальное занятие в {time} ({child}) может провести {coach}. "
-          "Время и место те же. Вам подходит? Ответьте ДА или НЕТ.",
+    "es": "CoachCover: {absent} no puede venir {day}, así que {coach} daría en su lugar la clase privada de {child} a las "
+          "{time}. Misma hora, mismo lugar. ¿Te parece bien? Responde SÍ o NO.",
+    "ru": "CoachCover: тренер {absent} {day} не выйдет. Индивидуальное занятие в {time} ({child}) вместо тренера {absent} "
+          "может провести {coach}. Время и место те же. Вам подходит? Ответьте ДА или НЕТ.",
 }
 CLIENT_RESCHEDULE = {
-    "en": "CoachCover: no problem, {child} stays with {coach}. {coach} can do {when} instead. Does that work? Reply YES or NO.",
-    "es": "CoachCover: sin problema, {child} sigue con {coach}. {coach} puede el {when}. ¿Te viene bien? Responde SÍ o NO.",
-    "ru": "CoachCover: хорошо, тренер остаётся прежний ({coach}). Занятие ({child}) можно провести {when}. Подходит? "
+    "en": "CoachCover: no problem, {child} stays with {coach}. The lesson moves to {when} with {coach}. Does that work? "
+          "Reply YES or NO.",
+    "es": "CoachCover: sin problema, {child} sigue con {coach}. La clase pasa al {when} con {coach}. ¿Te viene bien? "
+          "Responde SÍ o NO.",
+    "ru": "CoachCover: хорошо, тренер остаётся прежний ({coach}). Занятие ({child}) переносится на {when}. Подходит? "
           "Ответьте ДА или НЕТ.",
 }
 CLIENT_COVER_CONFIRMED = {
@@ -131,11 +136,121 @@ CLIENT_SCHEMA = {
     "additionalProperties": False,
 }
 CLIENT_SYSTEM = (
-    "You write one short, warm text message to the parent of a child who has a private lesson at a sports school. "
-    "Write in the requested language. Use only the facts given: the child's first name, the coaches' first names, the "
-    "day and time. Do not name the parent. End with a yes/no question the parent can answer with YES or NO. "
+    "You write one short, warm text message to the parent of a child who has a private lesson at a sports school, in "
+    "the requested language. The field \"say\" is what the message must tell the parent: keep exactly that meaning, the "
+    "child's and the coaches' first names, the day and the time as given (\"day\" is already written for people; never "
+    "write a date like 2026-11-09). Do not name the parent and do not add facts. End with the yes/no question from "
+    "\"say\" (for example \"Is that OK?\" or \"Does that work?\"), then: Reply YES or NO, in the requested language. "
     "Answer with JSON: {\"body\": \"...\"}."
 )
+# What the message must say (an instruction to the text model, in English; the day is the family's own words)
+CLIENT_SAY = {
+    "cover": "{absent} can't teach {child}'s private lesson {day_en} at {time}. {coach} can teach it instead, same time "
+             "and same place. Ask the parent if that is OK.",
+    "reschedule": "{child} keeps their own coach, {coach}. The lesson moves to {day_en} at {time} with {coach}. Ask the "
+                  "parent if that works.",
+}
+
+# days for people, in the family's language: today, tomorrow, or "Wed, Nov 11"; never 2026-11-11
+_DAY_WORDS = {"en": ("today", "tomorrow"), "es": ("hoy", "mañana"), "ru": ("сегодня", "завтра")}
+_WEEKDAYS = {"en": ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"), "es": ("lun", "mar", "mié", "jue", "vie", "sáb", "dom"),
+             "ru": ("пн", "вт", "ср", "чт", "пт", "сб", "вс")}
+_MONTHS = {"en": ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+           "es": ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"),
+           "ru": ("янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")}
+_AT = {"en": "{day} at {time}", "es": "{day} a las {time}", "ru": "{day} в {time}"}
+
+
+def day_label(day: date, today: date, lang: str) -> str:
+    """A day as people say it, in the family's language: today, tomorrow, "Wed, Nov 11" ("mié 11 nov", "ср, 11 ноя")."""
+    lang = lang_or_en(lang)
+    if day == today:
+        return _DAY_WORDS[lang][0]
+    if day == today + timedelta(days=1):
+        return _DAY_WORDS[lang][1]
+    weekday, month = _WEEKDAYS[lang][day.weekday()], _MONTHS[lang][day.month - 1]
+    return {"en": f"{weekday}, {month} {day.day}", "es": f"{weekday} {day.day} {month}", "ru": f"{weekday}, {day.day} {month}"}[lang]
+
+
+def when_label(day: date, today: date, lang: str, time: str) -> str:
+    return _AT[lang_or_en(lang)].format(day=day_label(day, today, lang), time=time)
+
+
+def family_facts(kind: str, *, language: str, child: str, coach: str, day: date, today: date, time: str, venue: str,
+                 absent: str | None = None) -> dict:
+    """The facts for the family's message: who, the day in people's words, the time, and what to say ("say")."""
+    language = lang_or_en(language)
+    facts = {"kind": kind, "language": language, "child": child, "coach": coach, "day": day_label(day, today, language),
+             "time": time, "venue": venue}
+    if kind == "cover":
+        facts["absent"] = absent
+    else:
+        facts["when"] = when_label(day, today, language, time)
+    facts["say"] = CLIENT_SAY[kind].format(day_en=day_label(day, today, "en"), **facts)
+    return facts
+
+
+ISO_DATE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
+# the message carries the change: another coach instead (cover) / the lesson moves (reschedule)
+_MEANING = {
+    "cover": {"en": r"\b(instead|in place of|cover|covers|covering|substitute|replace|replaces|stand in|steps? in)\b",
+              "es": r"(en lugar|en su lugar|en vez|sustitu|reemplaz|cubr)", "ru": r"(вместо|замен)"},
+    "reschedule": {"en": r"\b(move|moves|moved|moving|new time|instead|switch)\b",
+                   "es": r"(cambi|mover|mueve|pasa|nueva hora|en su lugar)", "ru": r"(перен|вместо|другое время|новое время)"},
+}
+# ...and asks a yes/no about that change, not "can you come?" or "would you like to reschedule?"
+_QUESTION_OK = {"en": r"\b(ok|okay|work|works|suit|suits|fine|alright|all right|agree|good)\b",
+                "es": r"(bien|vale|de acuerdo|conforme|sirve)", "ru": r"(подходит|устраивает|согласн|хорошо|удобно)"}
+_QUESTION_BAD = r"(reschedul|would you like|can you make it|can you come|could you come|will you come|reprogram|перенест)"
+
+
+def _has_time(time: str, text: str) -> bool:
+    hour, minute = (int(x) for x in time.split(":"))
+    h12 = hour % 12 or 12
+    suffix = "am" if hour < 12 else "pm"
+    forms = [time, f"{hour}:{minute:02d}", f"{h12}:{minute:02d} {suffix}", f"{h12}:{minute:02d}{suffix}",
+             f"{h12}:{minute:02d} {suffix[0]}.m."]
+    if minute == 0:
+        forms += [f"{h12} {suffix}", f"{h12}{suffix}", f"{h12} {suffix[0]}.m."]
+    return any(f in text for f in forms)
+
+
+def _has_day(day: date, text: str, lang: str) -> bool:
+    month = _MONTHS[lang][day.month - 1].casefold()
+    return month in text and re.search(rf"\b{day.day}\b", text) is not None
+
+
+def family_text_problems(kind: str, facts: dict, body: str, day: date) -> list[str]:
+    """Why a model's message to the family may not go out (empty: it may). It must name the child and the coaches,
+    give the time (and the new day for a move), carry the change, end with a yes/no question about that change, and
+    never show a machine date. The template goes out instead and the case file says so."""
+    lang = facts["language"]
+    text = " ".join(body.split())
+    low = text.casefold()
+    problems = []
+    names = [facts["child"], facts["coach"]] + ([facts["absent"]] if kind == "cover" else [])
+    problems += [f"does not name {name}" for name in dict.fromkeys(names) if name.casefold() not in low]
+    if not _has_time(facts["time"], low):
+        problems.append(f"no time {facts['time']}")
+    if kind == "reschedule" and facts["day"].casefold() not in low and not _has_day(day, low, lang):
+        problems.append(f"no new day {facts['day']}")
+    if ISO_DATE.search(text):
+        problems.append("a machine date (YYYY-MM-DD)")
+    meaning = _MEANING[kind].get(lang)
+    if meaning is None:
+        problems.append(f"no check for the language {lang}")
+    elif not re.search(meaning, low):
+        problems.append("does not say " + ("that another coach teaches instead" if kind == "cover" else "that the lesson moves"))
+    q = text.rfind("?")
+    if q < 0 or len(text[q + 1:].strip()) > 40:
+        problems.append("does not end with a yes/no question")
+    else:
+        start = max(text.rfind(".", 0, q), text.rfind("!", 0, q), text.rfind("¿", 0, q) - 1) + 1
+        question = low[start:q + 1].strip()
+        ok = _QUESTION_OK.get(lang)
+        if re.search(_QUESTION_BAD, question) or (ok is not None and not re.search(ok, question)):
+            problems.append(f"the question does not ask about this change: {question!r}")
+    return problems
 
 NO_LONGER = {
     "en": "CoachCover: thank you, but you can no longer take {when}: {why}.",

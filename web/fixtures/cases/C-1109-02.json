@@ -462,14 +462,14 @@
       "model": "muse-glimmer-30b",
       "model_label": "muse-glimmer-30b",
       "ms": 1100,
-      "input_tokens": 240,
+      "input_tokens": 260,
       "output_tokens": 52,
-      "cost_usd": 0.000112,
+      "cost_usd": 0.000117,
       "source": "recorded answer tests/fixtures/models/synthetic-family-question-lily-cover-en.json (synthetic)"
     }
   ],
-  "model_cost_usd": 0.000482,
-  "model_cost_label": "0.048¢",
+  "model_cost_usd": 0.000487,
+  "model_cost_label": "0.049¢",
   "risk": {
     "kids": null,
     "private": true,

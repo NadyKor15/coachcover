@@ -19,6 +19,8 @@ Price of a private lesson: $50 for 30 minutes, the price from the founder's coac
 child). A credit for a private lesson is worth that $50.
 
 In the 50-morning replay (`docs/sim/SIM-50-MORNINGS.md`), how families answer is assumed, not measured: yes 80%, no
-10%, no answer 10%, 2-20 minutes after the question.
+10%, no answer 10%, 2-20 minutes after the question. On those mornings 11 private lessons needed cover: the group chat
+gave all 11 to another coach without asking the family; CoachCover booked another coach 8 times after the family said
+yes, moved 2 lessons to the family's own coach and gave 1 credit.
 
 License: MIT.

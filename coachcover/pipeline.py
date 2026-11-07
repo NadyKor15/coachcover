@@ -892,19 +892,26 @@ class Pipeline:
         language = M.lang_or_en(group["languages"][0] if group["languages"] else None)
         return {"group_id": group["id"], "child": group["participant"] or group["name"], "language": language}
 
-    def _family_text(self, kind: str, facts: dict, template: dict, now: datetime, case_id: int) -> tuple[str, str]:
-        """The question or notice for the family, written by the text model in the family's language (facts only);
-        the template when no model answer is available. Returns (text, "model" | "template")."""
+    def _family_text(self, kind: str, facts: dict, template: dict, now: datetime, case_id: int,
+                     day: date) -> tuple[str, dict]:
+        """The question for the family, written by the text model in the family's language from facts that say what
+        to tell them; the model's text goes out only if it passes M.family_text_problems (names, time, day, the change,
+        a yes/no question, no machine date), else the template. Returns (text, how: source and any rejected draft)."""
+        draft, problems = None, []
         try:
             answer = self.models.chat_json(purpose="family_question", system=M.CLIENT_SYSTEM,
                                            user=json.dumps(plain(facts), ensure_ascii=False), schema=M.CLIENT_SCHEMA,
                                            key=plain(facts), at=now, case_id=case_id)
-            body = answer.data["body"].strip()
-            if body:
-                return body, "model"
+            draft = answer.data["body"].strip()
+            problems = M.family_text_problems(kind, facts, draft, day) if draft else ["empty"]
+            if not problems:
+                return draft, {"text_source": "model"}
         except (ModelError, AttributeError):
             pass
-        return template[facts["language"]].format(**facts), "template"
+        how = {"text_source": "template"}
+        if draft is not None:  # the model answered, but its text would have said something else: kept for the record
+            how.update({"model_text": draft, "model_text_rejected": problems})
+        return template[facts["language"]].format(**facts), how
 
     def _answer_by(self, info: dict, now: datetime, policy: Policy) -> datetime:
         return min(now + timedelta(minutes=policy.preset.client_answer_minutes),
@@ -939,10 +946,12 @@ class Pipeline:
             lang = M.lang_or_en(self._staff_row(other)["language"])
             self._message(now, "staff", lang, M.PRIVATE_STOOD_DOWN[lang].format(name=coach.split()[0], when=self._when(info)),
                           staff_id=other, case_id=case_id, offer_id=other_id)
-        facts = {"kind": "cover", "language": family["language"], "child": family["child"],
-                 "absent": absent[0].split()[0] if absent else "Your coach", "coach": coach.split()[0],
-                 "time": f"{info['local_start']:%H:%M}", "date": info["local_start"].date(), "venue": info["venue"]}
-        text, source = self._family_text("cover", facts, M.CLIENT_COVER, now, case_id)
+        day = info["local_start"].date()
+        facts = M.family_facts("cover", language=family["language"], child=family["child"], coach=coach.split()[0],
+                               absent=absent[0].split()[0] if absent else "Your coach", day=day,
+                               today=now.astimezone(ZoneInfo(info["tz"])).date(), time=f"{info['local_start']:%H:%M}",
+                               venue=info["venue"])
+        text, how = self._family_text("cover", facts, M.CLIENT_COVER, now, case_id, day)
         message_id = self._message(now, "family", family["language"], text, group_id=family["group_id"], case_id=case_id)
         ask_id = self.conn.execute(
             "INSERT INTO client_ask (case_id, group_id, kind, staff_id, offer_id, language, message_id, asked_at, answer_by)"
@@ -951,7 +960,7 @@ class Pipeline:
         ).fetchone()[0]
         self._event(case_id, now, "agent", "family_asked", {
             "ask_id": f"Q-{ask_id}", "kind": "cover", "staff_id": staff_id, "name": coach, "offer_id": offer_id,
-            "child": family["child"], "text": text, "text_source": source, "language": family["language"],
+            "child": family["child"], "text": text, **how, "language": family["language"],
             "answer_by": answer_by,
         })
         return {"offer_id": offer_id, "staff_id": staff_id, "asked": f"Q-{ask_id}"}
@@ -1091,9 +1100,11 @@ class Pipeline:
             family = self._family_of(info)
             local = slot.start.astimezone(ZoneInfo(info["tz"]))
             when = f"{local:%a, %b} {local.day} at {local:%H:%M}"
-            facts = {"kind": "reschedule", "language": family["language"], "child": family["child"],
-                     "coach": coach.name.split()[0], "when": when, "venue": info["venue"]}
-            text, source = self._family_text("reschedule", facts, M.CLIENT_RESCHEDULE, now, case_id)
+            facts = M.family_facts("reschedule", language=family["language"], child=family["child"],
+                                   coach=coach.name.split()[0], day=local.date(),
+                                   today=now.astimezone(ZoneInfo(info["tz"])).date(), time=f"{local:%H:%M}",
+                                   venue=info["venue"])
+            text, how = self._family_text("reschedule", facts, M.CLIENT_RESCHEDULE, now, case_id, local.date())
             message_id = self._message(now, "family", family["language"], text, group_id=family["group_id"],
                                        case_id=case_id)
             ask_id = self.conn.execute(
@@ -1105,7 +1116,7 @@ class Pipeline:
             self._event(case_id, now, "agent", "family_asked", {
                 "ask_id": f"Q-{ask_id}", "kind": "reschedule", "staff_id": coach.id, "name": coach.name,
                 "child": family["child"], "start": slot.start, "when": f"{local:%a %H:%M}", "text": text,
-                "text_source": source, "language": family["language"], "answer_by": answer_by,
+                **how, "language": family["language"], "answer_by": answer_by,
             })
         return {"asked": f"Q-{ask_id}"}
 
