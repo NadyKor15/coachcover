@@ -517,9 +517,9 @@
     "source": "from the founder's coaching experience"
   },
   "model_log": {
-    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.060¢ · replay mode: recorded and prepared demo answers",
+    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.064¢ · replay mode: recorded and prepared demo answers",
     "calls": 5,
-    "usd": 0.0006
+    "usd": 0.000636
   },
   "flagged": [],
   "night_check": null,

@@ -209,10 +209,13 @@ def _model_log(conn, case_id: int, callout_id, live: bool) -> dict:
         (case_id, callout_id, callout_id),
     ).fetchall()
     names = list(dict.fromkeys(SHORT_NAMES.get(m or req, m or req) for m, req, _, _ in rows))
-    usd = round(sum(float(c) for _, _, c, _ in rows), 4)
+    # the same bill as the money card's "This cover": one number for the cost of this cover on the whole screen
+    bill = money_model.case_cost(conn, case_id) if case_id is not None else None
+    usd = round(bill["usd"], 6) if bill else round(sum(float(c) for _, _, c, _ in rows), 6)
+    calls = bill["calls"] if bill else len(rows)
     where = "running on Vultr" if live else "replay mode: recorded and prepared demo answers"
-    label = f"Models: {' · '.join(names)} — {len(rows)} calls · {money_model.cost_label(usd)} · {where}" if rows else None
-    return {"label": label, "calls": len(rows), "usd": usd}
+    label = f"Models: {' · '.join(names)} — {calls} calls · {money_model.cost_label(usd)} · {where}" if rows else None
+    return {"label": label, "calls": calls, "usd": usd}
 
 
 def judge_state(conn: psycopg.Connection) -> dict:

@@ -127,6 +127,9 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert money["uncovered_morning_label"] == "If nobody had accepted: $240 (Refunds: 8 participants × $30)"
     assert money["manager_hour_usd"] == 25.0 and 0 < money["case_cost_cents"] < 1
     assert today["model_log"]["calls"] >= 4 and today["model_log"]["usd"] > 0
+    # one cost of this cover on the whole screen: the footer and the money card show the same number
+    assert round(today["model_log"]["usd"] * 100, 4) == money["case_cost_cents"]
+    assert money["case_cost_label"] in today["model_log"]["label"]
     assert today["flagged"][0]["staff"] == "Anna Kim"  # her "assign me anyway" message was flagged
     assert today["judge"] == {"running": False, "case_id": "C-1109-01"}
     # the same 12 hours on the phone

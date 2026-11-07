@@ -25,6 +25,6 @@
       "agent_url": "http://api:8000/a2a/V1"
     }
   ],
-  "agent_card": "http://127.0.0.1:18097/.well-known/agent-card.json",
+  "agent_card": "http://127.0.0.1:18091/.well-known/agent-card.json",
   "protocol_version": "1.0"
 }
