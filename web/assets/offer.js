@@ -31,6 +31,9 @@
     t.textContent = text;
     r.appendChild(t);
     r.hidden = false;
+    // an answered offer has no countdown: the ring says where it stands instead of a frozen 0:00
+    setText('timer-label', tone === 'ok' ? 'You are on' : 'Offer closed');
+    setText('expires-in', tone === 'ok' ? '✓' : '—');
     $('#buttons').hidden = true;
   }
 

@@ -8,7 +8,7 @@ from coachcover.demo import reset_school
 from coachcover.models import DbLedger, ModelClient
 from coachcover.pipeline import Pipeline
 from coachcover.seed import NOW, POLICY_ID
-from coachcover.worker import tick
+from coachcover.worker import tick, tick_unless_resetting
 
 pytestmark = pytest.mark.db
 
@@ -55,3 +55,25 @@ def test_each_tick_posts_closed_covers_to_the_team_chat_once(new_database):
     assert tick(conn, POLICY_ID, run["ended_at"] + timedelta(seconds=5))["team_posts"] == 1  # Zoe covered 06:00
     assert tick(conn, POLICY_ID, run["ended_at"] + timedelta(seconds=10))["team_posts"] == 0  # never twice
     assert conn.execute("SELECT count(*) FROM ext_team_post").fetchone()[0] >= 1
+
+
+def test_worker_skips_the_tick_while_the_school_is_being_reset(new_database):
+    """A judge run rebuilds the schema; a tick in the middle of it used to deadlock (500 on Night check)."""
+    import psycopg
+
+    from coachcover.demo import RESET_LOCK
+
+    conn = new_database()
+    reset_school(conn)
+    other = psycopg.connect(conn.info.dsn, autocommit=True)  # stands in for the api doing the reset
+    try:
+        other.execute("SELECT pg_advisory_lock(%s)", (RESET_LOCK,))
+        assert tick_unless_resetting(conn, POLICY_ID) is None
+        other.execute("SELECT pg_advisory_unlock(%s)", (RESET_LOCK,))
+        done = tick_unless_resetting(conn, POLICY_ID)
+        assert done is not None and "expired_offers" in done
+    finally:
+        other.close()
+    # the reset itself releases the lock: the next tick runs
+    reset_school(conn)
+    assert tick_unless_resetting(conn, POLICY_ID) is not None

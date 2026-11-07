@@ -19,7 +19,7 @@ from coachcover.pipeline import Conflict, Pipeline
 from coachcover.seed import HERO_SHIFT, NOW, POLICY_ID, load_school
 
 VOICE = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "audio" / "ru-callout.ogg"
-_RESET_LOCK = 0x636F6163
+RESET_LOCK = 0x636F6163  # exclusive while the school is rebuilt; the worker takes it shared per tick
 
 
 def real_now() -> datetime:
@@ -43,13 +43,19 @@ def set_clock(conn: psycopg.Connection, base: datetime, speed: float = 1.0) -> N
 
 
 def reset_school(conn: psycopg.Connection) -> None:
-    """Drop and rebuild the public schema with the training school. ops.* (judge limits) survives."""
-    with conn.transaction():
-        conn.execute("SELECT pg_advisory_xact_lock(%s)", (_RESET_LOCK,))
-        conn.execute("DROP SCHEMA public CASCADE")
-        conn.execute("CREATE SCHEMA public")
-    load_school(conn)
-    set_clock(conn, NOW)
+    """Drop and rebuild the public schema with the training school. ops.* (judge limits) survives.
+
+    The whole rebuild holds RESET_LOCK exclusively, so a worker tick never runs against a half-built school
+    (it takes the same lock shared and skips the tick while a reset runs)."""
+    conn.execute("SELECT pg_advisory_lock(%s)", (RESET_LOCK,))
+    try:
+        with conn.transaction():
+            conn.execute("DROP SCHEMA public CASCADE")
+            conn.execute("CREATE SCHEMA public")
+        load_school(conn)
+        set_clock(conn, NOW)
+    finally:
+        conn.execute("SELECT pg_advisory_unlock(%s)", (RESET_LOCK,))
 
 
 SCENARIOS = ("dangerous_morning", "nobody_accepts", "nightly_check", "network_loan")

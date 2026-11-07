@@ -22,7 +22,7 @@ import psycopg
 
 from coachcover import ext_db, notify
 from coachcover.checks import store_night_report
-from coachcover.demo import clock_now
+from coachcover.demo import RESET_LOCK, clock_now
 from coachcover.models import DbLedger, ModelClient
 from coachcover.pipeline import Pipeline
 from coachcover.seed import POLICY_ID
@@ -42,6 +42,17 @@ def tick(conn: psycopg.Connection, policy_id: str, now: datetime, night_hour: in
     ext_db.ensure_schema(conn)
     posts = notify.sweep(conn, policy_id, now)  # one team-chat post per closed cover (simulated delivery)
     return {"expired_offers": expired, "night_report": night, "team_posts": len(posts)}
+
+
+def tick_unless_resetting(conn: psycopg.Connection, policy_id: str, night_hour: int = 21) -> dict | None:
+    """One tick, or None while a judge run is rebuilding the school (no tick against a half-built schema)."""
+    if not conn.execute("SELECT pg_try_advisory_lock_shared(%s)", (RESET_LOCK,)).fetchone()[0]:
+        return None
+    try:
+        now = clock_now(conn)
+        return {"clock": now, **tick(conn, policy_id, now, night_hour)}
+    finally:
+        conn.execute("SELECT pg_advisory_unlock_shared(%s)", (RESET_LOCK,))
 
 
 def _log(**fields) -> None:
@@ -64,10 +75,12 @@ def main() -> int:
     while not stop["now"]:
         try:
             with psycopg.connect(dsn, autocommit=True, connect_timeout=5, options="-c statement_timeout=30000") as conn:
-                now = clock_now(conn)
-                result = tick(conn, policy_id, now, night_hour)
+                result = tick_unless_resetting(conn, policy_id, night_hour)
             failures = 0
-            _log(event="tick", clock=now, **result)
+            if result is None:
+                _log(event="tick_skipped", reason="the school is being reset for a judge run")
+            else:
+                _log(event="tick", **result)
         except Exception as exc:  # noqa: BLE001 - logged and counted; the container restarts us after too many
             failures += 1
             _log(event="tick_failed", error=f"{type(exc).__name__}: {exc}", failures=failures)
