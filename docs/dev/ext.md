@@ -230,10 +230,11 @@ After each closed cover (`covered` or `plan_b`): `"06:00 covered by Maria, case 
 `would post to #riverside-staff: …`. Once per case. `GET` runs the sweep; the worker can call
 `notify.sweep(conn, policy_id, now)` each tick. A loan posts on both venues' channels.
 
-## Checked on the core lane's code (core-branch 7271b1a, 2026-11-07)
+## Checked on the core's code (core-branch 7271b1a and main adaac69, 2026-11-07)
 
-The lane's modules and tests were run on an export of `core-branch` (committed state) with the router included
-before the static mount: 310 of 311 tests pass. The one failure is expected until the core allows the preset
+The lane's files were laid over an export of `core-branch` (committed state) and of `main` at adaac69 (the core
+merged), with the router ahead of the static mount: 310 of 311 and 318 of 319 tests pass. `pyproject.toml` and
+`uv.lock` of main did not change since 32f4efe, so the lock merges as is. The one failure is expected until the core allows the preset
 key `forecast` (below). On that data: the loan for `L-1109-G002` goes through (Kai Morgan, both approvals,
 case `C-1109-01` covered, posts on `#riverside-staff` and `#northside-staff`); the week shows 22 fragile shifts
 across the three venues (5 at risk), 2 at V1; the binder for Monday at V1 shows 10 shifts, 1 violation, 1
