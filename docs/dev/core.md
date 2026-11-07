@@ -107,7 +107,8 @@ Industry words (swim, pool, lifeguard, WSI...) are allowed only in presets and t
   (Today shows its own card when the screen's case is a private lesson).
 - API: `GET /api/client/{Q-n}` (the family's page), `POST /api/client/{Q-n}/respond {"accept"}` (409 once closed). Judge
   scenarios `private_lesson` and `private_declined` play Marina's own midday note (`tests/fixtures/audio/ru-callout-private-1700.ogg`,
-  `say -v Milena`: "…Я заболела, в пять не смогу провести индивидуальное занятие с Лили…", prepared answers
+  `say -v Milena -r 150`, the name stressed "Ли́ли" so live whisper hears "Лили": "…Я заболела, в пять не смогу провести
+  индивидуальное занятие с Лили…", prepared answers
   `synthetic-*-ru-private-1700.json`) at 12:10:10: her 09:30 lesson is over, so the whole-day rule opens one case, the 17:00
   private lesson (C-1109-01). Chloe says yes 12:12, the family is asked (answer by 12:42); `private_lesson`: yes at 12:16;
   `private_declined`: no at 12:14:30 → Wed 17:00 with Marina, yes at 12:16. The morning scenarios keep the 08:40 note (two

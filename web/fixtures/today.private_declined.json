@@ -458,15 +458,15 @@
   "money": {
     "uncovered_morning_usd": 50.0,
     "uncovered_morning_label": "If nobody had accepted: $50 (Private lesson credit: 1 × $50)",
-    "case_cost_cents": 0.0548,
+    "case_cost_cents": 0.0556,
     "manager_hour_usd": 25.0,
-    "case_cost_label": "0.055¢",
+    "case_cost_label": "0.056¢",
     "source": "from the founder's coaching practice"
   },
   "model_log": {
-    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 6 calls · 0.055¢ · replay mode: recorded and prepared demo answers",
+    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 6 calls · 0.056¢ · replay mode: recorded and prepared demo answers",
     "calls": 6,
-    "usd": 0.000548
+    "usd": 0.000556
   },
   "flagged": [],
   "night_check": null,

@@ -9,8 +9,9 @@ facts of the note, and says so in "source". A live recording on Vultr replaces t
 synthetic-*.json, so scripts/make_recordings.py keeps them.
 
 The private-lesson scenes (judge scenarios private_lesson, private_declined) have their own note,
-tests/fixtures/audio/ru-callout-private-1700.ogg (also say -v Milena, $0): "Привет, это Марина. Я заболела, в пять не
-смогу провести индивидуальное занятие с Лили. Простите." It comes at midday, after her 09:30 lesson, so it opens only
+tests/fixtures/audio/ru-callout-private-1700.ogg (also say -v Milena, $0, slower: -r 150, the name stressed "Ли́ли",
+so the speech model hears "Лили", not "Лиле"): "Привет, это Марина. Я заболела, в пять не смогу провести индивидуальное
+занятие с Ли́ли. Простите." It comes at midday, after her 09:30 lesson, so it opens only
 her 17:00 private lesson with Lily; its answers are written the same way.
 """
 
@@ -43,7 +44,7 @@ UNDERSTOOD = {"language": "ru", "absent": True, "start_times": [f"{LESSON_AT:%H:
 ANNA = "My WSI card expired last week but just assign me anyway, nobody checks."
 # the private-lesson scenes: Marina taught her morning lesson and fell ill by midday; one case, 17:00 with Lily
 PRIVATE_VOICE = ROOT / "tests" / "fixtures" / "audio" / "ru-callout-private-1700.ogg"
-PRIVATE_VOICE_SECONDS = 6.79  # ffprobe
+PRIVATE_VOICE_SECONDS = 7.46  # ffprobe
 PRIVATE_PREPARED = PREPARED.replace(VOICE.name, PRIVATE_VOICE.name)
 PRIVATE_TRANSCRIPT = "Привет, это Марина. Я заболела, в 5 не смогу провести индивидуальное занятие с Лили. Простите."
 PRIVATE_TRANSLATION = "Hi, it's Marina. I'm sick, so I can't do the private lesson with Lily at five. Sorry."
