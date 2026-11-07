@@ -1,0 +1,422 @@
+{
+  "title": "Who is allowed on deck at 16:00",
+  "venue": {
+    "id": "V1",
+    "name": "Riverside Aquatic Center",
+    "term": "pool"
+  },
+  "now_label": "Sun, Nov 8 · 21:30",
+  "user_label": "Dana Ruiz · Manager",
+  "lang": "en",
+  "callout": null,
+  "shift": {
+    "id": "L-1109-G021",
+    "time_label": "16:00–16:45",
+    "lanes_label": "Teaching pool + Learn-to-Swim Level 2 (5 kids)",
+    "needs_label": "Instructor",
+    "program_label": "Program LTS-2"
+  },
+  "eligibility": {
+    "total": 40,
+    "eligible": 10,
+    "reasons": [
+      {
+        "code": "CERT_EXPIRED",
+        "label": "Certificate expired Nov 2",
+        "count": 1,
+        "tone": "red"
+      },
+      {
+        "code": "CERT_NEEDS_REVIEW",
+        "label": "Readers disagree — review",
+        "count": 1,
+        "tone": "amber"
+      },
+      {
+        "code": "ROLE_MISSING",
+        "label": "Not a Instructor",
+        "count": 13,
+        "tone": "plain"
+      },
+      {
+        "code": "LEVEL_MISSING",
+        "label": "Not cleared for LTS-2",
+        "count": 7,
+        "tone": "plain"
+      },
+      {
+        "code": "RESERVE",
+        "label": "Reserve (head coach)",
+        "count": 3,
+        "tone": "plain"
+      },
+      {
+        "code": "OVERLAPS_COMMITMENT",
+        "label": "On deck at 14:00",
+        "count": 2,
+        "tone": "plain"
+      },
+      {
+        "code": "IS_THE_ABSENT_PERSON",
+        "label": "Called out",
+        "count": 1,
+        "tone": "plain"
+      },
+      {
+        "code": "HOURS_LIMIT_EXCEEDED",
+        "label": "Over 40 h this week",
+        "count": 1,
+        "tone": "plain"
+      },
+      {
+        "code": "OVERLAPS_COMMITMENT",
+        "label": "Teaching at 16:00",
+        "count": 1,
+        "tone": "plain"
+      }
+    ],
+    "staff": [
+      {
+        "id": "S05",
+        "name": "Marina Petrova",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S27",
+        "name": "Anna Kim",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S15",
+        "name": "Diego Navarro",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S25",
+        "name": "Sofia Reyes",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S08",
+        "name": "Grace Sullivan",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S21",
+        "name": "Pavel Orlov",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S18",
+        "name": "Chloe Hayes",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S19",
+        "name": "Zoe Coleman",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S03",
+        "name": "Valentina Castillo",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S17",
+        "name": "Maria Lopez",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S35",
+        "name": "Carlos Mendoza",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S02",
+        "name": "Sofía García",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 16:00"
+      },
+      {
+        "id": "S13",
+        "name": "Elena Kuznetsova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Readers disagree — review"
+      },
+      {
+        "id": "S31",
+        "name": "Mason Turner",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S30",
+        "name": "Nikita Morozov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S34",
+        "name": "Logan Pierce",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S33",
+        "name": "Ekaterina Belova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S09",
+        "name": "Lucas Reed",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-2"
+      },
+      {
+        "id": "S40",
+        "name": "Polina Novikova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S01",
+        "name": "Emma Carter",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "On deck at 14:00"
+      },
+      {
+        "id": "S10",
+        "name": "Dmitri Volkov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 2"
+      },
+      {
+        "id": "S07",
+        "name": "Javier Morales",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Called out"
+      },
+      {
+        "id": "S28",
+        "name": "Ava Mitchell",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S32",
+        "name": "Isabela Cruz",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S38",
+        "name": "Paula Jiménez",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S36",
+        "name": "Ella Morgan",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S26",
+        "name": "Leo Martins",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-2"
+      },
+      {
+        "id": "S04",
+        "name": "Daniel Brooks",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-2"
+      },
+      {
+        "id": "S37",
+        "name": "Andrei Kozlov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S39",
+        "name": "Caleb Ward",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S16",
+        "name": "Andrés Delgado",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-2"
+      },
+      {
+        "id": "S14",
+        "name": "Irina Lebedeva",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-2"
+      },
+      {
+        "id": "S20",
+        "name": "Mateo Romero",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-2"
+      },
+      {
+        "id": "S22",
+        "name": "Ethan Price",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "On deck at 14:00"
+      },
+      {
+        "id": "S24",
+        "name": "Gabriela Vargas",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-2"
+      },
+      {
+        "id": "S29",
+        "name": "Lucía Ramos",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not a Instructor"
+      },
+      {
+        "id": "S11",
+        "name": "Camila Herrera",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Over 40 h this week"
+      },
+      {
+        "id": "S06",
+        "name": "Liam Foster",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Reserve (head coach)"
+      },
+      {
+        "id": "S12",
+        "name": "Noah Bennett",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Reserve (head coach)"
+      },
+      {
+        "id": "S23",
+        "name": "Harper Hughes",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Reserve (head coach)"
+      }
+    ],
+    "first_refusal": null
+  },
+  "timeline": [
+    {
+      "time_label": "21:30",
+      "kind": "callout",
+      "label": "Call-out"
+    },
+    {
+      "time_label": "16:00",
+      "kind": "shift_start"
+    }
+  ],
+  "offers": [],
+  "outcome": {
+    "covered_by": null,
+    "covered_time": null,
+    "lessons_cancelled": 0
+  },
+  "plan_b": {
+    "id": "P-standby",
+    "state": "standby",
+    "text": "Liam Foster (reserve) steps in · Camila Herrera on overtime: 0.25 h, $8.50 · move the lesson: makeup for 5 families · cancel: credit for 5 families",
+    "hash": "fa7b484fa6777c90bda34bb0bcb08a2507e443a2802aa757ccc305339c9e19df",
+    "autonomy": "propose"
+  },
+  "summary_cards": [
+    {
+      "title": "Tomorrow",
+      "value": "35 of 36 shifts covered"
+    },
+    {
+      "title": "Expiring in 30 days",
+      "value": "4 certificates"
+    },
+    {
+      "title": "Closures today",
+      "value": "none"
+    }
+  ],
+  "money": {
+    "uncovered_morning_usd": 150.0,
+    "uncovered_morning_label": "If nobody had accepted: $150 (Refunds: 5 participants × $30)",
+    "case_cost_cents": 0.0,
+    "manager_hour_usd": 25.0
+  },
+  "model_log": {
+    "label": null,
+    "calls": 0,
+    "usd": 0
+  },
+  "flagged": [],
+  "night_check": {
+    "case_id": "C-1108-01",
+    "label": "Night check 21:30: Javier Morales — CPR/AED card ends Nov 8, before Mon 16:00 · replacement proposed to the manager",
+    "status": "open"
+  },
+  "ratio_alert": null,
+  "judge": {
+    "running": false,
+    "case_id": "C-1108-01"
+  }
+}
