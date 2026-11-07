@@ -195,3 +195,30 @@ def test_the_translation_prompt_keeps_the_fever_with_its_number_and_unit():
     assert "I've got a fever of 38 °C" in system and "not \"I have a temperature 38\"" in system
     assert "Keep every number with its unit" in system
     assert how == "model" and text.startswith("Hi, it's Marina. I've got a fever of 38 °C")
+
+
+def test_the_translation_prompt_says_the_little_ones_not_toddlers():
+    """Live, 2026-11-07: "a class with the toddlers" for Marina's "Preschool swim, ages 3-5" (toddlers are 1-3). The
+    prompt the model gets carries the rule and an example (fake transport); the prepared answer of the morning says
+    "the little ones". The translation's input is the message alone (its replay key), so no group age is added."""
+    from coachcover.models import MemoryLedger
+
+    sent = []
+
+    def transport(path, request):
+        sent.append(request["json"])
+        return {"model": TEXT_MODEL, "usage": {"prompt_tokens": 140, "completion_tokens": 30},
+                "choices": [{"message": {"content": json.dumps({"text": "I have the nine thirty class with the little "
+                                                                "ones. Sorry."})}}]}, 700
+
+    p = Pipeline(None, ModelClient(MemoryLedger(), mode="live", api_key="test-only", transport=transport), "x")
+    text, how = p._translate("У меня в полдесятого занятие с малышами. Простите.", "ru", seed.NOW, {"callout_id": "t"})
+    system = sent[0]["messages"][0]["content"]
+    assert "never \"toddlers\"" in system and "\"the little ones\"" in system and "\"my preschool class\"" in system
+    assert "\"у меня занятие с малышами\" -> \"I have my class with the little ones\"" in system
+    assert sent[0]["messages"][1]["content"] == "У меня в полдесятого занятие с малышами. Простите."  # the message only
+    assert how == "model" and "toddler" not in text
+    from pathlib import Path
+    prepared = json.loads((Path(__file__).parent / "fixtures/models/synthetic-translate-ru-0930.json").read_text())
+    said = json.loads(prepared["response"]["choices"][0]["message"]["content"])["text"]
+    assert "the little ones" in said and "toddler" not in said
