@@ -82,6 +82,7 @@ svg{display:block;flex:none}
 .approval.c-left{width:705px;height:73px;margin-top:1px;padding-left:24px}
 .approval.c-right{width:669px;height:77px;padding-left:25px}
 .approval .chk{margin-right:21px}
+.approval .chk circle{fill:var(--st-safe-dot)}
 .approval.c-right .chk{margin-top:-2px;margin-right:20px}
 .approval .t{position:relative;top:-1.2px;font-size:23.87px;line-height:30px;color:var(--ink-2)}
 .approval.c-right .t{top:-2.2px}

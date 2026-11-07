@@ -66,14 +66,20 @@ body[data-state="loading"] .main{visibility:hidden}
 /* voice note lines may be long: they wrap inside the step column */
 .s-line.wrap{white-space:normal;max-width:790px}
 .tag{margin-left:2px;margin-top:6.3px;height:35px;line-height:35px;padding:0 17px;border-radius:12px;background:#ECEBE9;font-size:19.95px;letter-spacing:calc(-0.026em + 0.05px);color:var(--ink-2);white-space:nowrap}
-.blocked{margin-top:14.3px;width:818px;height:55px;border:2px solid var(--red-line);border-radius:11px;background:var(--red-soft);display:flex;align-items:center;padding-left:14px;color:var(--red-ink);font-size:18px;font-weight:600;letter-spacing:-0.45px;white-space:nowrap;overflow:hidden}
-.blocked svg{width:25px;height:25px;flex:none;fill:none;stroke:var(--red-ink);stroke-width:2.4;stroke-linecap:round;margin-right:12px}
+.blocked{margin-top:14.3px;width:818px;height:55px;border:2px solid var(--st-risk-line);border-radius:11px;background:var(--st-risk-bg);display:flex;align-items:center;padding-left:14px;color:var(--st-risk-ink);font-size:18px;font-weight:600;letter-spacing:-0.45px;white-space:nowrap;overflow:hidden}
+.blocked svg{width:25px;height:25px;flex:none;fill:none;stroke:var(--st-risk-dot);stroke-width:2.4;stroke-linecap:round;margin-right:12px}
 .reasons{display:flex;flex-wrap:wrap;column-gap:10px;row-gap:8px;width:818px;margin-top:13px}
 .reason{height:37px;line-height:37px;padding:0 16px;border-radius:13px;background:var(--chip);font-size:18.9px;letter-spacing:calc(-0.026em - 0.24px);color:var(--ink-2);white-space:nowrap}
 .offer{margin-left:5px;width:811px;height:43px;border:2px solid var(--row-line);border-radius:10px;background:#FCFBF9;display:flex;align-items:center;padding-left:25.5px;font-size:22.31px;letter-spacing:calc(-0.026em + 0.05px);color:var(--ink-2);white-space:nowrap;overflow:hidden}
 .s-title + .offer{margin-top:13.2px}
 .offer + .offer{margin-top:6px}
-.offer.accepted{margin-top:8px;height:53px;border-color:var(--gold-line);background:var(--gold-soft);padding-left:15px;color:var(--gold-ink);font-weight:600;font-size:22.45px}
+.offer.accepted{margin-top:8px;height:53px;border-color:var(--st-safe-line);background:var(--st-safe-bg);padding-left:15px;color:var(--st-safe-ink);font-weight:600;font-size:22.45px}
+.offer.accepted svg circle{fill:var(--st-safe-dot)}
+/* declined and unanswered rows keep the neutral row and carry their status as a bar on the left */
+.offer.declined{box-shadow:inset 5px 0 0 var(--st-risk-dot)}
+.offer.noreply{box-shadow:inset 5px 0 0 var(--st-fragile-dot)}
+.reason.tone-risk{background:var(--st-risk-bg);color:var(--st-risk-ink);box-shadow:inset 0 0 0 1.5px var(--st-risk-line)}
+.reason.tone-fragile{background:var(--st-fragile-bg);color:var(--st-fragile-ink);box-shadow:inset 0 0 0 1.5px var(--st-fragile-line)}
 .offer.accepted svg{width:27px;height:27px;flex:none;margin-right:12px}
 .s-line.sum{margin-top:2px;font-size:23.94px;letter-spacing:calc(-0.026em - 0.15px);line-height:32px}
 

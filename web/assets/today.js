@@ -14,16 +14,16 @@
   const PERSON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="4.6" r="3.2"/><path d="M1.8 14.6c.4-3.4 3-5.2 6.2-5.2s5.8 1.8 6.2 5.2z"/></svg>';
   const TL_ICON = {
     call: { size: 45, svg: '<svg width="25" height="25" viewBox="0 0 24 24" fill="#fff"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.61 21 3 13.39 3 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>' },
-    declined: { size: 44, svg: '<svg width="18" height="18" viewBox="0 0 18 18" stroke="#a83a2f" stroke-width="2.6" stroke-linecap="round"><path d="M3 3l12 12M15 3L3 15"/></svg>' },
-    noreply: { size: 44, svg: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#6c6e70" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v8.5l5.5 4"/></svg>' },
+    declined: { size: 44, svg: '<svg width="18" height="18" viewBox="0 0 18 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M3 3l12 12M15 3L3 15"/></svg>' },
+    noreply: { size: 44, svg: '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v8.5l5.5 4"/></svg>' },
     accepted: { size: 49, svg: '<svg width="26" height="20" viewBox="0 0 26 20" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5l6.5 6L23 3.5"/></svg>' },
-    planmark: { size: 44, svg: '<svg width="22" height="18" viewBox="0 0 30 24" fill="none" stroke="#7b5808" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h8.5l15.5 16"/><path d="M19.5 19.5h7v-7"/><path d="M13.5 6.6C9 9.5 6.4 13.5 6 19"/></svg>' },
+    planmark: { size: 44, svg: '<svg width="22" height="18" viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h8.5l15.5 16"/><path d="M19.5 19.5h7v-7"/><path d="M13.5 6.6C9 9.5 6.4 13.5 6 19"/></svg>' },
     other: { size: 44, svg: '' },
     end: { size: 26, svg: '' }
   };
   const OFF_ICON = {
-    declined: '<svg width="13" height="13" viewBox="0 0 13 13" stroke="#b8463a" stroke-width="2.2" stroke-linecap="round"><path d="M2.5 2.5l8 8M10.5 2.5l-8 8"/></svg>',
-    noreply: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8b8d8e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 2.8v6.4l4 3"/></svg>',
+    declined: '<svg width="13" height="13" viewBox="0 0 13 13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M2.5 2.5l8 8M10.5 2.5l-8 8"/></svg>',
+    noreply: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 2.8v6.4l4 3"/></svg>',
     accepted: '<svg width="17" height="13" viewBox="0 0 17 13" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.8l4.2 4L15 2.2"/></svg>',
     other: ''
   };

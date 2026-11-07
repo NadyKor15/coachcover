@@ -1,14 +1,17 @@
-/* Status colours shared by every screen with safe / fragile / at-risk states (Week ahead today; Today, case and
-   Network next). Palette A "pastel green / sand / rose": dark digits, contrast 4.5:1 or more.
-   Palette B "teal mist / cream gold / clay", the other approved choice, is these 15 values:
-     --st-safe-bg:#D9ECE7; --st-safe-ink:#0D4B4B; --st-safe-line:#A6CFC6; --st-safe-dot:#2F7F78; --st-safe-hatch:#A6CFC6;
-     --st-fragile-bg:#F3E6C9; --st-fragile-ink:#5A4512; --st-fragile-line:#D9C089; --st-fragile-dot:#9A7726; --st-fragile-hatch:#D9C089;
-     --st-risk-bg:#F0D5CB; --st-risk-ink:#7C2E22; --st-risk-line:#DCA898; --st-risk-dot:#B4483C; --st-risk-hatch:#E4C4BA;
-   Choosing B = replacing the values below with these; nothing else changes. */
+/* Status colours shared by every screen with safe / fragile / at-risk states: Today (ratio banner, night check,
+   reason chips, the first refusal, offer results), the case page, Week ahead and Network. Brand colours (teal
+   buttons and menu, the gold result strips) are not statuses and stay in each screen's own file.
+   Palette B "teal mist / cream gold / clay", the founder's choice: dark text, contrast 4.5:1 or more for text and
+   3:1 or more for dots and dashed borders (checked on every screen by tests/web/e2e_fixture.js).
+   Palette A "pastel green / sand / rose", the other approved choice, was:
+     --st-safe-bg:#DDEFD8; --st-safe-ink:#1E4A27; --st-safe-line:#A9D3A1; --st-safe-dot:#4E8F47; --st-safe-hatch:#A9D3A1;
+     --st-fragile-bg:#F6E7C1; --st-fragile-ink:#5B4411; --st-fragile-line:#DDBE6F; --st-fragile-dot:#9E7A1C; --st-fragile-hatch:#DDBE6F;
+     --st-risk-bg:#F2C2B8; --st-risk-ink:#7A2219; --st-risk-line:#DE9A8C; --st-risk-dot:#B9483C; --st-risk-hatch:#E6B2A8;
+   Switching palettes = replacing the 15 values below; nothing else changes. */
 :root{
-  --st-safe-bg:#DDEFD8; --st-safe-ink:#1E4A27; --st-safe-line:#A9D3A1; --st-safe-dot:#4E8F47; --st-safe-hatch:#A9D3A1;
-  --st-fragile-bg:#F6E7C1; --st-fragile-ink:#5B4411; --st-fragile-line:#DDBE6F; --st-fragile-dot:#9E7A1C; --st-fragile-hatch:#DDBE6F;
-  --st-risk-bg:#F2C2B8; --st-risk-ink:#7A2219; --st-risk-line:#DE9A8C; --st-risk-dot:#B9483C; --st-risk-hatch:#E6B2A8;
-  /* shifts that already started: neutral, not part of the palette choice */
+  --st-safe-bg:#D9ECE7; --st-safe-ink:#0D4B4B; --st-safe-line:#A6CFC6; --st-safe-dot:#2F7F78; --st-safe-hatch:#A6CFC6;
+  --st-fragile-bg:#F3E6C9; --st-fragile-ink:#5A4512; --st-fragile-line:#D9C089; --st-fragile-dot:#9A7726; --st-fragile-hatch:#D9C089;
+  --st-risk-bg:#F0D5CB; --st-risk-ink:#7C2E22; --st-risk-line:#DCA898; --st-risk-dot:#B4483C; --st-risk-hatch:#E4C4BA;
+/* shifts that already started: neutral, not part of the palette choice */
   --st-past-bg:#EFEDEA; --st-past-ink:#77787A; --st-past-line:#DEDAD4;
 }

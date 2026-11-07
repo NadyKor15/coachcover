@@ -298,6 +298,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('case: blocked line = screen C refusal', await text(p, '[data-slot="blocked-row"]') === e.first_refusal.staff + ' · ' + e.first_refusal.label);
     const caseCounts = await p.$$eval('[data-slot="reason-count"]', es => es.map(x => +x.textContent.replace('×', '')));
     check('case: reasons add up', caseCounts.reduce((a, b) => a + b, 0) === steps.allowed.total - steps.allowed.allowed, caseCounts);
+    check('case: every reason chip is one chip-high line', await p.$$eval('[data-slot="reason-chip"]', es => es.every(e => e.getBoundingClientRect().height <= 40)));
     const accRow = (await texts(p, '[data-slot="offer-row"]')).find(t => t.startsWith(accepted.staff));
     check('case: accepted offer with its why line', accRow === accepted.staff + ' — accepted · ' + accepted.why_first, accRow);
     check('case: models line', await text(p, '.facts li:last-child') === 'Models: ' + caseFx.model_calls.length + ' calls · ' + caseFx.model_cost_label, await text(p, '.facts li:last-child'));
@@ -467,6 +468,150 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await Promise.all([p.waitForURL('**/network.html?fixture=1'), p.click('.nav li[data-href="network.html"]')]);
     check('case -> Network', p.url().endsWith('network.html?fixture=1'));
     await p.close();
+    /* ---------- contrast of every status element, by number ---------- */
+    // text 4.5:1 or more against its own background (with hatching: against the darker stripe);
+    // dots, rings and dashed borders 3:1 or more against what they sit on
+    const CONTRAST_JS = () => {
+      const parse = c => {
+        c = String(c).trim();
+        if (c.startsWith('#')) { const h = c.slice(1); return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16), a: 1 }; }
+        const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return null;
+        const p = m[1].split(/[\s,\/]+/).filter(Boolean).map(Number);
+        return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 };
+      };
+      const lin = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      const lum = c => 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+      const over = (t, b) => ({ r: t.r * t.a + b.r * (1 - t.a), g: t.g * t.a + b.g * (1 - t.a), b: t.b * t.a + b.b * (1 - t.a), a: 1 });
+      const bgOf = el => {
+        const layers = [];
+        for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+          const c = parse(getComputedStyle(n).backgroundColor);
+          if (c && c.a > 0) { layers.push(c); if (c.a >= 1) break; }
+        }
+        let base = { r: 255, g: 255, b: 255, a: 1 };
+        for (let i = layers.length - 1; i >= 0; i--) base = over(layers[i], base);
+        return base;
+      };
+      const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+      const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name);
+      window.__contrast = (items) => items.flatMap(it => [...document.querySelectorAll(it.sel)].map(el => {
+        const cs = getComputedStyle(el);
+        let fg, bg;
+        if (it.kind === 'text') { fg = parse(cs.color); bg = bgOf(el); }
+        else {
+          fg = parse(it.prop === 'border' ? cs.borderTopColor : it.prop === 'bg' ? cs.backgroundColor : it.prop === 'fill' ? cs.fill : cssVar(it.prop));
+          bg = it.on === 'white' ? { r: 255, g: 255, b: 255, a: 1 } : bgOf(it.on === 'self' ? el : el.parentElement);
+        }
+        let r = ratio(fg, bg);
+        if (it.hatch) r = Math.min(r, ratio(fg, parse(cssVar(it.hatch))));
+        return { what: it.what, kind: it.kind, sel: it.sel, ratio: Math.round(r * 100) / 100 };
+      }));
+    };
+    const measured = [];
+    async function contrast(page, items) {
+      await page.evaluate(CONTRAST_JS);
+      const res = await page.evaluate(its => window.__contrast(its), items);
+      items.forEach(it => check('contrast present: ' + it.what, res.some(r => r.sel === it.sel), it.sel));
+      res.forEach(r => measured.push(r));
+    }
+    const T = (what, sel, extra) => Object.assign({ what, sel, kind: 'text' }, extra || {});
+    const G = (what, sel, prop, on, extra) => Object.assign({ what, sel, kind: 'sign', prop, on }, extra || {});
+
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'index.html?fixture=1');
+    await ready(p);
+    await contrast(p, [
+      T('Today: red reason chip', '.chip.expired'), T('Today: amber reason chip', '.chip.review'), T('Today: first refusal (BLOCKED)', '#refusal'),
+      G('Today: refusal mark', '#refusal svg circle', 'fill', 'parent'),
+      G('Today: declined ring (offers)', '.off-ico.declined', 'border', 'parent'), G('Today: no-reply ring (offers)', '.off-ico.noreply', 'border', 'parent'),
+      G('Today: accepted dot (offers)', '.off-ico.accepted', 'bg', 'parent'),
+      G('Today: declined ring (timeline)', '.tl-mark.declined', 'border', 'white'), G('Today: no-reply ring (timeline)', '.tl-mark.noreply', 'border', 'white'),
+      G('Today: accepted dot (timeline)', '.tl-mark.accepted', 'bg', 'white')
+    ]);
+    for (const [mock, what] of [['ratio_open', 'Today: ratio banner, seat open'], ['ratio_covered', 'Today: ratio banner, covered']]) {
+      await p.goto(base + 'index.html?fixture=1&mock=' + mock);
+      await ready(p);
+      await contrast(p, [T(what, '#alert')]);
+    }
+    await p.goto(base + 'index.html?fixture=1&mock=plan_changed');
+    await ready(p);
+    await p.click('[data-scenario="nobody_accepts"]');
+    await p.waitForFunction(() => !document.getElementById('approve').disabled);
+    await contrast(p, [T('Today: not covered banner', '#covered .txt'), G('Today: plan B mark (timeline)', '.tl-mark.planmark', 'border', 'white')]);
+    await p.click('#approve');
+    await p.waitForFunction(() => document.getElementById('planb').classList.contains('conflict'));
+    await contrast(p, [T('Today: plan changed (409) line', '.planb.conflict .txt b')]);
+    await p.click('[data-scenario="nightly_check"]');
+    await p.waitForFunction(() => !document.getElementById('alert').hidden);
+    await contrast(p, [T('Today: night check banner', '#alert')]);
+    await p.close();
+
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'case.html?id=' + caseId + '&fixture=1');
+    await ready(p);
+    await contrast(p, [
+      T('Case: blocked line', '[data-slot="blocked-row"]'), T('Case: red reason chip', '.reason.tone-risk'), T('Case: amber reason chip', '.reason.tone-fragile'),
+      T('Case: accepted offer', '.offer.accepted'), G('Case: accepted mark', '.offer.accepted svg circle', 'fill', 'parent'),
+      G('Case: declined bar', '.offer.declined', '--st-risk-dot', 'self'), G('Case: no-reply bar', '.offer.noreply', '--st-fragile-dot', 'self'),
+      G('Case: blocked mark', '.blocked svg', 'stroke-color', 'parent', { prop: '--st-risk-dot' })
+    ]);
+    await p.close();
+
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'network.html?loan=' + ref + '&fixture=1&mock=assigned');
+    await ready(p);
+    await contrast(p, [G('Network: approval mark', '.approval .chk circle', 'fill', 'parent')]);
+    for (const st of ['declined_site_short', 'rejected_rules']) {
+      await p.goto(base + 'network.html?loan=' + ref + '&fixture=1&mock=' + st);
+      await ready(p);
+      await contrast(p, [T('Network: ' + st + ' banner', '#result-text')]);
+    }
+    await p.close();
+
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'week.html?fixture=1');
+    await ready(p);
+    await contrast(p, [
+      T('Week: safe digits', '.cell[data-level="safe"] .num'), T('Week: fragile digits', '.cell[data-level="fragile"] .num'),
+      T('Week: fragile tag', '.cell[data-level="fragile"] .tag'),
+      T('Week: at-risk digits (on hatching)', '.cell[data-level="risk"] .num', { hatch: '--st-risk-hatch' }),
+      T('Week: at-risk tag (on hatching)', '.cell[data-level="risk"] .tag', { hatch: '--st-risk-hatch' }),
+      G('Week: fragile dashed border', '.cell[data-level="fragile"]', 'border', 'parent'),
+      G('Week: legend dashed border', '.legend .sw[data-level="fragile"]', 'border', 'parent'),
+      G('Week: fragile dot (list)', '.flist .dot[data-level="fragile"]', 'bg', 'parent'),
+      G('Week: at-risk diamond (list)', '.flist .dot[data-level="risk"]', 'bg', 'parent')
+    ]);
+    await p.close();
+
+    p = await newPage(browser, 430, 1080);
+    await p.goto(base + 'offer.html?id=' + pendingId + '&fixture=1');
+    await ready(p);
+    await p.click('[data-action="accept"]');
+    await p.waitForSelector('#result:not([hidden])');
+    await contrast(p, [T('Phone: accepted line', '#result')]);
+    await p.goto(base + 'offer.html?id=' + pendingId + '&fixture=1&mock=not_eligible');
+    await ready(p);
+    await p.click('[data-action="accept"]');
+    await p.waitForSelector('#result:not([hidden])');
+    await contrast(p, [T('Phone: no longer eligible line', '#result')]);
+    await p.close();
+
+    // must-light: the same measure on a deliberately pale ink has to fall below 4.5:1
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'index.html?fixture=1');
+    await ready(p);
+    await p.evaluate(CONTRAST_JS);
+    const pale = await p.evaluate(() => { document.documentElement.style.setProperty('--st-risk-ink', '#E0A090');
+      return window.__contrast([{ what: 'control', kind: 'text', sel: '.chip.expired' }])[0].ratio; });
+    check('contrast check can fail (pale ink ' + pale + ':1)', pale < 4.5, pale);
+    await p.close();
+
+    const byWhat = {};
+    measured.forEach(m => { if (!byWhat[m.what] || m.ratio < byWhat[m.what].ratio) byWhat[m.what] = m; });
+    Object.values(byWhat).forEach(m => check('contrast ' + m.what + ' ' + m.ratio + ':1 (min ' + (m.kind === 'text' ? 4.5 : 3) + ')', m.ratio >= (m.kind === 'text' ? 4.5 : 3), m));
+    const minOf = kind => Object.values(byWhat).filter(m => m.kind === kind).sort((a, b) => a.ratio - b.ratio)[0];
+    console.log('CONTRAST text min ' + JSON.stringify(minOf('text')) + ' · signs min ' + JSON.stringify(minOf('sign')));
+    if (SHOTS) fs.writeFileSync(path.join(SHOTS, 'contrast-2026-11-07.json'), JSON.stringify(Object.values(byWhat).sort((a, b) => a.ratio - b.ratio), null, 1) + '\n');
   } finally {
     await browser.close();
     server.close();

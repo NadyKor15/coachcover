@@ -11,9 +11,9 @@
   const CHECK = '<svg viewBox="-22.5 -22.5 45 45" aria-hidden="true"><circle r="22.5" fill="var(--gold)"/>' +
     '<polyline points="-9.2,0.3 -3,6.2 9,-6" fill="none" stroke="#fff" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const RESULT_ICON = {
-    ok: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#06545A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5l4 4L16.5 5"/></svg>',
+    ok: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5l4 4L16.5 5"/></svg>',
     neutral: '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#5f6164" stroke-width="2.4" stroke-linecap="round"><circle cx="10" cy="10" r="7.5"/><path d="M6.5 10h7"/></svg>',
-    bad: '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9.5" fill="#A83A2F"/><path d="M6.6 6.6l6.8 6.8M13.4 6.6l-6.8 6.8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>'
+    bad: '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9.5" fill="var(--st-risk-dot)"/><path d="M6.6 6.6l6.8 6.8M13.4 6.6l-6.8 6.8" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>'
   };
 
   function showError(text) {

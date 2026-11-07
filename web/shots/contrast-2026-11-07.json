@@ -1,0 +1,230 @@
+[
+ {
+  "what": "Today: refusal mark",
+  "kind": "sign",
+  "sel": "#refusal svg circle",
+  "ratio": 3.84
+ },
+ {
+  "what": "Case: blocked mark",
+  "kind": "sign",
+  "sel": ".blocked svg",
+  "ratio": 3.84
+ },
+ {
+  "what": "Case: accepted mark",
+  "kind": "sign",
+  "sel": ".offer.accepted svg circle",
+  "ratio": 3.86
+ },
+ {
+  "what": "Case: no-reply bar",
+  "kind": "sign",
+  "sel": ".offer.noreply",
+  "ratio": 4.03
+ },
+ {
+  "what": "Today: no-reply ring (offers)",
+  "kind": "sign",
+  "sel": ".off-ico.noreply",
+  "ratio": 4.13
+ },
+ {
+  "what": "Week: fragile dashed border",
+  "kind": "sign",
+  "sel": ".cell[data-level=\"fragile\"]",
+  "ratio": 4.13
+ },
+ {
+  "what": "Week: legend dashed border",
+  "kind": "sign",
+  "sel": ".legend .sw[data-level=\"fragile\"]",
+  "ratio": 4.13
+ },
+ {
+  "what": "Week: fragile dot (list)",
+  "kind": "sign",
+  "sel": ".flist .dot[data-level=\"fragile\"]",
+  "ratio": 4.13
+ },
+ {
+  "what": "Today: no-reply ring (timeline)",
+  "kind": "sign",
+  "sel": ".tl-mark.noreply",
+  "ratio": 4.17
+ },
+ {
+  "what": "Today: plan B mark (timeline)",
+  "kind": "sign",
+  "sel": ".tl-mark.planmark",
+  "ratio": 4.17
+ },
+ {
+  "what": "Today: accepted dot (offers)",
+  "kind": "sign",
+  "sel": ".off-ico.accepted",
+  "ratio": 4.7
+ },
+ {
+  "what": "Network: approval mark",
+  "kind": "sign",
+  "sel": ".approval .chk circle",
+  "ratio": 4.7
+ },
+ {
+  "what": "Today: accepted dot (timeline)",
+  "kind": "sign",
+  "sel": ".tl-mark.accepted",
+  "ratio": 4.74
+ },
+ {
+  "what": "Case: declined bar",
+  "kind": "sign",
+  "sel": ".offer.declined",
+  "ratio": 5.16
+ },
+ {
+  "what": "Today: declined ring (offers)",
+  "kind": "sign",
+  "sel": ".off-ico.declined",
+  "ratio": 5.29
+ },
+ {
+  "what": "Week: at-risk diamond (list)",
+  "kind": "sign",
+  "sel": ".flist .dot[data-level=\"risk\"]",
+  "ratio": 5.29
+ },
+ {
+  "what": "Today: declined ring (timeline)",
+  "kind": "sign",
+  "sel": ".tl-mark.declined",
+  "ratio": 5.34
+ },
+ {
+  "what": "Week: at-risk digits (on hatching)",
+  "kind": "text",
+  "sel": ".cell[data-level=\"risk\"] .num",
+  "ratio": 5.68
+ },
+ {
+  "what": "Week: at-risk tag (on hatching)",
+  "kind": "text",
+  "sel": ".cell[data-level=\"risk\"] .tag",
+  "ratio": 5.68
+ },
+ {
+  "what": "Today: red reason chip",
+  "kind": "text",
+  "sel": ".chip.expired",
+  "ratio": 6.64
+ },
+ {
+  "what": "Today: first refusal (BLOCKED)",
+  "kind": "text",
+  "sel": "#refusal",
+  "ratio": 6.64
+ },
+ {
+  "what": "Today: ratio banner, seat open",
+  "kind": "text",
+  "sel": "#alert",
+  "ratio": 6.64
+ },
+ {
+  "what": "Today: not covered banner",
+  "kind": "text",
+  "sel": "#covered .txt",
+  "ratio": 6.64
+ },
+ {
+  "what": "Case: blocked line",
+  "kind": "text",
+  "sel": "[data-slot=\"blocked-row\"]",
+  "ratio": 6.64
+ },
+ {
+  "what": "Case: red reason chip",
+  "kind": "text",
+  "sel": ".reason.tone-risk",
+  "ratio": 6.64
+ },
+ {
+  "what": "Network: declined_site_short banner",
+  "kind": "text",
+  "sel": "#result-text",
+  "ratio": 6.64
+ },
+ {
+  "what": "Network: rejected_rules banner",
+  "kind": "text",
+  "sel": "#result-text",
+  "ratio": 6.64
+ },
+ {
+  "what": "Phone: no longer eligible line",
+  "kind": "text",
+  "sel": "#result",
+  "ratio": 6.64
+ },
+ {
+  "what": "Today: amber reason chip",
+  "kind": "text",
+  "sel": ".chip.review",
+  "ratio": 7.4
+ },
+ {
+  "what": "Today: night check banner",
+  "kind": "text",
+  "sel": "#alert",
+  "ratio": 7.4
+ },
+ {
+  "what": "Case: amber reason chip",
+  "kind": "text",
+  "sel": ".reason.tone-fragile",
+  "ratio": 7.4
+ },
+ {
+  "what": "Week: fragile digits",
+  "kind": "text",
+  "sel": ".cell[data-level=\"fragile\"] .num",
+  "ratio": 7.4
+ },
+ {
+  "what": "Week: fragile tag",
+  "kind": "text",
+  "sel": ".cell[data-level=\"fragile\"] .tag",
+  "ratio": 7.4
+ },
+ {
+  "what": "Today: ratio banner, covered",
+  "kind": "text",
+  "sel": "#alert",
+  "ratio": 8.05
+ },
+ {
+  "what": "Case: accepted offer",
+  "kind": "text",
+  "sel": ".offer.accepted",
+  "ratio": 8.05
+ },
+ {
+  "what": "Week: safe digits",
+  "kind": "text",
+  "sel": ".cell[data-level=\"safe\"] .num",
+  "ratio": 8.05
+ },
+ {
+  "what": "Phone: accepted line",
+  "kind": "text",
+  "sel": "#result",
+  "ratio": 8.05
+ },
+ {
+  "what": "Today: plan changed (409) line",
+  "kind": "text",
+  "sel": ".planb.conflict .txt b",
+  "ratio": 8.8
+ }
+]
