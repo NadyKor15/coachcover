@@ -246,6 +246,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
         "model_log": {"label": None, "calls": 0, "usd": 0.0},
         "flagged": [],
         "night_check": _night_check(conn, vid, now, tz),
+        "ratio_alert": _ratio_alert(conn, vid, now, tz, preset),
         "judge": judge,
     }
     if focus is None:
@@ -395,6 +396,42 @@ def info_absent_name(conn: psycopg.Connection, case_id: int) -> str | None:
         "SELECT s.full_name FROM cover_case c JOIN staff s ON s.id = c.absent_staff_id WHERE c.id = %s", (case_id,)
     ).fetchone()
     return row[0] if row else None
+
+
+def _ratio_alert(conn: psycopg.Connection, venue_id: str, now: datetime, tz: ZoneInfo, preset: Preset) -> dict | None:
+    """The banner for today's latest broken children-per-instructor norm: red while a seat is open, then closed."""
+    day_start = now.astimezone(tz).replace(hour=0, minute=0, second=0, microsecond=0)
+    row = conn.execute(
+        "SELECT c.id, c.code, c.status, c.opened_at, c.closed_at, s.staff_id, st.full_name FROM cover_case c"
+        " JOIN shift s ON s.id = c.shift_id LEFT JOIN staff st ON st.id = s.staff_id"
+        " WHERE s.venue_id = %s AND c.source = 'ratio' AND c.opened_at <= %s AND c.opened_at >= %s"
+        " ORDER BY c.opened_at DESC, c.id DESC LIMIT 1",
+        (venue_id, now, day_start),
+    ).fetchone()
+    if row is None:
+        return None
+    case_id, code, status, opened_at, closed_at, staff_id, staff_name = row
+    data = conn.execute("SELECT data FROM case_event WHERE case_id = %s AND kind = 'ratio_broken' ORDER BY seq LIMIT 1",
+                        (case_id,)).fetchone()[0]
+    word = preset.copy.get("participants", "participants")
+    per = data["max_per_instructor"]
+    covered = status == "covered" and closed_at is not None and closed_at <= now
+    if status == "covered" and not covered:
+        status = "open"  # the demo clock is before the moment it was covered
+    return {
+        "case_id": code,
+        "status": status,
+        "tone": "green" if covered else "red" if status == "open" else "amber",
+        "group": data["group_name"],
+        "label": f"{data['group_name']} — now {data['participants']} {word}, ratio 1:{per} broken",
+        "participants": data["participants"],
+        "max_per_instructor": per,
+        "instructors_needed": data["instructors_needed"],
+        "shift_label": data["label"],
+        "opened_label": _clock(opened_at, tz),
+        "action_label": f"Covered by {staff_name} · {_clock(closed_at, tz)}" if covered and staff_name
+        else "One more instructor needed — asking the queue" if status == "open" else STATUS_LABELS.get(status, status),
+    }
 
 
 def _night_check(conn: psycopg.Connection, venue_id: str, now: datetime, tz: ZoneInfo) -> dict | None:

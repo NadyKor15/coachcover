@@ -58,6 +58,12 @@ class DecideBody(BaseModel):
     by: str = Field(default="manager", min_length=1, max_length=80)
 
 
+class EnrollBody(BaseModel):
+    add: int = Field(ge=1, le=100)
+    language: str | None = Field(default=None, pattern=r"^[a-z]{2}$")
+    by: str = Field(default="front desk", min_length=1, max_length=80)
+
+
 class JudgeBody(BaseModel):
     scenario: str = "dangerous_morning"
 
@@ -208,6 +214,10 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
         if len(data) > MAX_IMAGE_BYTES:
             raise HTTPException(413, "photo is larger than 8 MB")
         return pipeline(conn).read_certificate(staff_id, data, photo.content_type, clock_now(conn), cert_type=cert_type)
+
+    @app.post("/api/groups/{group_id}/enroll")
+    def enroll(group_id: str, body: EnrollBody, conn: psycopg.Connection = Depends(get_conn)):
+        return pipeline(conn).enroll(group_id, body.add, clock_now(conn), language=body.language, by=body.by)
 
     @app.post("/api/import", status_code=201)
     async def post_import(file: UploadFile = File(...), tz: str | None = Form(default=None),

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import re
 import uuid
 from collections import Counter
 from datetime import date, datetime, timedelta
@@ -32,7 +33,7 @@ from coachcover.models import SECOND_READER_MODEL, TEXT_MODEL, ModelClient, Mode
 from coachcover.planb import plan_b_options, strictest  # noqa: F401 - strictest kept importable from here
 from coachcover.reasons_text import describe, describe_place
 from coachcover.repo import load_context, load_policy, load_shift, load_staff
-from coachcover.rules import Code, Ranked, assess, eligible, rank
+from coachcover.rules import Code, Ranked, assess, eligible, rank, ratio_reason
 
 
 
@@ -437,6 +438,90 @@ class Pipeline:
             opened.append({"case_id": case_id, "code": self.case_code(case_id), "shift_id": shift_id,
                            "staff_id": staff_id, "mode": mode})
         return opened
+
+    # --- enrolment: the children-per-instructor norm, live --------------------------
+
+    RATIO_HORIZON = timedelta(days=7)
+
+    def enroll(self, group_id: str, added: int, now: datetime, *, language: str | None = None,
+               by: str = "front desk") -> dict:
+        """Children added to a group. The norm is checked again on the group's shifts of the coming week; a shift
+        over the norm gets one more instructor seat (a shift that teaches the same groups at the same time) and a
+        cover case for it, filled from the same queue by the same rules. Nobody presses anything."""
+        if not isinstance(added, int) or isinstance(added, bool) or not 1 <= added <= 100:
+            raise ValueError("add must be a whole number of children from 1 to 100")
+        if language is not None and not re.fullmatch(r"[a-z]{2}", language):
+            raise ValueError("language must be a two-letter code, e.g. es")
+        with self.conn.transaction():
+            row = self.conn.execute(
+                "SELECT g.size, g.family_counts, g.name FROM lesson_group g JOIN venue v ON v.id = g.venue_id"
+                " WHERE g.id = %s AND v.policy_id = %s FOR UPDATE OF g",
+                (group_id, self.policy_id),
+            ).fetchone()
+            if row is None:
+                raise NotFound(f"unknown group {group_id}")
+            size, counts, name = row
+            counts = {k: int(v) for k, v in counts.items()}
+            if language is not None:
+                counts[language] = counts.get(language, 0) + added
+            self.conn.execute("UPDATE lesson_group SET size = size + %s, family_counts = %s WHERE id = %s",
+                              (added, Jsonb(counts), group_id))
+            self.conn.execute(
+                "INSERT INTO group_enrollment (group_id, at, added, language, size_before, size_after, by_whom)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                (group_id, now, added, language, size, size + added, by),
+            )
+        shift_ids = [r[0] for r in self.conn.execute(
+            "SELECT s.id FROM shift s JOIN shift_group sg ON sg.shift_id = s.id WHERE sg.group_id = %s"
+            " AND s.extra_for IS NULL AND s.status IN ('scheduled', 'open') AND s.starts_at > %s AND s.starts_at < %s"
+            " ORDER BY s.starts_at, s.id",
+            (group_id, now, now + self.RATIO_HORIZON),
+        )]
+        alerts = [a for a in (self._ratio_check(sid, group_id, name, size, added, now, by) for sid in shift_ids) if a]
+        return {"group_id": group_id, "name": name, "size_before": size, "size_after": size + added,
+                "checked_shifts": shift_ids, "alerts": alerts}
+
+    def _ratio_check(self, shift_id: str, group_id: str, name: str, size_before: int, added: int, now: datetime,
+                     by: str) -> dict | None:
+        policy = self._policy()
+        shift = load_shift(self.conn, shift_id)
+        reason = ratio_reason(shift.groups, shift.instructors, policy.preset)
+        if reason is None:
+            return None
+        per, participants = reason.params["max_per_instructor"], reason.params["participants"]
+        needed = -(-participants // per)
+        info = self.shift_info(shift_id)
+        opened = []
+        with self.conn.transaction():
+            self.conn.execute("SELECT 1 FROM shift WHERE id = %s FOR UPDATE", (shift_id,))
+            self.conn.execute("UPDATE shift SET instructors = %s WHERE id = %s OR extra_for = %s", (needed, shift_id, shift_id))
+            for seat in range(shift.instructors + 1, needed + 1):
+                extra = f"{shift_id}-I{seat}"
+                self.conn.execute(
+                    "INSERT INTO shift (id, venue_id, zone_id, role_id, starts_at, ends_at, staff_id, instructors,"
+                    " extra_certs, status, extra_for) SELECT %s, venue_id, zone_id, role_id, starts_at, ends_at, NULL, %s,"
+                    " extra_certs, 'open', id FROM shift WHERE id = %s",
+                    (extra, needed, shift_id),
+                )
+                self.conn.execute("INSERT INTO shift_group (shift_id, group_id) SELECT %s, group_id FROM shift_group"
+                                  " WHERE shift_id = %s", (extra, shift_id))
+                case_id = self._insert_case(extra, None, now, "ratio", None)
+                self._event(case_id, now, "agent", "ratio_broken", {
+                    "group_id": group_id, "group_name": name, "size_before": size_before, "added": added, "by": by,
+                    "shift_id": shift_id, "extra_shift_id": extra, "label": info["label"],
+                    "participants": participants, "max_per_instructor": per, "instructors_before": shift.instructors,
+                    "instructors_needed": needed, "reason": plain(dict(reason.params)),
+                })
+                self._event(case_id, now, "agent", "shift_opened", {"shift_id": extra, "label": info["label"]})
+                self._message(now, "manager", "en", f"{name}: now {participants} children for {shift.instructors}"
+                              f" instructor(s), the norm is 1:{per}. Looking for instructor no. {seat}.", case_id=case_id)
+                opened.append((case_id, extra))
+        for case_id, extra in opened:
+            self._rank_event(case_id, extra, now)
+            self._offer_next(case_id, now)
+        return {"shift_id": shift_id, "label": info["label"], "participants": participants, "max_per_instructor": per,
+                "instructors_before": shift.instructors, "instructors_needed": needed,
+                "cases": [{"case_id": self.case_code(c), "extra_shift_id": e} for c, e in opened]}
 
     # --- offers ---------------------------------------------------------------
 
