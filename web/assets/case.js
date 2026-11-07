@@ -153,9 +153,14 @@
     setText('risk-refunds', present(r.refunds_usd) ? fmtUsd(r.refunds_usd) : '');
     setText('risk-overtime', present(r.overtime_usd) ? fmtUsd(r.overtime_usd) : '');
     setText('risk-total', present(r.total_usd) ? fmtUsd(r.total_usd) : '');
+    // the first part shown has no separator in front (a private lesson shows no child count)
+    const parts = ['#riskKids', '#riskRefunds', '#riskOvertime', '#riskTotal'].map(sel => $(sel));
+    const first = parts.find(x => !x.hidden);
+    parts.forEach(x => { const sep = x.querySelector('.rsep'); if (sep) sep.hidden = x === first; });
     // what the sums rest on: the cost lines and where the lesson price comes from (internal message refs dropped)
     const lines = (r.lines || []).map(l => l.label).filter(Boolean);
-    const lp = r.assumptions && r.assumptions.lesson_price;
+    // a private lesson's price has its own source
+    const lp = r.assumptions && ((r.private && r.assumptions.private_lesson_price) || r.assumptions.lesson_price);
     const src = lp && lp.source ? String(lp.source).replace(/\s*\(TG \d+\)\s*$/, '') : '';
     const note = lines.concat(src ? [src] : []).join(' · ');
     setText('risk-source', note);

@@ -16,10 +16,10 @@ Order of calls (each judge run resets the training school):
      hash (real 200).
   3. judge nightly_check → today.nightly_check.json.
   4. private lessons (--setup-cmd): Marina's 17:00 private lesson with Lily, Chloe said yes, the family is asked →
-     clients/Q-1.asked.json; the family's real answers: yes → clients/Q-1.yes.json; no → clients/Q-1.no.json and the
-     second question clients/Q-2.asked.json; yes to it → clients/Q-2.moved.json; no to it → clients/Q-2.credit.json; an
-     answer to a closed question → the real 409 (clients/mocks.json). Judge private_lesson and private_declined →
-     today.private_*.json, cases/C-1109-02.private_*.json, the coach's offer page.
+     clients/Q-1.json; the family's real answers: yes → Q-1.covered.json (again → the real 409, clients/mocks.json);
+     no → Q-1.no.json and the second question Q-2.json; its yes → Q-2.moved.json and Q-1.moved.json; its no →
+     Q-2.credit.json and Q-1.credit.json. Judge private_lesson and private_declined → today.private_*.json,
+     cases/C-1109-02.private_*.json, the coach's offer page.
   5. judge dangerous_morning again, so the stack is left on the main story.
 Standard library only.
 """
@@ -121,31 +121,45 @@ demo.set_clock(conn, NOW + timedelta(minutes=5), speed=0.01)  # nearly stopped: 
 
 
 def private_fixtures(base: str, setup_cmd: list[str], save, mocks: dict) -> None:
-    client = {"_note": "Answers of the family's page, captured by make_fixtures.py: real 200 and 409 answers."}
+    """The family's page (web/fixtures/clients/, routes in web/assets/api.js) from the API's real answers, and the two
+    judge scenarios of the private lesson."""
+    client = {
+        "_note": "The family's page of a private lesson in ?fixture=1. Q-1 (another coach today) is open; an answer moves "
+                 "the case on as the API does: yes -> covered; no -> Q-2 opens (the family's own coach at a new time), "
+                 "its yes -> moved, its no -> a credit. &mock=client_declined or &mock=client_credit opens the case after "
+                 "its last answer; &mock=client_closed answers 409 (the family already answered by text) and the question "
+                 "reads as answered yes. Every file is an answer of the running API, captured by tests/web/make_fixtures.py.",
+        "answers": {"Q-1": {"yes": {"Q-1": "covered"}, "no": {"Q-1": "no"}},
+                    "Q-2": {"yes": {"Q-1": "moved", "Q-2": "moved"}, "no": {"Q-1": "credit", "Q-2": "credit"}}},
+        "opened_by_mock": {"client_declined": {"Q-1": "moved", "Q-2": "moved"},
+                           "client_credit": {"Q-1": "credit", "Q-2": "credit"}},
+    }
     run_setup(setup_cmd, PRIVATE_ASKED)
-    save("clients/Q-1.asked.json", ok(base, "GET", "/api/client/Q-1"))
-    client["yes"] = ok(base, "POST", "/api/client/Q-1/respond", {"accept": True})
-    save("clients/Q-1.yes.json", client["yes"])
-    client["closed"] = ok(base, "POST", "/api/client/Q-1/respond", {"accept": False}, expect=409)
+    save("clients/Q-1.json", ok(base, "GET", "/api/client/Q-1"))
+    save("clients/Q-1.covered.json", ok(base, "POST", "/api/client/Q-1/respond", {"accept": True}))
+    client["closed"] = {"body": ok(base, "POST", "/api/client/Q-1/respond", {"accept": False}, expect=409),
+                        "then": {"Q-1": "covered"}}
     run_setup(setup_cmd, PRIVATE_ASKED)
-    client["no"] = ok(base, "POST", "/api/client/Q-1/respond", {"accept": False})
-    save("clients/Q-1.no.json", client["no"])
-    if client["no"].get("current") != "Q-2":
-        raise SystemExit(f"after no: expected the second question Q-2, got {client['no'].get('current')}")
-    save("clients/Q-2.asked.json", ok(base, "GET", "/api/client/Q-2"))
-    client["moved"] = ok(base, "POST", "/api/client/Q-2/respond", {"accept": True})
-    save("clients/Q-2.moved.json", client["moved"])
+    no = ok(base, "POST", "/api/client/Q-1/respond", {"accept": False})
+    if no.get("current") != "Q-2":
+        raise SystemExit(f"after no: expected the second question Q-2, got {no.get('current')}")
+    save("clients/Q-1.no.json", no)
+    save("clients/Q-2.json", ok(base, "GET", "/api/client/Q-2"))
+    save("clients/Q-2.moved.json", ok(base, "POST", "/api/client/Q-2/respond", {"accept": True}))
+    save("clients/Q-1.moved.json", ok(base, "GET", "/api/client/Q-1"))
     run_setup(setup_cmd, PRIVATE_ASKED)
     ok(base, "POST", "/api/client/Q-1/respond", {"accept": False})
-    client["credit"] = ok(base, "POST", "/api/client/Q-2/respond", {"accept": False})
-    save("clients/Q-2.credit.json", client["credit"])
+    save("clients/Q-2.credit.json", ok(base, "POST", "/api/client/Q-2/respond", {"accept": False}))
+    save("clients/Q-1.credit.json", ok(base, "GET", "/api/client/Q-1"))
     save("clients/mocks.json", client)
     for scenario in ("private_lesson", "private_declined"):
         mocks["judge_run"][scenario] = run = ok(base, "POST", "/api/judge/run", {"scenario": scenario})
         today = ok(base, "GET", "/api/today")
         save(f"today.{scenario}.json", today)
         mocks["today_by_scenario"][scenario] = f"today.{scenario}.json"
-        save(f"cases/{run['case_id']}.{scenario}.json", ok(base, "GET", f"/api/cases/{run['case_id']}"))
+        # the yes path is the case's own file (Today links to it); the no path opens with &mock=private_declined
+        suffix = "" if scenario == "private_lesson" else f".{scenario}"
+        save(f"cases/{run['case_id']}{suffix}.json", ok(base, "GET", f"/api/cases/{run['case_id']}"))
         if scenario == "private_lesson":
             chloe = next(o["id"] for o in today["offers"] if o["result"] == "accepted")
             save(f"offers/{chloe}.json", ok(base, "GET", f"/api/offers/{chloe}"))

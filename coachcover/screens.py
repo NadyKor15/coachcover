@@ -169,7 +169,9 @@ def _first_refusal(events: list, grid: list, shift, preset: Preset, conn, tz) ->
         why = reason_label(first["code"], first["params"], preset, conn, tz)
     parts = [" and ".join(x for x in ("free" if free else None, "willing" if willing else None) if x) or "available",
              f"BLOCKED: {why}"]
-    if shift.groups:
+    if shift.groups and all(g.kind == "private" for g in shift.groups):
+        parts.append("private lesson")  # one child, one coach: no group norm to show
+    elif shift.groups:
         kids = sum(g.size for g in shift.groups)
         norm = min(group_norm(g, preset) for g in shift.groups)
         parts += [f"{kids} {preset.copy.get('participants', 'participants')}", f"ratio 1:{norm}"]
@@ -196,6 +198,10 @@ def _plan_option_text(option: dict, preset: Preset) -> str:
         return f"move the {option['children']} newest {participants} to the nearest lesson of their level with room"
     if kind == "cancel_lesson":
         return f"cancel the whole lesson: {option['remedy']} for {option['families']} families"
+    if kind == "reschedule_own":
+        return f"move the lesson to {option['staff_name'].split()[0]}, {option['when']}"
+    if kind == "credit":
+        return f"cancel: a credit for one lesson (${option['amount_usd']:g})"
     return kind
 
 
@@ -365,7 +371,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
             result, label, _ = (x.format(name=names[sid]) for x in FAMILY_OFFER[family[oid][0]])
             when = responded or when
         rows.append({"id": f"O-{oid}", "time_label": _clock(when, tz), "staff": names[sid], "result": result,
-                     "why_first": line})
+                     "why_first": line, "result_label": label[len(names[sid]):].lstrip(": ") or None})
         # on a private lesson the family's answers tell the story; the coaches let go stay in the offers list
         quiet = info["private"] and (result == "stood_down" or (oid in stood and stood[oid][2]))
         if result not in ("pending", "held") and not quiet:
@@ -419,7 +425,10 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
                       "covered_time": _clock(covered_at, tz) if covered_by else None,  # when it was closed
                       "lessons_cancelled": cancelled,
                       "private_line": next((d.get("line") for _, _, k, d in reversed(events)
-                                            if k in ("private_moved", "private_credit")), None)}
+                                            if k in ("private_moved", "private_credit")), None),
+                      # a private lesson: the family has the question until then (the banner says so)
+                      "family_wait_until": next((_clock(by, tz) for (by,) in conn.execute(
+                          "SELECT answer_by FROM client_ask WHERE case_id = %s AND status = 'asked'", (case_id,))), None)}
     out["model_log"] = _model_log(conn, case_id, callout_id, live)
     out["money"] = today_money_block(conn, policy_id, now, vid, private=info["private"])
     out["flagged"] = [
@@ -458,7 +467,9 @@ def case_risk(shift, policy) -> dict:
     cost = money_model.uncovered_cost([shift], params)
     refunds = sum(line["usd"] for line in cost["lines"] if line["kind"] == "refunds")
     overtime = sum(line["usd"] for line in cost["lines"] if line["kind"] == "overtime")
-    return {"kids": cost["participants"] or None, "refunds_usd": round(refunds, 2) if refunds else None,
+    private = bool(shift.groups) and all(g.kind == "private" for g in shift.groups)
+    return {"kids": (cost["participants"] or None) if not private else None, "private": private,
+            "refunds_usd": round(refunds, 2) if refunds else None,
             "overtime_usd": round(overtime, 2) if overtime else None, "total_usd": cost["total_usd"] or None,
             "lines": money_model.summary_lines(cost, params),
             "assumptions": params.as_dict()}
@@ -976,10 +987,12 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
     steps.sort(key=lambda s: s["at"])
     calls = model_calls(conn, case_id, callout_id)
     local_day = info["start"].astimezone(tz)
+    private_end = next((k for _, _, k, _ in reversed(events) if k in ("private_moved", "private_credit")), None)
     return plain({
         "case_id": code,
         "status": status,
-        "status_label": STATUS_LABELS.get(status, status),
+        "status_label": {"private_moved": "Moved", "private_credit": "Credit"}.get(private_end)
+        or STATUS_LABELS.get(status, status),
         "covered_time_label": _clock(covered[0], tz) if covered else None,
         "covered_by": covered[1].get("name") if covered else None,
         "covered_via": covered[1].get("via") if covered else None,

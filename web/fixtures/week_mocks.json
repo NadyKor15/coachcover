@@ -3,27 +3,27 @@
   "standby": {
     "created": {
       "id": "SB-1",
-      "shift_id": "L-1111-G009",
-      "staff_id": "S06",
-      "name": "Liam Foster",
+      "shift_id": "L-1110-P013",
+      "staff_id": "S23",
+      "name": "Harper Hughes",
       "status": "proposed",
       "mode": "propose",
-      "text": "Standby proposed: Liam Foster for Wed 06:00-06:30 · Swim instructor · Level 6 · Riverside Aquatic Center. Nothing is booked until the manager approves."
+      "text": "Standby proposed: Harper Hughes for Tue 15:15-15:45 · Swim instructor · Level 5 · Riverside Aquatic Center. Nothing is booked until the manager approves."
     },
     "repeat": {
-      "reason": "Liam Foster is already proposed as standby for Wed 06:00-06:30 · Swim instructor · Level 6 · Riverside Aquatic Center",
-      "error": "Liam Foster is already proposed as standby for Wed 06:00-06:30 · Swim instructor · Level 6 · Riverside Aquatic Center"
+      "reason": "Harper Hughes is already proposed as standby for Tue 15:15-15:45 · Swim instructor · Level 5 · Riverside Aquatic Center",
+      "error": "Harper Hughes is already proposed as standby for Tue 15:15-15:45 · Swim instructor · Level 5 · Riverside Aquatic Center"
     },
     "holder": {
-      "reason": "Daniel Shaw is not cleared for Wed 06:00-06:30 · Swim instructor · Level 6 · Riverside Aquatic Center: is the person who cannot come",
-      "error": "Daniel Shaw is not cleared for Wed 06:00-06:30 · Swim instructor · Level 6 · Riverside Aquatic Center: is the person who cannot come",
+      "reason": "Noah Bennett is not cleared for Tue 15:15-15:45 · Swim instructor · Level 5 · Riverside Aquatic Center: is the person who cannot come",
+      "error": "Noah Bennett is not cleared for Tue 15:15-15:45 · Swim instructor · Level 5 · Riverside Aquatic Center: is the person who cannot come",
       "codes": [
         "IS_THE_ABSENT_PERSON"
       ]
     },
     "not_cleared": {
-      "reason": "Carlos Mendoza is not cleared for Wed 06:00-06:30 · Swim instructor · Level 6 · Riverside Aquatic Center: does not hold the Swim instructor role; has no Water Safety Instructor (WSI) certificate; not trained in Learn-to-Swim",
-      "error": "Carlos Mendoza is not cleared for Wed 06:00-06:30 · Swim instructor · Level 6 · Riverside Aquatic Center: does not hold the Swim instructor role; has no Water Safety Instructor (WSI) certificate; not trained in Learn-to-Swim",
+      "reason": "Carlos Mendoza is not cleared for Tue 15:15-15:45 · Swim instructor · Level 5 · Riverside Aquatic Center: does not hold the Swim instructor role; has no Water Safety Instructor (WSI) certificate; not trained in Learn-to-Swim",
+      "error": "Carlos Mendoza is not cleared for Tue 15:15-15:45 · Swim instructor · Level 5 · Riverside Aquatic Center: does not hold the Swim instructor role; has no Water Safety Instructor (WSI) certificate; not trained in Learn-to-Swim",
       "codes": [
         "ROLE_MISSING",
         "CERT_MISSING",

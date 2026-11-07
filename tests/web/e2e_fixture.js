@@ -520,7 +520,8 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     const LV = { at_risk: 'risk', fragile: 'fragile', safe: 'safe' };
     check('week: every fragile shift is a fragile or at-risk cell with its number and tag', week.fragile.every(id => {
       const c = wcells.find(x => x.shift === id); const d = byId[id];
-      return c && c.level === LV[d.level] && c.txt === d.backups + (d.level === 'at_risk' ? ' at risk' : ' fragile'); }), wcells.filter(c => c.level !== 'safe' && c.level !== 'none'));
+      return c && c.level === LV[d.level] && c.txt === d.backups + (d.level === 'at_risk' ? ' at risk' : ' fragile') + (d.private ? ' 1:1' : ''); }),
+      wcells.filter(c => c.level !== 'safe' && c.level !== 'none'));
     const pastCells = week.days.flatMap(d => d.cells).filter(c => c.past).length;
     check('week: started shifts are grey (when the week has any)', pastCells === 0 || wcells.filter(c => c.level === 'past').length > 0);
     const legend = await texts(p, '[data-slot="legend-item"]');
@@ -552,22 +553,27 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('week: Propose standby 409 -> the reason, button back', await text(p, '[data-slot="tip-result"]') === 'Not proposed — ' + wm.not_cleared.error &&
       !(await p.$eval('[data-slot="tip-action"]', b => b.disabled)));
     await p.close();
-    /* week: a private lesson's cell carries a 1:1 tag (the API flag "private"); the fixture has none, so it is added here */
+    /* week: a private lesson's cell carries a 1:1 tag (the API flag "private"): a cell is tagged exactly when the shift it
+       shows is a private lesson; then a safe, a fragile and an at-risk group cell are flagged too, to see the tag on each */
     p = await newPage(browser, 1920, 1080);
     await p.goto(base + 'week.html?fixture=1');
     await ready(p);
-    check('week: 1:1 tags only where the data says private', (await p.$$('[data-slot="private-tag"]')).length ===
-      week.days.flatMap(d => d.cells).filter(c => c.private).length);
-    const privPick = await p.$$eval('[data-slot="cell"][data-shift]', es => ['safe', 'fragile', 'risk']
-      .map(l => es.find(e => e.dataset.level === l)).filter(Boolean).map(e => e.dataset.shift));
+    const tagMap = () => p.$$eval('[data-slot="cell"][data-shift]', es => es.map(e => ({ shift: e.dataset.shift, level: e.dataset.level,
+      tag: (e.querySelector('[data-slot="private-tag"]') || {}).textContent || null })));
+    const shown = await tagMap();
+    check('week: 1:1 tags only where the data says private', shown.some(c => c.tag) && shown.every(c => (c.tag === '1:1') === !!(byId[c.shift] || {}).private),
+      shown.filter(c => c.tag || (byId[c.shift] || {}).private));
+    const privPick = ['safe', 'fragile', 'risk'].map(l => shown.find(c => c.level === l && !c.tag)).filter(Boolean).map(c => c.shift);
     const weekPriv = JSON.parse(JSON.stringify(week));
     weekPriv.days.forEach(d => d.cells.forEach(c => { if (privPick.includes(c.shift_id)) c.private = true; }));
+    const privById = Object.fromEntries(weekPriv.days.flatMap(d => d.cells).map(c => [c.shift_id, !!c.private]));
     await p.route('**/fixtures/week.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(weekPriv) }));
     await p.reload();
     await ready(p);
-    const tagged = await p.$$eval('[data-slot="private-tag"]', es => es.map(e => ({ shift: e.closest('.cell').dataset.shift, txt: e.textContent })));
-    check('week: 1:1 tag on each private lesson cell (safe, fragile, at risk)', privPick.length === 3 && tagged.length === 3 &&
-      tagged.every(t => t.txt === '1:1' && privPick.includes(t.shift)), tagged);
+    const tagged = await tagMap();
+    check('week: 1:1 tag on each private lesson cell (safe, fragile, at risk)', privPick.length === 3 &&
+      privPick.every(id => (tagged.find(c => c.shift === id) || {}).tag === '1:1') && tagged.every(c => (c.tag === '1:1') === privById[c.shift]),
+      tagged.filter(c => c.tag));
     check('week: the 1:1 tag sits inside its cell, clear of the number and the level', await p.$$eval('[data-slot="private-tag"]', es => es.every(e => {
       const t = e.getBoundingClientRect(), c = e.closest('.cell'), cr = c.getBoundingClientRect();
       return t.left >= cr.left && t.right <= cr.right && t.top >= cr.top && t.bottom <= cr.bottom &&

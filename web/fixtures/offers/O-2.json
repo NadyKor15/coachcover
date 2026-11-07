@@ -15,6 +15,7 @@
     "9 h this week"
   ],
   "why_first": "Leo second: 9 h this week, Preschool, same pool",
+  "private": false,
   "expires_in_s": 0,
   "window_s": 300,
   "manager": {

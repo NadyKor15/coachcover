@@ -12,7 +12,7 @@
   "day_label": "Wed, Nov 11",
   "time_label": "17:00–17:30",
   "answer_in_s": 0,
-  "answer_by_label": "09:14",
+  "answer_by_label": "09:15",
   "thread": [
     {
       "from": "school",
@@ -21,22 +21,22 @@
     },
     {
       "from": "family",
-      "time_label": "08:44",
+      "time_label": "08:45",
       "text": "No"
     },
     {
       "from": "school",
-      "time_label": "08:44",
+      "time_label": "08:45",
       "text": "No problem, Lily stays with Marina. Marina can teach her on Wed, Nov 11 at 17:00 instead. Does that work? Reply YES or NO."
     },
     {
       "from": "family",
-      "time_label": "08:46",
+      "time_label": "08:45",
       "text": "Yes"
     },
     {
       "from": "school",
-      "time_label": "08:46",
+      "time_label": "08:45",
       "text": "All set. Lily's lesson with Marina is on Wed, Nov 11 at 17:00."
     }
   ],

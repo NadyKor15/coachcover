@@ -55,7 +55,7 @@
     "overtime_multiplier": {"value": 1.5, "unit": "x the wage per overtime hour", "assumption": false, "source": "US Fair Labor Standards Act: time and a half for hours over 40 in a workweek", "note": "Overtime is paid at time and a half."},
     "inspection_penalty": {"value": 0.0, "unit": "USD per uncovered morning", "assumption": true, "note": "Off by default; set a fine or the cost of a closure if an inspector would act."},
     "manager_hour": {"value": 25.0, "unit": "USD per hour", "assumption": true, "note": "Conservative placeholder for one hour of a manager's time."},
-    "private_lesson_price": {"value": 50.0, "unit": "USD per private lesson (30 min)", "assumption": false, "source": "price from the founder's coaching practice", "note": "Price of one private lesson: one child, one coach, 30 minutes. A credit for a private lesson that does not run is worth this much."}
+    "private_lesson_price": {"value": 50.0, "unit": "USD per private lesson (30 min)", "assumption": false, "source": "from the founder's coaching practice", "note": "Price of one private lesson: one child, one coach, 30 minutes. A credit for a private lesson that does not run is worth this much."}
   },
   "policy_defaults": {
     "max_weekly_hours": 40,

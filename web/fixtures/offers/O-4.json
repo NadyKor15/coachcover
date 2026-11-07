@@ -1,21 +1,22 @@
 {
   "offer_id": "O-4",
-  "state": "pending",
-  "staff": "Grace Sullivan",
+  "state": "accepted",
+  "staff": "Chloe Hayes",
   "shift_day": "today",
-  "shift_start": "10:30",
-  "shift_end": "11:00",
+  "shift_start": "17:00",
+  "shift_end": "17:30",
   "venue": "Riverside Aquatic Center",
-  "shift_detail": "Teaching pool + Learn-to-Swim Level 1 (beginner) (6 kids) · with Emma Carter",
+  "shift_detail": "Teaching pool + Private · Lily, age 6, Level 2",
   "needs_label": "Instructor",
   "why": [
     "WSI — valid to Jul 2027",
-    "CPR/AED — valid to Nov 2026",
-    "LTS-1 program — current",
-    "5.25 h this week"
+    "CPR/AED — valid to Apr 2028",
+    "LTS-2 program — current",
+    "5.75 h this week"
   ],
-  "why_first": "Grace first: 5.25 h this week, Level 1 (beginner), same pool",
-  "expires_in_s": 299,
+  "why_first": "Chloe first: 5.75 h this week, Level 2, 21.7 km away",
+  "private": true,
+  "expires_in_s": 0,
   "window_s": 300,
   "manager": {
     "name": "Natalie Brooks",

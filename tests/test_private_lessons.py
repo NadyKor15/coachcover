@@ -79,7 +79,8 @@ def chloe_says_yes(conn, p, cases, when="08:42"):
 def test_the_private_price_is_the_founders_and_the_morning_card_is_unchanged():
     preset = default_policy("swim_school").preset
     price = preset.money["private_lesson_price"]
-    assert price["value"] == seed.PRIVATE_LESSON_USD == 50 and price["source"] == "price from the founder's coaching practice"
+    # the screen's source line, like the group price's "from the founder's coaching experience"
+    assert price["value"] == seed.PRIVATE_LESSON_USD == 50 and price["source"] == "from the founder's coaching practice"
     assert preset.money["lesson_price"]["value"] == 30.0  # the group lesson stays $30 a child
     assert (preset.client_answer_minutes, preset.client_answer_before_start_minutes) == (30, 60)
 
@@ -347,3 +348,26 @@ def test_a_yes_too_close_to_the_start_goes_to_the_manager_not_the_family(morning
     plan = conn.execute("SELECT snapshot FROM plan_b WHERE case_id = %s AND status = 'proposed'", (case,)).fetchone()[0]
     assert [o["kind"] for o in plan["options"]] == ["reschedule_own", "credit"]
     assert conn.execute("SELECT staff_id, status FROM shift WHERE id = %s", (PRIVATE,)).fetchone() == (None, "open")
+
+
+def test_the_screens_speak_of_a_private_lesson_in_plain_words(morning):
+    """What the judge sees while the family is asked, and after they moved the lesson: no group words, no codes."""
+    from coachcover.screens import case_page
+
+    conn, p, cases = morning
+    case = chloe_says_yes(conn, p, cases)
+    conn.execute("INSERT INTO ops.judge_state (id, running, scenario, case_code) VALUES (true, false, 'private_lesson',"
+                 " 'C-1109-02') ON CONFLICT (id) DO UPDATE SET case_code = 'C-1109-02'")
+    screen = today(conn, seed.POLICY_ID, at("08:43"), None, live=False)
+    assert screen["outcome"]["family_wait_until"] == "09:12"
+    chloe = next(o for o in screen["offers"] if o["staff"] == "Chloe Hayes")
+    assert chloe["result_label"] == "said yes, waiting for the family"
+    refusal = screen["eligibility"]["first_refusal"]["label"]
+    assert refusal.endswith("· private lesson") and "kids" not in refusal and "ratio" not in refusal
+    assert screen["plan_b"]["text"] == "move the lesson to Marina, Wed 17:00 · cancel: a credit for one lesson ($50)"
+    ask = asks(conn, case)[0][0]
+    p.family_respond(ask, False, at("08:44"))
+    p.family_respond(asks(conn, case)[1][0], True, at("08:46"))
+    page = case_page(conn, seed.POLICY_ID, case, live=False)
+    assert page["status_label"] == "Moved" and page["risk"]["private"] is True and page["risk"]["kids"] is None
+    assert page["risk"]["total_usd"] == 50.0

@@ -7,6 +7,7 @@
  *   &mock=ratio_open | ratio_covered   GET /api/today with the children-per-instructor banner open or covered
  *   &mock=client_declined | client_credit   GET /api/client/{id}: the family's case after its last answer (moved / credit)
  *   &mock=client_closed  POST /api/client/{id}/respond answers 409 (the family already answered by text)
+ *   &mock=private_declined   GET /api/cases/C-1109-02: the private lesson the family moved to their own coach
  * Every call resolves to {status, body}; network and parse failures resolve to status 0 with body.error,
  * so a screen always has something to show instead of failing silently.
  */
@@ -121,7 +122,8 @@
     m = p.match(/^\/api\/client\/([^/]+)$/);
     if (m) { await clientMocks(); return fixtureFile(askFile(decodeURIComponent(m[1]))); }
     m = p.match(/^\/api\/cases\/([^/]+)$/);
-    if (m) return fixtureFile('cases/' + encodeURIComponent(decodeURIComponent(m[1])) + (MOCKS.has('network_loan') ? '.network_loan' : '') + '.json');
+    if (m) return fixtureFile('cases/' + encodeURIComponent(decodeURIComponent(m[1])) + (MOCKS.has('network_loan') ? '.network_loan'
+      : MOCKS.has('private_declined') ? '.private_declined' : '') + '.json');
     return { status: 404, body: { error: 'no fixture for GET ' + p } };
   }
 

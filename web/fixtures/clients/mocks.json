@@ -1,5 +1,5 @@
 {
-  "_note": "The family's page of a private lesson in ?fixture=1. Q-1 (another coach today) is open; an answer moves the case on as the API does: yes -> covered; no -> Q-2 opens (the family's own coach at a new time), its yes -> moved, its no -> a credit. &mock=client_declined or &mock=client_credit opens the case after its last answer; &mock=client_closed answers 409 (the family already answered by text) and the question reads as answered yes. Files: *.covered/*.moved are answers of the running API (judge scenarios private_lesson, private_declined); Q-1.json, Q-1.no.json and Q-2.json are the same answers before the next step; *.credit the second no, with the API's credit message.",
+  "_note": "The family's page of a private lesson in ?fixture=1. Q-1 (another coach today) is open; an answer moves the case on as the API does: yes -> covered; no -> Q-2 opens (the family's own coach at a new time), its yes -> moved, its no -> a credit. &mock=client_declined or &mock=client_credit opens the case after its last answer; &mock=client_closed answers 409 (the family already answered by text) and the question reads as answered yes. Every file is an answer of the running API, captured by tests/web/make_fixtures.py.",
   "answers": {
     "Q-1": {
       "yes": {

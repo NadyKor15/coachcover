@@ -14,7 +14,8 @@
     "time_label": "16:00–16:45",
     "lanes_label": "Teaching pool + Learn-to-Swim Level 2 (5 kids)",
     "needs_label": "Instructor",
-    "program_label": "Program LTS-2"
+    "program_label": "Program LTS-2",
+    "private": false
   },
   "eligibility": {
     "total": 40,
@@ -139,15 +140,15 @@
         "reason_label": null
       },
       {
-        "id": "S19",
-        "name": "Megan Coleman",
+        "id": "S17",
+        "name": "Zoe Grant",
         "eligible": true,
         "highlight": false,
         "reason_label": null
       },
       {
-        "id": "S17",
-        "name": "Zoe Grant",
+        "id": "S19",
+        "name": "Megan Coleman",
         "eligible": true,
         "highlight": false,
         "reason_label": null
@@ -251,15 +252,15 @@
         "reason_label": "Valid until Jul 2027 — REVOKED by issuer on Oct 12 (simulated registry)"
       },
       {
-        "id": "S09",
-        "name": "Lucas Reed",
+        "id": "S26",
+        "name": "Leo Martins",
         "eligible": false,
         "highlight": false,
         "reason_label": "Not cleared for LTS-2"
       },
       {
-        "id": "S26",
-        "name": "Leo Martins",
+        "id": "S09",
+        "name": "Lucas Reed",
         "eligible": false,
         "highlight": false,
         "reason_label": "Not cleared for LTS-2"
@@ -385,7 +386,9 @@
     "covered_by": null,
     "covered_via": null,
     "covered_time": null,
-    "lessons_cancelled": 0
+    "lessons_cancelled": 0,
+    "private_line": null,
+    "family_wait_until": null
   },
   "plan_b": {
     "id": "P-standby",
@@ -397,7 +400,7 @@
   "summary_cards": [
     {
       "title": "Tomorrow",
-      "value": "37 of 38 shifts covered"
+      "value": "38 of 39 shifts covered"
     },
     {
       "title": "Expiring in 30 days",

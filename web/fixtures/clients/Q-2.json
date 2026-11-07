@@ -11,8 +11,8 @@
   "instead_of": null,
   "day_label": "Wed, Nov 11",
   "time_label": "17:00–17:30",
-  "answer_in_s": 1800,
-  "answer_by_label": "09:14",
+  "answer_in_s": 1799,
+  "answer_by_label": "09:15",
   "thread": [
     {
       "from": "school",
@@ -21,12 +21,12 @@
     },
     {
       "from": "family",
-      "time_label": "08:44",
+      "time_label": "08:45",
       "text": "No"
     },
     {
       "from": "school",
-      "time_label": "08:44",
+      "time_label": "08:45",
       "text": "No problem, Lily stays with Marina. Marina can teach her on Wed, Nov 11 at 17:00 instead. Does that work? Reply YES or NO."
     }
   ],

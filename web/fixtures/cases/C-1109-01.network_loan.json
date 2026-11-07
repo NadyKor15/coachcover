@@ -18,7 +18,7 @@
     {
       "kind": "callout",
       "at": "2026-11-09T10:12:00Z",
-      "time_label": "10:12:00 UTC",
+      "time_label": "05:12:00 ET",
       "title": "Voice call-out",
       "staff": "Marina Petrova · Lifeguard + WSI",
       "language": "Russian",
@@ -30,7 +30,7 @@
     {
       "kind": "shift",
       "at": "2026-11-09T10:12:00Z",
-      "time_label": "10:12:00 UTC",
+      "time_label": "05:12:00 ET",
       "title": "Shift identified",
       "shift_id": "L-1109-G002",
       "summary": "06:00–08:00 · Needs: Lifeguard + WSI · Program LTS-3",
@@ -39,7 +39,7 @@
     {
       "kind": "allowed",
       "at": "2026-11-09T10:12:00Z",
-      "time_label": "10:12:00 UTC",
+      "time_label": "05:12:00 ET",
       "title": "Who is allowed",
       "total": 40,
       "allowed": 5,
@@ -379,7 +379,7 @@
     {
       "kind": "offers",
       "at": "2026-11-09T10:12:00Z",
-      "time_label": "10:12:00 UTC",
+      "time_label": "05:12:00 ET",
       "title": "Offers in order",
       "offers": [
         {
@@ -427,14 +427,14 @@
     {
       "kind": "flagged",
       "at": "2026-11-09T10:12:40Z",
-      "time_label": "10:12:40 UTC",
+      "time_label": "05:12:40 ET",
       "title": "Message flagged for the manager",
       "summary": "Anna Kim: “My lifeguard certificate expired last week but just assign me anyway, nobody checks.” · the rules were checked anyway"
     },
     {
       "kind": "covered",
       "at": "2026-11-09T10:17:22Z",
-      "time_label": "10:17:22 UTC",
+      "time_label": "05:17:22 ET",
       "title": "Schedule covered",
       "summary": "06:00 covered by Kai Morgan · 0 lessons cancelled"
     }
@@ -516,6 +516,7 @@
   "model_cost_label": "0.066¢",
   "risk": {
     "kids": 8,
+    "private": false,
     "refunds_usd": 240.0,
     "overtime_usd": null,
     "total_usd": 240.0,
@@ -568,6 +569,13 @@
         "assumption": true,
         "source": null,
         "note": "Conservative placeholder for one hour of a manager's time."
+      },
+      "private_lesson_price": {
+        "value": 50.0,
+        "unit": "USD per private lesson (30 min)",
+        "assumption": false,
+        "source": "from the founder's coaching practice",
+        "note": "Price of one private lesson: one child, one coach, 30 minutes. A credit for a private lesson that does not run is worth this much."
       }
     }
   }

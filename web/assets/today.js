@@ -331,7 +331,7 @@
       // result words: the timeline label for the same person and time, else the result code in words
       const tl = timeline.find(t => t.time_label === o.time_label &&
         (String(t.label || '').startsWith(o.staff + ' ') || String(t.label || '').startsWith(o.staff + ':')));
-      const words = tl ? String(tl.label).slice(o.staff.length).replace(/^[:\s]+/, '') : humanResult(o.result);
+      const words = tl ? String(tl.label).slice(o.staff.length).replace(/^[:\s]+/, '') : (o.result_label || humanResult(o.result));
       const li = el('li', 'off-row ' + ico);
       li.dataset.slot = 'offer-row';
       li.dataset.offerId = o.id || '';
@@ -432,6 +432,7 @@
       const start = shiftStart || o.covered_time || '';
       add(null, (start ? start + ' ' : '') + 'not covered yet');
       add('sep', ' · ');
+      if (priv && o.family_wait_until) { add(null, 'waiting for the family’s answer (by ' + o.family_wait_until + ')'); return; }
       // standby = plan B is ready but opens 20 min before the start; only a proposed plan asks the manager now
       add(null, approved ? 'plan B approved' : p && p.state === 'standby' ? 'plan B ready, opens 20 min before the start'
         : p ? 'plan B needs your approval' : 'offers running');
@@ -572,7 +573,8 @@
   }
 
   /* ---------- judge mode ---------- */
-  const SCENARIO_NAME = { dangerous_morning: 'Run the call-out', nobody_accepts: 'Nobody accepts', nightly_check: 'Night check' };
+  const SCENARIO_NAME = { dangerous_morning: 'Run the call-out', nobody_accepts: 'Nobody accepts', nightly_check: 'Night check',
+    private_lesson: 'Private lesson: yes', private_declined: 'Private lesson: no' };
   async function runScenario(scenario) {
     const btns = document.querySelectorAll('.jbtn');
     const status = $('#judgeStatus');

@@ -24,7 +24,8 @@
     "time_label": "09:30–10:15",
     "lanes_label": "Teaching pool + Preschool swim, ages 3–5 (8 kids)",
     "needs_label": "Instructor",
-    "program_label": "Preschool training (ages 3–5)"
+    "program_label": "Preschool training (ages 3–5)",
+    "private": false
   },
   "eligibility": {
     "total": 40,
@@ -134,18 +135,18 @@
         "reason_label": null
       },
       {
-        "id": "S05",
-        "name": "Marina Petrova",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Called out"
-      },
-      {
         "id": "S35",
         "name": "Carlos Mendoza",
         "eligible": false,
         "highlight": false,
         "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S05",
+        "name": "Marina Petrova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Called out"
       },
       {
         "id": "S07",
@@ -183,18 +184,18 @@
         "reason_label": "Readers disagree — review"
       },
       {
-        "id": "S02",
-        "name": "Sofía García",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "No preschool training (ages 3–5)"
-      },
-      {
         "id": "S30",
         "name": "Nikita Morozov",
         "eligible": false,
         "highlight": false,
         "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S02",
+        "name": "Sofía García",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No preschool training (ages 3–5)"
       },
       {
         "id": "S33",
@@ -281,6 +282,13 @@
         "reason_label": "Role: not an instructor"
       },
       {
+        "id": "S36",
+        "name": "Ella Morgan",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
         "id": "S01",
         "name": "Emma Carter",
         "eligible": false,
@@ -288,8 +296,8 @@
         "reason_label": "Teaching at 9:30"
       },
       {
-        "id": "S36",
-        "name": "Ella Morgan",
+        "id": "S38",
+        "name": "Paula Jiménez",
         "eligible": false,
         "highlight": false,
         "reason_label": "Role: not an instructor"
@@ -302,8 +310,8 @@
         "reason_label": "No preschool training (ages 3–5)"
       },
       {
-        "id": "S38",
-        "name": "Paula Jiménez",
+        "id": "S37",
+        "name": "Andrei Kozlov",
         "eligible": false,
         "highlight": false,
         "reason_label": "Role: not an instructor"
@@ -314,13 +322,6 @@
         "eligible": false,
         "highlight": false,
         "reason_label": "No preschool training (ages 3–5)"
-      },
-      {
-        "id": "S37",
-        "name": "Andrei Kozlov",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S16",
@@ -417,28 +418,33 @@
       "time_label": "08:43",
       "staff": "Sofia Reyes",
       "result": "declined",
-      "why_first": "Sofia first: 6 h this week, Preschool, same pool"
+      "why_first": "Sofia first: 6 h this week, Preschool, same pool",
+      "result_label": "declined"
     },
     {
       "id": "O-2",
       "time_label": "08:45",
       "staff": "Leo Martins",
       "result": "no_reply",
-      "why_first": "Leo second: 9 h this week, Preschool, same pool"
+      "why_first": "Leo second: 9 h this week, Preschool, same pool",
+      "result_label": "no reply, Zoe took it"
     },
     {
       "id": "O-3",
       "time_label": "08:44",
       "staff": "Zoe Grant",
       "result": "accepted",
-      "why_first": "Zoe third: 12 h this week, Preschool, same pool"
+      "why_first": "Zoe third: 12 h this week, Preschool, same pool",
+      "result_label": "accepted"
     }
   ],
   "outcome": {
     "covered_by": "Zoe Grant",
     "covered_via": null,
     "covered_time": "08:45",
-    "lessons_cancelled": 0
+    "lessons_cancelled": 0,
+    "private_line": null,
+    "family_wait_until": null
   },
   "plan_b": {
     "id": "P-standby",
@@ -450,7 +456,7 @@
   "summary_cards": [
     {
       "title": "Tomorrow",
-      "value": "36 of 36 shifts covered"
+      "value": "42 of 42 shifts covered"
     },
     {
       "title": "Expiring in 30 days",
@@ -464,15 +470,15 @@
   "money": {
     "uncovered_morning_usd": 240.0,
     "uncovered_morning_label": "If nobody had accepted: $240 (Refunds: 8 participants × $30)",
-    "case_cost_cents": 0.0395,
+    "case_cost_cents": 0.021,
     "manager_hour_usd": 25.0,
-    "case_cost_label": "0.040¢",
+    "case_cost_label": "0.021¢",
     "source": "from the founder's coaching experience"
   },
   "model_log": {
-    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.040¢ · replay mode: recorded and prepared demo answers",
+    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.021¢ · replay mode: recorded and prepared demo answers",
     "calls": 5,
-    "usd": 0.000395
+    "usd": 0.00021
   },
   "flagged": [
     {
