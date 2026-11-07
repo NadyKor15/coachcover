@@ -1088,7 +1088,7 @@ BEFORE_AFTER_ROWS = (
     ("Closed after the shift started", "closed_after_shift_start"),
     ("Closed without a person", "closed_without_human"),
     ("Closed without a person, %", "closed_without_human_pct"),
-    ("Covered by a person", "covered"),
+    ("Shifts covered (offer or plan B)", "covered"),
     ("Lessons cancelled or moved", "lessons_cancelled"),
     ("Children without their lesson", "participants_without_lesson"),
     ("Shifts without groups left empty", "shifts_without_groups_left_empty"),

@@ -54,7 +54,7 @@ CoachCover on the same 50 mornings, before (one offer at a time) and after (wave
 | Closed after the shift started | 5 | 0 |
 | Closed without a person | 64 | 57 |
 | Closed without a person, % | 75.3 | 67.1 |
-| Covered by a person | 85 | 85 |
+| Shifts covered (offer or plan B) | 85 | 85 |
 | Lessons cancelled or moved | 0 | 0 |
 | Children without their lesson | 0 | 0 |
 | Shifts without groups left empty | 0 | 0 |
