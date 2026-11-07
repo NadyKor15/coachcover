@@ -122,7 +122,7 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert today["outcome"] == {"covered_by": "Zoe Grant", "covered_via": None, "covered_time": "08:45", "lessons_cancelled": 0,
                                 "private_line": None, "family_wait_until": None}  # closed at 08:45; the last two: private lessons
     assert today["plan_b"]["state"] == "standby" and today["plan_b"]["autonomy"] == "propose"
-    assert "merge refused" in today["plan_b"]["text"]  # the kids' norm refuses the merge, live
+    assert today["plan_b"]["text"].startswith("No merge: 14 kids over the norm")  # the kids' norm refuses the merge, live
     money = today["money"]  # from coachcover.money with the preset's prices
     assert money["uncovered_morning_usd"] == 240.0  # 8 children x $30, the founder's price
     assert money["uncovered_morning_label"] == "If nobody had accepted: $240 (Refunds: 8 participants × $30)"

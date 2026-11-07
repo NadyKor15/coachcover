@@ -1341,13 +1341,18 @@ class Pipeline:
         return sorted(counts.items())
 
     def _plan_text(self, facts: dict, now: datetime, case_id: int) -> tuple[dict, str]:
-        key = {"shift": facts["shift"], "options": facts["options"]}
+        """Plan B in plain words. The text model sees only names, money, minutes and days (M.plan_b_view: no ids);
+        its text is shown only if it passes M.plan_text_problems, else the template from the same facts."""
+        view = M.plan_b_view(facts)
         try:
-            answer = self.models.chat_json(purpose="plan_b_text", system=M.PLAN_B_SYSTEM, user=json.dumps(key, ensure_ascii=False),
-                                           schema=M.PLAN_B_SCHEMA, key=key, at=now, case_id=case_id)
-            if len(answer.data["lines"]) == len(facts["options"]):
+            answer = self.models.chat_json(purpose="plan_b_text", system=M.PLAN_B_SYSTEM,
+                                           user=json.dumps(view, ensure_ascii=False), schema=M.PLAN_B_SCHEMA, key=view,
+                                           at=now, case_id=case_id)
+            problems = M.plan_text_problems(view, answer.data)
+            if not problems:
                 return answer.data, "model"
-        except ModelError:
+            return {**M.plan_b_fallback(facts), "model_text_rejected": problems}, "template"
+        except (ModelError, AttributeError):
             pass
         return M.plan_b_fallback(facts), "template"
 

@@ -2,56 +2,34 @@
  "purpose": "plan_b_text",
  "model": "muse-glimmer-30b",
  "input": {
-  "shift": {
-   "id": "L-1109-G002",
-   "label": "Mon 06:00-08:00 · Lifeguard · Level 3 · Riverside Aquatic Center",
-   "venue": "Riverside Aquatic Center",
-   "zone_id": "V1-LAP",
-   "start": "2026-11-09T11:00:00+00:00",
-   "end": "2026-11-09T13:00:00+00:00",
-   "role": "lifeguard"
-  },
+  "shift": "Mon 06:00-08:00 · Lifeguard · Level 3 · Riverside Aquatic Center",
   "options": [
    {
     "kind": "lead",
-    "mode": "propose",
-    "staff_id": "S06",
-    "staff_name": "Liam Foster"
+    "who": "Liam Foster"
    },
    {
     "kind": "overtime",
-    "mode": "propose",
-    "staff_id": "S11",
-    "staff_name": "Camila Herrera",
-    "hours_over": 1.5,
-    "cost_usd": 51.0
+    "who": "Camila Herrera",
+    "overtime": "1 h 30 min",
+    "cost": "$51"
    },
    {
     "kind": "reschedule",
-    "mode": "propose",
-    "groups": [
-     "G002"
-    ],
     "families": 8,
     "remedy": "makeup",
-    "valid_until": "2026-12-09"
+    "until": "Dec 9"
    },
    {
     "kind": "close",
-    "mode": "propose",
-    "zone_id": "V1-LAP",
-    "groups": [
-     "G002"
-    ],
     "families": 8,
-    "remedy": "credit",
-    "valid_until": null
+    "remedy": "credit"
    }
   ]
  },
- "input_sha256": "2f2fe099508744c603706447b16ffffdbd67dbf364d00bd5d1cb716e268ed15b",
+ "input_sha256": "eaa1c419c69d5adceb184c8a77f4e4066890a867b5e0f49fbb22468207432e5a",
  "synthetic": true,
- "source": "synthetic: written by hand to the plan_b_text schema, only facts from input",
+ "source": "synthetic: written by hand to the plan_b_text schema, only facts from input (names, money, minutes, days)",
  "duration_ms": 1600,
  "response": {
   "model": "muse-glimmer-30b",
@@ -63,7 +41,7 @@
    {
     "message": {
      "role": "assistant",
-     "content": "{\"headline\": \"Nobody took Monday 06:00 at Riverside Aquatic Center: 8 young kids need a lifeguard with WSI\", \"lines\": [\"Liam Foster, the head coach in reserve, takes the post.\", \"Camila Herrera covers it on overtime: 1.5 h over the week, about $51.\", \"Move the lesson: the 8 families book a makeup by December 9.\", \"Cancel the lesson: the 8 families get a lesson credit.\"]}"
+     "content": "{\"headline\": \"Nobody took Monday 06:00 at Riverside Aquatic Center: 8 young kids need a lifeguard with WSI\", \"lines\": [\"Liam Foster, the head coach in reserve, takes the post.\", \"Camila Herrera covers it with 1 h 30 min of overtime ($51).\", \"Move the lesson: the 8 families book a makeup by December 9.\", \"Cancel the lesson: the 8 families get a lesson credit.\"]}"
     }
    }
   ]

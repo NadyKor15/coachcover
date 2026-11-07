@@ -84,3 +84,24 @@ def test_ledger_names_models_and_their_recordings(api):
     whisper = next(c for c in ledger["calls"] if c["purpose"] == "transcribe")
     # the 09:30 voice note is synthesized locally: its transcript is a prepared answer, marked synthetic
     assert whisper["model_label"] == "whisper-large-v3-turbo" and whisper["recording"] == "synthetic-transcribe-ru-0930.json"
+
+
+def test_during_a_reset_the_api_answers_503_resetting(api):
+    """A judge run holds RESET_LOCK while it rebuilds the school; meanwhile /api/ says so instead of a half-built 422/500."""
+    import psycopg
+
+    from coachcover.demo import RESET_LOCK
+
+    client, conn = api
+    holder = psycopg.connect(conn.info.dsn, autocommit=True)
+    try:
+        holder.execute("SELECT pg_advisory_lock(%s)", (RESET_LOCK,))
+        res = client.get("/api/today")
+        assert res.status_code == 503 and res.json() == {"resetting": True, "error": "Resetting the training school…"}
+        assert res.headers["retry-after"] == "2"
+        assert client.get("/api/cases/C-1109-01").status_code == 503
+        assert client.get("/health").status_code == 200  # not an /api/ route
+        holder.execute("SELECT pg_advisory_unlock(%s)", (RESET_LOCK,))
+        assert client.get("/api/today").status_code == 200
+    finally:
+        holder.close()

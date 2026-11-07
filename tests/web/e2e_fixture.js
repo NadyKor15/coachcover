@@ -227,6 +227,25 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await p.goto(base + 'index.html');
     await p.waitForFunction(() => document.body.dataset.state === 'error');
     check('C: load error shown', (await text(p, '#loadErr')).includes('HTTP 500'));
+    check('C: a load error is red', !(await p.$eval('#loadErr', e => e.classList.contains('calm'))));
+    await p.close();
+
+    /* a judge run rebuilds the school: the API answers 503 {"resetting": true}; a calm note, then the morning */
+    p = await newPage(browser, 1920, 1080);
+    let resetting = true;
+    await p.route('**/api/today*', r => resetting
+      ? r.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ resetting: true, error: 'Resetting the training school…' }) })
+      : r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(today) }));
+    await p.goto(base + 'index.html');
+    await p.waitForFunction(() => !document.querySelector('#loadErr').hidden);
+    check('C: during a reset a calm note, not an error', await text(p, '#loadErr') === 'Resetting the training school…' &&
+      await p.$eval('#loadErr', e => e.classList.contains('calm') && getComputedStyle(e).backgroundColor === 'rgb(243, 238, 230)') &&
+      !(await text(p, '#loadErr')).includes('HTTP'), await text(p, '#loadErr'));
+    check('C: during a reset the page is not in its error state', await p.evaluate(() => document.body.dataset.state) !== 'error');
+    resetting = false;
+    await p.reload();
+    await p.waitForFunction(() => document.body.dataset.state === 'ready');
+    check('C: after the reset the morning, no note', await p.$eval('#loadErr', e => e.hidden));
     await p.close();
 
     /* ---------- screen P2 ---------- */
@@ -459,7 +478,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('case: title not cut', await p.$eval('.case-title', t => t.scrollWidth <= t.clientWidth + 1));
     check('case: pill', await text(p, '#pill') === caseFx.status_label + ' · ' + caseFx.covered_time_label);
     check('case: steps in order', JSON.stringify(await texts(p, '[data-slot="step-title"]')) === JSON.stringify(caseFx.steps.map(s => s.title)));
-    check('case: UTC stamps', JSON.stringify(await texts(p, '[data-slot="step-time"]')) === JSON.stringify(caseFx.steps.map(s => s.time_label)));
+    check('case: local stamps', JSON.stringify(await texts(p, '[data-slot="step-time"]')) === JSON.stringify(caseFx.steps.map(s => s.time_label)));
     check('case: voice note = screen C', await text(p, '[data-slot="callout-original"]') === '“' + today.callout.transcript_original + '”' &&
       await text(p, '[data-slot="callout-translation"]') === '“' + today.callout.transcript_en + '”');
     check('case: blocked line = screen C refusal', await text(p, '[data-slot="blocked-row"]') === e.first_refusal.staff + ' · ' + e.first_refusal.label);
@@ -616,7 +635,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     const msgKinds = await p.$$eval('[data-slot="message"]', es => es.map(e => e.dataset.kind));
     check('network: messages are the agents talking', JSON.stringify(msgKinds) === JSON.stringify(cand.steps.filter(s => ['request_sent', 'offered', 'checked_offer'].includes(s.kind)).map(s => s.kind)), msgKinds);
     const heads = await texts(p, '[data-slot="message-head"]');
-    check('network: UTC stamps from the steps', heads.every(h => / UTC · /.test(h)) && heads[0].startsWith(cand.steps.find(s => s.kind === 'request_sent').at_label), heads);
+    check('network: local stamps from the steps, no UTC, no ASCII arrow', heads.every(h => / ET · /.test(h) && !/UTC|->/.test(h)) && heads[0].startsWith(cand.steps.find(s => s.kind === 'request_sent').at_label), heads);
     check('network: two approve buttons, one per manager', JSON.stringify(await texts(p, '[data-slot^="approve-"]')) === JSON.stringify(['Approve as ' + cand.borrower.manager, 'Approve as ' + cand.lender.manager]));
     check('network: waiting for both', await text(p, '#result-text') === cand.status_label);
     await shot(p, 'network-fixture-candidate.png');

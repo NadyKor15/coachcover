@@ -10,6 +10,7 @@ every page and sent as the X-Binder-SHA256 header, so a printed copy can be matc
 from __future__ import annotations
 
 import hashlib
+import re
 import json
 from dataclasses import replace
 from datetime import UTC, date, datetime, time, timedelta
@@ -205,11 +206,12 @@ def _guest(conn: psycopg.Connection, staff_id: str):
 
 # --- PDF ------------------------------------------------------------------------------------
 
-_ASCII = {"–": "-", "—": "-", "’": "'", "‘": "'", "“": '"', "”": '"', "→": "->", "…": "...", "≤": "<=", "≥": ">="}
+# the PDF's core font is Latin-1: these become their nearest plain forms (an arrow reads "to", never "->")
+_ASCII = {"–": "-", "—": "-", "’": "'", "‘": "'", "“": '"', "”": '"', "…": "...", "≤": "<=", "≥": ">="}
 
 
 def _t(value) -> str:
-    text = "" if value is None else str(value)
+    text = re.sub(r"\s*→\s*", " to ", "" if value is None else str(value))
     for a, b in _ASCII.items():
         text = text.replace(a, b)
     return text.encode("latin-1", "replace").decode("latin-1")
@@ -238,8 +240,18 @@ def _heading(pdf: FPDF, text: str) -> None:
     pdf.set_font("Helvetica", size=8)
 
 
-def render(data: dict) -> bytes:
+def _generated(data: dict) -> str:
+    """When the binder was made, in the venue's time ("Nov 9, 08:45 ET")."""
+    from coachcover.reasons_text import local_stamp
+
+    at = datetime.fromisoformat(data["generated_at"])
+    local = at.astimezone(ZoneInfo(data["venue"]["tz"]))
+    return f"{local:%b} {local.day}, " + local_stamp(at, data["venue"]["tz"], "%H:%M")
+
+
+def render(data: dict, compress: bool = True) -> bytes:
     pdf = _Binder(data)
+    pdf.set_compression(compress)  # tests read the text uncompressed
     pdf.alias_nb_pages()
     pdf.add_page()
     s = data["summary"]
@@ -256,7 +268,7 @@ def render(data: dict) -> bytes:
     pdf.set_fill_color(255, 255, 255)
     pdf.set_font("Helvetica", size=9)
     pdf.cell(0, 6, _t(f"{s['uncovered']} uncovered · {s['cases']} replacements · {s['incidents']} incidents · "
-                      f"generated {data['generated_at'][:19]} UTC"), new_x="LMARGIN", new_y="NEXT")
+                      f"generated {_generated(data)}"), new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Helvetica", size=8)
     pdf.multi_cell(0, 4.5, _t(data["checks"] + " Hashes: sha256 of the canonical JSON of each case's events and each "
                                                "incident record; the binder digest covers everything in this file."),

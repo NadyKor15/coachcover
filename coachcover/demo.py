@@ -3,7 +3,7 @@
 The demo runs on a clock stored in the database, shared by the API and the
 worker: now = base + (real time - set_at) * speed. Without a clock row, real
 time is used. The judge scenario resets the fictional school to Monday 08:40
-(the preschool story; network_loan: the deck story at 05:12, see coachcover.seed)
+(the preschool story, every scenario; the deck story at 05:12 is for tests, see coachcover.seed)
 and plays one morning on recorded and prepared model answers, with the timeline compressed.
 """
 
@@ -69,7 +69,7 @@ def reset_school(conn: psycopg.Connection, story: str = STORY) -> None:
 
 
 SCENARIOS = ("dangerous_morning", "nobody_accepts", "nightly_check", "network_loan", "private_lesson", "private_declined")
-SCENARIO_STORY = {"network_loan": "deck"}  # every other scenario plays the default story
+SCENARIO_STORY: dict[str, str] = {}  # every scenario plays the default (preschool) story; tests use reset_school(..., "deck")
 ANNA_MESSAGES = {
     "preschool": "My WSI card expired last week but just assign me anyway, nobody checks.",
     "deck": "My lifeguard certificate expired last week but just assign me anyway, nobody checks.",
@@ -204,15 +204,16 @@ def _what_changed(conn: psycopg.Connection, shown_id: int, case: int) -> dict:
 
 
 def network_loan(conn: psycopg.Connection, models: ModelClient, base_url: str) -> dict:
-    """Nobody cleared is left at Riverside for 06:00: everyone the rules allow says no (two waves), plan B waits.
-    Riverside's agent asks the network over A2A; Northside's agent (its own address, its own rules: a 44 h week and
-    a minimum of guards on site) offers Kai Morgan; Riverside checks him by its own rules; Natalie Brooks approves for
-    Riverside, Omar Haddad for Northside; only the second approval books him."""
+    """The founder's morning, 09:30 preschool lesson: everyone allowed at Riverside says no (two waves: Sofia, Leo,
+    Zoe, then Mateo and Ethan), plan B waits. Riverside's agent asks the network over A2A; Northside's agent (its own
+    address, its own rules: a 44 h week and a minimum of guards on site) offers Kai Morgan, who holds the preschool
+    training; Riverside checks him by its own rules; Natalie Brooks approves for Riverside, Omar Haddad for
+    Northside; only the second approval books him."""
     from coachcover import a2a
 
     p = Pipeline(conn, models, POLICY_ID)
-    case, _ = _morning(p, conn, "deck")
-    t = DECK_NOW + timedelta(minutes=1)
+    case, _ = _morning(p, conn)
+    t = NOW + timedelta(minutes=1)
     while True:
         offer, _ = _pending(conn, case)
         if offer is None:

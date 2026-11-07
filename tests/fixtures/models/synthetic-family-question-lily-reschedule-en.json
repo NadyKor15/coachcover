@@ -10,9 +10,9 @@
   "time": "17:00",
   "venue": "Riverside Aquatic Center",
   "when": "Wed, Nov 11 at 17:00",
-  "say": "Lily keeps their own coach, Marina. The lesson moves to Wed, Nov 11 at 17:00 with Marina. Ask the parent if that works."
+  "say": "Lily stays with Marina. The lesson moves to Wed, Nov 11 at 17:00. Ask the parent if that works."
  },
- "input_sha256": "6a6253774903a1d90a40c27a3ec3e6bb0d45721ae796f0fb94766471465a1b7d",
+ "input_sha256": "7eaca86ec69da4eb2da73306606a49f16c93514269ff76fab29ead6963f8120d",
  "synthetic": true,
  "source": "synthetic: written by hand to the family_question schema, only facts from input",
  "duration_ms": 1000,
@@ -26,7 +26,7 @@
    {
     "message": {
      "role": "assistant",
-     "content": "{\"body\": \"No problem, Lily stays with Marina. Her lesson moves to Wed, Nov 11 at 17:00 with Marina. Does that work? Reply YES or NO.\"}"
+     "content": "{\"body\": \"No problem, Lily stays with Marina. The lesson moves to Wed, Nov 11 at 17:00. Does that work? Reply YES or NO.\"}"
     }
    }
   ]

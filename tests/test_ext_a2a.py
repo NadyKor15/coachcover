@@ -110,7 +110,7 @@ def test_loan_needs_both_managers_then_books_and_records_on_both_sides(net):
     checked = next(s for s in loan["steps"] if s["kind"] == "checked_own_people")
     assert checked["data"]["rules"]["max_weekly_hours"] == 44 and checked["data"]["guards"]["ok"] is True
     assert next(s for s in loan["steps"] if s["kind"] == "checked_offer")["data"]["ok"] is True
-    assert all(s["at"].endswith("Z") and s["at_label"].endswith("UTC") for s in loan["steps"])
+    assert all(s["at"].endswith("Z") and s["at_label"].endswith(" ET") for s in loan["steps"])  # UTC for machines only
     assert loan["a2a"]["task_state"] == a2a.STATE_INPUT_REQUIRED
     before = snapshot(conn, shift_id, case_id)
 

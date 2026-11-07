@@ -46,8 +46,8 @@ def test_days_are_written_for_people_in_the_familys_language():
         assert not M.ISO_DATE.search(json.dumps(facts, ensure_ascii=False))  # no machine date reaches the model
     assert cover()["say"] == ("Marina can't teach Lily's private lesson today at 17:00. Chloe can teach it instead, same "
                               "time and same place. Ask the parent if that is OK.")
-    assert move()["say"] == ("Lily keeps their own coach, Marina. The lesson moves to Wed, Nov 11 at 17:00 with Marina. "
-                             "Ask the parent if that works.")
+    assert move()["say"] == "Lily stays with Marina. The lesson moves to Wed, Nov 11 at 17:00. Ask the parent if that works."
+    assert "their" not in move()["say"]
 
 
 @pytest.mark.parametrize("lang", ["en", "es", "ru"])
@@ -161,6 +161,15 @@ def test_would_you_like_to_reschedule_is_not_asked_the_new_time_is(asked):
     p.family_respond(ask, False, seed.NOW + timedelta(minutes=4))
     body, event = last_question(conn, case)
     assert event["kind"] == "reschedule" and event["text_source"] == "template"
-    assert body == ("CoachCover: no problem, Lily stays with Marina. The lesson moves to Wed, Nov 11 at 17:00 with Marina. "
+    assert body == ("CoachCover: no problem, Lily stays with Marina. The lesson moves to Wed, Nov 11 at 17:00. "
                     "Does that work? Reply YES or NO.")
     assert "the question does not ask about this change: 'would you like to reschedule?'" in event["model_text_rejected"]
+
+
+def test_a_staff_message_is_translated_into_natural_english():
+    """The prompt tells the model what "не выйду" means at work; the prepared answer of the morning says it so."""
+    assert "can't come in" in M.TRANSLATE_SYSTEM and "never \"I won't be out\"" in M.TRANSLATE_SYSTEM
+    from pathlib import Path
+    prepared = json.loads((Path(__file__).parent / "fixtures/models/synthetic-translate-ru-0930.json").read_text())
+    text = json.loads(prepared["response"]["choices"][0]["message"]["content"])["text"]
+    assert "can't make it by nine thirty" in text and "won't be out" not in text

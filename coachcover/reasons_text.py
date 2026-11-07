@@ -8,6 +8,7 @@ given.
 from __future__ import annotations
 
 from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from coachcover.model import Preset
 from coachcover.rules import Code, Ranked, Reason
@@ -180,3 +181,15 @@ def describe_place(ranked: Ranked, name: str, lang: str = "en", preset: Preset |
         language = LANGUAGE_NAMES[lang].get(family["language"], family["language"])
         parts.append(t["speaks"].format(language=language, n=family["families"], total=family["of"]))
     return t["head"].format(name=name, position=position) + ", ".join(parts)
+
+
+# a short name for a venue's zone on screens ("08:40:10 ET"); machine fields stay in UTC
+ZONE_SHORT = {"America/New_York": "ET", "America/Detroit": "ET", "America/Chicago": "CT", "America/Denver": "MT",
+              "America/Phoenix": "MT", "America/Los_Angeles": "PT", "Pacific/Honolulu": "HT", "America/Anchorage": "AKT"}
+
+
+def local_stamp(value: datetime, tz: ZoneInfo | str, fmt: str = "%H:%M:%S") -> str:
+    """A moment in the venue's own time with its zone, for people: "08:40:10 ET"."""
+    zone = tz if isinstance(tz, ZoneInfo) else ZoneInfo(tz)
+    local = value.astimezone(zone)
+    return f"{local:{fmt}} {ZONE_SHORT.get(str(zone)) or local.tzname()}"

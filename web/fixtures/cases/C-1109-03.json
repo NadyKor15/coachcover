@@ -383,7 +383,7 @@
     "policy_label": "cover = auto · plan B = propose"
   },
   "model_calls": [],
-  "model_cost_usd": 0,
+  "model_cost_usd": 0.0,
   "model_cost_label": "0.0000¢",
   "risk": {
     "kids": 6,

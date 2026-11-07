@@ -449,7 +449,7 @@
   "plan_b": {
     "id": "P-standby",
     "state": "standby",
-    "text": "merge refused: 14 kids over the norm · Liam Foster (reserve) steps in · Camila Herrera on overtime: 0.25 h, $8.50 · move the lesson: makeup for 8 families · cancel: credit for 8 families",
+    "text": "No merge: 14 kids over the norm · Liam Foster (reserve) steps in · Camila Herrera: 15 min overtime ($8.50) · Move it: makeup for 8 families by Dec 9 · Cancel: credit for 8 families",
     "hash": "2becc6debd694499b3ae559864fdef953faf924da686e1992f886b237f24aed3",
     "autonomy": "propose"
   },
@@ -489,6 +489,7 @@
     }
   ],
   "night_check": null,
+  "network_loan": null,
   "ratio_alert": {
     "case_id": "C-1109-03",
     "status": "open",

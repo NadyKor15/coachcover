@@ -10,11 +10,13 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
+from coachcover import messages as M
 from coachcover import money as money_model
 from coachcover.checks import night_report
 from coachcover.model import Preset
 from coachcover.models import MODEL_LABELS, SHORT_NAMES, canonical_key
 from coachcover.pipeline import NotFound, Pipeline, plain
+from coachcover.reasons_text import local_stamp
 from coachcover.repo import load_policy, load_shift, load_staff
 from coachcover.rules import cert_expiry, group_norm, required_certs
 
@@ -216,10 +218,10 @@ def _plan_option_text(option: dict, preset: Preset) -> str:
 
 
 def _plan_text(facts: dict, preset: Preset) -> str:
-    parts = [_plan_option_text(o, preset) for o in facts["options"]]
+    parts = [M.plan_b_short_line(o) for o in M.plan_b_view(facts)["options"]]  # the plan in a few words
     for r in facts.get("rejected", []):
         if r["kind"] == "merge" and "RATIO_EXCEEDED" in r["codes"]:
-            parts.insert(0, f"merge refused: {r['participants']} {preset.copy.get('participants', 'participants')} over the norm")
+            parts.insert(0, f"No merge: {r['participants']} {preset.copy.get('participants', 'participants')} over the norm")
     return " · ".join(parts)
 
 
@@ -302,6 +304,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
         "model_log": {"label": None, "calls": 0, "usd": 0.0},
         "flagged": [],
         "night_check": _night_check(conn, vid, now, tz),
+        "network_loan": None,
         "ratio_alert": _ratio_alert(conn, vid, now, tz, preset),
         "judge": judge,
     }
@@ -388,6 +391,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
             timeline.append({"time_label": _clock(when, tz), "kind": result, "label": label, "_at": when})
     if info["private"]:
         timeline.extend({**step, "time_label": _clock(step["_at"], tz)} for step in _family_steps(events))
+    timeline.extend({**step, "time_label": _clock(step["_at"], tz)} for step in _network_steps(events))
     # a plan shown and then replaced because the facts changed: when it was shown, and what changed (stable sort:
     # these come before the current plan's line at the same minute)
     for (created,) in conn.execute("SELECT created_at FROM plan_b WHERE case_id = %s AND status = 'superseded'"
@@ -439,6 +443,8 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
                       # a private lesson: the family has the question until then (the banner says so)
                       "family_wait_until": next((_clock(by, tz) for (by,) in conn.execute(
                           "SELECT answer_by FROM client_ask WHERE case_id = %s AND status = 'asked'", (case_id,))), None)}
+    loan = next((data.get("loan") for _, _, kind, data in reversed(events) if kind == "network_loan_requested"), None)
+    out["network_loan"] = {"code": loan, "link": f"/network.html?loan={loan}"} if loan else None
     out["model_log"] = _model_log(conn, case_id, callout_id, live)
     out["money"] = today_money_block(conn, policy_id, now, vid, private=info["private"])
     out["flagged"] = [
@@ -539,6 +545,23 @@ def _family_offers(conn: psycopg.Connection, case_id: int) -> dict[int, tuple[st
     return {oid: (status, at) for oid, status, at in conn.execute(
         "SELECT offer_id, status, coalesce(answered_at, CASE WHEN status = 'silent' THEN answer_by END, asked_at)"
         " FROM client_ask WHERE case_id = %s AND kind = 'cover' ORDER BY id", (case_id,))}
+
+
+def _network_steps(events: list) -> list[dict]:
+    """A loan from another venue of the network, for the morning's timeline: asked, offered, both managers agreed."""
+    out, approvals = [], 0
+    for _, at, kind, data in events:
+        label = None
+        if kind == "network_loan_requested":
+            label = "Asked the network"
+        elif kind == "network_loan_offered":
+            label = f"{str(data.get('from') or 'Another venue').split()[0]} offers {data.get('name')}"
+        elif kind == "network_loan_approved":
+            approvals += 1
+            label = "Both managers agreed" if approvals == 2 else None
+        if label:
+            out.append({"kind": "network", "label": label, "_at": at})
+    return out
 
 
 def _family_steps(events: list) -> list[dict]:
@@ -826,25 +849,28 @@ def _utc(value: datetime) -> str:
     return value.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-# a short name for the venue's zone on the case page ("08:40:10 ET"); machine fields stay in UTC
-ZONE_SHORT = {"America/New_York": "ET", "America/Detroit": "ET", "America/Chicago": "CT", "America/Denver": "MT",
-              "America/Phoenix": "MT", "America/Los_Angeles": "PT", "Pacific/Honolulu": "HT", "America/Anchorage": "AKT"}
-
-
 def _local_label(value: datetime, tz: ZoneInfo) -> str:
-    local = value.astimezone(tz)
-    return f"{local:%H:%M:%S} {ZONE_SHORT.get(str(tz)) or local.tzname()}"
+    return local_stamp(value, tz)  # "08:40:10 ET": the venue's time; machine fields stay in UTC
 
 
 def model_calls(conn: psycopg.Connection, case_id: int, callout_id) -> list[dict]:
+    """The case's model calls, each priced as money.case_cost prices it: the case's own calls in full, the call-out's
+    calls (made once for the whole message) at an equal share between the cases that message opened. So the case page,
+    Today and the downloaded case show one cost, and the cases of a call-out add up to the ledger."""
     rows = conn.execute(
         "SELECT at, purpose, model_requested, model_returned, duration_ms, input_tokens, output_tokens, cost_usd, source,"
-        " ref->>'recording', coalesce((ref->>'synthetic')::boolean, false), ok, error FROM model_call"
-        " WHERE case_id = %s OR (%s::uuid IS NOT NULL AND ref->>'callout_id' = %s::text) ORDER BY at, id",
+        " ref->>'recording', coalesce((ref->>'synthetic')::boolean, false), ok, error, case_id FROM model_call"
+        " WHERE case_id = %s OR (%s::uuid IS NOT NULL AND case_id IS NULL AND ref->>'callout_id' = %s::text) ORDER BY at, id",
         (case_id, callout_id, callout_id),
     ).fetchall()
+    shared_by = conn.execute("SELECT count(*) FROM cover_case WHERE callout_id = %s", (callout_id,)).fetchone()[0] \
+        if callout_id is not None else 0
+    prices = money_model.load_prices()
     out = []
-    for at, purpose, requested, returned, ms, tin, tout, cost, source, recording, synthetic, ok, error in rows:
+    for at, purpose, requested, returned, ms, tin, tout, cost, source, recording, synthetic, ok, error, own in rows:
+        price, _ = money_model.call_price({"model_returned": returned, "model_requested": requested, "input_tokens": tin,
+                                           "output_tokens": tout, "cost_usd": cost}, prices)
+        share = 1.0 if own is not None or not shared_by else 1 / shared_by
         if source == "live":
             where = "live call on Vultr"
         else:
@@ -854,8 +880,9 @@ def model_calls(conn: psycopg.Connection, case_id: int, callout_id) -> list[dict
             "at": _utc(at), "purpose": purpose, "model": returned or requested,
             "model_label": MODEL_LABELS.get(returned or requested, returned or requested),
             "ms": ms, "input_tokens": tin, "output_tokens": tout,
-            "cost_usd": float(cost) if cost is not None else None,
-            "source": where if ok else f"{where} · failed: {error}",
+            "cost_usd": round(price * share, 10) if price is not None else None,
+            "source": (where if ok else f"{where} · failed: {error}")
+            + (f" · the call-out's call, shared by {shared_by} cases" if share < 1 else ""),
         })
     return out
 
@@ -1010,6 +1037,7 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
     proof["policy_label"] = f"cover = {policy.autonomy['assign_cover']} · plan B = {policy.autonomy['plan_b']}"
     steps.sort(key=lambda s: s["at"])
     calls = model_calls(conn, case_id, callout_id)
+    bill = money_model.case_cost(conn, case_id)
     local_day = info["start"].astimezone(tz)
     private_end = next((k for _, _, k, _ in reversed(events) if k in ("private_moved", "private_credit")), None)
     return plain({
@@ -1029,7 +1057,8 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         "steps": steps,
         "proof": proof,
         "model_calls": calls,
-        "model_cost_usd": round(sum(c["cost_usd"] or 0 for c in calls), 6),
-        "model_cost_label": money_model.cost_label(sum(c["cost_usd"] or 0 for c in calls)),
+        # one cost of this cover on every screen: money.case_cost (its own calls + its share of the call-out's)
+        "model_cost_usd": round(bill["usd"], 6),
+        "model_cost_label": money_model.cost_label(bill["usd"]),
         "risk": case_risk(shift, policy),
     })

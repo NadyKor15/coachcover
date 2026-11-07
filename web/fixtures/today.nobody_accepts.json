@@ -490,8 +490,8 @@
   "plan_b": {
     "id": "P-2",
     "state": "proposed",
-    "text": "Camila Herrera covers it on overtime: 0.25 h over the week, about $8.50. · Move the lesson: the 8 families book a makeup by December 9. · Cancel the lesson: the 8 families get a lesson credit.",
-    "hash": "8d357f26e685bfbdb161ed12b1fd16a885b780640a56d9781b8c8ba8ca133874",
+    "text": "Camila Herrera covers it with 15 minutes of overtime ($8.50). · Move the lesson: the 8 families book a makeup by December 9. · Cancel the lesson: the 8 families get a lesson credit.",
+    "hash": "fc82a598ed3bedc75872a5d6073145d0a8fc8bbcb47fe2e394a317b0b346ae32",
     "autonomy": "propose"
   },
   "summary_cards": [
@@ -530,6 +530,7 @@
     }
   ],
   "night_check": null,
+  "network_loan": null,
   "ratio_alert": null,
   "judge": {
     "running": false,

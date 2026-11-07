@@ -2,50 +2,30 @@
  "purpose": "plan_b_text",
  "model": "muse-glimmer-30b",
  "input": {
-  "shift": {
-   "id": "L-1109-G002",
-   "label": "Mon 09:30-10:15 · Swim instructor · Preschool · Riverside Aquatic Center",
-   "venue": "Riverside Aquatic Center",
-   "zone_id": "V1-TEACH",
-   "start": "2026-11-09T14:30:00+00:00",
-   "end": "2026-11-09T15:15:00+00:00",
-   "role": "instructor"
-  },
+  "shift": "Mon 09:30-10:15 · Swim instructor · Preschool · Riverside Aquatic Center",
   "options": [
    {
     "kind": "overtime",
-    "mode": "propose",
-    "staff_id": "S11",
-    "staff_name": "Camila Herrera",
-    "hours_over": 0.25,
-    "cost_usd": 8.5
+    "who": "Camila Herrera",
+    "overtime": "15 minutes",
+    "cost": "$8.50"
    },
    {
     "kind": "reschedule",
-    "mode": "propose",
-    "groups": [
-     "G002"
-    ],
     "families": 8,
     "remedy": "makeup",
-    "valid_until": "2026-12-09"
+    "until": "Dec 9"
    },
    {
     "kind": "close",
-    "mode": "propose",
-    "zone_id": "V1-TEACH",
-    "groups": [
-     "G002"
-    ],
     "families": 8,
-    "remedy": "credit",
-    "valid_until": null
+    "remedy": "credit"
    }
   ]
  },
- "input_sha256": "30220883b770a313e11923b5e8a6b0a0aaca122e279204ed4d4920828851f93c",
+ "input_sha256": "5eba81b52df81d90dbf355232ed124db06d726fc137e4c455b7d49b609ff80c8",
  "synthetic": true,
- "source": "synthetic: written by hand to the plan_b_text schema, only facts from input (the preschool lesson after the reserve head coach called out)",
+ "source": "synthetic: written by hand to the plan_b_text schema, only facts from input (names, money, minutes, days)",
  "duration_ms": 1500,
  "response": {
   "model": "muse-glimmer-30b",
@@ -57,7 +37,7 @@
    {
     "message": {
      "role": "assistant",
-     "content": "{\"headline\": \"Nobody took Monday 09:30 Preschool swim at Riverside Aquatic Center: 8 families are waiting\", \"lines\": [\"Camila Herrera covers it on overtime: 0.25 h over the week, about $8.50.\", \"Move the lesson: the 8 families book a makeup by December 9.\", \"Cancel the lesson: the 8 families get a lesson credit.\"]}"
+     "content": "{\"headline\": \"Nobody took Monday 09:30 Preschool swim at Riverside Aquatic Center: 8 families are waiting\", \"lines\": [\"Camila Herrera covers it with 15 minutes of overtime ($8.50).\", \"Move the lesson: the 8 families book a makeup by December 9.\", \"Cancel the lesson: the 8 families get a lesson credit.\"]}"
     }
    }
   ]

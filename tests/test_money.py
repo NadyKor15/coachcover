@@ -175,3 +175,32 @@ def test_prices_come_from_the_preset_and_the_loader_is_strict():
             preset_from_dict(data)
     with pytest.raises(ValueError, match="no money block"):
         money_params({})
+
+
+def test_one_cost_of_a_cover_on_today_the_case_and_the_downloaded_case(new_database):
+    """The voice note's calls are made once for Marina's message, which opens two cases (09:30 and her 17:00 private
+    lesson): each case pays its own calls and half of the call-out's. Today's card and footer, the case page, its
+    table of calls and the downloaded case show that one number; the two cases add up to the whole ledger."""
+    from coachcover.demo import reset_school, run_scenario
+    from coachcover.models import DbLedger, ModelClient
+    from coachcover.screens import case_page, today
+    from coachcover.seed import POLICY_ID
+
+    conn = new_database()
+    reset_school(conn)
+    run = run_scenario(conn, ModelClient(DbLedger(conn), mode="replay"), "dangerous_morning")
+    case = conn.execute("SELECT id FROM cover_case WHERE code = %s", (run["case_id"],)).fetchone()[0]
+    screen = today(conn, POLICY_ID, run["ended_at"], None, live=False)
+    page = case_page(conn, POLICY_ID, case, live=False)
+    bill = case_cost(conn, case)
+    assert bill["shared_between_cases"] == 2
+    assert screen["money"]["case_cost_cents"] == pytest.approx(bill["cents"], abs=1e-4)
+    assert screen["model_log"]["usd"] == pytest.approx(bill["usd"], abs=1e-6)
+    assert page["model_cost_usd"] == pytest.approx(bill["usd"], abs=1e-6)
+    assert sum(c["cost_usd"] or 0 for c in page["model_calls"]) == pytest.approx(bill["usd"], abs=1e-6)
+    assert page["model_cost_label"] == screen["money"]["case_cost_label"]
+    assert len(page["model_calls"]) == screen["model_log"]["calls"] == bill["calls"]
+    assert sum(1 for c in page["model_calls"] if "shared by 2 cases" in c["source"]) == bill["shared_calls"] == 4
+    total = float(conn.execute("SELECT sum(cost_usd) FROM model_call").fetchone()[0])
+    cases = [c for (c,) in conn.execute("SELECT id FROM cover_case")]
+    assert sum(case_cost(conn, c)["usd"] for c in cases) == pytest.approx(total, abs=2e-6)
