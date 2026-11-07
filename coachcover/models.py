@@ -281,6 +281,23 @@ class Answer:
 Transport = Callable[[str, dict], tuple[dict, int]]  # (path, request) -> (response body, duration ms)
 
 
+def ogg_seconds(audio: bytes) -> float | None:
+    """Length of an Ogg Opus or Vorbis file from its last page's granule position, or None."""
+    last = audio.rfind(b"OggS")
+    if last < 0 or len(audio) < last + 14:
+        return None
+    granule = int.from_bytes(audio[last + 6:last + 14], "little")
+    opus = audio.find(b"OpusHead")
+    if opus >= 0 and len(audio) >= opus + 12:
+        pre_skip = int.from_bytes(audio[opus + 10:opus + 12], "little")
+        return round(max(granule - pre_skip, 0) / 48000, 3)
+    vorbis = audio.find(b"\x01vorbis")
+    if vorbis >= 0 and len(audio) >= vorbis + 16:
+        rate = int.from_bytes(audio[vorbis + 12:vorbis + 16], "little")
+        return round(granule / rate, 3) if rate else None
+    return None
+
+
 class ModelClient:
     def __init__(
         self,
@@ -353,6 +370,7 @@ class ModelClient:
         ref: dict,
         parse: Callable[[dict], Any],
         audio_seconds: Callable[[dict], float | None] = lambda body: None,
+        names_model: bool = True,
     ) -> Answer:
         source = "recorded" if self.mode == "replay" else "live"
         returned = None
@@ -372,6 +390,11 @@ class ModelClient:
             else:
                 body, duration = self._transport(*request)
             returned = body.get("model")
+            if returned is None and not names_model:
+                # Vultr's speech endpoint answers {"text", "usage"} without a model name (07.11): the name is the
+                # one asked for, and the ledger says so; an answer naming another model is still thrown away
+                returned = model
+                call_ref["model_named_by"] = "request"
             if returned is None:
                 raise BadAnswer("the answer does not name its model; thrown away")
             if returned not in ALLOWED_MODELS or returned != model:
@@ -397,15 +420,22 @@ class ModelClient:
         """Speech to text. `data` = {"text": ..., "language": ... or None}."""
         mime = "audio/ogg" if filename.endswith((".ogg", ".oga", ".opus")) else "application/octet-stream"
         request = ("/audio/transcriptions", {"multipart": {
-            "fields": {"model": SPEECH_MODEL, "response_format": "verbose_json"},
+            "fields": {"model": SPEECH_MODEL, "response_format": "json"},  # verbose_json is refused (400) since 07.11
             "file": (filename, audio, mime),
         }})
+
+        def seconds(body: dict) -> float | None:
+            # verbose_json had "duration"; plain json has usage {"type": "duration", "seconds": n} (the billed
+            # seconds); without either, the length of the Ogg file prices the call
+            usage = body.get("usage") or {}
+            billed = usage.get("seconds") if usage.get("type") == "duration" else None
+            return body.get("duration") or billed or ogg_seconds(audio)
 
         def parse(body: dict) -> dict:
             text = body.get("text")
             if not isinstance(text, str) or not text.strip():
                 raise BadAnswer("empty transcript")
-            return {"text": text.strip(), "language": body.get("language"), "duration": body.get("duration")}
+            return {"text": text.strip(), "language": body.get("language"), "duration": seconds(body)}
 
         return self._call(
             purpose="transcribe",
@@ -416,7 +446,8 @@ class ModelClient:
             case_id=case_id,
             ref={**(ref or {}), "filename": filename},
             parse=parse,
-            audio_seconds=lambda body: body.get("duration"),
+            audio_seconds=seconds,
+            names_model=False,
         )
 
     def chat_json(

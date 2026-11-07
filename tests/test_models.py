@@ -155,3 +155,41 @@ def test_live_mode_checks_answers_the_same_way_without_network():
         client.chat_json(purpose="probe", system="s", user="u", schema=SCHEMA, key={"x": 6}, at=AT)
     assert sent == [("/chat/completions", TEXT_MODEL, "json_schema")]
     assert ledger.calls[0].source == "live" and ledger.calls[0].ok is False
+
+
+def test_live_transcript_asks_for_plain_json_and_prices_by_the_audio_length():
+    # Vultr now rejects response_format=verbose_json (400 "use json or text") and json carries no duration,
+    # so the length comes from the Ogg file itself (ffprobe: ru-callout.ogg 8.529 s).
+    sent = []
+
+    def transport(path, request):
+        sent.append((path, request))
+        return answers.pop(0), 900
+
+    # the live answer of 07.11 (probe on ru-callout.ogg): no model name, usage in billed seconds
+    answers = [{"text": "Привет, это Марина", "usage": {"type": "duration", "seconds": 9}},
+               {"text": "Привет, это Марина"},
+               {"text": "Привет", "model": "some-other-model"}]
+    ledger = MemoryLedger()
+    client = ModelClient(ledger, mode="live", api_key="test-key", transport=transport)
+    audio = (FIXTURES / "audio" / "ru-callout.ogg").read_bytes()
+    answer = client.transcribe(audio, "ru-callout.ogg", at=AT)
+    assert sent[0][1]["multipart"]["fields"]["response_format"] == "json"
+    assert answer.data["text"] == "Привет, это Марина" and answer.data["duration"] == 9
+    call = ledger.calls[0]
+    assert (call.ok, call.model_returned) == (True, "whisper-large-v3-turbo")
+    assert call.cost_usd == pytest.approx(0.04 * 9 / 3600, abs=1e-6)
+    assert answer.record.ref["model_named_by"] == "request"
+    no_usage = client.transcribe(audio, "ru-callout.ogg", at=AT)  # no usage either: the Ogg length prices it
+    assert no_usage.data["duration"] == pytest.approx(8.529, abs=0.01)
+    assert ledger.calls[1].cost_usd == pytest.approx(0.04 * 8.529 / 3600, abs=1e-6)
+    with pytest.raises(ModelSubstituted):  # naming another model still throws the answer away
+        client.transcribe(audio, "ru-callout.ogg", at=AT)
+
+
+@pytest.mark.parametrize("name, seconds", [("en-callout.ogg", 6.920), ("es-callout.ogg", 5.277),
+                                           ("ru-callout-0930.ogg", 9.226), ("whatif-ru.ogg", 2.012)])
+def test_ogg_length_matches_ffprobe(name, seconds):
+    from coachcover.models import ogg_seconds
+    assert ogg_seconds((FIXTURES / "audio" / name).read_bytes()) == pytest.approx(seconds, abs=0.01)
+    assert ogg_seconds(b"not an ogg file") is None
