@@ -9,7 +9,7 @@
   "preset": "swim_school",
   "venues": 3,
   "staff": 40,
-  "shifts": 207,
+  "shifts": 229,
   "week_start": "2026-11-09",
   "tz": "America/New_York"
  },
@@ -19,6 +19,8 @@
   "offer_wave_size": 3,
   "offer_collect_seconds": 60,
   "plan_b_minutes_before_start": 20,
+  "client_answer_minutes": 30,
+  "client_answer_before_start_minutes": 60,
   "autonomy": {
    "assign_cover": "auto",
    "plan_b": "propose",
@@ -78,7 +80,11 @@
   ],
   "p_renewal_overdue": 0.4,
   "offers": "waves",
-  "baseline_checks_role": false
+  "baseline_checks_role": false,
+  "p_family_yes": 0.8,
+  "p_family_no": 0.1,
+  "family_lag_min": 2.0,
+  "family_lag_max": 20.0
  },
  "assumptions": {
   "p_awake": "Share of staff already awake when the first message comes (the rest wake between wake_from and wake_to).",
@@ -110,69 +116,76 @@
   "hours_changes": "How many people get extra hours this week (min, max).",
   "hours_target": "Their weekly total after the extra hours, before any cover (min, max); the limit is the policy's.",
   "rota_swaps": "How many of the morning's lessons are handed to another cleared instructor (min, max).",
-  "p_renewal_overdue": "Chance that one instructor's program renewal is overdue that week."
+  "p_renewal_overdue": "Chance that one instructor's program renewal is overdue that week.",
+  "p_family_yes": "Assumed, not measured: chance that a private lesson's family says yes to another coach (and, asked again, to a new time with their own coach).",
+  "p_family_no": "Assumed, not measured: chance that the family says no; the rest do not answer in time.",
+  "family_lag_min": "Assumed, not measured: minutes from the question to the family's answer, lower bound (uniform).",
+  "family_lag_max": "Assumed, not measured: minutes from the question to the family's answer, upper bound (uniform)."
  },
  "summary": {
   "baseline": {
-   "cases": 92,
-   "placements": 91,
+   "cases": 98,
+   "placements": 98,
    "violations": 45,
-   "violations_pct_of_placements": 49.5,
+   "violations_pct_of_placements": 45.9,
    "violations_by_reason": {
-    "role": 11,
+    "role": 9,
     "certificate": 20,
-    "program": 8,
-    "hours": 6,
+    "program": 9,
+    "hours": 7,
     "ratio": 0,
     "other": 0
    },
    "violations_any_reason": {
-    "role": 11,
-    "certificate": 31,
-    "program": 26,
+    "role": 9,
+    "certificate": 29,
+    "program": 27,
     "hours": 11,
     "ratio": 0,
     "other": 0
    },
    "violations_by_code": {
-    "CERT_EXPIRED": 14,
-    "CERT_MISSING": 11,
+    "CERT_EXPIRED": 12,
+    "CERT_MISSING": 9,
     "CERT_NEEDS_REVIEW": 5,
     "CERT_REVOKED": 3,
     "HOURS_LIMIT_EXCEEDED": 2,
-    "LEVEL_MISSING": 15,
-    "PROGRAM_MISSING": 11,
+    "LEVEL_MISSING": 18,
+    "PROGRAM_MISSING": 9,
     "PROGRAM_RENEWAL_OVERDUE": 2,
     "REST_TOO_SHORT": 10,
-    "ROLE_MISSING": 11
+    "ROLE_MISSING": 9
    },
-   "expired_certificate_placements": 14,
-   "median_minutes_to_close": 13.4,
+   "expired_certificate_placements": 12,
+   "median_minutes_to_close": 13.5,
    "p90_minutes_to_close": 16.3,
-   "mean_minutes_to_close": 14.0,
+   "mean_minutes_to_close": 13.8,
    "closed_after_shift_start": 0,
    "closed_without_human": 0,
    "closed_without_human_pct": 0.0,
-   "covered": 91,
-   "lessons_cancelled": 1,
-   "participants_without_lesson": 5,
+   "covered": 98,
+   "lessons_cancelled": 0,
+   "participants_without_lesson": 0,
    "shifts_without_groups_left_empty": 0,
    "approved_overtime": 0,
    "outcomes": {
-    "cancelled": 1,
-    "covered": 91
+    "covered": 98
    },
+   "private_lessons": 11,
+   "private_another_coach_family_yes": 0,
+   "private_another_coach_without_family_yes": 11,
+   "private_moved_to_own_coach": 0,
+   "private_credit": 0,
    "channels": {
-    "chat": 91,
-    "fallback": 1
+    "chat": 98
    },
-   "asked_total": 4,
-   "manager_minutes_total": 288.0,
+   "asked_total": 0,
+   "manager_minutes_total": 294.0,
    "manager_minutes_median_per_morning": 6.0
   },
   "coachcover": {
-   "cases": 92,
-   "placements": 92,
+   "cases": 98,
+   "placements": 95,
    "violations": 0,
    "violations_pct_of_placements": 0.0,
    "violations_by_reason": {
@@ -193,27 +206,34 @@
    },
    "violations_by_code": {},
    "expired_certificate_placements": 0,
-   "median_minutes_to_close": 10.9,
-   "p90_minutes_to_close": 25.7,
-   "mean_minutes_to_close": 12.8,
+   "median_minutes_to_close": 10.5,
+   "p90_minutes_to_close": 25.0,
+   "mean_minutes_to_close": 13.2,
    "closed_after_shift_start": 0,
-   "closed_without_human": 58,
-   "closed_without_human_pct": 63.0,
-   "covered": 92,
+   "closed_without_human": 65,
+   "closed_without_human_pct": 66.3,
+   "covered": 95,
    "lessons_cancelled": 0,
    "participants_without_lesson": 0,
    "shifts_without_groups_left_empty": 0,
    "approved_overtime": 0,
    "outcomes": {
-    "covered": 58,
-    "reserve": 34
+    "covered": 65,
+    "credit": 1,
+    "moved_own": 2,
+    "reserve": 30
    },
+   "private_lessons": 11,
+   "private_another_coach_family_yes": 8,
+   "private_another_coach_without_family_yes": 0,
+   "private_moved_to_own_coach": 2,
+   "private_credit": 1,
    "channels": {
-    "offer": 58,
-    "plan_b": 34
+    "offer": 65,
+    "plan_b": 33
    },
-   "asked_total": 494,
-   "manager_minutes_total": 34.0,
+   "asked_total": 507,
+   "manager_minutes_total": 33.0,
    "manager_minutes_median_per_morning": 1.0
   }
  },
@@ -225,57 +245,60 @@
    },
    "strategy": "baseline",
    "summary": {
-    "cases": 92,
-    "placements": 91,
-    "violations": 39,
-    "violations_pct_of_placements": 42.9,
+    "cases": 98,
+    "placements": 98,
+    "violations": 41,
+    "violations_pct_of_placements": 41.8,
     "violations_by_reason": {
      "role": 0,
-     "certificate": 24,
-     "program": 8,
-     "hours": 7,
+     "certificate": 23,
+     "program": 10,
+     "hours": 8,
      "ratio": 0,
      "other": 0
     },
     "violations_any_reason": {
      "role": 0,
-     "certificate": 24,
-     "program": 18,
+     "certificate": 23,
+     "program": 21,
      "hours": 12,
      "ratio": 0,
      "other": 0
     },
     "violations_by_code": {
-     "CERT_EXPIRED": 15,
+     "CERT_EXPIRED": 14,
      "CERT_NEEDS_REVIEW": 5,
      "CERT_REVOKED": 5,
      "HOURS_LIMIT_EXCEEDED": 2,
-     "LEVEL_MISSING": 16,
-     "PROGRAM_RENEWAL_OVERDUE": 5,
+     "LEVEL_MISSING": 20,
+     "PROGRAM_RENEWAL_OVERDUE": 4,
      "REST_TOO_SHORT": 11
     },
-    "expired_certificate_placements": 14,
-    "median_minutes_to_close": 13.4,
-    "p90_minutes_to_close": 16.5,
-    "mean_minutes_to_close": 14.5,
+    "expired_certificate_placements": 13,
+    "median_minutes_to_close": 13.5,
+    "p90_minutes_to_close": 16.4,
+    "mean_minutes_to_close": 14.2,
     "closed_after_shift_start": 0,
     "closed_without_human": 0,
     "closed_without_human_pct": 0.0,
-    "covered": 91,
-    "lessons_cancelled": 1,
-    "participants_without_lesson": 5,
+    "covered": 98,
+    "lessons_cancelled": 0,
+    "participants_without_lesson": 0,
     "shifts_without_groups_left_empty": 0,
     "approved_overtime": 0,
     "outcomes": {
-     "cancelled": 1,
-     "covered": 91
+     "covered": 98
     },
+    "private_lessons": 11,
+    "private_another_coach_family_yes": 0,
+    "private_another_coach_without_family_yes": 11,
+    "private_moved_to_own_coach": 0,
+    "private_credit": 0,
     "channels": {
-     "chat": 91,
-     "fallback": 1
+     "chat": 98
     },
-    "asked_total": 4,
-    "manager_minutes_total": 288.0,
+    "asked_total": 0,
+    "manager_minutes_total": 294.0,
     "manager_minutes_median_per_morning": 6.0
    }
   },
@@ -286,8 +309,8 @@
    },
    "strategy": "coachcover",
    "summary": {
-    "cases": 92,
-    "placements": 92,
+    "cases": 98,
+    "placements": 95,
     "violations": 0,
     "violations_pct_of_placements": 0.0,
     "violations_by_reason": {
@@ -308,28 +331,35 @@
     },
     "violations_by_code": {},
     "expired_certificate_placements": 0,
-    "median_minutes_to_close": 22.9,
-    "p90_minutes_to_close": 46.9,
-    "mean_minutes_to_close": 24.5,
-    "closed_after_shift_start": 17,
-    "closed_without_human": 59,
-    "closed_without_human_pct": 64.1,
-    "covered": 92,
+    "median_minutes_to_close": 21.2,
+    "p90_minutes_to_close": 46.6,
+    "mean_minutes_to_close": 23.5,
+    "closed_after_shift_start": 16,
+    "closed_without_human": 66,
+    "closed_without_human_pct": 67.3,
+    "covered": 95,
     "lessons_cancelled": 0,
     "participants_without_lesson": 0,
     "shifts_without_groups_left_empty": 0,
     "approved_overtime": 0,
     "outcomes": {
-     "covered": 59,
-     "reserve": 33
+     "covered": 66,
+     "credit": 1,
+     "moved_own": 2,
+     "reserve": 29
     },
+    "private_lessons": 11,
+    "private_another_coach_family_yes": 8,
+    "private_another_coach_without_family_yes": 0,
+    "private_moved_to_own_coach": 2,
+    "private_credit": 1,
     "channels": {
-     "offer": 59,
-     "plan_b": 33
+     "offer": 66,
+     "plan_b": 32
     },
-    "asked_total": 435,
-    "manager_minutes_total": 33.0,
-    "manager_minutes_median_per_morning": 1.0
+    "asked_total": 430,
+    "manager_minutes_total": 32.0,
+    "manager_minutes_median_per_morning": 0.5
    }
   }
  },
@@ -419,7 +449,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -438,7 +470,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -541,7 +575,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -560,7 +596,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -572,7 +610,8 @@
      "staff_id": "S02",
      "at": "2026-11-11T05:12-05:00",
      "shift_ids": [
-      "L-1111-G051"
+      "L-1111-G051",
+      "L-1111-P004"
      ]
     }
    ],
@@ -651,7 +690,30 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-P004",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S04",
+     "human": true,
+     "closed_at": "2026-11-11T05:27-05:00",
+     "minutes": 15.5,
+     "late": false,
+     "violation": "certificate",
+     "codes": [
+      "CERT_EXPIRED"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -670,7 +732,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 9,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-P004",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S20",
+     "human": false,
+     "closed_at": "2026-11-11T05:28-05:00",
+     "minutes": 16.7,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 9,
+     "manager_minutes": 0.0,
+     "private": true,
+     "family_yes": true
     }
    ]
   },
@@ -763,7 +846,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1112-G054",
@@ -784,7 +869,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -803,7 +890,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1112-G054",
@@ -820,7 +909,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 4,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -920,7 +1011,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G060",
@@ -937,7 +1030,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -956,7 +1051,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G060",
@@ -973,7 +1070,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -1083,7 +1182,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "G-1109-V2-0530",
@@ -1100,7 +1201,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -1119,7 +1222,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "G-1109-V2-0530",
@@ -1136,7 +1241,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 9,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -1145,21 +1252,27 @@
    "day": "2026-11-10",
    "callouts": [
     {
-     "staff_id": "S11",
-     "at": "2026-11-10T04:37-05:00",
+     "staff_id": "S09",
+     "at": "2026-11-10T04:44-05:00",
      "shift_ids": [
-      "G-1110-V2-0530"
+      "L-1110-G045"
      ]
     },
     {
-     "staff_id": "S21",
+     "staff_id": "S19",
      "at": "2026-11-10T05:12-05:00",
      "shift_ids": [
-      "L-1110-G087"
+      "L-1110-G085"
      ]
     }
    ],
    "changes": [
+    {
+     "kind": "rota",
+     "shift_id": "L-1110-P003",
+     "from": "S01",
+     "to": "S25"
+    },
     {
      "kind": "rota",
      "shift_id": "L-1110-G086",
@@ -1173,35 +1286,29 @@
      "to": "S15"
     },
     {
-     "kind": "rota",
-     "shift_id": "L-1110-G048",
-     "from": "S02",
-     "to": "S23"
+     "kind": "hours",
+     "staff_id": "S25",
+     "week_hours": 34.25
     },
     {
      "kind": "hours",
      "staff_id": "S15",
-     "week_hours": 38.25
+     "week_hours": 36.5
     },
     {
      "kind": "hours",
      "staff_id": "S35",
-     "week_hours": 37.25
+     "week_hours": 35.0
     },
     {
      "kind": "hours",
      "staff_id": "S14",
-     "week_hours": 34.5
+     "week_hours": 37.5
     },
     {
      "kind": "hours",
      "staff_id": "S37",
-     "week_hours": 39.0
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S04",
-     "week_hours": 36.25
+     "week_hours": 39.25
     },
     {
      "kind": "card",
@@ -1254,76 +1361,87 @@
    ],
    "baseline": [
     {
-     "shift_id": "G-1110-V2-0530",
-     "lesson": false,
+     "shift_id": "L-1110-G045",
+     "lesson": true,
      "outcome": "covered",
      "channel": "chat",
      "staff_id": "S10",
      "human": true,
-     "closed_at": "2026-11-10T04:49-05:00",
+     "closed_at": "2026-11-10T04:56-05:00",
      "minutes": 12.3,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1110-G087",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S19",
-     "human": true,
-     "closed_at": "2026-11-10T05:24-05:00",
-     "minutes": 12.7,
      "late": false,
      "violation": "certificate",
      "codes": [
-      "CERT_EXPIRED"
+      "CERT_EXPIRED",
+      "LEVEL_MISSING"
      ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1110-G085",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S18",
+     "human": true,
+     "closed_at": "2026-11-10T05:25-05:00",
+     "minutes": 13.1,
+     "late": false,
+     "violation": "program",
+     "codes": [
+      "LEVEL_MISSING"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
     {
-     "shift_id": "G-1110-V2-0530",
-     "lesson": false,
+     "shift_id": "L-1110-G045",
+     "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S10",
+     "staff_id": "S16",
      "human": false,
-     "closed_at": "2026-11-10T04:50-05:00",
-     "minutes": 13.3,
+     "closed_at": "2026-11-10T04:49-05:00",
+     "minutes": 5.3,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 9,
-     "manager_minutes": 0.0
+     "asked": 3,
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
-     "shift_id": "L-1110-G087",
+     "shift_id": "L-1110-G085",
      "lesson": true,
      "outcome": "reserve",
      "channel": "plan_b",
      "staff_id": "S06",
      "human": true,
-     "closed_at": "2026-11-10T05:39-05:00",
-     "minutes": 27.0,
+     "closed_at": "2026-11-10T05:29-05:00",
+     "minutes": 17.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 8,
-     "manager_minutes": 1.0
+     "asked": 3,
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -1410,7 +1528,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -1429,7 +1549,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -1518,7 +1640,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -1537,7 +1661,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -1558,7 +1684,8 @@
      "at": "2026-11-13T05:26-05:00",
      "shift_ids": [
       "L-1113-G017",
-      "L-1113-G019"
+      "L-1113-G019",
+      "L-1113-P007"
      ]
     }
    ],
@@ -1650,7 +1777,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G020",
@@ -1669,7 +1798,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G017",
@@ -1686,7 +1817,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G019",
@@ -1705,7 +1838,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1113-P007",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S03",
+     "human": true,
+     "closed_at": "2026-11-13T05:42-05:00",
+     "minutes": 16.2,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -1724,7 +1878,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G020",
@@ -1733,15 +1889,17 @@
      "channel": "offer",
      "staff_id": "S19",
      "human": false,
-     "closed_at": "2026-11-13T04:46-05:00",
-     "minutes": 5.0,
+     "closed_at": "2026-11-13T04:50-05:00",
+     "minutes": 9.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 0.0
+     "asked": 6,
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G017",
@@ -1758,7 +1916,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 8,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G019",
@@ -1775,7 +1935,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 5,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1113-P007",
+     "lesson": true,
+     "outcome": "credit",
+     "channel": "plan_b",
+     "staff_id": null,
+     "human": true,
+     "closed_at": "2026-11-13T06:10-05:00",
+     "minutes": 44.2,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 3,
+     "manager_minutes": 1.0,
+     "private": true,
+     "family_yes": false
     }
    ]
   },
@@ -1880,7 +2061,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G001",
@@ -1897,7 +2080,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -1916,7 +2101,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G001",
@@ -1933,7 +2120,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 5,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -2032,7 +2221,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -2051,7 +2242,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 4,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -2060,17 +2253,17 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S22",
+     "staff_id": "S21",
      "at": "2026-11-11T05:09-05:00",
      "shift_ids": [
-      "L-1111-G051"
+      "L-1111-G092"
      ]
     },
     {
-     "staff_id": "S19",
+     "staff_id": "S18",
      "at": "2026-11-11T05:38-05:00",
      "shift_ids": [
-      "L-1111-G090"
+      "L-1111-G050"
      ]
     }
    ],
@@ -2135,7 +2328,7 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1111-G051",
+     "shift_id": "L-1111-G092",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -2149,29 +2342,33 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
-     "shift_id": "L-1111-G090",
+     "shift_id": "L-1111-G050",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S21",
+     "staff_id": "S23",
      "human": true,
      "closed_at": "2026-11-11T05:50-05:00",
-     "minutes": 12.0,
+     "minutes": 12.2,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
     {
-     "shift_id": "L-1111-G051",
+     "shift_id": "L-1111-G092",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
@@ -2185,10 +2382,12 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
-     "shift_id": "L-1111-G090",
+     "shift_id": "L-1111-G050",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
@@ -2202,7 +2401,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -2211,25 +2412,12 @@
    "day": "2026-11-12",
    "callouts": [
     {
-     "staff_id": "S03",
-     "at": "2026-11-12T05:09-05:00",
+     "staff_id": "S02",
+     "at": "2026-11-12T04:49-05:00",
      "shift_ids": [
-      "L-1112-G095"
-     ]
-    },
-    {
-     "staff_id": "S01",
-     "at": "2026-11-12T05:15-05:00",
-     "shift_ids": [
-      "L-1112-G013",
-      "L-1112-G015"
-     ]
-    },
-    {
-     "staff_id": "S04",
-     "at": "2026-11-12T05:54-05:00",
-     "shift_ids": [
-      "L-1112-G016"
+      "L-1112-G014",
+      "L-1112-G056",
+      "L-1112-P005"
      ]
     }
    ],
@@ -2238,7 +2426,13 @@
      "kind": "rota",
      "shift_id": "L-1112-G053",
      "from": "S18",
-     "to": "S23"
+     "to": "S22"
+    },
+    {
+     "kind": "rota",
+     "shift_id": "L-1112-P006",
+     "from": "S03",
+     "to": "S20"
     },
     {
      "kind": "rota",
@@ -2247,208 +2441,184 @@
      "to": "S08"
     },
     {
-     "kind": "rota",
-     "shift_id": "L-1112-G055",
-     "from": "S18",
-     "to": "S06"
+     "kind": "hours",
+     "staff_id": "S07",
+     "week_hours": 36.5
     },
     {
      "kind": "hours",
      "staff_id": "S04",
-     "week_hours": 36.75
+     "week_hours": 37.25
     },
     {
-     "kind": "hours",
-     "staff_id": "S26",
-     "week_hours": 36.75
+     "kind": "card",
+     "staff_id": "S23",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-11"
     },
     {
      "kind": "card",
      "staff_id": "S37",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-10-24"
+     "expires_on": "2026-10-27"
     },
     {
      "kind": "card",
      "staff_id": "S32",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-11-02"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S39",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-07"
+     "expires_on": "2026-11-04"
     },
     {
      "kind": "card",
      "staff_id": "S36",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-11-04"
+     "expires_on": "2026-11-17"
     },
     {
      "kind": "card",
      "staff_id": "S02",
      "cert_type": "wsi",
-     "expires_on": "2026-10-26"
+     "expires_on": "2026-10-28"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S17",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-17"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S06",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-10-31"
     },
     {
      "kind": "renewal",
-     "staff_id": "S03",
+     "staff_id": "S27",
      "program": "learn_to_swim",
      "renewed_at": "2025-10-12"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1112-G095",
+     "shift_id": "L-1112-G014",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S32",
+     "staff_id": "S03",
      "human": true,
-     "closed_at": "2026-11-12T05:22-05:00",
-     "minutes": 13.0,
-     "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING",
-      "CERT_EXPIRED",
-      "PROGRAM_MISSING"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1112-G013",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S32",
-     "human": true,
-     "closed_at": "2026-11-12T05:28-05:00",
-     "minutes": 13.0,
-     "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING",
-      "CERT_EXPIRED",
-      "PROGRAM_MISSING"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1112-G015",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S27",
-     "human": true,
-     "closed_at": "2026-11-12T05:32-05:00",
-     "minutes": 17.6,
-     "late": false,
-     "violation": "certificate",
-     "codes": [
-      "CERT_EXPIRED"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1112-G016",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S19",
-     "human": true,
-     "closed_at": "2026-11-12T06:09-05:00",
-     "minutes": 15.1,
+     "closed_at": "2026-11-12T05:01-05:00",
+     "minutes": 12.2,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1112-G056",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S31",
+     "human": true,
+     "closed_at": "2026-11-12T05:04-05:00",
+     "minutes": 15.0,
+     "late": false,
+     "violation": "role",
+     "codes": [
+      "ROLE_MISSING",
+      "CERT_MISSING",
+      "PROGRAM_MISSING"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1112-P005",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S03",
+     "human": true,
+     "closed_at": "2026-11-12T05:05-05:00",
+     "minutes": 16.2,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
     }
    ],
    "coachcover": [
     {
-     "shift_id": "L-1112-G095",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-12T05:36-05:00",
-     "minutes": 27.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 9,
-     "manager_minutes": 1.0
-    },
-    {
-     "shift_id": "L-1112-G013",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S06",
-     "human": true,
-     "closed_at": "2026-11-12T05:32-05:00",
-     "minutes": 17.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 1.0
-    },
-    {
-     "shift_id": "L-1112-G015",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S23",
-     "human": true,
-     "closed_at": "2026-11-12T05:42-05:00",
-     "minutes": 27.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 9,
-     "manager_minutes": 1.0
-    },
-    {
-     "shift_id": "L-1112-G016",
+     "shift_id": "L-1112-G014",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S15",
+     "staff_id": "S03",
      "human": false,
-     "closed_at": "2026-11-12T05:59-05:00",
-     "minutes": 5.5,
+     "closed_at": "2026-11-12T04:52-05:00",
+     "minutes": 3.2,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1112-G056",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S05",
+     "human": false,
+     "closed_at": "2026-11-12T04:53-05:00",
+     "minutes": 4.6,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 3,
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1112-P005",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S05",
+     "human": false,
+     "closed_at": "2026-11-12T05:02-05:00",
+     "minutes": 13.3,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 3,
+     "manager_minutes": 0.0,
+     "private": true,
+     "family_yes": true
     }
    ]
   },
@@ -2470,68 +2640,78 @@
      "kind": "rota",
      "shift_id": "L-1113-G099",
      "from": "S21",
+     "to": "S05"
+    },
+    {
+     "kind": "rota",
+     "shift_id": "L-1113-P017",
+     "from": "S18",
+     "to": "S22"
+    },
+    {
+     "kind": "rota",
+     "shift_id": "L-1113-P016",
+     "from": "S16",
      "to": "S24"
     },
     {
-     "kind": "rota",
-     "shift_id": "L-1113-G100",
-     "from": "S03",
-     "to": "S27"
-    },
-    {
-     "kind": "rota",
-     "shift_id": "L-1113-G017",
-     "from": "S04",
-     "to": "S25"
+     "kind": "hours",
+     "staff_id": "S12",
+     "week_hours": 37.75
     },
     {
      "kind": "hours",
      "staff_id": "S04",
-     "week_hours": 34.75
+     "week_hours": 39.5
     },
     {
      "kind": "hours",
      "staff_id": "S17",
-     "week_hours": 36.5
+     "week_hours": 39.5
     },
     {
      "kind": "hours",
      "staff_id": "S34",
-     "week_hours": 34.5
+     "week_hours": 36.5
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S08",
+     "week_hours": 37.75
     },
     {
      "kind": "card",
-     "staff_id": "S10",
+     "staff_id": "S29",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-11-16"
+     "expires_on": "2026-11-13"
     },
     {
      "kind": "card",
-     "staff_id": "S34",
+     "staff_id": "S11",
      "cert_type": "lifeguarding",
      "expires_on": "2026-10-27"
     },
     {
      "kind": "card",
-     "staff_id": "S26",
+     "staff_id": "S38",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-11-13"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S29",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-25"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S11",
-     "cert_type": "wsi",
      "expires_on": "2026-11-13"
     },
     {
      "kind": "card",
      "staff_id": "S07",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-25"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S05",
+     "cert_type": "wsi",
+     "expires_on": "2026-11-13"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S24",
      "cert_type": "wsi",
      "expires_on": "2026-10-27"
     }
@@ -2554,24 +2734,30 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G020",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S20",
+     "staff_id": "S27",
      "human": true,
-     "closed_at": "2026-11-13T04:56-05:00",
-     "minutes": 15.4,
+     "closed_at": "2026-11-13T04:55-05:00",
+     "minutes": 14.3,
      "late": false,
-     "violation": null,
-     "codes": [],
+     "violation": "certificate",
+     "codes": [
+      "CERT_EXPIRED"
+     ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -2582,32 +2768,36 @@
      "channel": "plan_b",
      "staff_id": "S06",
      "human": true,
-     "closed_at": "2026-11-13T05:03-05:00",
-     "minutes": 22.0,
+     "closed_at": "2026-11-13T05:07-05:00",
+     "minutes": 26.2,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 6,
-     "manager_minutes": 1.0
+     "asked": 8,
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G020",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S03",
+     "staff_id": "S20",
      "human": false,
-     "closed_at": "2026-11-13T04:51-05:00",
-     "minutes": 10.2,
+     "closed_at": "2026-11-13T04:50-05:00",
+     "minutes": 9.4,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -2712,7 +2902,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "G-1109-V3-0530",
@@ -2731,7 +2923,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -2742,15 +2936,17 @@
      "channel": "offer",
      "staff_id": "S32",
      "human": false,
-     "closed_at": "2026-11-09T05:08-05:00",
-     "minutes": 15.9,
+     "closed_at": "2026-11-09T05:07-05:00",
+     "minutes": 14.9,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 9,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "G-1109-V3-0530",
@@ -2767,7 +2963,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 15,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -2858,7 +3056,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "G-1110-V3-0530",
@@ -2875,7 +3075,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -2887,14 +3089,16 @@
      "staff_id": "S06",
      "human": true,
      "closed_at": "2026-11-10T05:12-05:00",
-     "minutes": 25.7,
+     "minutes": 25.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 8,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "G-1110-V3-0530",
@@ -2911,7 +3115,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -2930,7 +3136,8 @@
      "staff_id": "S18",
      "at": "2026-11-11T05:36-05:00",
      "shift_ids": [
-      "L-1111-G050"
+      "L-1111-G050",
+      "L-1111-P004"
      ]
     }
    ],
@@ -2949,9 +3156,9 @@
     },
     {
      "kind": "rota",
-     "shift_id": "L-1111-G091",
-     "from": "S16",
-     "to": "S13"
+     "shift_id": "L-1111-P004",
+     "from": "S02",
+     "to": "S18"
     },
     {
      "kind": "hours",
@@ -3025,7 +3232,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G050",
@@ -3046,7 +3255,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-P004",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S03",
+     "human": true,
+     "closed_at": "2026-11-11T05:50-05:00",
+     "minutes": 14.3,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -3065,7 +3295,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G050",
@@ -3082,7 +3314,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 4,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-P004",
+     "lesson": true,
+     "outcome": "moved_own",
+     "channel": "plan_b",
+     "staff_id": null,
+     "human": true,
+     "closed_at": "2026-11-11T06:24-05:00",
+     "minutes": 48.3,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 6,
+     "manager_minutes": 1.0,
+     "private": true,
+     "family_yes": false
     }
    ]
   },
@@ -3095,7 +3348,8 @@
      "at": "2026-11-12T04:39-05:00",
      "shift_ids": [
       "L-1112-G014",
-      "L-1112-G056"
+      "L-1112-G056",
+      "L-1112-P005"
      ]
     },
     {
@@ -3183,7 +3437,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1112-G056",
@@ -3200,7 +3456,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1112-P005",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S15",
+     "human": true,
+     "closed_at": "2026-11-12T04:56-05:00",
+     "minutes": 17.4,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
     },
     {
      "shift_id": "L-1112-G013",
@@ -3219,7 +3496,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1112-G015",
@@ -3236,7 +3515,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -3255,7 +3536,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1112-G056",
@@ -3272,7 +3555,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1112-P005",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S15",
+     "human": false,
+     "closed_at": "2026-11-12T04:48-05:00",
+     "minutes": 9.7,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 3,
+     "manager_minutes": 0.0,
+     "private": true,
+     "family_yes": true
     },
     {
      "shift_id": "L-1112-G013",
@@ -3289,7 +3593,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1112-G015",
@@ -3306,7 +3612,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -3415,7 +3723,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -3434,7 +3744,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 12,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -3536,7 +3848,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -3555,7 +3869,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -3655,7 +3971,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1110-G008",
@@ -3675,7 +3993,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -3694,7 +4014,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 2,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1110-G008",
@@ -3711,7 +4033,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -3720,11 +4044,10 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S15",
-     "at": "2026-11-11T05:29-05:00",
+     "staff_id": "S14",
+     "at": "2026-11-11T05:01-05:00",
      "shift_ids": [
-      "L-1111-G049",
-      "L-1111-G052"
+      "G-1111-V3-0530"
      ]
     }
    ],
@@ -3733,68 +4056,90 @@
      "kind": "rota",
      "shift_id": "L-1111-G012",
      "from": "S01",
-     "to": "S17"
-    },
-    {
-     "kind": "rota",
-     "shift_id": "L-1111-G051",
-     "from": "S02",
      "to": "S22"
     },
     {
+     "kind": "rota",
+     "shift_id": "L-1111-P004",
+     "from": "S02",
+     "to": "S13"
+    },
+    {
      "kind": "hours",
-     "staff_id": "S14",
+     "staff_id": "S18",
      "week_hours": 36.25
     },
     {
      "kind": "hours",
-     "staff_id": "S19",
+     "staff_id": "S14",
      "week_hours": 37.25
     },
     {
      "kind": "hours",
-     "staff_id": "S12",
+     "staff_id": "S19",
      "week_hours": 34.0
     },
     {
      "kind": "hours",
-     "staff_id": "S13",
+     "staff_id": "S12",
      "week_hours": 38.0
     },
     {
-     "kind": "card",
-     "staff_id": "S17",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-15"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S20",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-10-21"
+     "kind": "hours",
+     "staff_id": "S13",
+     "week_hours": 34.75
     },
     {
      "kind": "card",
      "staff_id": "S04",
-     "cert_type": "wsi",
-     "expires_on": "2026-10-26"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-12"
     },
     {
      "kind": "card",
      "staff_id": "S02",
      "cert_type": "wsi",
-     "expires_on": "2026-11-18"
+     "expires_on": "2026-10-26"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S39",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-21"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S08",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-04"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S11",
+     "cert_type": "wsi",
+     "expires_on": "2026-11-13"
+    },
+    {
+     "kind": "unconfirmed",
+     "staff_id": "S05",
+     "cert_type": "lifeguarding"
+    },
+    {
+     "kind": "renewal",
+     "staff_id": "S13",
+     "program": "learn_to_swim",
+     "renewed_at": "2025-10-11"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1111-G049",
-     "lesson": true,
+     "shift_id": "G-1111-V3-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S05",
+     "staff_id": "S03",
      "human": true,
-     "closed_at": "2026-11-11T05:41-05:00",
+     "closed_at": "2026-11-11T05:13-05:00",
      "minutes": 12.4,
      "late": false,
      "violation": null,
@@ -3802,60 +4147,30 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1111-G052",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S01",
-     "human": true,
-     "closed_at": "2026-11-11T05:43-05:00",
-     "minutes": 14.1,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
     {
-     "shift_id": "L-1111-G049",
-     "lesson": true,
+     "shift_id": "G-1111-V3-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S05",
+     "staff_id": "S31",
      "human": false,
-     "closed_at": "2026-11-11T05:31-05:00",
-     "minutes": 2.4,
+     "closed_at": "2026-11-11T05:10-05:00",
+     "minutes": 9.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1111-G052",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S05",
-     "human": false,
-     "closed_at": "2026-11-11T05:31-05:00",
-     "minutes": 2.4,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 0.0
+     "asked": 6,
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -3871,10 +4186,10 @@
      ]
     },
     {
-     "staff_id": "S17",
+     "staff_id": "S16",
      "at": "2026-11-12T04:52-05:00",
      "shift_ids": [
-      "L-1112-G014"
+      "L-1112-P015"
      ]
     }
    ],
@@ -3957,10 +4272,12 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
-     "shift_id": "L-1112-G014",
+     "shift_id": "L-1112-P015",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -3974,7 +4291,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -3993,24 +4312,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
-     "shift_id": "L-1112-G014",
+     "shift_id": "L-1112-P015",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
      "staff_id": "S05",
      "human": false,
-     "closed_at": "2026-11-12T04:54-05:00",
-     "minutes": 2.8,
+     "closed_at": "2026-11-12T04:57-05:00",
+     "minutes": 5.7,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": true,
+     "family_yes": true
     }
    ]
   },
@@ -4019,10 +4342,10 @@
    "day": "2026-11-13",
    "callouts": [
     {
-     "staff_id": "S19",
+     "staff_id": "S18",
      "at": "2026-11-13T05:33-05:00",
      "shift_ids": [
-      "L-1113-G097"
+      "L-1113-P017"
      ]
     }
    ],
@@ -4076,7 +4399,7 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1113-G097",
+     "shift_id": "L-1113-P017",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -4085,33 +4408,35 @@
      "closed_at": "2026-11-13T05:45-05:00",
      "minutes": 12.8,
      "late": false,
-     "violation": "program",
-     "codes": [
-      "LEVEL_MISSING"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
     }
    ],
    "coachcover": [
     {
-     "shift_id": "L-1113-G097",
+     "shift_id": "L-1113-P017",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
      "staff_id": "S17",
      "human": false,
-     "closed_at": "2026-11-13T05:41-05:00",
-     "minutes": 8.2,
+     "closed_at": "2026-11-13T05:42-05:00",
+     "minutes": 9.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 4,
-     "manager_minutes": 0.0
+     "asked": 3,
+     "manager_minutes": 0.0,
+     "private": true,
+     "family_yes": true
     }
    ]
   },
@@ -4207,7 +4532,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -4226,7 +4553,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -4354,7 +4683,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1110-G005",
@@ -4373,7 +4704,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -4392,7 +4725,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 12,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1110-G005",
@@ -4409,7 +4744,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -4418,10 +4755,10 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S19",
-     "at": "2026-11-11T04:46-05:00",
+     "staff_id": "S26",
+     "at": "2026-11-11T05:04-05:00",
      "shift_ids": [
-      "L-1111-G090"
+      "G-1111-V1-0530"
      ]
     }
    ],
@@ -4479,42 +4816,44 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1111-G090",
-     "lesson": true,
+     "shift_id": "G-1111-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S25",
+     "staff_id": "S20",
      "human": true,
-     "closed_at": "2026-11-11T04:58-05:00",
-     "minutes": 12.1,
-     "late": false,
-     "violation": "hours",
-     "codes": [
-      "REST_TOO_SHORT"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    }
-   ],
-   "coachcover": [
-    {
-     "shift_id": "L-1111-G090",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S06",
-     "human": true,
-     "closed_at": "2026-11-11T05:08-05:00",
-     "minutes": 22.0,
+     "closed_at": "2026-11-11T05:17-05:00",
+     "minutes": 13.7,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 5,
-     "manager_minutes": 1.0
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    }
+   ],
+   "coachcover": [
+    {
+     "shift_id": "G-1111-V1-0530",
+     "lesson": false,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S05",
+     "human": false,
+     "closed_at": "2026-11-11T05:09-05:00",
+     "minutes": 5.2,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 3,
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -4614,7 +4953,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -4633,7 +4974,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -4646,7 +4989,8 @@
      "at": "2026-11-13T05:18-05:00",
      "shift_ids": [
       "L-1113-G017",
-      "L-1113-G019"
+      "L-1113-G019",
+      "L-1113-P007"
      ]
     },
     {
@@ -4667,9 +5011,9 @@
     },
     {
      "kind": "rota",
-     "shift_id": "L-1113-G100",
-     "from": "S03",
-     "to": "S25"
+     "shift_id": "L-1113-P017",
+     "from": "S18",
+     "to": "S23"
     },
     {
      "kind": "hours",
@@ -4732,7 +5076,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G019",
@@ -4749,7 +5095,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1113-P007",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S24",
+     "human": true,
+     "closed_at": "2026-11-13T05:36-05:00",
+     "minutes": 18.9,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G018",
@@ -4766,7 +5133,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G020",
@@ -4783,7 +5152,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -4802,7 +5173,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G019",
@@ -4811,15 +5184,36 @@
      "channel": "offer",
      "staff_id": "S24",
      "human": false,
-     "closed_at": "2026-11-13T05:28-05:00",
-     "minutes": 10.9,
+     "closed_at": "2026-11-13T05:27-05:00",
+     "minutes": 9.9,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1113-P007",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S24",
+     "human": false,
+     "closed_at": "2026-11-13T05:50-05:00",
+     "minutes": 32.0,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 9,
+     "manager_minutes": 0.0,
+     "private": true,
+     "family_yes": true
     },
     {
      "shift_id": "L-1113-G018",
@@ -4836,7 +5230,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 8,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G020",
@@ -4853,7 +5249,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 8,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -4961,7 +5359,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G083",
@@ -4982,7 +5382,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G084",
@@ -4999,7 +5401,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -5018,7 +5422,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G083",
@@ -5035,7 +5441,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G084",
@@ -5052,7 +5460,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 10,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -5165,7 +5575,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -5184,7 +5596,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -5193,14 +5607,36 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S11",
+     "staff_id": "S16",
      "at": "2026-11-11T04:45-05:00",
      "shift_ids": [
-      "G-1111-V2-0530"
+      "L-1111-G091"
+     ]
+    },
+    {
+     "staff_id": "S22",
+     "at": "2026-11-11T04:45-05:00",
+     "shift_ids": [
+      "L-1111-P004"
+     ]
+    },
+    {
+     "staff_id": "S15",
+     "at": "2026-11-11T05:28-05:00",
+     "shift_ids": [
+      "L-1111-G049",
+      "L-1111-G052",
+      "L-1111-P014"
      ]
     }
    ],
    "changes": [
+    {
+     "kind": "rota",
+     "shift_id": "L-1111-P004",
+     "from": "S02",
+     "to": "S22"
+    },
     {
      "kind": "rota",
      "shift_id": "L-1111-G051",
@@ -5214,10 +5650,9 @@
      "to": "S27"
     },
     {
-     "kind": "rota",
-     "shift_id": "L-1111-G052",
-     "from": "S15",
-     "to": "S08"
+     "kind": "hours",
+     "staff_id": "S12",
+     "week_hours": 39.25
     },
     {
      "kind": "hours",
@@ -5230,81 +5665,247 @@
      "week_hours": 39.25
     },
     {
-     "kind": "hours",
-     "staff_id": "S20",
-     "week_hours": 36.25
-    },
-    {
      "kind": "card",
      "staff_id": "S04",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-10-31"
+     "expires_on": "2026-10-27"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S20",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-10-23"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S40",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-11"
     },
     {
      "kind": "card",
      "staff_id": "S30",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-11-22"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S06",
-     "cert_type": "wsi",
-     "expires_on": "2026-10-26"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S17",
-     "cert_type": "cpr_aed",
      "expires_on": "2026-11-10"
     },
     {
      "kind": "card",
-     "staff_id": "S24",
+     "staff_id": "S06",
      "cert_type": "cpr_aed",
      "expires_on": "2026-11-28"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S17",
+     "cert_type": "wsi",
+     "expires_on": "2026-11-19"
+    },
+    {
+     "kind": "renewal",
+     "staff_id": "S04",
+     "program": "learn_to_swim",
+     "renewed_at": "2025-10-11"
     }
    ],
    "baseline": [
     {
-     "shift_id": "G-1111-V2-0530",
-     "lesson": false,
+     "shift_id": "L-1111-G091",
+     "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S17",
+     "staff_id": "S03",
      "human": true,
      "closed_at": "2026-11-11T04:57-05:00",
-     "minutes": 12.9,
+     "minutes": 12.1,
      "late": false,
-     "violation": "certificate",
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-P004",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S03",
+     "human": true,
+     "closed_at": "2026-11-11T04:59-05:00",
+     "minutes": 14.1,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-G049",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S03",
+     "human": true,
+     "closed_at": "2026-11-11T05:40-05:00",
+     "minutes": 12.1,
+     "late": false,
+     "violation": "program",
      "codes": [
-      "CERT_EXPIRED",
+      "LEVEL_MISSING"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-G052",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S12",
+     "human": true,
+     "closed_at": "2026-11-11T05:42-05:00",
+     "minutes": 14.4,
+     "late": false,
+     "violation": "hours",
+     "codes": [
+      "REST_TOO_SHORT"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-P014",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S12",
+     "human": true,
+     "closed_at": "2026-11-11T05:44-05:00",
+     "minutes": 16.4,
+     "late": false,
+     "violation": "hours",
+     "codes": [
       "HOURS_LIMIT_EXCEEDED",
       "REST_TOO_SHORT"
      ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
     }
    ],
    "coachcover": [
     {
-     "shift_id": "G-1111-V2-0530",
-     "lesson": false,
+     "shift_id": "L-1111-G091",
+     "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S32",
+     "staff_id": "S03",
      "human": false,
-     "closed_at": "2026-11-11T04:59-05:00",
-     "minutes": 14.6,
+     "closed_at": "2026-11-11T04:48-05:00",
+     "minutes": 3.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 9,
-     "manager_minutes": 0.0
+     "asked": 3,
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-P004",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S03",
+     "human": false,
+     "closed_at": "2026-11-11T04:58-05:00",
+     "minutes": 13.4,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 6,
+     "manager_minutes": 0.0,
+     "private": true,
+     "family_yes": true
+    },
+    {
+     "shift_id": "L-1111-G049",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-11T05:46-05:00",
+     "minutes": 18.9,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 4,
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-G052",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S24",
+     "human": false,
+     "closed_at": "2026-11-11T05:39-05:00",
+     "minutes": 11.0,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 6,
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1111-P014",
+     "lesson": true,
+     "outcome": "moved_own",
+     "channel": "plan_b",
+     "staff_id": null,
+     "human": true,
+     "closed_at": "2026-11-11T05:51-05:00",
+     "minutes": 23.9,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 7,
+     "manager_minutes": 1.0,
+     "private": true,
+     "family_yes": false
     }
    ]
   },
@@ -5395,7 +5996,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -5414,7 +6017,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 4,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -5524,7 +6129,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G099",
@@ -5541,7 +6148,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -5560,7 +6169,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 13,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1113-G099",
@@ -5569,15 +6180,17 @@
      "channel": "offer",
      "staff_id": "S19",
      "human": false,
-     "closed_at": "2026-11-13T05:52-05:00",
-     "minutes": 7.2,
+     "closed_at": "2026-11-13T05:53-05:00",
+     "minutes": 8.2,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -5678,7 +6291,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -5697,7 +6312,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -5814,7 +6431,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -5833,7 +6452,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -5926,7 +6547,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -5937,15 +6560,17 @@
      "channel": "offer",
      "staff_id": "S17",
      "human": false,
-     "closed_at": "2026-11-11T05:38-05:00",
-     "minutes": 15.8,
+     "closed_at": "2026-11-11T05:34-05:00",
+     "minutes": 11.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 8,
-     "manager_minutes": 0.0
+     "asked": 6,
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -5976,8 +6601,8 @@
     },
     {
      "kind": "rota",
-     "shift_id": "L-1112-G096",
-     "from": "S21",
+     "shift_id": "L-1112-P015",
+     "from": "S16",
      "to": "S12"
     },
     {
@@ -6055,7 +6680,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -6074,7 +6701,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -6171,7 +6800,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -6190,7 +6821,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -6306,7 +6939,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G082",
@@ -6325,7 +6960,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -6336,15 +6973,17 @@
      "channel": "offer",
      "staff_id": "S02",
      "human": false,
-     "closed_at": "2026-11-09T04:40-05:00",
-     "minutes": 2.9,
+     "closed_at": "2026-11-09T04:41-05:00",
+     "minutes": 3.9,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G082",
@@ -6361,7 +7000,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -6470,7 +7111,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -6489,7 +7132,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 5,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -6596,7 +7241,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G009",
@@ -6613,7 +7260,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G011",
@@ -6632,7 +7281,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G050",
@@ -6653,7 +7304,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -6664,15 +7317,17 @@
      "channel": "offer",
      "staff_id": "S16",
      "human": false,
-     "closed_at": "2026-11-11T05:12-05:00",
-     "minutes": 5.6,
+     "closed_at": "2026-11-11T05:16-05:00",
+     "minutes": 9.6,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 0.0
+     "asked": 6,
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G009",
@@ -6689,7 +7344,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G011",
@@ -6706,7 +7363,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 8,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G050",
@@ -6723,7 +7382,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -6732,10 +7393,10 @@
    "day": "2026-11-12",
    "callouts": [
     {
-     "staff_id": "S21",
+     "staff_id": "S19",
      "at": "2026-11-12T04:54-05:00",
      "shift_ids": [
-      "L-1112-G096"
+      "L-1112-G094"
      ]
     }
    ],
@@ -6804,7 +7465,7 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1112-G096",
+     "shift_id": "L-1112-G094",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -6815,31 +7476,36 @@
      "late": false,
      "violation": "certificate",
      "codes": [
-      "CERT_NEEDS_REVIEW"
+      "CERT_NEEDS_REVIEW",
+      "LEVEL_MISSING"
      ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
     {
-     "shift_id": "L-1112-G096",
+     "shift_id": "L-1112-G094",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S26",
+     "staff_id": "S05",
      "human": false,
-     "closed_at": "2026-11-12T04:58-05:00",
-     "minutes": 4.7,
+     "closed_at": "2026-11-12T04:59-05:00",
+     "minutes": 5.8,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 0.0
+     "asked": 2,
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -6917,7 +7583,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -6936,7 +7604,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -7064,7 +7734,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G044",
@@ -7085,7 +7757,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G042",
@@ -7104,7 +7778,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -7116,14 +7792,16 @@
      "staff_id": "S21",
      "human": false,
      "closed_at": "2026-11-09T05:29-05:00",
-     "minutes": 10.2,
+     "minutes": 10.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G044",
@@ -7132,15 +7810,17 @@
      "channel": "offer",
      "staff_id": "S22",
      "human": false,
-     "closed_at": "2026-11-09T05:41-05:00",
-     "minutes": 13.4,
+     "closed_at": "2026-11-09T05:40-05:00",
+     "minutes": 12.5,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 9,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1109-G042",
@@ -7157,7 +7837,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 5,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -7248,7 +7930,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1110-G046",
@@ -7268,7 +7952,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -7287,7 +7973,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1110-G046",
@@ -7304,7 +7992,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -7404,7 +8094,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G050",
@@ -7421,7 +8113,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G089",
@@ -7438,7 +8132,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -7457,7 +8153,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G050",
@@ -7474,7 +8172,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1111-G089",
@@ -7491,7 +8191,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 7,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   },
@@ -7514,11 +8216,10 @@
      ]
     },
     {
-     "staff_id": "S18",
+     "staff_id": "S16",
      "at": "2026-11-12T05:26-05:00",
      "shift_ids": [
-      "L-1112-G053",
-      "L-1112-G055"
+      "L-1112-P015"
      ]
     }
    ],
@@ -7585,7 +8286,9 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1112-G054",
@@ -7602,41 +8305,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
-     "shift_id": "L-1112-G053",
-     "lesson": true,
-     "outcome": "cancelled",
-     "channel": "fallback",
-     "staff_id": null,
-     "human": true,
-     "closed_at": "2026-11-12T06:00-05:00",
-     "minutes": 34.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 1,
-     "asked": 4,
-     "manager_minutes": 15.0
-    },
-    {
-     "shift_id": "L-1112-G055",
+     "shift_id": "L-1112-P015",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
      "staff_id": "S09",
      "human": true,
-     "closed_at": "2026-11-12T05:41-05:00",
-     "minutes": 15.7,
+     "closed_at": "2026-11-12T05:39-05:00",
+     "minutes": 13.7,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": true,
+     "family_yes": false
     }
    ],
    "coachcover": [
@@ -7654,8 +8344,10 @@
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 12,
-     "manager_minutes": 1.0
+     "asked": 11,
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
      "shift_id": "L-1112-G054",
@@ -7672,41 +8364,28 @@
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 4,
-     "manager_minutes": 1.0
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
     },
     {
-     "shift_id": "L-1112-G053",
+     "shift_id": "L-1112-P015",
      "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S23",
-     "human": true,
-     "closed_at": "2026-11-12T05:48-05:00",
-     "minutes": 22.0,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S09",
+     "human": false,
+     "closed_at": "2026-11-12T05:50-05:00",
+     "minutes": 24.8,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 1.0
-    },
-    {
-     "shift_id": "L-1112-G055",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S09",
-     "human": false,
-     "closed_at": "2026-11-12T05:29-05:00",
-     "minutes": 3.7,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 0.0
+     "manager_minutes": 0.0,
+     "private": true,
+     "family_yes": true
     }
    ]
   },
@@ -7715,21 +8394,27 @@
    "day": "2026-11-13",
    "callouts": [
     {
-     "staff_id": "S21",
-     "at": "2026-11-13T04:45-05:00",
+     "staff_id": "S15",
+     "at": "2026-11-13T04:37-05:00",
      "shift_ids": [
-      "L-1113-G099"
+      "L-1113-G060"
      ]
     },
     {
-     "staff_id": "S18",
-     "at": "2026-11-13T05:35-05:00",
+     "staff_id": "S19",
+     "at": "2026-11-13T04:37-05:00",
      "shift_ids": [
-      "L-1113-G059"
+      "L-1113-G097"
      ]
     }
    ],
    "changes": [
+    {
+     "kind": "rota",
+     "shift_id": "L-1113-P007",
+     "from": "S04",
+     "to": "S12"
+    },
     {
      "kind": "rota",
      "shift_id": "L-1113-G058",
@@ -7737,143 +8422,125 @@
      "to": "S12"
     },
     {
-     "kind": "rota",
-     "shift_id": "L-1113-G020",
-     "from": "S01",
-     "to": "S06"
-    },
-    {
      "kind": "hours",
      "staff_id": "S15",
      "week_hours": 37.0
     },
     {
-     "kind": "hours",
-     "staff_id": "S18",
-     "week_hours": 36.25
+     "kind": "card",
+     "staff_id": "S09",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-12-03"
     },
     {
-     "kind": "hours",
+     "kind": "card",
      "staff_id": "S37",
-     "week_hours": 34.75
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-13"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S29",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-26"
     },
     {
      "kind": "card",
      "staff_id": "S10",
      "cert_type": "wsi",
-     "expires_on": "2026-11-15"
+     "expires_on": "2026-11-05"
     },
     {
      "kind": "card",
      "staff_id": "S02",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-11-26"
+     "expires_on": "2026-11-04"
     },
     {
      "kind": "card",
      "staff_id": "S20",
      "cert_type": "wsi",
-     "expires_on": "2026-11-05"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S39",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-04"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S34",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-10-27"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S14",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-09"
-    },
-    {
-     "kind": "renewal",
-     "staff_id": "S06",
-     "program": "learn_to_swim",
-     "renewed_at": "2025-10-13"
+     "expires_on": "2026-11-17"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1113-G099",
+     "shift_id": "L-1113-G097",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S01",
+     "staff_id": "S23",
      "human": true,
-     "closed_at": "2026-11-13T05:00-05:00",
-     "minutes": 15.2,
+     "closed_at": "2026-11-13T04:49-05:00",
+     "minutes": 12.5,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     },
     {
-     "shift_id": "L-1113-G059",
+     "shift_id": "L-1113-G060",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S38",
+     "staff_id": "S23",
      "human": true,
-     "closed_at": "2026-11-13T05:51-05:00",
-     "minutes": 16.7,
+     "closed_at": "2026-11-13T04:51-05:00",
+     "minutes": 14.5,
      "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING",
-      "PROGRAM_MISSING"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
-     "manager_minutes": 3.0
+     "manager_minutes": 3.0,
+     "private": false,
+     "family_yes": false
     }
    ],
    "coachcover": [
     {
-     "shift_id": "L-1113-G099",
+     "shift_id": "L-1113-G097",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-13T04:53-05:00",
+     "minutes": 16.5,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 3,
+     "manager_minutes": 1.0,
+     "private": false,
+     "family_yes": false
+    },
+    {
+     "shift_id": "L-1113-G060",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S01",
+     "staff_id": "S20",
      "human": false,
-     "closed_at": "2026-11-13T04:56-05:00",
-     "minutes": 11.0,
+     "closed_at": "2026-11-13T04:46-05:00",
+     "minutes": 9.8,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1113-G059",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S23",
-     "human": true,
-     "closed_at": "2026-11-13T06:02-05:00",
-     "minutes": 27.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 9,
-     "manager_minutes": 1.0
+     "manager_minutes": 0.0,
+     "private": false,
+     "family_yes": false
     }
    ]
   }
@@ -7884,13 +8551,13 @@
   "rows": [
    [
     "Shifts that needed cover",
-    92,
-    92
+    98,
+    98
    ],
    [
     "People placed",
-    92,
-    92
+    95,
+    95
    ],
    [
     "Placements that break a rule",
@@ -7904,41 +8571,41 @@
    ],
    [
     "Minutes from call-out to closed, median",
-    22.9,
-    10.9
+    21.2,
+    10.5
    ],
    [
     "Minutes from call-out to closed, p90",
-    46.9,
-    25.7
+    46.6,
+    25.0
    ],
    [
     "Minutes from call-out to closed, mean",
-    24.5,
-    12.8
+    23.5,
+    13.2
    ],
    [
     "Closed after the shift started",
-    17,
+    16,
     0
    ],
    [
     "Closed without a person",
-    59,
-    58
+    66,
+    65
    ],
    [
     "Closed without a person, %",
-    64.1,
-    63.0
+    67.3,
+    66.3
    ],
    [
     "Shifts covered (offer or plan B)",
-    92,
-    92
+    95,
+    95
    ],
    [
-    "Lessons cancelled or moved",
+    "Group lessons cancelled or moved",
     0,
     0
    ],
@@ -7959,23 +8626,27 @@
    ],
    [
     "Offers sent (people asked)",
-    435,
-    494
+    430,
+    507
    ],
    [
     "Manager minutes, total",
-    33.0,
-    34.0
+    32.0,
+    33.0
    ]
   ],
   "outcomes": {
    "before": {
-    "covered": 59,
-    "reserve": 33
+    "covered": 66,
+    "credit": 1,
+    "moved_own": 2,
+    "reserve": 29
    },
    "after": {
-    "covered": 58,
-    "reserve": 34
+    "covered": 65,
+    "credit": 1,
+    "moved_own": 2,
+    "reserve": 30
    }
   }
  }

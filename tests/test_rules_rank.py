@@ -1,5 +1,6 @@
 """Queue order (product decision): eligible, fewer hours, same/closer venue, level match, tenure; each place has a reason."""
 
+import dataclasses
 from datetime import date
 
 import pytest
@@ -138,7 +139,9 @@ def test_place_line_reads_like_the_queue_card():
 
 def test_place_line_for_an_ineligible_candidate_and_a_shift_without_levels():
     ranked = rank([_c(f"P{i}") for i in range(3)] + [_c("X", ok=False, match=False, tenure=None, same=False, km=None)])
-    assert describe_place(ranked[3], "Xavier") == "Xavier #4: not eligible, 10 h this week, not cleared for learn_to_swim 3, other venue"
+    assert describe_place(ranked[3], "Xavier") == "Xavier fourth: not eligible, 10 h this week, not cleared for learn_to_swim 3, other venue"
+    eleventh = dataclasses.replace(ranked[3], position=11)  # words up to tenth, then the number
+    assert describe_place(eleventh, "Xavier").startswith("Xavier #11: ")
     guard = rank([Candidate("L1", OK, 4.0, True, 0.0, None, None, ())])[0]
     assert describe_place(guard, "Liam") == "Liam first: 4 h this week, same venue"
     assert describe_place(guard, "Liam", "en", load_preset("fitness_club")) == "Liam first: 4 h this week, same club"

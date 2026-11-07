@@ -544,7 +544,7 @@ def _family_case_steps(events: list, tz: ZoneInfo) -> list[dict]:
     steps = []
 
     def add(at, kind, title, summary):
-        steps.append({"kind": kind, "at": _utc(at), "time_label": _utc_label(at), "title": title, "summary": summary})
+        steps.append({"kind": kind, "at": _utc(at), "time_label": _local_label(at, tz), "title": title, "summary": summary})
 
     for _, at, kind, data in events:
         name = (data.get("name") or "").split(" ")[0]
@@ -791,8 +791,14 @@ def _utc(value: datetime) -> str:
     return value.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _utc_label(value: datetime) -> str:
-    return value.astimezone(ZoneInfo("UTC")).strftime("%H:%M:%S UTC")
+# a short name for the venue's zone on the case page ("08:40:10 ET"); machine fields stay in UTC
+ZONE_SHORT = {"America/New_York": "ET", "America/Detroit": "ET", "America/Chicago": "CT", "America/Denver": "MT",
+              "America/Phoenix": "MT", "America/Los_Angeles": "PT", "Pacific/Honolulu": "HT", "America/Anchorage": "AKT"}
+
+
+def _local_label(value: datetime, tz: ZoneInfo) -> str:
+    local = value.astimezone(tz)
+    return f"{local:%H:%M:%S} {ZONE_SHORT.get(str(tz)) or local.tzname()}"
 
 
 def model_calls(conn: psycopg.Connection, case_id: int, callout_id) -> list[dict]:
@@ -846,7 +852,7 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         voice = first.get("voice_transcribed", (None, {}))[1]
         audio = conn.execute("SELECT 1 FROM callout_audio WHERE callout_id = %s", (callout_id,)).fetchone()
         steps.append({
-            "kind": "callout", "at": _utc(at), "time_label": _utc_label(at),
+            "kind": "callout", "at": _utc(at), "time_label": _local_label(at, tz),
             "title": "Voice call-out" if data.get("channel") == "voice" else "Text call-out",
             "staff": f"{names.get(absent)} · {labels['needs_label']}",
             "language": LANGUAGE_NAMES.get(data.get("language")),
@@ -859,26 +865,26 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         })
     if "night_check_found" in first:
         at, data = first["night_check_found"]
-        steps.append({"kind": "night_check", "at": _utc(at), "time_label": _utc_label(at), "title": "Night check",
+        steps.append({"kind": "night_check", "at": _utc(at), "time_label": _local_label(at, tz), "title": "Night check",
                       "summary": f"{data['name']}: " + "; ".join(r["text"] for r in data.get("reasons", []))})
     if "ratio_broken" in first:
         at, data = first["ratio_broken"]
         word = preset.copy.get("participants", "participants")
-        steps.append({"kind": "ratio", "at": _utc(at), "time_label": _utc_label(at),
+        steps.append({"kind": "ratio", "at": _utc(at), "time_label": _local_label(at, tz),
                       "title": f"Norm broken: {data['group_name']} — now {data['participants']} {word}, "
                                f"ratio 1:{data['max_per_instructor']}",
                       "summary": f"{data['added']} added by {data['by']}; instructors needed: "
                                  f"{data['instructors_before']} → {data['instructors_needed']}"})
     for _, at, kind, data in events:
         if kind == "flagged_for_manager":
-            steps.append({"kind": "flagged", "at": _utc(at), "time_label": _utc_label(at),
+            steps.append({"kind": "flagged", "at": _utc(at), "time_label": _local_label(at, tz),
                           "title": "Message flagged for the manager",
                           "summary": f"{data.get('name')}: “{data.get('text')}” · the rules were checked anyway"})
     if "callout_understood" in first or "shift_opened" in first:
         at, data = first.get("callout_understood") or first["shift_opened"]
         by = data.get("by")
         steps.append({
-            "kind": "shift", "at": _utc(at), "time_label": _utc_label(at), "title": "Shift identified",
+            "kind": "shift", "at": _utc(at), "time_label": _local_label(at, tz), "title": "Shift identified",
             "shift_id": shift_id,
             "summary": f"{labels['time_label']} · Needs: {labels['needs_label']}"
             + (f" · {labels['program_label']}" if labels["program_label"] else ""),
@@ -900,7 +906,7 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
                                "reason_label": label})
         refusal = _first_refusal(events, grid, shift, preset, conn, tz)
         steps.append({
-            "kind": "allowed", "at": _utc(at), "time_label": _utc_label(at), "title": "Who is allowed",
+            "kind": "allowed", "at": _utc(at), "time_label": _local_label(at, tz), "title": "Who is allowed",
             "total": data["total"], "allowed": data["eligible"],
             "blocked": {"staff": refusal["staff"], "label": refusal["label"]} if refusal else None,
             "reasons": sorted(chips.values(), key=lambda c: (-c["count"], c["label"])),
@@ -922,12 +928,12 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
                 when = responded or when
             rows.append({"id": f"O-{oid}", "time_label": _clock(when, tz), "staff": names[sid], "result": result,
                          "result_label": result_label, "why_first": line})
-        steps.append({"kind": "offers", "at": _utc(offers[0][3]), "time_label": _utc_label(offers[0][3]),
+        steps.append({"kind": "offers", "at": _utc(offers[0][3]), "time_label": _local_label(offers[0][3], tz),
                       "title": "Offers in order", "offers": rows})
     steps.extend(_family_case_steps(events, tz))
     for _, at, kind, data in events:
         if kind == "approval_refused":
-            steps.append({"kind": "plan_b", "at": _utc(at), "time_label": _utc_label(at),
+            steps.append({"kind": "plan_b", "at": _utc(at), "time_label": _local_label(at, tz),
                           "title": "Approval refused: plan changed",
                           "summary": f"{data.get('plan_id')} was shown with hash {str(data.get('shown_hash'))[:8]}…; "
                                      f"the data changed, the current plan has hash {str(data.get('current_hash'))[:8]}…"
@@ -946,7 +952,7 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
     if covered:
         at, data = covered
         co = [n for n in _co_teachers(conn, shift_id) if n != data.get("name")]  # the lesson's other teacher stays
-        steps.append({"kind": "covered", "at": _utc(at), "time_label": _utc_label(at), "title": "Schedule covered",
+        steps.append({"kind": "covered", "at": _utc(at), "time_label": _local_label(at, tz), "title": "Schedule covered",
                       "summary": f"{labels['time_label'].split('–')[0]} covered by {data.get('name')}"
                                  + (f", teaching with {' and '.join(co)}" if co else "")
                                  + f" · {cancelled} lesson{'s' if cancelled != 1 else ''} cancelled"})
@@ -956,10 +962,10 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         if pstatus == "approved":
             option = snap["options"][chosen]
             text = lines[chosen] if chosen < len(lines) else option["kind"]
-            steps.append({"kind": "plan_b", "at": _utc(decided), "time_label": _utc_label(decided),
+            steps.append({"kind": "plan_b", "at": _utc(decided), "time_label": _local_label(decided, tz),
                           "title": "Plan B approved by hash", "summary": f"{text} · approved by {decided_by} · P-{pid}"})
         else:
-            steps.append({"kind": "plan_b", "at": _utc(created), "time_label": _utc_label(created),
+            steps.append({"kind": "plan_b", "at": _utc(created), "time_label": _local_label(created, tz),
                           "title": "Plan B waiting for approval", "summary": " · ".join(lines) or _plan_text(snap, preset)})
         proof = {"plan_id": f"P-{pid}", "plan_hash": digest}
     elif status in ("open", "covered"):

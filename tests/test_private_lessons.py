@@ -315,3 +315,20 @@ def test_the_judge_scenarios_show_the_question_to_the_family(new_database):
     assert date(2026, 11, 11) == conn2.execute("SELECT (starts_at AT TIME ZONE 'America/New_York')::date FROM shift"
                                                " WHERE id = 'L-1111-P001'").fetchone()[0]
     assert timedelta(0) <= result["ended_at"] - at("08:46") < timedelta(minutes=1)
+
+
+def test_the_case_page_shows_the_schools_local_time(morning):
+    """The case file reads in the venue's time, like the voice note and Today: 08:40:10 ET; UTC stays in machine fields."""
+    from coachcover.screens import case_page
+
+    conn, p, cases = morning
+    page = case_page(conn, seed.POLICY_ID, cases[HERO], live=False)
+    first = page["steps"][0]
+    assert first["time_label"] == "08:40:10 ET" and first["at"] == "2026-11-09T13:40:10Z"
+    assert all(s["time_label"].endswith(" ET") for s in page["steps"])
+    queue = [o["why_first"] for o in page["steps"][3]["offers"]] if page["steps"][3]["kind"] == "offers" else []
+    ranked = conn.execute("SELECT data FROM case_event WHERE case_id = %s AND kind = 'candidates_ranked'",
+                          (cases[HERO],)).fetchone()[0]
+    assert ranked["top"][3:] == ["Mateo fourth: 15 h this week, Preschool, 21.7 km away",
+                                 "Ethan fifth: 16 h this week, Preschool, 21.7 km away"]
+    assert queue == [] or queue[0] == "Sofia first: 6 h this week, Preschool, same pool"

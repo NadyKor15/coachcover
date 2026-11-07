@@ -45,6 +45,7 @@ from zoneinfo import ZoneInfo
 
 from coachcover import seed as school_seed
 from coachcover.model import Commitment, Context, GroupRef, Policy, Shift, Staff, StaffCert, StaffProgram, Venue
+from coachcover.planb import is_private, own_coach_slot, private_plan_options
 from coachcover.planb import plan_b_options as core_plan_b_options
 from coachcover.presets import default_policy
 from coachcover.rules import Code, add_months, assess, eligible, rank
@@ -137,6 +138,11 @@ class SimParams:
     # "one": one offer at a time, plan B only when the queue is empty (the core before 2026-11-07)
     offers: str = "waves"
     baseline_checks_role: bool = False
+    # a private lesson (one child, one coach): how the family answers "another coach, OK?" (assumed, not measured)
+    p_family_yes: float = 0.8
+    p_family_no: float = 0.1  # the rest stay silent
+    family_lag_min: float = 2.0
+    family_lag_max: float = 20.0
 
 
 ASSUMPTIONS = {
@@ -170,6 +176,11 @@ ASSUMPTIONS = {
     "hours_target": "Their weekly total after the extra hours, before any cover (min, max); the limit is the policy's.",
     "rota_swaps": "How many of the morning's lessons are handed to another cleared instructor (min, max).",
     "p_renewal_overdue": "Chance that one instructor's program renewal is overdue that week.",
+    "p_family_yes": "Assumed, not measured: chance that a private lesson's family says yes to another coach (and, asked "
+                    "again, to a new time with their own coach).",
+    "p_family_no": "Assumed, not measured: chance that the family says no; the rest do not answer in time.",
+    "family_lag_min": "Assumed, not measured: minutes from the question to the family's answer, lower bound (uniform).",
+    "family_lag_max": "Assumed, not measured: minutes from the question to the family's answer, upper bound (uniform).",
 }
 
 
@@ -231,7 +242,8 @@ def load_world() -> World:
         for sid, name, lang, home in school.staff
     }
     groups = {
-        g["id"]: GroupRef(g["id"], g["program"], g["level"], g["size"], g["age_min"], tuple(sorted(g["family_counts"].items())))
+        g["id"]: GroupRef(g["id"], g["program"], g["level"], g["size"], g["age_min"], tuple(sorted(g["family_counts"].items())),
+                          g.get("kind", "group"))
         for g in school.groups
     }
     shifts = {
@@ -274,6 +286,20 @@ class Behavior:
 
 
 @dataclass(frozen=True)
+class Family:
+    """How a private lesson's family answers that morning: the question about another coach, then about a new time."""
+
+    cover_u: float
+    cover_lag: float
+    move_u: float
+    move_lag: float
+
+    @staticmethod
+    def answer(u: float, params: SimParams) -> str:
+        return "yes" if u < params.p_family_yes else "no" if u < params.p_family_yes + params.p_family_no else "silent"
+
+
+@dataclass(frozen=True)
 class Callout:
     staff_id: str
     at: datetime
@@ -291,6 +317,7 @@ class Morning:
     callouts: tuple[Callout, ...]
     behavior: Mapping[str, Behavior]
     changes: tuple[dict, ...]
+    families: Mapping[str, Family] = None  # private lessons that need cover this morning
 
     @property
     def open_ids(self) -> frozenset[str]:
@@ -460,6 +487,11 @@ def make_morning(world: World, index: int, seed: int = SEED, params: SimParams =
             willing_u=rng.random(),
             pickup_u=rng.random(),
         )
+    # 8. how each private lesson's family answers (drawn last, so every draw above stays as it was)
+    families = {}
+    for sid in sorted(s for c in callouts for s in c.shift_ids if is_private(shifts[s])):
+        families[sid] = Family(cover_u=rng.random(), cover_lag=round(rng.uniform(params.family_lag_min, params.family_lag_max), 1),
+                               move_u=rng.random(), move_lag=round(rng.uniform(params.family_lag_min, params.family_lag_max), 1))
     return Morning(
         index=index,
         seed=seed,
@@ -470,6 +502,7 @@ def make_morning(world: World, index: int, seed: int = SEED, params: SimParams =
         callouts=tuple(callouts),
         behavior=behavior,
         changes=tuple(changes),
+        families=families,
     )
 
 
@@ -507,6 +540,7 @@ class State:
             (
                 p for p in self.shifts.values()
                 if p.id != shift.id and p.id not in open_ids and p.groups and p.assignee is not None
+                and not is_private(p)
                 and p.venue == shift.venue and p.role == shift.role
                 and _utc(p.start) == _utc(shift.start) and _utc(p.end) == _utc(shift.end)
                 and not own & {g.id for g in p.groups}
@@ -539,6 +573,8 @@ class CaseResult:
     participants_cancelled: int = 0
     manager_minutes: float = 0.0
     asked: int = 0
+    private: bool = False  # a private lesson (one child, one coach)
+    family_yes: bool = False  # another coach was booked after the family's yes
 
     @property
     def placed(self) -> bool:
@@ -633,7 +669,7 @@ def run_baseline(world: World, morning: Morning, params: SimParams = SimParams()
                                       True, codes, manager_minutes=manager, asked=calls))
             continue
         # nobody by the start: the lesson goes into the group next to it, unchecked, or is cancelled
-        partners = state.partners(shift) if shift.groups else []
+        partners = state.partners(shift) if shift.groups and not is_private(shift) else []
         if partners:
             partner = partners[0]
             merged = state.merge(partner, shift)
@@ -647,7 +683,10 @@ def run_baseline(world: World, morning: Morning, params: SimParams = SimParams()
         else:
             results.append(CaseResult(shift.id, False, callout.at, shift.start, deadline, "uncovered", "fallback", None, True,
                                       manager_minutes=manager, asked=calls))
-    return results
+    # a private lesson: the chat books the first "yes" without asking the family; nobody: the lesson does not run
+    # (counted in the private lessons' own rows, not with the group lessons)
+    return [replace(r, private=True, groups_cancelled=0, participants_cancelled=0)
+            if is_private(morning.shifts[r.shift_id]) else r for r in results]
 
 
 # --- CoachCover: rules, ranked offers with a timer, plan B ---------------------------
@@ -726,6 +765,10 @@ def run_coachcover(world: World, morning: Morning, params: SimParams = SimParams
         # with a deadline, plan B goes to the manager at the deadline (or at once, for a late call-out) and the
         # manager acts after noticing it; a "yes" before that still covers the shift
         plan_b_at = max(deadline, callout.at + timedelta(minutes=params.intake_minutes), key=_utc) if deadline else None
+        if is_private(shift):
+            start_b = t if plan_b_at is None or _utc(t) < _utc(plan_b_at) else plan_b_at
+            results.append(_private(state, callout, shift, winner, t if winner else start_b, asked_ids, params))
+            continue
         if winner is not None and (plan_b_at is None or _utc(t) < _utc(plan_b_at + notice + decide)):
             human = policy.autonomy["assign_cover"] == "propose"
             at = t + notice + decide if human else t
@@ -739,6 +782,67 @@ def run_coachcover(world: World, morning: Morning, params: SimParams = SimParams
             done = _plan_b(state, callout, shift, start_b, len(asked_ids), params, exclude=asked_ids)
         results.append(done)
     return results
+
+
+def _own_slot(state: State, callout: Callout, shift: Shift, at: datetime) -> Shift | None:
+    """The family's own coach at the nearest free time at the same hour (the core's planb.own_coach_slot)."""
+    slot, _ = own_coach_slot(shift=shift, coach=state.morning.staff[callout.staff_id], policy=state.world.policy,
+                             context_for=lambda moved: state.context(), tz=state.world.tz, now=at)
+    return slot
+
+
+def _private(state: State, callout: Callout, shift: Shift, winner: str | None, t: datetime, asked_ids: list[str],
+             params: SimParams) -> CaseResult:
+    """A private lesson, as the core: the coach who said yes is booked only after the family's yes; "no" offers the
+    family's own coach at the nearest free time at the same hour, else a credit; silence, too late to ask or nobody
+    willing: plan B to the manager (the own coach or a credit), who takes its first option."""
+    policy, preset = state.world.policy, state.world.policy.preset
+    family = state.morning.families[shift.id]
+    notice, decide = timedelta(minutes=params.manager_notice_minutes), timedelta(minutes=params.decide_minutes)
+    window, before = timedelta(minutes=preset.client_answer_minutes), timedelta(minutes=preset.client_answer_before_start_minutes)
+    base = dict(shift_id=shift.id, lesson=True, callout_at=callout.at, start=shift.start, private=True, asked=len(asked_ids))
+
+    def answer_by(at: datetime) -> datetime:
+        return min(at + window, shift.start - before, key=_utc)
+
+    def manager(at: datetime) -> CaseResult:
+        options = private_plan_options(shift=shift, coach=state.morning.staff[callout.staff_id],
+                                       slot=_own_slot(state, callout, shift, at), policy=policy, tz=state.world.tz,
+                                       price_usd=0.0)
+        first = next((o for o in options if o["mode"] != "off"), None)
+        if first is None:  # plan B is off in the policy: the lesson does not run
+            return CaseResult(**base, closed_at=shift.start, outcome="credit", channel="plan_b", staff_id=None, human=False)
+        human = first["mode"] != "auto"
+        return CaseResult(**base, closed_at=at + notice + decide if human else at,
+                          outcome="moved_own" if first["kind"] == "reschedule_own" else "credit", channel="plan_b",
+                          staff_id=None, human=human, manager_minutes=params.decide_minutes if human else 0.0)
+
+    if winner is None:
+        return manager(t)
+    by = answer_by(t)
+    if _utc(by) <= _utc(t):
+        return manager(t)  # too close to the start to ask the family
+    at = t + timedelta(minutes=family.cover_lag)
+    said = Family.answer(family.cover_u, params) if _utc(at) <= _utc(by) else "silent"
+    if said == "silent":
+        return manager(by)
+    if said == "yes":
+        codes = _audit(state, winner, shift, at)  # the rules run again at the family's yes
+        if codes:
+            return manager(at)
+        state.book(winner, shift)
+        return CaseResult(**base, closed_at=at, outcome="covered", channel="offer", staff_id=winner, human=False,
+                          family_yes=True)
+    slot = _own_slot(state, callout, shift, at)
+    by2 = answer_by(at)
+    if slot is None or _utc(by2) <= _utc(at):
+        return CaseResult(**base, closed_at=at, outcome="credit", channel="family", staff_id=None, human=False)
+    at2 = at + timedelta(minutes=family.move_lag)
+    said = Family.answer(family.move_u, params) if _utc(at2) <= _utc(by2) else "silent"
+    if said == "silent":
+        return manager(by2)
+    return CaseResult(**base, closed_at=at2, outcome="moved_own" if said == "yes" else "credit", channel="family",
+                      staff_id=None, human=False)
 
 
 def _plan_b(state: State, callout: Callout, shift: Shift, t: datetime, asked: int, params: SimParams,
@@ -846,6 +950,11 @@ def summarize(results: Sequence[CaseResult], per_morning_manager: Sequence[float
         "shifts_without_groups_left_empty": sum(1 for r in results if r.outcome == "uncovered"),
         "approved_overtime": sum(1 for r in results if r.approved_overtime),
         "outcomes": dict(sorted(Counter(r.outcome for r in results).items())),
+        "private_lessons": sum(1 for r in results if r.private),
+        "private_another_coach_family_yes": sum(1 for r in results if r.private and r.placed and r.family_yes),
+        "private_another_coach_without_family_yes": sum(1 for r in results if r.private and r.placed and not r.family_yes),
+        "private_moved_to_own_coach": sum(1 for r in results if r.private and r.outcome == "moved_own"),
+        "private_credit": sum(1 for r in results if r.private and r.outcome in ("credit", "cancelled")),
         "channels": dict(sorted(Counter(r.channel for r in results).items())),
         "asked_total": sum(r.asked for r in results),
         "manager_minutes_total": round(sum(r.manager_minutes for r in results), 1),
@@ -874,6 +983,8 @@ def _case_row(r: CaseResult, tz: ZoneInfo) -> dict:
         "lessons_cancelled": r.groups_cancelled,
         "asked": r.asked,
         "manager_minutes": r.manager_minutes,
+        "private": r.private,
+        "family_yes": r.family_yes,
     }
 
 
@@ -952,6 +1063,8 @@ def run(mornings: int = MORNINGS, seed: int = SEED, params: SimParams = SimParam
                    "offer_wave_size": policy.preset.offer_wave_size,
                    "offer_collect_seconds": policy.preset.offer_collect_seconds,
                    "plan_b_minutes_before_start": policy.preset.plan_b_minutes_before_start,
+                   "client_answer_minutes": policy.preset.client_answer_minutes,
+                   "client_answer_before_start_minutes": policy.preset.client_answer_before_start_minutes,
                    "autonomy": dict(policy.autonomy)},
         "params": _jsonable(asdict(params)),
         "assumptions": ASSUMPTIONS,
@@ -1025,8 +1138,13 @@ _ROWS = (
     ("90th percentile, minutes", "p90_minutes_to_close"),
     ("Closed after the shift had started", "closed_after_shift_start"),
     ("Closed without a person (no manager step), %", "closed_without_human_pct"),
-    ("Lessons cancelled or moved", "lessons_cancelled"),
-    ("Participants left without their lesson", "participants_without_lesson"),
+    ("Group lessons cancelled or moved", "lessons_cancelled"),
+    ("Participants left without their group lesson", "participants_without_lesson"),
+    ("Private lessons (one child, one coach) that needed cover", "private_lessons"),
+    ("  another coach, after the family said yes", "private_another_coach_family_yes"),
+    ("  another coach, without asking the family", "private_another_coach_without_family_yes"),
+    ("  moved to the family's own coach", "private_moved_to_own_coach"),
+    ("  a credit for one lesson", "private_credit"),
     ("Shifts without groups left empty", "shifts_without_groups_left_empty"),
     ("Approved overtime", "approved_overtime"),
     ("Manager minutes, median per morning", "manager_minutes_median_per_morning"),
@@ -1096,7 +1214,7 @@ BEFORE_AFTER_ROWS = (
     ("Closed without a person", "closed_without_human"),
     ("Closed without a person, %", "closed_without_human_pct"),
     ("Shifts covered (offer or plan B)", "covered"),
-    ("Lessons cancelled or moved", "lessons_cancelled"),
+    ("Group lessons cancelled or moved", "lessons_cancelled"),
     ("Children without their lesson", "participants_without_lesson"),
     ("Shifts without groups left empty", "shifts_without_groups_left_empty"),
     ("Approved overtime", "approved_overtime"),
@@ -1162,7 +1280,9 @@ def report_markdown(result: dict) -> str:
         f"(+{p['confirm_minutes']} min). After {p['chat_wait_minutes']} min without a \"yes\" the manager also phones free "
         f"people who hold the shift's role, in a random order, {p['call_minutes']} min per call. Cards, programs, weekly hours "
         "and the group norm are not checked: that is how a chat and a general scheduler work. Nobody by the start: a lesson "
-        "goes into the group next to it without checking the norm, otherwise it is cancelled; a shift without groups stays empty.",
+        "goes into the group next to it without checking the norm, otherwise it is cancelled; a shift without groups stays empty. "
+        "A private lesson (one child, one coach) goes to the first \"yes\" like any shift: the chat has no step for asking the "
+        "family.",
         f"- **{STRATEGY_LABEL[COACHCOVER]}.** {p['intake_minutes']} min after the call-out the case opens. The rules rank every "
         "non-reserve person; offers go to eligible people only, in waves of "
         f"{result['policy']['offer_wave_size']} in queue order, with the policy's timer "
@@ -1173,7 +1293,13 @@ def report_markdown(result: dict) -> str:
         "core's order: merge into the group next to it within the norm, a reserve person, overtime (an offer to a person blocked "
         "only by hours), move the lesson, close. Plan B is `propose` in the policy, so the manager approves it "
         f"({p['manager_notice_minutes']} min to see the card, {p['decide_minutes']} min to decide). If an overtime offer is not "
-        "taken, the manager goes to the next option.",
+        "taken, the manager goes to the next option. A private lesson: the coach who says yes is held and the family is asked; "
+        f"they answer yes with chance {p['p_family_yes']}, no with chance {p['p_family_no']}, otherwise not in time "
+        f"(assumed, not measured), {p['family_lag_min']}-{p['family_lag_max']} min after the question. Yes: the rules run "
+        "again and the coach is booked. No: the family's own coach at the nearest free time at the same hour is offered "
+        "(the same chances), else a credit for one lesson. No answer within "
+        f"{result['policy']['client_answer_minutes']} min (and at the latest {result['policy']['client_answer_before_start_minutes']} "
+        "min before the start): plan B to the manager, who takes its first option (the own coach, else a credit).",
         "",
         "## Before / after: offer waves",
         "",
@@ -1210,6 +1336,9 @@ def report_markdown(result: dict) -> str:
         "- In plan B a reserve person is booked on the manager's approval without being asked, as the core does; the baseline manager never calls a reserve person.",
         "- \"Closed without a person\" is 0 for the baseline by construction: the manager books every shift by hand.",
         "- Plan B by the deadline: the manager acts on it after noticing the card; the offers of the open wave keep running until then.",
+        "- Private lessons: how families answer is assumed, not measured (the parameters above). While the family is asked, the "
+        "held coach is not blocked for the morning's other cases in this replay (the core blocks that time). A lesson moved to "
+        "another day is not booked into this morning's schedule.",
         "",
     ]
     return "\n".join(out)

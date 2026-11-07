@@ -83,6 +83,32 @@ Industry words (swim, pool, lifeguard, WSI...) are allowed only in presets and t
 - Model replay: recordings are found by (purpose, model, sha256 of the input key). Real recordings come from the 2026-11-06 check; synthetic ones say `"synthetic": true` and their source. The transcript recordings add the `model` field that the check did not keep: verify it live.
 - Test certificate photos and their recorded model readings keep the earlier fictional names; the demo data uses the new ones.
 
+## Private lessons (one child, one coach)
+
+- Data: `lesson_group.kind = 'private'` (migration 009), size 1, `participant` = the child's first name (the parent is
+  never named), 30 min. Seed (preschool story only; the deck story is unchanged): Marina's Mon 17:00 "Private · Lily, age
+  6, Level 2" (`HERO_PRIVATE`, `L-1109-P001`) and Tue 17:00 (Vera), plus 1-2 for every coach whose week is not fixed for
+  the demo (`FIXED_ONLY` keeps its hours: the morning's queue lines do not change), placed after every other booking so
+  nothing moves. Price: the preset's `money.private_lesson_price` ($50, the founder's coaching practice; `seed.PRIVATE_LESSON_USD`
+  matches it).
+- A call-out opens every shift of the person's day (they are out for the whole day): the shifts the message names first,
+  then the rest (`shift_opened.why = "out for the whole day"`).
+- Flow: the same queue and waves. The winning "yes" of a private lesson is not booked: `_ask_family` holds the coach
+  (offer `held` + `client_ask` `asked`; `repo.load_context` counts the hold as their time, so no other offer overlaps it),
+  stands the rest of the wave down and asks the family (text by the text model, purpose `family_question`, in the
+  family's language; template otherwise; replay: `synthetic-family-question-lily-*.json`). `family_respond`: yes → the
+  rules again → `_take`; failed → the next wave, the family is asked again; no → the coach is released, `own_coach_slot`
+  (the same local start time on the next 7 days, the same rules) → a `reschedule` question; yes → `_move_private` (a new
+  shift `L-MMDD-Pnnn`, the old one cancelled); no or no time → `_credit_private` (remedy credit, `amount_usd` 50). The
+  answer window: `offers.client_answer_minutes` (30), at the latest `client_answer_before_start_minutes` (60) before the
+  start; the worker's tick (`expire_due` → `_client_due`) marks silence, releases the coach and proposes plan B
+  (`planb.private_plan_options`: own coach at the nearest free time, credit) for the manager's hash approval.
+- A private lesson is never a merge partner or a move target of a ratio plan; the morning money card leaves it out
+  (Today shows its own card when the screen's case is a private lesson).
+- API: `GET /api/client/{Q-n}` (the family's page), `POST /api/client/{Q-n}/respond {"accept"}` (409 once closed). Judge
+  scenarios `private_lesson` (the family says yes at 08:46) and `private_declined` (no at 08:44:30 → Wed 17:00 with Marina,
+  yes at 08:46). MCP: `get_case` shows `family_questions`; `answer_for_family` is always refused.
+
 ## API
 
 Shapes: `docs/API-CONTRACT-2026-11-06.md` and `web/fixtures/*.json`; `tests/test_contract.py` checks every fixture key and type against the live answers.
