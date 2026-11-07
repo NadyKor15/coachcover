@@ -83,7 +83,7 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
     if code == "LEVEL_MISSING":
         program = preset.programs.get(params["program"])
         if program is not None and params["level"] in program.levels:
-            return f"Not cleared for {program.title(params['level'])}"  # "Learn-to-Swim Level 2", not a code
+            return f"Not cleared for {program.title(params['level'])}"  # the program and level by name, not a code
         return f"Not cleared for {params['program']} {params['level']}"
     if code == "PROGRAM_RENEWAL_OVERDUE":
         program = preset.programs.get(params["program"])
@@ -138,7 +138,7 @@ def _shift_labels(info: dict, shift, preset: Preset, co_teachers: list[str] | No
     program = None
     if shift.groups and info.get("private"):
         g = shift.groups[0]
-        # "Teaching pool · Private lesson · Lily, age 6, Level 2": one child, no count
+        # "<zone> · Private lesson · Lily, age 6, Level 2": one child, no count
         lanes += " · " + _private_label(info["groups"][0]["name"])
         program = preset.programs[g.program].title(g.level)
     elif shift.groups:
