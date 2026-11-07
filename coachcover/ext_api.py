@@ -34,7 +34,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
-from coachcover import a2a, ext_db, forecast, mcp_server, notify, whatif
+from coachcover import a2a, binder, ext_db, forecast, mcp_server, notify, whatif
 from coachcover.demo import clock_now
 from coachcover.models import ModelError
 from coachcover.seed import POLICY_ID
@@ -185,6 +185,29 @@ async def what_if(request: Request):
                 return JSONResponse(status_code=502, content={"error": f"model step failed: {exc}"})
 
     return await to_thread.run_sync(work)
+
+
+# --- the binder for an inspector or an insurer (idea 7) -----------------------------------------
+
+def _binder(conn, venue, first, last):
+    return binder.build(conn, policy_id(), venue, first, last, clock_now(conn))
+
+
+@router.get("/api/binder.json")
+def binder_json(venue: str | None = None, first: date | None = Query(None, alias="from"),
+                last: date | None = Query(None, alias="to"), conn: psycopg.Connection = Depends(get_conn)):
+    return _call(_binder, conn, venue, first, last)
+
+
+@router.get("/api/binder.pdf")
+def binder_pdf(venue: str | None = None, first: date | None = Query(None, alias="from"),
+               last: date | None = Query(None, alias="to"), conn: psycopg.Connection = Depends(get_conn)):
+    data = _call(_binder, conn, venue, first, last)
+    if isinstance(data, JSONResponse):
+        return data
+    name = f"binder-{data['venue']['id']}-{data['period']['from']}-{data['period']['to']}.pdf"
+    return Response(binder.render(data), media_type="application/pdf",
+                    headers={"X-Binder-SHA256": data["sha256"], "Content-Disposition": f'inline; filename="{name}"'})
 
 
 # --- team chat posts (idea 10) -------------------------------------------------------------
