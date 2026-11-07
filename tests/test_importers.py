@@ -44,7 +44,7 @@ def test_generic_csv_reads_shifts_overnight_open_and_duplicates():
     first = r.shifts[0]
     assert (first.start, first.end) == (datetime(2026, 11, 9, 5, 30, tzinfo=NY), datetime(2026, 11, 9, 10, 0, tzinfo=NY))
     assert (first.location, first.position, first.employee, first.email) == (
-        "Northside", "Lifeguard", "Olivia Grant", "olivia.grant@example.com")
+        "Northside", "Lifeguard", "Olivia Hart", "olivia.hart@example.com")
     night = r.shifts[2]
     assert night.end - night.start == timedelta(hours=8) and night.end.date() == date(2026, 11, 10)
     warn = lines(r.warnings)
@@ -53,7 +53,7 @@ def test_generic_csv_reads_shifts_overnight_open_and_duplicates():
     assert "same shift as line 2" in warn[6].message  # the e-mail differs only in case
     us = r.shifts[4]
     assert us.start == datetime(2026, 11, 10, 6, 0, tzinfo=NY)
-    assert [p.email for p in r.people] == ["olivia.grant@example.com", "daniel.brooks@example.com", "mason.turner@example.com"]
+    assert [p.email for p in r.people] == ["olivia.hart@example.com", "daniel.shaw@example.com", "mason.turner@example.com"]
 
 
 def test_when_i_work_header_words_are_synonyms_and_job_site_wins_over_schedule():
@@ -88,7 +88,7 @@ def test_broken_rows_are_named_with_line_and_field_and_good_rows_import():
 
 def test_staff_list_without_shift_columns():
     r = read_csv(FIX / "staff.csv", tz="America/New_York")
-    assert r.shifts == () and [p.name for p in r.people] == ["Olivia Grant", "Daniel Brooks"]
+    assert r.shifts == () and [p.name for p in r.people] == ["Olivia Hart", "Daniel Shaw"]
     assert r.people[0].positions == ("Lifeguard",) and r.people[0].locations == ("Northside",)
     assert sorted(lines(r.errors)) == [4, 5]
 
@@ -96,13 +96,13 @@ def test_staff_list_without_shift_columns():
 def test_csv_edge_cases_bom_semicolon_dmy_crlf_quotes_and_iso_offsets():
     text = (
         "﻿Date;Start;End;Location;Position;Employee;Email\r\n"
-        '09.11.2026;06:00;06:30;"Northside; lap lanes";Instructor;"Brooks, Daniel";\r\n'
+        '09.11.2026;06:00;06:30;"Northside; lap lanes";Instructor;"Shaw, Daniel";\r\n'
         "09.11.2026;2026-11-09T11:00:00Z;2026-11-09T12:00:00Z;Northside;Instructor;Ana Ruiz;\r\n"
     )
     r = read_csv(text, tz="America/New_York", date_order="DMY")
     assert r.ok and len(r.shifts) == 2
     assert r.shifts[0].start == datetime(2026, 11, 9, 6, 0, tzinfo=NY)
-    assert r.shifts[0].location == "Northside; lap lanes" and r.shifts[0].employee == "Brooks, Daniel"
+    assert r.shifts[0].location == "Northside; lap lanes" and r.shifts[0].employee == "Shaw, Daniel"
     assert r.shifts[1].start.astimezone(UTC) == datetime(2026, 11, 9, 11, 0, tzinfo=UTC)
     same_text_mdy = read_csv(text, tz="America/New_York", date_order="MDY")
     assert same_text_mdy.shifts[0].start.date() == date(2026, 9, 11)  # the order matters and is the caller's choice
@@ -289,7 +289,7 @@ def test_imported_schedule_gets_the_certification_layer():
 def test_to_shifts_maps_positions_venues_and_people_explicitly():
     r = read_csv(FIX / "shifts-generic.csv", tz="America/New_York")
     shifts, errors, warnings = to_shifts(
-        r, SWIM.preset, venues={"Northside": "V1", "Riverbend": "V2"}, staff_emails={"OLIVIA.GRANT@example.com": "S25"},
+        r, SWIM.preset, venues={"Northside": "V1", "Riverbend": "V2"}, staff_emails={"OLIVIA.HART@example.com": "S25"},
         positions={"Swim instructor": "instructor"}, default_venue="V3",
     )
     assert errors == []

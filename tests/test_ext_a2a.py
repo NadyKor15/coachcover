@@ -24,7 +24,7 @@ from tests.test_pipeline import RU_VOICE
 
 pytestmark = pytest.mark.db
 
-BORROWER_MANAGER = "Dana Ruiz"
+BORROWER_MANAGER = "Natalie Brooks"
 LENDER_MANAGER = "Omar Haddad"
 
 
@@ -196,7 +196,7 @@ def test_nobody_approves_for_a_manager(net):
     loan = start(client, shift_id)
     code = loan["code"]
     wrong = client.post(f"/api/network/loans/{code}/approve", json={"manager": LENDER_MANAGER, "venue": "V1"})
-    assert wrong.status_code == 403 and "Dana Ruiz" in wrong.json()["error"]
+    assert wrong.status_code == 403 and "Natalie Brooks" in wrong.json()["error"]
     wrong = client.post(f"/api/network/loans/{code}/approve", json={"manager": BORROWER_MANAGER, "venue": "N1"})
     assert wrong.status_code == 403
     outsider = client.post(f"/api/network/loans/{code}/approve", json={"manager": BORROWER_MANAGER, "venue": "V2"})
@@ -211,7 +211,7 @@ def test_nobody_approves_for_a_manager(net):
     assert err["code"] == a2a.UNSUPPORTED_OPERATION and err["data"][0]["reason"] == "MANAGER_APPROVAL_REQUIRED"
     view = client.get(f"/api/network/loans/{code}").json()
     assert view["approvals"] == 0 and view["status"] == "awaiting_approval"
-    ok = client.post(f"/api/network/loans/{code}/approve", json={"manager": " dana  ruiz ", "venue": "V1"})
+    ok = client.post(f"/api/network/loans/{code}/approve", json={"manager": " natalie  brooks ", "venue": "V1"})
     assert ok.status_code == 200 and ok.json()["approvals"] == 1
     again = client.post(f"/api/network/loans/{code}/approve", json={"manager": BORROWER_MANAGER, "venue": "V1"})
     assert again.status_code == 409

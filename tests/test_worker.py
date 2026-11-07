@@ -52,6 +52,6 @@ def test_each_tick_posts_closed_covers_to_the_team_chat_once(new_database):
     conn = new_database()
     reset_school(conn)
     run = run_scenario(conn, ModelClient(DbLedger(conn), mode="replay"), "dangerous_morning")
-    assert tick(conn, POLICY_ID, run["ended_at"] + timedelta(seconds=5))["team_posts"] == 1  # Maria covered 06:00
+    assert tick(conn, POLICY_ID, run["ended_at"] + timedelta(seconds=5))["team_posts"] == 1  # Zoe covered 06:00
     assert tick(conn, POLICY_ID, run["ended_at"] + timedelta(seconds=10))["team_posts"] == 0  # never twice
     assert conn.execute("SELECT count(*) FROM ext_team_post").fetchone()[0] >= 1

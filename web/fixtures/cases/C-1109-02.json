@@ -11,7 +11,7 @@
     "name": "Riverside Aquatic Center"
   },
   "date_label": "Mon, Nov 9",
-  "user_label": "Dana Ruiz · Manager",
+  "user_label": "Natalie Brooks · Manager",
   "opened_at": "2026-11-09T10:15:00Z",
   "closed_at": null,
   "steps": [
@@ -242,7 +242,7 @@
         },
         {
           "id": "S04",
-          "name": "Daniel Brooks",
+          "name": "Daniel Shaw",
           "allowed": false,
           "reason_label": "Not cleared for LTS-1"
         },
@@ -260,7 +260,7 @@
         },
         {
           "id": "S19",
-          "name": "Zoe Coleman",
+          "name": "Megan Coleman",
           "allowed": false,
           "reason_label": "Teaching at 7:00"
         },
@@ -290,7 +290,7 @@
         },
         {
           "id": "S17",
-          "name": "Maria Lopez",
+          "name": "Zoe Grant",
           "allowed": false,
           "reason_label": "Teaching at 6:00"
         },

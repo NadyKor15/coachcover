@@ -26,11 +26,23 @@
   const tail = title => String(title || '').replace(/^\S+ agent:?\s*/, '');
   const ui = { loan: null, network: null, today: null, errors: {} };
 
+  // The manager's name keeps its chevron 11 px after it (as in the design) for any name length; when the chevron
+  // would come closer than 27 px to the bar's edge, the date, divider, name and chevron move left together.
+  function fitUserLabel() {
+    const bar = $('.topbar'), label = slot('user-label'), chevron = label.nextElementSibling;
+    const kids = [...bar.children], group = kids.slice(kids.indexOf(slot('today-date')) - 1);
+    group.forEach(n => { n.style.transform = ''; });
+    chevron.style.left = (label.offsetLeft + label.offsetWidth + 11) + 'px';
+    const over = parseFloat(chevron.style.left) + chevron.getBoundingClientRect().width + 27 - bar.clientWidth;
+    if (over > 0) group.forEach(n => { n.style.transform = 'translateX(' + (-Math.ceil(over)) + 'px)'; });
+  }
+
   function renderHeader() {
     const t = ui.today, l = ui.loan;
     slot('pool-name').textContent = (l && l.borrower && l.borrower.venue_name) || (t && t.venue && t.venue.name) || '';
     slot('today-date').textContent = t && t.now_label ? String(t.now_label).split(' · ')[0] : '';
     slot('user-label').textContent = (t && t.user_label) || '';
+    fitUserLabel();
     const net = ui.network && (ui.network.networks || []).find(n => !l || n.id === l.network_id);
     slot('network-name').textContent = net ? net.name : '';
     const role = l && l.shift ? String(l.shift.label || '').split(' · ')[1] : null;
@@ -262,6 +274,6 @@
   }
 
   $('#askBtn').addEventListener('click', ask);
-  document.fonts.ready.then(() => { if (document.body.dataset.state === 'ready') lanesHeight(); });
+  document.fonts.ready.then(() => { if (document.body.dataset.state === 'ready') { fitUserLabel(); lanesHeight(); } });
   load();
 })();

@@ -14,7 +14,7 @@
     "end": "2026-11-15",
     "label": "Nov 9 – Nov 15"
   },
-  "now": "2026-11-09T10:15:00.026817+00:00",
+  "now": "2026-11-09T10:15:00.027513+00:00",
   "threshold": 1,
   "backups_from": "venue",
   "legend": [
@@ -108,7 +108,7 @@
           "label": "Mon 06:00–08:00 · Lifeguard · Level 4",
           "holder": {
             "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "name": "Daniel Shaw"
           },
           "uncovered": false,
           "past": false,
@@ -134,7 +134,7 @@
           "label": "Mon 06:00–08:00 · Lifeguard · Level 3",
           "holder": {
             "staff_id": "S17",
-            "name": "Maria Lopez"
+            "name": "Zoe Grant"
           },
           "uncovered": false,
           "past": false,
@@ -223,7 +223,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Grace Sullivan"
           ],
           "other_venues_cleared": 20,
@@ -250,7 +250,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Dmitri Volkov"
           ],
           "other_venues_cleared": 20,
@@ -277,7 +277,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Maria Lopez",
+            "Zoe Grant",
             "Sofia Reyes"
           ],
           "other_venues_cleared": 6,
@@ -304,7 +304,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 4,
           "standby": null
@@ -329,8 +329,8 @@
           "backups": 5,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
-            "Maria Lopez",
+            "Daniel Shaw",
+            "Zoe Grant",
             "Sofia Reyes"
           ],
           "other_venues_cleared": 8,
@@ -356,9 +356,9 @@
           "backups": 6,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Dmitri Volkov",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 15,
           "standby": null
@@ -384,8 +384,8 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
-            "Maria Lopez"
+            "Daniel Shaw",
+            "Zoe Grant"
           ],
           "other_venues_cleared": 9,
           "standby": null
@@ -418,7 +418,7 @@
           "backup_names": [
             "Marina Petrova",
             "Dmitri Volkov",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 12,
           "standby": null
@@ -443,9 +443,9 @@
           "backups": 5,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 5,
           "standby": null
@@ -471,7 +471,7 @@
           "level": "safe",
           "backup_names": [
             "Marina Petrova",
-            "Maria Lopez",
+            "Zoe Grant",
             "Sofia Reyes"
           ],
           "other_venues_cleared": 4,
@@ -490,14 +490,14 @@
           "label": "Tue 07:00–07:30 · Swim instructor · Level 5",
           "holder": {
             "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "name": "Daniel Shaw"
           },
           "uncovered": false,
           "past": false,
           "backups": 2,
           "level": "safe",
           "backup_names": [
-            "Maria Lopez",
+            "Zoe Grant",
             "Leo Martins"
           ],
           "other_venues_cleared": 4,
@@ -525,7 +525,7 @@
           "backup_names": [
             "Emma Carter",
             "Marina Petrova",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 4,
           "standby": null
@@ -551,7 +551,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 21,
@@ -570,7 +570,7 @@
           "label": "Tue 14:00–18:00 · Lifeguard",
           "holder": {
             "staff_id": "S17",
-            "name": "Maria Lopez"
+            "name": "Zoe Grant"
           },
           "uncovered": false,
           "past": false,
@@ -578,7 +578,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 17,
@@ -658,7 +658,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 7,
@@ -686,7 +686,7 @@
           "backup_names": [
             "Marina Petrova",
             "Dmitri Volkov",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 14,
           "standby": null
@@ -712,7 +712,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 7,
@@ -746,7 +746,7 @@
           "backup_names": [
             "Marina Petrova",
             "Dmitri Volkov",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 12,
           "standby": null
@@ -764,14 +764,14 @@
           "label": "Wed 06:00–06:30 · Swim instructor · Level 6",
           "holder": {
             "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "name": "Daniel Shaw"
           },
           "uncovered": false,
           "past": false,
           "backups": 1,
           "level": "fragile",
           "backup_names": [
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 4,
           "standby": {
@@ -802,7 +802,7 @@
           "level": "safe",
           "backup_names": [
             "Marina Petrova",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 1,
           "standby": null
@@ -827,9 +827,9 @@
           "backups": 4,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 5,
           "standby": null
@@ -854,9 +854,9 @@
           "backups": 4,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 6,
           "standby": null
@@ -882,7 +882,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 21,
@@ -910,7 +910,7 @@
           "backup_names": [
             "Marina Petrova",
             "Dmitri Volkov",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 16,
           "standby": null
@@ -928,7 +928,7 @@
           "label": "Wed 16:00–16:45 · Swim instructor · Level 4",
           "holder": {
             "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "name": "Daniel Shaw"
           },
           "uncovered": false,
           "past": false,
@@ -936,7 +936,7 @@
           "level": "safe",
           "backup_names": [
             "Marina Petrova",
-            "Maria Lopez",
+            "Zoe Grant",
             "Sofia Reyes"
           ],
           "other_venues_cleared": 7,
@@ -963,7 +963,7 @@
           "level": "safe",
           "backup_names": [
             "Marina Petrova",
-            "Maria Lopez",
+            "Zoe Grant",
             "Sofia Reyes"
           ],
           "other_venues_cleared": 5,
@@ -989,8 +989,8 @@
           "backups": 3,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
-            "Maria Lopez",
+            "Daniel Shaw",
+            "Zoe Grant",
             "Leo Martins"
           ],
           "other_venues_cleared": 3,
@@ -1016,9 +1016,9 @@
           "backups": 5,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 12,
           "standby": null
@@ -1044,7 +1044,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 5,
@@ -1077,7 +1077,7 @@
           "level": "safe",
           "backup_names": [
             "Marina Petrova",
-            "Maria Lopez",
+            "Zoe Grant",
             "Leo Martins"
           ],
           "other_venues_cleared": 12,
@@ -1104,7 +1104,7 @@
           "level": "safe",
           "backup_names": [
             "Marina Petrova",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 1,
           "standby": null
@@ -1131,7 +1131,7 @@
           "backup_names": [
             "Marina Petrova",
             "Camila Herrera",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 3,
           "standby": null
@@ -1149,7 +1149,7 @@
           "label": "Thu 07:00–07:30 · Swim instructor · Level 3",
           "holder": {
             "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "name": "Daniel Shaw"
           },
           "uncovered": false,
           "past": false,
@@ -1211,7 +1211,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 21,
@@ -1230,7 +1230,7 @@
           "label": "Thu 14:00–18:00 · Lifeguard",
           "holder": {
             "staff_id": "S17",
-            "name": "Maria Lopez"
+            "name": "Zoe Grant"
           },
           "uncovered": false,
           "past": false,
@@ -1257,7 +1257,7 @@
           "label": "Thu 16:00–16:45 · Swim instructor · Level 6",
           "holder": {
             "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "name": "Daniel Shaw"
           },
           "uncovered": false,
           "past": false,
@@ -1322,7 +1322,7 @@
           "backups": 5,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova",
             "Sofia Reyes"
           ],
@@ -1351,7 +1351,7 @@
           "backup_names": [
             "Marina Petrova",
             "Dmitri Volkov",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 12,
           "standby": null
@@ -1377,7 +1377,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 8,
@@ -1411,7 +1411,7 @@
           "backup_names": [
             "Marina Petrova",
             "Dmitri Volkov",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 12,
           "standby": null
@@ -1429,7 +1429,7 @@
           "label": "Fri 06:00–06:30 · Swim instructor · Level 4",
           "holder": {
             "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "name": "Daniel Shaw"
           },
           "uncovered": false,
           "past": false,
@@ -1438,7 +1438,7 @@
           "backup_names": [
             "Marina Petrova",
             "Camila Herrera",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 6,
           "standby": null
@@ -1465,7 +1465,7 @@
           "backup_names": [
             "Marina Petrova",
             "Camila Herrera",
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 4,
           "standby": null
@@ -1483,14 +1483,14 @@
           "label": "Fri 07:00–07:30 · Swim instructor · Level 5",
           "holder": {
             "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "name": "Daniel Shaw"
           },
           "uncovered": false,
           "past": false,
           "backups": 1,
           "level": "fragile",
           "backup_names": [
-            "Maria Lopez"
+            "Zoe Grant"
           ],
           "other_venues_cleared": 5,
           "standby": {
@@ -1548,7 +1548,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 20,
@@ -1567,7 +1567,7 @@
           "label": "Fri 14:00–18:00 · Lifeguard",
           "holder": {
             "staff_id": "S17",
-            "name": "Maria Lopez"
+            "name": "Zoe Grant"
           },
           "uncovered": false,
           "past": false,
@@ -1651,7 +1651,7 @@
           "label": "Fri 17:30–18:15 · Swim instructor · Level 3",
           "holder": {
             "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "name": "Daniel Shaw"
           },
           "uncovered": false,
           "past": false,
@@ -1713,7 +1713,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 6,
@@ -1746,7 +1746,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 19,
@@ -1772,7 +1772,7 @@
           "backups": 7,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova",
             "Dmitri Volkov"
           ],
@@ -1792,7 +1792,7 @@
           "label": "Sat 14:00–18:00 · Lifeguard",
           "holder": {
             "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "name": "Daniel Shaw"
           },
           "uncovered": false,
           "past": false,
@@ -1827,7 +1827,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 19,
@@ -1860,7 +1860,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 19,
@@ -1887,7 +1887,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 21,
@@ -1914,7 +1914,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 20,
@@ -1941,7 +1941,7 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
+            "Daniel Shaw",
             "Marina Petrova"
           ],
           "other_venues_cleared": 21,

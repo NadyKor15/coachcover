@@ -131,9 +131,9 @@ def test_every_place_carries_a_machine_reason():
 def test_place_line_reads_like_the_queue_card():
     preset = load_preset("swim_school")
     ranked = rank([_c("M", hours=12.0, tenure=730), _c("O", hours=20.0, same=False, km=21.7, tenure=None)])
-    assert describe_place(ranked[0], "Maria", "en", preset) == "Maria first: 12 h this week, Level 3, same pool"
+    assert describe_place(ranked[0], "Zoe", "en", preset) == "Zoe first: 12 h this week, Level 3, same pool"
     assert describe_place(ranked[1], "Olga", "en", preset) == "Olga second: 20 h this week, Level 3, 21.7 km away"
-    assert describe_place(ranked[0], "Мария", "ru", preset) == "Мария, №1: 12 ч на этой неделе, Level 3, тот же бассейн"
+    assert describe_place(ranked[0], "Зои", "ru", preset) == "Зои, №1: 12 ч на этой неделе, Level 3, тот же бассейн"
 
 
 def test_place_line_for_an_ineligible_candidate_and_a_shift_without_levels():

@@ -2,9 +2,9 @@
  "purpose": "whatif_parse",
  "model": "muse-glimmer-30b",
  "input": {
-  "question": "What if Maria is off tomorrow too?"
+  "question": "What if Zoe is off tomorrow too?"
  },
- "input_sha256": "fe86c97a0812896645c26babb3f8b91688a81a3c8742e4b4723e715a9fd23e2e",
+ "input_sha256": "3aea468edbdc8015ce4cee867c948227f277dbb2f4714b2dab19ac22605ebd67",
  "synthetic": true,
  "source": "synthetic: written by hand to the whatif_parse schema, only facts from the question",
  "duration_ms": 900,
@@ -18,7 +18,7 @@
    {
     "message": {
      "role": "assistant",
-     "content": "{\"people\": [{\"name\": \"Maria\", \"day\": \"tomorrow\"}], \"language\": \"en\"}"
+     "content": "{\"people\": [{\"name\": \"Zoe\", \"day\": \"tomorrow\"}], \"language\": \"en\"}"
     }
    }
   ]

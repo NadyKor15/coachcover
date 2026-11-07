@@ -16,17 +16,17 @@ from tests.conftest import TEST_DSN
 from tests.test_ext_a2a import ext_app
 
 FIXTURES = Path(__file__).parent / "fixtures"
-RU_QUESTION = "А если завтра и Мария заболеет?"
-EN_QUESTION = "What if Maria is off tomorrow too?"
+RU_QUESTION = "А если завтра и Зои заболеет?"
+EN_QUESTION = "What if Zoe is off tomorrow too?"
 
 
 def test_fallback_parser_reads_names_and_days():
-    names = {"maria", "marina", "leo"}
-    assert whatif.fallback_parse("what if Maria is sick tomorrow?", names)["people"] == [{"name": "maria", "day": "tomorrow"}]
-    assert whatif.fallback_parse(RU_QUESTION, names)["people"] == [{"name": "maria", "day": "tomorrow"}]
+    names = {"zoe", "marina", "leo"}
+    assert whatif.fallback_parse("what if Zoe is sick tomorrow?", names)["people"] == [{"name": "zoe", "day": "tomorrow"}]
+    assert whatif.fallback_parse(RU_QUESTION, names)["people"] == [{"name": "zoe", "day": "tomorrow"}]
     assert whatif.fallback_parse("а если послезавтра Лео и Марина?", names)["people"] == [
         {"name": "leo", "day": "day_after_tomorrow"}, {"name": "marina", "day": "day_after_tomorrow"}]
-    assert whatif.fallback_parse("y si María falta hoy", names)["people"] == [{"name": "maria", "day": "today"}]
+    assert whatif.fallback_parse("y si Zoé falta hoy", names)["people"] == [{"name": "zoe", "day": "today"}]
     assert whatif.fallback_parse("what if the boiler breaks", names)["people"] == []
 
 
@@ -59,27 +59,27 @@ def whole_database(conn) -> str:
 pytestmark_db = pytest.mark.db
 
 
-def give_maria_a_shift_tomorrow(conn) -> str:
-    """The training data may leave Maria free on Tuesday; then she takes one Tuesday shift of her role."""
-    maria = conn.execute("SELECT id FROM staff WHERE full_name LIKE 'Maria %' AND policy_id = 'demo-school'").fetchone()[0]
+def give_zoe_a_shift_tomorrow(conn) -> str:
+    """The training data may leave Zoe free on Tuesday; then she takes one Tuesday shift of her role."""
+    zoe = conn.execute("SELECT id FROM staff WHERE full_name LIKE 'Zoe %' AND policy_id = 'demo-school'").fetchone()[0]
     has = conn.execute(
         "SELECT 1 FROM shift WHERE staff_id = %s AND (starts_at AT TIME ZONE 'America/New_York')::date = '2026-11-10'",
-        (maria,),
+        (zoe,),
     ).fetchone()
     if not has:
         conn.execute(
             "UPDATE shift SET staff_id = %s WHERE id = (SELECT s.id FROM shift s JOIN staff_role sr ON sr.role_id = s.role_id"
             " AND sr.staff_id = %s WHERE s.venue_id = 'V1' AND s.status = 'scheduled'"
             " AND (s.starts_at AT TIME ZONE 'America/New_York')::date = '2026-11-10' ORDER BY s.starts_at, s.id LIMIT 1)",
-            (maria, maria),
+            (zoe, zoe),
         )
-    return maria
+    return zoe
 
 
 @pytestmark_db
 def test_text_question_gives_a_plan_and_changes_nothing(api):
     client, conn = api
-    give_maria_a_shift_tomorrow(conn)
+    give_zoe_a_shift_tomorrow(conn)
     before = whole_database(conn)
     resp = client.post("/api/whatif", json={"text": RU_QUESTION})
     assert resp.status_code == 200, resp.text
@@ -88,7 +88,7 @@ def test_text_question_gives_a_plan_and_changes_nothing(api):
     assert body["dry_run"] is True and body["database"]["unchanged"] is True
     assert body["understood"]["by"] == "muse-glimmer-30b"
     person = body["understood"]["people"][0]
-    assert person["name"] == "Maria" and person["day"] == "tomorrow" and person["staff_name"].startswith("Maria ")
+    assert person["name"] == "Zoe" and person["day"] == "tomorrow" and person["staff_name"].startswith("Zoe ")
     plan = body["plan"][0]
     assert plan["date"] == "2026-11-10" and plan["shifts"], plan
     first = plan["shifts"][0]
@@ -101,7 +101,7 @@ def test_text_question_gives_a_plan_and_changes_nothing(api):
 @pytestmark_db
 def test_voice_question_through_replay(api):
     client, conn = api
-    give_maria_a_shift_tomorrow(conn)
+    give_zoe_a_shift_tomorrow(conn)
     before = whole_database(conn)
     audio = (FIXTURES / "audio" / "whatif-ru.ogg").read_bytes()
     resp = client.post("/api/whatif", files={"audio": ("whatif-ru.ogg", audio, "audio/ogg")})
@@ -110,7 +110,7 @@ def test_voice_question_through_replay(api):
     assert body["question"] == {"text": RU_QUESTION, "heard_from": "voice", "language": "ru"}
     assert [c["purpose"] for c in body["model_calls"]] == ["transcribe", "whatif_parse"]
     assert all(c["synthetic"] for c in body["model_calls"])
-    assert body["plan"][0]["staff_name"].startswith("Maria ")
+    assert body["plan"][0]["staff_name"].startswith("Zoe ")
     assert whole_database(conn) == before
 
 

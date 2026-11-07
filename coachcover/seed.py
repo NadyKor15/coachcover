@@ -9,9 +9,9 @@ The morning (matches the recorded Russian voice note "это Марина... в 
 дорожка и в 7 урок у малышей"): S05 Marina Petrova cannot come to her
 06:00-08:00 shift L-1109-G002 at Riverside Aquatic Center: lanes 3-4 plus
 Learn-to-Swim Level 3, 8 children aged 4-5 (norm 1:4, two adults on the post),
-needs a lifeguard with WSI. Manager: Dana Ruiz.
+needs a lifeguard with WSI. Manager: Natalie Brooks.
   - S27 Anna Kim: free and level 3, but her lifeguard card expired 2026-11-05: blocked first.
-  - Queue: S25 Sofia Reyes 6 h, S26 Leo Martins 9 h, S17 Maria Lopez 12 h (all V1),
+  - Queue: S25 Sofia Reyes 6 h, S26 Leo Martins 9 h, S17 Zoe Grant 12 h (all V1),
     then S20 15 h, S22 16 h (V2), S24 18 h (V3). Everyone else is blocked by data.
   - Plan B: merging with G001 next door (6 children, 06:00-08:00) breaks 1:4; head coaches are in reserve;
     S11 could do it on overtime (39.5 h + 2 h).
@@ -42,7 +42,7 @@ from coachcover.rules import add_months
 PRESET = "swim_school"
 POLICY_ID = "demo-school"
 POLICY_NAME = "Demo swim school (fictional)"
-MANAGER = "Dana Ruiz"
+MANAGER = "Natalie Brooks"
 TZ_NAME = "America/New_York"
 TZ = ZoneInfo(TZ_NAME)
 TODAY = date(2026, 11, 9)
@@ -66,7 +66,7 @@ STAFF = [
     ("S01", "Emma Carter", "en", "V1", "I", "1-3"),
     ("S02", "Sofía García", "es", "V2", "I", "1-4"),
     ("S03", "Valentina Castillo", "es", "V3", "I", "2-5"),
-    ("S04", "Daniel Brooks", "en", "V1", "I", "3-6"),
+    ("S04", "Daniel Shaw", "en", "V1", "I", "3-6"),
     ("S05", "Marina Petrova", "ru", "V1", "I", "1-4"),
     ("S06", "Liam Foster", "en", "V2", "IH", "1-6"),
     ("S07", "Javier Morales", "es", "V1", "I", "2-4"),
@@ -79,9 +79,9 @@ STAFF = [
     ("S14", "Irina Lebedeva", "ru", "V3", "I", "3-4"),
     ("S15", "Diego Navarro", "es", "V2", "I", "1-3"),
     ("S16", "Andrés Delgado", "es", "V3", "I", "4-6"),
-    ("S17", "Maria Lopez", "es", "V1", "I", "1-6"),
+    ("S17", "Zoe Grant", "es", "V1", "I", "1-6"),
     ("S18", "Chloe Hayes", "en", "V2", "I", "2-5"),
-    ("S19", "Zoe Coleman", "en", "V3", "I", "1-3"),
+    ("S19", "Megan Coleman", "en", "V3", "I", "1-3"),
     ("S20", "Mateo Romero", "es", "V2", "I", "3-6"),
     ("S21", "Pavel Orlov", "ru", "V3", "I", "1-4"),
     ("S22", "Ethan Price", "en", "V2", "I", "2-6"),
@@ -132,7 +132,7 @@ OVERDUE_PROGRAM = ("S14", date(2025, 10, 1))
 REVOKED = {("S35", "lifeguarding"): date(2026, 7, 24)}
 DEMO_ABSENT = "S05"
 
-# Fixed weeks: (day offset from Sunday, venue, block start). Hours: Anna 4, Sofia 6, Leo 9, Maria 12,
+# Fixed weeks: (day offset from Sunday, venue, block start). Hours: Anna 4, Sofia 6, Leo 9, Zoe 12,
 # S20 15, S22 16, S24 18, and the two people near the limit, S11 39.5 and S29 38. Nobody here works Monday morning.
 FIXED_BLOCKS = {
     "S25": [(2, "V1", time(18, 0)), (3, "V1", time(18, 0))],

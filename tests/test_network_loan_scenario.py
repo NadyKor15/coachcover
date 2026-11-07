@@ -39,7 +39,7 @@ def test_network_loan_covers_the_hero_shift_with_both_approvals(api):
     page = client.get("/api/cases/C-1109-01").json()
     assert (page["status"], page["covered_by"], page["covered_via"]) == ("covered", "Kai Morgan", "network_loan")
     loan = client.get(f"/api/network/loans/{body['loan']}").json()
-    assert loan["approvals"] == 2 and (loan["borrower"]["manager"], loan["lender"]["manager"]) == ("Dana Ruiz", "Omar Haddad")
+    assert loan["approvals"] == 2 and (loan["borrower"]["manager"], loan["lender"]["manager"]) == ("Natalie Brooks", "Omar Haddad")
     assert loan["lender"]["venue_name"].startswith("Northside")
     checked = next(s for s in loan["steps"] if s["kind"] == "checked_offer")
     assert (checked["title"], checked["detail"]) == ("Riverside agent re-checked Kai Morgan", "cleared by Riverside rules")

@@ -75,15 +75,15 @@ def _morning(p: Pipeline, conn: psycopg.Connection) -> tuple[int, dict]:
 
 
 def dangerous_morning(conn: psycopg.Connection, models: ModelClient) -> dict:
-    """Anna blocked first; one wave to Sofia, Leo and Maria. Sofia declines 05:13, Maria says yes 05:14, Leo (higher
-    in the queue) stays silent through the 60 s window, so the shift goes to Maria at 05:15; Leo is stood down."""
+    """Anna blocked first; one wave to Sofia, Leo and Zoe. Sofia declines 05:13, Zoe says yes 05:14, Leo (higher
+    in the queue) stays silent through the 60 s window, so the shift goes to Zoe at 05:15; Leo is stood down."""
     p = Pipeline(conn, models, POLICY_ID)
     case, _ = _morning(p, conn)
     p.respond(_offer_of(conn, case, "S25"), False, NOW + timedelta(minutes=1))  # 05:13 Sofia: no
     yes = NOW + timedelta(minutes=2)
-    p.respond(_offer_of(conn, case, "S17"), True, yes)  # 05:14 Maria: yes, held while Leo can still answer
+    p.respond(_offer_of(conn, case, "S17"), True, yes)  # 05:14 Zoe: yes, held while Leo can still answer
     end = yes + timedelta(seconds=p._policy().preset.offer_collect_seconds)
-    p.expire_due(end)  # 05:15 the window is over (the worker's tick): Maria gets it
+    p.expire_due(end)  # 05:15 the window is over (the worker's tick): Zoe gets it
     return {"case": case, "ended_at": end}
 
 
@@ -95,7 +95,7 @@ def nobody_accepts(conn: psycopg.Connection, models: ModelClient) -> dict:
     t = NOW + timedelta(minutes=1)
     p.respond(_offer_of(conn, case, "S25"), False, t)  # Sofia: no
     t = conn.execute("SELECT expires_at FROM offer WHERE id = %s", (_offer_of(conn, case, "S26"),)).fetchone()[0]
-    p.respond(_offer_of(conn, case, "S17"), False, t - timedelta(minutes=1))  # Maria: no
+    p.respond(_offer_of(conn, case, "S17"), False, t - timedelta(minutes=1))  # Zoe: no
     p.expire_due(t)  # Leo: no answer in 5 min; the second wave goes out
     while True:
         offer, _ = _pending(conn, case)
@@ -121,7 +121,7 @@ def nobody_accepts(conn: psycopg.Connection, models: ModelClient) -> dict:
 def network_loan(conn: psycopg.Connection, models: ModelClient, base_url: str) -> dict:
     """Nobody cleared is left at Riverside for 06:00: everyone the rules allow says no (two waves), plan B waits.
     Riverside's agent asks the network over A2A; Northside's agent (its own address, its own rules: a 44 h week and
-    a minimum of guards on site) offers Kai Morgan; Riverside checks him by its own rules; Dana Ruiz approves for
+    a minimum of guards on site) offers Kai Morgan; Riverside checks him by its own rules; Natalie Brooks approves for
     Riverside, Omar Haddad for Northside; only the second approval books him."""
     from coachcover import a2a
 

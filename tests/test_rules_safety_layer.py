@@ -114,8 +114,8 @@ def test_language_breaks_a_full_tie_and_never_beats_the_product_queue_order():
     tied = rank([assess(a, shift, AT, SWIM, ctx()), assess(b, shift, AT, SWIM, ctx())])
     assert [r.candidate.staff_id for r in tied] == ["S2", "S1"]  # same hours, venue, level, tenure: the speaker first
     assert tied[0].above_next["factor"] == "family_language"
-    line = describe_place(tied[0], "Maria", "en", SWIM.preset)
-    assert line == "Maria first: 0 h this week, Level 3, same pool, speaks Spanish like 6 of 8 families"
+    line = describe_place(tied[0], "Zoe", "en", SWIM.preset)
+    assert line == "Zoe first: 0 h this week, Level 3, same pool, speaks Spanish like 6 of 8 families"
     assert "speaks" not in describe_place(tied[1], "Ann", "en", SWIM.preset)
     # one more hour of work this week puts the speaker behind: hours come first (product queue order)
     busy = ctx(S2=[booked("X", local(2026, 11, 8, 10, 0), 60)])

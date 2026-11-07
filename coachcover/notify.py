@@ -1,4 +1,4 @@
-"""A short report in the team chat after each closed cover: "06:00 covered by Maria, case C-1109-01".
+"""A short report in the team chat after each closed cover: "06:00 covered by Zoe, case C-1109-01".
 
 Delivery is simulated: the post is stored in `ext_team_post` with delivery "simulated" and a log line
 says where it would go ("would post to #riverside-staff"). Nothing leaves the machine.

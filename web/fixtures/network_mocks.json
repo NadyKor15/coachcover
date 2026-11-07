@@ -10,7 +10,7 @@
   },
   "approve": {
     "forbidden": {
-      "error": "only Dana Ruiz, the manager of Riverside Aquatic Center, can approve for Riverside Aquatic Center",
+      "error": "only Natalie Brooks, the manager of Riverside Aquatic Center, can approve for Riverside Aquatic Center",
       "detail": {
         "venue": "V1"
       }
@@ -34,11 +34,11 @@
       "borrower": {
         "venue_id": "V1",
         "venue_name": "Riverside Aquatic Center",
-        "manager": "Dana Ruiz",
+        "manager": "Natalie Brooks",
         "agent_url": "http://api:8000/a2a/V1",
         "approved": {
-          "by": "Dana Ruiz",
-          "at": "2026-11-09T10:15:30.178Z",
+          "by": "Natalie Brooks",
+          "at": "2026-11-09T10:15:30.184Z",
           "at_label": "10:15:30 UTC"
         }
       },
@@ -58,18 +58,18 @@
       },
       "approvals": 1,
       "approvals_needed": 2,
-      "created_at": "2026-11-09T10:15:30.121Z",
+      "created_at": "2026-11-09T10:15:30.122Z",
       "closed_at": null,
       "a2a": {
         "protocol_version": "1.0",
-        "context_id": "8f1ba6c7-7c8b-4c09-b3e0-b63a4f574386",
-        "task_id": "d36666ec-503f-4072-af38-649def0cc3a0",
+        "context_id": "b03c41bf-f1d4-464b-889f-ef3565b72bbe",
+        "task_id": "10e086c4-be84-4482-b527-94dfdafd3c84",
         "task_state": "TASK_STATE_INPUT_REQUIRED"
       },
       "steps": [
         {
           "seq": 1,
-          "at": "2026-11-09T10:15:30.121Z",
+          "at": "2026-11-09T10:15:30.122Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -90,7 +90,7 @@
         },
         {
           "seq": 2,
-          "at": "2026-11-09T10:15:30.121Z",
+          "at": "2026-11-09T10:15:30.122Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -108,7 +108,7 @@
         },
         {
           "seq": 3,
-          "at": "2026-11-09T10:15:31.121Z",
+          "at": "2026-11-09T10:15:31.122Z",
           "at_label": "10:15:31 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -148,7 +148,7 @@
         },
         {
           "seq": 4,
-          "at": "2026-11-09T10:15:31.121Z",
+          "at": "2026-11-09T10:15:31.122Z",
           "at_label": "10:15:31 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -182,7 +182,7 @@
         },
         {
           "seq": 5,
-          "at": "2026-11-09T10:15:32.121Z",
+          "at": "2026-11-09T10:15:32.122Z",
           "at_label": "10:15:32 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -203,7 +203,7 @@
         },
         {
           "seq": 6,
-          "at": "2026-11-09T10:15:33.121Z",
+          "at": "2026-11-09T10:15:33.122Z",
           "at_label": "10:15:33 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -218,7 +218,7 @@
         },
         {
           "seq": 7,
-          "at": "2026-11-09T10:15:34.121Z",
+          "at": "2026-11-09T10:15:34.122Z",
           "at_label": "10:15:34 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -226,13 +226,13 @@
           "actor": "agent",
           "kind": "awaiting_approval",
           "title": "Waiting for both managers",
-          "detail": "Riverside: Dana Ruiz, Northside: Omar Haddad",
+          "detail": "Riverside: Natalie Brooks, Northside: Omar Haddad",
           "data": {
             "name": "Kai Morgan",
             "managers": [
               [
                 "V1",
-                "Dana Ruiz"
+                "Natalie Brooks"
               ],
               [
                 "N1",
@@ -244,18 +244,18 @@
         },
         {
           "seq": 8,
-          "at": "2026-11-09T10:15:30.178Z",
+          "at": "2026-11-09T10:15:30.184Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
           "side": "borrower",
           "actor": "manager",
           "kind": "approved",
-          "title": "Dana Ruiz (Riverside manager) approved",
+          "title": "Natalie Brooks (Riverside manager) approved",
           "detail": "",
           "data": {
             "side": "borrower",
-            "manager": "Dana Ruiz"
+            "manager": "Natalie Brooks"
           }
         }
       ],
@@ -284,11 +284,11 @@
       "borrower": {
         "venue_id": "V1",
         "venue_name": "Riverside Aquatic Center",
-        "manager": "Dana Ruiz",
+        "manager": "Natalie Brooks",
         "agent_url": "http://api:8000/a2a/V1",
         "approved": {
-          "by": "Dana Ruiz",
-          "at": "2026-11-09T10:15:30.178Z",
+          "by": "Natalie Brooks",
+          "at": "2026-11-09T10:15:30.184Z",
           "at_label": "10:15:30 UTC"
         }
       },
@@ -299,7 +299,7 @@
         "agent_url": "http://agent-north:8000/a2a/N1",
         "approved": {
           "by": "Omar Haddad",
-          "at": "2026-11-09T10:15:30.212Z",
+          "at": "2026-11-09T10:15:30.225Z",
           "at_label": "10:15:30 UTC"
         }
       },
@@ -312,18 +312,18 @@
       },
       "approvals": 2,
       "approvals_needed": 2,
-      "created_at": "2026-11-09T10:15:30.121Z",
-      "closed_at": "2026-11-09T10:15:32.212Z",
+      "created_at": "2026-11-09T10:15:30.122Z",
+      "closed_at": "2026-11-09T10:15:32.225Z",
       "a2a": {
         "protocol_version": "1.0",
-        "context_id": "8f1ba6c7-7c8b-4c09-b3e0-b63a4f574386",
-        "task_id": "d36666ec-503f-4072-af38-649def0cc3a0",
+        "context_id": "b03c41bf-f1d4-464b-889f-ef3565b72bbe",
+        "task_id": "10e086c4-be84-4482-b527-94dfdafd3c84",
         "task_state": "TASK_STATE_COMPLETED"
       },
       "steps": [
         {
           "seq": 1,
-          "at": "2026-11-09T10:15:30.121Z",
+          "at": "2026-11-09T10:15:30.122Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -344,7 +344,7 @@
         },
         {
           "seq": 2,
-          "at": "2026-11-09T10:15:30.121Z",
+          "at": "2026-11-09T10:15:30.122Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -362,7 +362,7 @@
         },
         {
           "seq": 3,
-          "at": "2026-11-09T10:15:31.121Z",
+          "at": "2026-11-09T10:15:31.122Z",
           "at_label": "10:15:31 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -402,7 +402,7 @@
         },
         {
           "seq": 4,
-          "at": "2026-11-09T10:15:31.121Z",
+          "at": "2026-11-09T10:15:31.122Z",
           "at_label": "10:15:31 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -436,7 +436,7 @@
         },
         {
           "seq": 5,
-          "at": "2026-11-09T10:15:32.121Z",
+          "at": "2026-11-09T10:15:32.122Z",
           "at_label": "10:15:32 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -457,7 +457,7 @@
         },
         {
           "seq": 6,
-          "at": "2026-11-09T10:15:33.121Z",
+          "at": "2026-11-09T10:15:33.122Z",
           "at_label": "10:15:33 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -472,7 +472,7 @@
         },
         {
           "seq": 7,
-          "at": "2026-11-09T10:15:34.121Z",
+          "at": "2026-11-09T10:15:34.122Z",
           "at_label": "10:15:34 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -480,13 +480,13 @@
           "actor": "agent",
           "kind": "awaiting_approval",
           "title": "Waiting for both managers",
-          "detail": "Riverside: Dana Ruiz, Northside: Omar Haddad",
+          "detail": "Riverside: Natalie Brooks, Northside: Omar Haddad",
           "data": {
             "name": "Kai Morgan",
             "managers": [
               [
                 "V1",
-                "Dana Ruiz"
+                "Natalie Brooks"
               ],
               [
                 "N1",
@@ -498,23 +498,23 @@
         },
         {
           "seq": 8,
-          "at": "2026-11-09T10:15:30.178Z",
+          "at": "2026-11-09T10:15:30.184Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
           "side": "borrower",
           "actor": "manager",
           "kind": "approved",
-          "title": "Dana Ruiz (Riverside manager) approved",
+          "title": "Natalie Brooks (Riverside manager) approved",
           "detail": "",
           "data": {
             "side": "borrower",
-            "manager": "Dana Ruiz"
+            "manager": "Natalie Brooks"
           }
         },
         {
           "seq": 9,
-          "at": "2026-11-09T10:15:30.212Z",
+          "at": "2026-11-09T10:15:30.225Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -530,7 +530,7 @@
         },
         {
           "seq": 10,
-          "at": "2026-11-09T10:15:30.212Z",
+          "at": "2026-11-09T10:15:30.225Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -550,7 +550,7 @@
         },
         {
           "seq": 11,
-          "at": "2026-11-09T10:15:30.212Z",
+          "at": "2026-11-09T10:15:30.225Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -566,7 +566,7 @@
         },
         {
           "seq": 12,
-          "at": "2026-11-09T10:15:31.212Z",
+          "at": "2026-11-09T10:15:31.225Z",
           "at_label": "10:15:31 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -595,13 +595,13 @@
             "staff_id": "N01",
             "approved_by": {
               "lender": "Omar Haddad",
-              "borrower": "Dana Ruiz"
+              "borrower": "Natalie Brooks"
             }
           }
         },
         {
           "seq": 13,
-          "at": "2026-11-09T10:15:32.212Z",
+          "at": "2026-11-09T10:15:32.225Z",
           "at_label": "10:15:32 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -663,7 +663,7 @@
       "borrower": {
         "venue_id": "V1",
         "venue_name": "Riverside Aquatic Center",
-        "manager": "Dana Ruiz",
+        "manager": "Natalie Brooks",
         "agent_url": "http://api:8000/a2a/V1",
         "approved": null
       },
@@ -683,18 +683,18 @@
       },
       "approvals": 0,
       "approvals_needed": 2,
-      "created_at": "2026-11-09T10:15:30.121Z",
+      "created_at": "2026-11-09T10:15:30.122Z",
       "closed_at": null,
       "a2a": {
         "protocol_version": "1.0",
-        "context_id": "8f1ba6c7-7c8b-4c09-b3e0-b63a4f574386",
-        "task_id": "d36666ec-503f-4072-af38-649def0cc3a0",
+        "context_id": "b03c41bf-f1d4-464b-889f-ef3565b72bbe",
+        "task_id": "10e086c4-be84-4482-b527-94dfdafd3c84",
         "task_state": "TASK_STATE_INPUT_REQUIRED"
       },
       "steps": [
         {
           "seq": 1,
-          "at": "2026-11-09T10:15:30.121Z",
+          "at": "2026-11-09T10:15:30.122Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -715,7 +715,7 @@
         },
         {
           "seq": 2,
-          "at": "2026-11-09T10:15:30.121Z",
+          "at": "2026-11-09T10:15:30.122Z",
           "at_label": "10:15:30 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -733,7 +733,7 @@
         },
         {
           "seq": 3,
-          "at": "2026-11-09T10:15:31.121Z",
+          "at": "2026-11-09T10:15:31.122Z",
           "at_label": "10:15:31 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -773,7 +773,7 @@
         },
         {
           "seq": 4,
-          "at": "2026-11-09T10:15:31.121Z",
+          "at": "2026-11-09T10:15:31.122Z",
           "at_label": "10:15:31 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -807,7 +807,7 @@
         },
         {
           "seq": 5,
-          "at": "2026-11-09T10:15:32.121Z",
+          "at": "2026-11-09T10:15:32.122Z",
           "at_label": "10:15:32 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -828,7 +828,7 @@
         },
         {
           "seq": 6,
-          "at": "2026-11-09T10:15:33.121Z",
+          "at": "2026-11-09T10:15:33.122Z",
           "at_label": "10:15:33 UTC",
           "venue_id": "N1",
           "venue": "Northside",
@@ -843,7 +843,7 @@
         },
         {
           "seq": 7,
-          "at": "2026-11-09T10:15:34.121Z",
+          "at": "2026-11-09T10:15:34.122Z",
           "at_label": "10:15:34 UTC",
           "venue_id": "V1",
           "venue": "Riverside",
@@ -851,13 +851,13 @@
           "actor": "agent",
           "kind": "awaiting_approval",
           "title": "Waiting for both managers",
-          "detail": "Riverside: Dana Ruiz, Northside: Omar Haddad",
+          "detail": "Riverside: Natalie Brooks, Northside: Omar Haddad",
           "data": {
             "name": "Kai Morgan",
             "managers": [
               [
                 "V1",
-                "Dana Ruiz"
+                "Natalie Brooks"
               ],
               [
                 "N1",
@@ -877,7 +877,7 @@
     "loan": "LN-1109-01",
     "loan_status": "assigned",
     "ended_at": "2026-11-09T05:17:20-05:00",
-    "runs_left_this_hour": 55
+    "runs_left_this_hour": 191
   },
-  "_captured_at": "2026-11-07T01:47:22Z"
+  "_captured_at": "2026-11-07T04:33:41Z"
 }

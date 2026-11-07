@@ -36,7 +36,7 @@ def test_every_extension_route_answers_through_the_core_app(client):
     assert client.get("/api/network/loans/LN-0000-00").status_code == 404
     week = client.get("/api/week", params={"venue": "V1", "start": "2026-11-08"})
     assert week.status_code == 200, week.text
-    whatif = client.post("/api/whatif", json={"text": "What if Maria is sick tomorrow too?"})
+    whatif = client.post("/api/whatif", json={"text": "What if Zoe is sick tomorrow too?"})
     assert whatif.status_code == 200 and whatif.json()["dry_run"] is True, whatif.text
     pdf = client.get("/api/binder.pdf", params={"venue": "V1"})
     assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF"), pdf.text[:200]

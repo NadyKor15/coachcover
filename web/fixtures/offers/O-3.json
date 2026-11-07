@@ -1,7 +1,7 @@
 {
   "offer_id": "O-3",
   "state": "accepted",
-  "staff": "Maria Lopez",
+  "staff": "Zoe Grant",
   "shift_day": "today",
   "shift_start": "06:00",
   "shift_end": "08:00",
@@ -15,11 +15,11 @@
     "LTS-3 program — current",
     "12 h this week"
   ],
-  "why_first": "Maria third: 12 h this week, Level 3, same pool",
+  "why_first": "Zoe third: 12 h this week, Level 3, same pool",
   "expires_in_s": 0,
   "window_s": 300,
   "manager": {
-    "name": "Dana Ruiz",
+    "name": "Natalie Brooks",
     "role": "Manager"
   }
 }

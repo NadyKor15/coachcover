@@ -41,7 +41,7 @@ def test_caught_by_the_night_check_and_covered_is_not_a_violation(school):
     pending_case = binder.build(school, POLICY_ID, "V1", date(2026, 11, 9), date(2026, 11, 15), at)
     assert pending_case["summary"]["violations"] == 1  # caught but not yet covered: still honest
     approval = school.execute("SELECT id FROM approval WHERE action = 'night_cover' AND status = 'pending'").fetchone()[0]
-    p.decide_approval(approval, True, at, by="manager:Dana")
+    p.decide_approval(approval, True, at, by="manager:Natalie")
     first = school.execute("SELECT id FROM offer WHERE status = 'pending' ORDER BY queue_pos LIMIT 1").fetchone()[0]
     p.respond(first, True, at + timedelta(minutes=1))  # the top of the wave says yes: covered at once
     holder = school.execute("SELECT s.full_name FROM shift sh JOIN staff s ON s.id = sh.staff_id WHERE sh.id = %s",
