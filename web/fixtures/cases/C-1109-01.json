@@ -3,6 +3,8 @@
   "status": "covered",
   "status_label": "Covered",
   "covered_time_label": "05:15",
+  "covered_by": "Maria Lopez",
+  "covered_via": null,
   "shift_label": "06:00 Lanes 3–4 lap swim + Learn-to-Swim Level 3",
   "venue": {
     "id": "V1",
@@ -155,16 +157,34 @@
           "reason_label": "Called out"
         },
         {
+          "id": "S35",
+          "name": "Carlos Mendoza",
+          "allowed": false,
+          "reason_label": "Valid until Jun 2028 — REVOKED by issuer on Jul 24 (simulated registry)"
+        },
+        {
+          "id": "S07",
+          "name": "Javier Morales",
+          "allowed": false,
+          "reason_label": "Certificate expired Nov 8"
+        },
+        {
           "id": "S27",
           "name": "Anna Kim",
           "allowed": false,
           "reason_label": "Certificate expired Nov 5"
         },
         {
-          "id": "S35",
-          "name": "Carlos Mendoza",
+          "id": "S18",
+          "name": "Chloe Hayes",
           "allowed": false,
-          "reason_label": "Valid until Jun 2028 — REVOKED by issuer on Jul 24 (simulated registry)"
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S08",
+          "name": "Grace Sullivan",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
         },
         {
           "id": "S13",
@@ -185,68 +205,14 @@
           "reason_label": "Teaching at 6:00"
         },
         {
-          "id": "S31",
-          "name": "Mason Turner",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S08",
-          "name": "Grace Sullivan",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S30",
-          "name": "Nikita Morozov",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S34",
-          "name": "Logan Pierce",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
           "id": "S33",
           "name": "Ekaterina Belova",
           "allowed": false,
           "reason_label": "No WSI"
         },
         {
-          "id": "S21",
-          "name": "Pavel Orlov",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S40",
-          "name": "Polina Novikova",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S09",
-          "name": "Lucas Reed",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-3"
-        },
-        {
-          "id": "S01",
-          "name": "Emma Carter",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S10",
-          "name": "Dmitri Volkov",
-          "allowed": false,
-          "reason_label": "Certificate expired Nov 2"
-        },
-        {
-          "id": "S28",
-          "name": "Ava Mitchell",
+          "id": "S30",
+          "name": "Nikita Morozov",
           "allowed": false,
           "reason_label": "No WSI"
         },
@@ -257,8 +223,38 @@
           "reason_label": "No WSI"
         },
         {
-          "id": "S36",
-          "name": "Ella Morgan",
+          "id": "S19",
+          "name": "Zoe Coleman",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S03",
+          "name": "Valentina Castillo",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S21",
+          "name": "Pavel Orlov",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S10",
+          "name": "Dmitri Volkov",
+          "allowed": false,
+          "reason_label": "Certificate expired Nov 2"
+        },
+        {
+          "id": "S34",
+          "name": "Logan Pierce",
+          "allowed": false,
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S40",
+          "name": "Polina Novikova",
           "allowed": false,
           "reason_label": "No WSI"
         },
@@ -269,32 +265,8 @@
           "reason_label": "No WSI"
         },
         {
-          "id": "S18",
-          "name": "Chloe Hayes",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S07",
-          "name": "Javier Morales",
-          "allowed": false,
-          "reason_label": "Certificate expired Nov 8"
-        },
-        {
-          "id": "S04",
-          "name": "Daniel Brooks",
-          "allowed": false,
-          "reason_label": "Teaching at 6:00"
-        },
-        {
-          "id": "S37",
-          "name": "Andrei Kozlov",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S39",
-          "name": "Caleb Ward",
+          "id": "S31",
+          "name": "Mason Turner",
           "allowed": false,
           "reason_label": "No WSI"
         },
@@ -305,22 +277,52 @@
           "reason_label": "Not cleared for LTS-3"
         },
         {
-          "id": "S19",
-          "name": "Zoe Coleman",
+          "id": "S01",
+          "name": "Emma Carter",
           "allowed": false,
           "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S09",
+          "name": "Lucas Reed",
+          "allowed": false,
+          "reason_label": "Not cleared for LTS-3"
+        },
+        {
+          "id": "S04",
+          "name": "Daniel Brooks",
+          "allowed": false,
+          "reason_label": "Teaching at 6:00"
+        },
+        {
+          "id": "S28",
+          "name": "Ava Mitchell",
+          "allowed": false,
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S37",
+          "name": "Andrei Kozlov",
+          "allowed": false,
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S36",
+          "name": "Ella Morgan",
+          "allowed": false,
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S39",
+          "name": "Caleb Ward",
+          "allowed": false,
+          "reason_label": "No WSI"
         },
         {
           "id": "S14",
           "name": "Irina Lebedeva",
           "allowed": false,
           "reason_label": "LTS renewal overdue"
-        },
-        {
-          "id": "S03",
-          "name": "Valentina Castillo",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
         },
         {
           "id": "S24",
@@ -470,6 +472,7 @@
     }
   ],
   "model_cost_usd": 0.000401,
+  "model_cost_label": "0.040¢",
   "risk": {
     "kids": 8,
     "refunds_usd": 240.0,
@@ -487,7 +490,7 @@
         "value": 30.0,
         "unit": "USD per child per group lesson",
         "assumption": false,
-        "source": "from the founder's coaching experience (product decision)",
+        "source": "from the founder's coaching experience",
         "note": "Price of one child in one group lesson."
       },
       "refund_share": {

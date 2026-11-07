@@ -1,0 +1,356 @@
+{
+  "id": 1,
+  "code": "LN-1109-01",
+  "status": "assigned",
+  "status_label": "Loan approved by both managers",
+  "network_id": "demo-network",
+  "shift": {
+    "id": "L-1109-G002",
+    "label": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+    "time_label": "Mon 06:00–08:00"
+  },
+  "case": {
+    "id": 1,
+    "ref": "C-1109-01",
+    "link": "/case.html?id=C-1109-01"
+  },
+  "borrower": {
+    "venue_id": "V1",
+    "venue_name": "Riverside Aquatic Center",
+    "manager": "Dana Ruiz",
+    "agent_url": "http://api:8000/a2a/V1",
+    "approved": {
+      "by": "Dana Ruiz",
+      "at": "2026-11-09T10:16:40.000Z",
+      "at_label": "10:16:40 UTC"
+    }
+  },
+  "lender": {
+    "venue_id": "N1",
+    "venue_name": "Northside Aquatic Center",
+    "manager": "Omar Haddad",
+    "agent_url": "http://agent-north:8000/a2a/N1",
+    "approved": {
+      "by": "Omar Haddad",
+      "at": "2026-11-09T10:17:20.000Z",
+      "at_label": "10:17:20 UTC"
+    }
+  },
+  "candidate": {
+    "staff_id": "N01",
+    "name": "Kai Morgan",
+    "from_venue": "Northside Aquatic Center",
+    "line": "Kai first: 8 h this week, Level 3, 8.6 km away",
+    "week_hours": 8.0
+  },
+  "approvals": 2,
+  "approvals_needed": 2,
+  "created_at": "2026-11-09T10:15:40.000Z",
+  "closed_at": "2026-11-09T10:17:20.000Z",
+  "a2a": {
+    "protocol_version": "1.0",
+    "context_id": "25e9a9b9-1feb-4b7f-84d0-2ff28d695409",
+    "task_id": "1e6a717a-f57e-485d-9281-d5c42cf522ef",
+    "task_state": "TASK_STATE_COMPLETED"
+  },
+  "steps": [
+    {
+      "seq": 1,
+      "at": "2026-11-09T10:15:40.000Z",
+      "at_label": "10:15:40 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "asked_network",
+      "title": "Riverside agent: nobody cleared is left here, asks the network",
+      "detail": "5 cleared here, 5 asked · Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+      "data": {
+        "label": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+        "lenders": [
+          "N1"
+        ],
+        "shift_id": "L-1109-G002",
+        "asked_here": 5,
+        "cleared_here": 5
+      }
+    },
+    {
+      "seq": 2,
+      "at": "2026-11-09T10:15:40.000Z",
+      "at_label": "10:15:40 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "request_sent",
+      "title": "Riverside agent → Northside agent: SendMessage (A2A 1.0)",
+      "detail": "http://agent-north:8000/a2a/N1",
+      "data": {
+        "to": "N1",
+        "url": "http://agent-north:8000/a2a/N1",
+        "method": "SendMessage",
+        "exclude": []
+      }
+    },
+    {
+      "seq": 3,
+      "at": "2026-11-09T10:12:00.122Z",
+      "at_label": "10:12:00 UTC",
+      "venue_id": "N1",
+      "venue": "Northside",
+      "side": "lender",
+      "actor": "agent",
+      "kind": "checked_own_people",
+      "title": "Northside agent checked its 5 people by Northside rules: 1 cleared",
+      "detail": "Northside keeps 3 on site or free 06:00–08:00 after the loan (minimum 3; now 4)",
+      "data": {
+        "rules": {
+          "policy_id": "northside",
+          "max_weekly_hours": 44.0
+        },
+        "guards": {
+          "ok": true,
+          "after": 3,
+          "before": 4,
+          "window": "06:00–08:00",
+          "minimum": 3,
+          "on_site": [
+            "N02"
+          ],
+          "free_cleared": [
+            "N01",
+            "N03",
+            "N05"
+          ]
+        },
+        "people": 5,
+        "cleared": 1,
+        "excluded": [],
+        "blocked_by": {
+          "CERT_EXPIRED": 1,
+          "CERT_MISSING": 3
+        }
+      }
+    },
+    {
+      "seq": 4,
+      "at": "2026-11-09T10:12:00.122Z",
+      "at_label": "10:12:00 UTC",
+      "venue_id": "N1",
+      "venue": "Northside",
+      "side": "lender",
+      "actor": "agent",
+      "kind": "offered",
+      "title": "Northside agent offers Kai Morgan",
+      "detail": "Kai first: 8 h this week, Level 3, 8.6 km away · Northside keeps 3 on site or free 06:00–08:00 after the loan (minimum 3; now 4)",
+      "data": {
+        "line": "Kai first: 8 h this week, Level 3, 8.6 km away",
+        "name": "Kai Morgan",
+        "guards": {
+          "ok": true,
+          "after": 3,
+          "before": 4,
+          "window": "06:00–08:00",
+          "minimum": 3,
+          "on_site": [
+            "N02"
+          ],
+          "free_cleared": [
+            "N01",
+            "N03",
+            "N05"
+          ]
+        },
+        "cleared": 1,
+        "staff_id": "N01",
+        "week_hours": 8.0
+      }
+    },
+    {
+      "seq": 5,
+      "at": "2026-11-09T10:15:40.000Z",
+      "at_label": "10:15:40 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "checked_offer",
+      "title": "Riverside agent re-checked Kai Morgan by Riverside rules: cleared",
+      "detail": "cleared by these rules",
+      "data": {
+        "ok": true,
+        "why": "cleared by these rules",
+        "name": "Kai Morgan",
+        "codes": [],
+        "staff_id": "N01",
+        "warnings": [],
+        "max_weekly_hours": 40.0
+      }
+    },
+    {
+      "seq": 6,
+      "at": "2026-11-09T10:12:00.141Z",
+      "at_label": "10:12:00 UTC",
+      "venue_id": "N1",
+      "venue": "Northside",
+      "side": "lender",
+      "actor": "agent",
+      "kind": "borrower_accepted",
+      "title": "Northside agent: offer stands, nothing moves before both managers approve",
+      "detail": "",
+      "data": {
+        "why": "cleared by these rules"
+      }
+    },
+    {
+      "seq": 7,
+      "at": "2026-11-09T10:15:40.000Z",
+      "at_label": "10:15:40 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "awaiting_approval",
+      "title": "Waiting for both managers",
+      "detail": "Riverside: Dana Ruiz, Northside: Omar Haddad",
+      "data": {
+        "name": "Kai Morgan",
+        "managers": [
+          [
+            "V1",
+            "Dana Ruiz"
+          ],
+          [
+            "N1",
+            "Omar Haddad"
+          ]
+        ],
+        "staff_id": "N01"
+      }
+    },
+    {
+      "seq": 8,
+      "at": "2026-11-09T10:16:40.000Z",
+      "at_label": "10:16:40 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "manager",
+      "kind": "approved",
+      "title": "Dana Ruiz (Riverside manager) approved",
+      "detail": "",
+      "data": {
+        "side": "borrower",
+        "manager": "Dana Ruiz"
+      }
+    },
+    {
+      "seq": 9,
+      "at": "2026-11-09T10:17:20.000Z",
+      "at_label": "10:17:20 UTC",
+      "venue_id": "N1",
+      "venue": "Northside",
+      "side": "lender",
+      "actor": "manager",
+      "kind": "approved",
+      "title": "Omar Haddad (Northside manager) approved",
+      "detail": "",
+      "data": {
+        "side": "lender",
+        "manager": "Omar Haddad"
+      }
+    },
+    {
+      "seq": 10,
+      "at": "2026-11-09T10:17:20.000Z",
+      "at_label": "10:17:20 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "checked_again",
+      "title": "Riverside agent checked again before booking: cleared",
+      "detail": "cleared by these rules",
+      "data": {
+        "ok": true,
+        "why": "cleared by these rules",
+        "codes": [],
+        "staff_id": "N01",
+        "warnings": [],
+        "max_weekly_hours": 40.0
+      }
+    },
+    {
+      "seq": 11,
+      "at": "2026-11-09T10:17:20.000Z",
+      "at_label": "10:17:20 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "confirm_sent",
+      "title": "Riverside agent → Northside agent: confirm",
+      "detail": "http://agent-north:8000/a2a/N1",
+      "data": {
+        "to": "N1",
+        "url": "http://agent-north:8000/a2a/N1"
+      }
+    },
+    {
+      "seq": 12,
+      "at": "2026-11-09T10:12:00.171Z",
+      "at_label": "10:12:00 UTC",
+      "venue_id": "N1",
+      "venue": "Northside",
+      "side": "lender",
+      "actor": "agent",
+      "kind": "lent",
+      "title": "Northside agent recorded the loan of Kai Morgan",
+      "detail": "Northside keeps 3 on site or free 06:00–08:00 after the loan (minimum 3; now 4)",
+      "data": {
+        "name": "Kai Morgan",
+        "guards": {
+          "ok": true,
+          "after": 3,
+          "before": 4,
+          "window": "06:00–08:00",
+          "minimum": 3,
+          "on_site": [
+            "N02"
+          ],
+          "free_cleared": [
+            "N01",
+            "N03",
+            "N05"
+          ]
+        },
+        "staff_id": "N01",
+        "approved_by": {
+          "lender": "Omar Haddad",
+          "borrower": "Dana Ruiz"
+        }
+      }
+    },
+    {
+      "seq": 13,
+      "at": "2026-11-09T10:17:20.000Z",
+      "at_label": "10:17:20 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "assigned",
+      "title": "Kai Morgan is on the Riverside schedule",
+      "detail": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center · case C-1109-01",
+      "data": {
+        "name": "Kai Morgan",
+        "label": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+        "case_ref": "C-1109-01",
+        "shift_id": "L-1109-G002",
+        "staff_id": "N01"
+      }
+    }
+  ],
+  "honesty": "Both venues are training venues on one machine; every name is invented."
+}

@@ -1,0 +1,530 @@
+{
+  "title": "Who is allowed on deck at 06:00",
+  "venue": {
+    "id": "V1",
+    "name": "Riverside Aquatic Center",
+    "term": "pool"
+  },
+  "now_label": "Mon, Nov 9 · 05:15",
+  "user_label": "Dana Ruiz · Manager",
+  "lang": "en",
+  "callout": {
+    "case_id": "C-1109-01",
+    "time_label": "05:12",
+    "staff": "Marina Petrova · Lifeguard + WSI",
+    "audio_url": "/media/callouts/C-1109-01.ogg",
+    "duration_label": "0:09",
+    "language": "Russian",
+    "transcript_original": "Привет, это Марина. У меня температура 38, я не выйду в 6. У меня в 6 дорожка и в 7 урок у малышей. Прости.",
+    "transcript_en": "Hi, it's Marina. I have a 38 fever, I can't come at 6. I have the 6:00 lane and the 7:00 little ones lesson. Sorry.",
+    "asr_label": "whisper on Vultr · 1.1 s · recorded"
+  },
+  "shift": {
+    "id": "L-1109-G002",
+    "time_label": "06:00–08:00",
+    "lanes_label": "Lanes 3–4 lap swim + Learn-to-Swim Level 3 (8 kids)",
+    "needs_label": "Lifeguard + WSI",
+    "program_label": "Program LTS-3"
+  },
+  "eligibility": {
+    "total": 40,
+    "eligible": 5,
+    "reasons": [
+      {
+        "code": "CERT_EXPIRED",
+        "label": "Certificate expired Nov 2",
+        "count": 1,
+        "tone": "red"
+      },
+      {
+        "code": "CERT_EXPIRED",
+        "label": "Certificate expired Nov 5",
+        "count": 1,
+        "tone": "red"
+      },
+      {
+        "code": "CERT_EXPIRED",
+        "label": "Certificate expired Nov 8",
+        "count": 1,
+        "tone": "red"
+      },
+      {
+        "code": "CERT_REVOKED",
+        "label": "Valid until Jun 2028 — REVOKED by issuer on Jul 24 (simulated registry)",
+        "count": 1,
+        "tone": "red"
+      },
+      {
+        "code": "PROGRAM_RENEWAL_OVERDUE",
+        "label": "LTS renewal overdue",
+        "count": 1,
+        "tone": "amber"
+      },
+      {
+        "code": "REST_TOO_SHORT",
+        "label": "Only 9 h rest since 21:00",
+        "count": 1,
+        "tone": "amber"
+      },
+      {
+        "code": "CERT_NEEDS_REVIEW",
+        "label": "Readers disagree — review",
+        "count": 1,
+        "tone": "amber"
+      },
+      {
+        "code": "CERT_MISSING",
+        "label": "No WSI",
+        "count": 12,
+        "tone": "plain"
+      },
+      {
+        "code": "OVERLAPS_COMMITMENT",
+        "label": "Teaching at 7:00",
+        "count": 6,
+        "tone": "plain"
+      },
+      {
+        "code": "RESERVE",
+        "label": "Reserve (head coach)",
+        "count": 3,
+        "tone": "plain"
+      },
+      {
+        "code": "OVERLAPS_COMMITMENT",
+        "label": "Teaching at 6:00",
+        "count": 3,
+        "tone": "plain"
+      },
+      {
+        "code": "LEVEL_MISSING",
+        "label": "Not cleared for LTS-3",
+        "count": 2,
+        "tone": "plain"
+      },
+      {
+        "code": "IS_THE_ABSENT_PERSON",
+        "label": "Called out",
+        "count": 1,
+        "tone": "plain"
+      },
+      {
+        "code": "HOURS_LIMIT_EXCEEDED",
+        "label": "Over 40 h this week",
+        "count": 1,
+        "tone": "plain"
+      }
+    ],
+    "staff": [
+      {
+        "id": "S25",
+        "name": "Sofia Reyes",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S26",
+        "name": "Leo Martins",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S17",
+        "name": "Maria Lopez",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S20",
+        "name": "Mateo Romero",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S22",
+        "name": "Ethan Price",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
+        "id": "S05",
+        "name": "Marina Petrova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Called out"
+      },
+      {
+        "id": "S35",
+        "name": "Carlos Mendoza",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Valid until Jun 2028 — REVOKED by issuer on Jul 24 (simulated registry)"
+      },
+      {
+        "id": "S07",
+        "name": "Javier Morales",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 8"
+      },
+      {
+        "id": "S27",
+        "name": "Anna Kim",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 5"
+      },
+      {
+        "id": "S18",
+        "name": "Chloe Hayes",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 7:00"
+      },
+      {
+        "id": "S08",
+        "name": "Grace Sullivan",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 7:00"
+      },
+      {
+        "id": "S13",
+        "name": "Elena Kuznetsova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Readers disagree — review"
+      },
+      {
+        "id": "S02",
+        "name": "Sofía García",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S15",
+        "name": "Diego Navarro",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S33",
+        "name": "Ekaterina Belova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S30",
+        "name": "Nikita Morozov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S32",
+        "name": "Isabela Cruz",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S19",
+        "name": "Zoe Coleman",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 7:00"
+      },
+      {
+        "id": "S03",
+        "name": "Valentina Castillo",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 7:00"
+      },
+      {
+        "id": "S21",
+        "name": "Pavel Orlov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 7:00"
+      },
+      {
+        "id": "S10",
+        "name": "Dmitri Volkov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 2"
+      },
+      {
+        "id": "S34",
+        "name": "Logan Pierce",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S40",
+        "name": "Polina Novikova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S38",
+        "name": "Paula Jiménez",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S31",
+        "name": "Mason Turner",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S16",
+        "name": "Andrés Delgado",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-3"
+      },
+      {
+        "id": "S01",
+        "name": "Emma Carter",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 7:00"
+      },
+      {
+        "id": "S09",
+        "name": "Lucas Reed",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-3"
+      },
+      {
+        "id": "S04",
+        "name": "Daniel Brooks",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 6:00"
+      },
+      {
+        "id": "S28",
+        "name": "Ava Mitchell",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S37",
+        "name": "Andrei Kozlov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S36",
+        "name": "Ella Morgan",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S39",
+        "name": "Caleb Ward",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S14",
+        "name": "Irina Lebedeva",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "LTS renewal overdue"
+      },
+      {
+        "id": "S24",
+        "name": "Gabriela Vargas",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Only 9 h rest since 21:00"
+      },
+      {
+        "id": "S29",
+        "name": "Lucía Ramos",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No WSI"
+      },
+      {
+        "id": "S11",
+        "name": "Camila Herrera",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Over 40 h this week"
+      },
+      {
+        "id": "S06",
+        "name": "Liam Foster",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Reserve (head coach)"
+      },
+      {
+        "id": "S12",
+        "name": "Noah Bennett",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Reserve (head coach)"
+      },
+      {
+        "id": "S23",
+        "name": "Harper Hughes",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Reserve (head coach)"
+      }
+    ],
+    "first_refusal": {
+      "staff": "Javier Morales",
+      "label": "free · BLOCKED: CPR/AED certificate expired Nov 8 · 8 kids · ratio 1:4",
+      "contrast_quote": "“An expired certificate does not block rostering.” — RosterElf help center"
+    }
+  },
+  "timeline": [
+    {
+      "time_label": "05:12",
+      "kind": "callout",
+      "label": "Call-out"
+    },
+    {
+      "time_label": "05:12",
+      "kind": "declined",
+      "label": "Sofia Reyes declined"
+    },
+    {
+      "time_label": "05:13",
+      "kind": "declined",
+      "label": "Leo Martins declined"
+    },
+    {
+      "time_label": "05:13",
+      "kind": "declined",
+      "label": "Maria Lopez declined"
+    },
+    {
+      "time_label": "05:14",
+      "kind": "declined",
+      "label": "Mateo Romero declined"
+    },
+    {
+      "time_label": "05:14",
+      "kind": "declined",
+      "label": "Ethan Price declined"
+    },
+    {
+      "time_label": "05:14",
+      "kind": "plan_b",
+      "label": "Plan B ready"
+    },
+    {
+      "time_label": "06:00",
+      "kind": "shift_start"
+    }
+  ],
+  "offers": [
+    {
+      "id": "O-1",
+      "time_label": "05:12",
+      "staff": "Sofia Reyes",
+      "result": "declined",
+      "why_first": "Sofia first: 6 h this week, Level 3, same pool"
+    },
+    {
+      "id": "O-2",
+      "time_label": "05:13",
+      "staff": "Leo Martins",
+      "result": "declined",
+      "why_first": "Leo second: 9 h this week, Level 3, same pool"
+    },
+    {
+      "id": "O-3",
+      "time_label": "05:13",
+      "staff": "Maria Lopez",
+      "result": "declined",
+      "why_first": "Maria third: 12 h this week, Level 3, same pool"
+    },
+    {
+      "id": "O-4",
+      "time_label": "05:14",
+      "staff": "Mateo Romero",
+      "result": "declined",
+      "why_first": "Mateo first: 15 h this week, Level 3, 21.7 km away"
+    },
+    {
+      "id": "O-5",
+      "time_label": "05:14",
+      "staff": "Ethan Price",
+      "result": "declined",
+      "why_first": "Ethan second: 16 h this week, Level 3, 21.7 km away"
+    }
+  ],
+  "outcome": {
+    "covered_by": null,
+    "covered_via": null,
+    "covered_time": null,
+    "lessons_cancelled": 0
+  },
+  "plan_b": {
+    "id": "P-1",
+    "state": "proposed",
+    "text": "Liam Foster, the head coach in reserve, takes the post. · Camila Herrera covers it on overtime: 1.5 h over the week, about $51. · Move the lesson: the 8 families book a makeup by December 9. · Cancel the lesson: the 8 families get a lesson credit.",
+    "hash": "6a2bbcbef2f6060168f90cf3a5d7dc15c8eff16c9e80bff5ec7d42d5c8ea3860",
+    "autonomy": "propose"
+  },
+  "summary_cards": [
+    {
+      "title": "Tomorrow",
+      "value": "36 of 36 shifts covered"
+    },
+    {
+      "title": "Expiring in 30 days",
+      "value": "2 certificates"
+    },
+    {
+      "title": "Closures today",
+      "value": "none"
+    }
+  ],
+  "money": {
+    "uncovered_morning_usd": 240.0,
+    "uncovered_morning_label": "If nobody had accepted: $240 (Refunds: 8 participants × $30)",
+    "case_cost_cents": 0.0636,
+    "manager_hour_usd": 25.0,
+    "source": "from the founder's coaching experience"
+  },
+  "model_log": {
+    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.060¢ · replayed from recorded Vultr answers",
+    "calls": 5,
+    "usd": 0.0006
+  },
+  "flagged": [],
+  "night_check": null,
+  "ratio_alert": null,
+  "judge": {
+    "running": false,
+    "case_id": "C-1109-01"
+  }
+}
