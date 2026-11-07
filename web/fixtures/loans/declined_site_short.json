@@ -1,0 +1,188 @@
+{
+  "id": 1,
+  "code": "LN-1109-01",
+  "status": "declined",
+  "status_label": "No venue could lend",
+  "network_id": "demo-network",
+  "shift": {
+    "id": "L-1109-G002",
+    "label": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+    "time_label": "Mon 06:00–08:00"
+  },
+  "case": {
+    "id": 1,
+    "ref": "C-1109-01",
+    "link": "/case.html?id=C-1109-01"
+  },
+  "borrower": {
+    "venue_id": "V1",
+    "venue_name": "Riverside Aquatic Center",
+    "manager": "Dana Ruiz",
+    "agent_url": "http://api:8000/a2a/V1",
+    "approved": null
+  },
+  "lender": {
+    "venue_id": "N1",
+    "venue_name": "Northside Aquatic Center",
+    "manager": "Omar Haddad",
+    "agent_url": "http://agent-north:8000/a2a/N1",
+    "approved": null
+  },
+  "candidate": null,
+  "approvals": 0,
+  "approvals_needed": 2,
+  "created_at": "2026-11-09T10:15:30.069Z",
+  "closed_at": "2026-11-09T10:15:30.069Z",
+  "a2a": {
+    "protocol_version": "1.0",
+    "context_id": "4c40996e-a2ca-4fe8-a5ff-e848e97deec5",
+    "task_id": "685f232d-bf95-4bb8-941a-1032f39fa81c",
+    "task_state": "TASK_STATE_REJECTED"
+  },
+  "steps": [
+    {
+      "seq": 1,
+      "at": "2026-11-09T10:15:30.069Z",
+      "at_label": "10:15:30 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "asked_network",
+      "title": "Riverside agent: nobody cleared is left here, asks the network",
+      "detail": "5 cleared here, 5 asked · Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+      "data": {
+        "label": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+        "lenders": [
+          "N1"
+        ],
+        "shift_id": "L-1109-G002",
+        "asked_here": 5,
+        "cleared_here": 5
+      }
+    },
+    {
+      "seq": 2,
+      "at": "2026-11-09T10:15:30.069Z",
+      "at_label": "10:15:30 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "request_sent",
+      "title": "Riverside agent → Northside agent: SendMessage (A2A 1.0)",
+      "detail": "http://agent-north:8000/a2a/N1",
+      "data": {
+        "to": "N1",
+        "url": "http://agent-north:8000/a2a/N1",
+        "method": "SendMessage",
+        "exclude": []
+      }
+    },
+    {
+      "seq": 3,
+      "at": "2026-11-09T10:15:30.090Z",
+      "at_label": "10:15:30 UTC",
+      "venue_id": "N1",
+      "venue": "Northside",
+      "side": "lender",
+      "actor": "agent",
+      "kind": "checked_own_people",
+      "title": "Northside agent checked its 5 people by Northside rules: 1 cleared",
+      "detail": "Northside keeps 3 on site or free 06:00–08:00 after the loan (minimum 4; now 4)",
+      "data": {
+        "rules": {
+          "policy_id": "northside",
+          "max_weekly_hours": 44.0
+        },
+        "guards": {
+          "ok": false,
+          "after": 3,
+          "before": 4,
+          "window": "06:00–08:00",
+          "minimum": 4,
+          "on_site": [
+            "N02"
+          ],
+          "free_cleared": [
+            "N01",
+            "N03",
+            "N05"
+          ]
+        },
+        "people": 5,
+        "cleared": 1,
+        "excluded": [],
+        "blocked_by": {
+          "CERT_EXPIRED": 1,
+          "CERT_MISSING": 3
+        }
+      }
+    },
+    {
+      "seq": 4,
+      "at": "2026-11-09T10:15:30.090Z",
+      "at_label": "10:15:30 UTC",
+      "venue_id": "N1",
+      "venue": "Northside",
+      "side": "lender",
+      "actor": "agent",
+      "kind": "declined",
+      "title": "Northside agent declines",
+      "detail": "lending Kai Morgan would leave Northside Aquatic Center with 3 people of its guard role on site or free 06:00–08:00; its minimum is 4",
+      "data": {
+        "why": "lending Kai Morgan would leave Northside Aquatic Center with 3 people of its guard role on site or free 06:00–08:00; its minimum is 4",
+        "guards": {
+          "ok": false,
+          "after": 3,
+          "before": 4,
+          "window": "06:00–08:00",
+          "minimum": 4,
+          "on_site": [
+            "N02"
+          ],
+          "free_cleared": [
+            "N01",
+            "N03",
+            "N05"
+          ]
+        },
+        "reason": "WOULD_LEAVE_SITE_SHORT"
+      }
+    },
+    {
+      "seq": 5,
+      "at": "2026-11-09T10:15:30.069Z",
+      "at_label": "10:15:30 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "lender_declined",
+      "title": "Northside declined",
+      "detail": "lending Kai Morgan would leave Northside Aquatic Center with 3 people of its guard role on site or free 06:00–08:00; its minimum is 4",
+      "data": {
+        "why": "lending Kai Morgan would leave Northside Aquatic Center with 3 people of its guard role on site or free 06:00–08:00; its minimum is 4",
+        "from": "N1",
+        "reason": "WOULD_LEAVE_SITE_SHORT",
+        "task_state": "TASK_STATE_REJECTED"
+      }
+    },
+    {
+      "seq": 6,
+      "at": "2026-11-09T10:15:30.069Z",
+      "at_label": "10:15:30 UTC",
+      "venue_id": "V1",
+      "venue": "Riverside",
+      "side": "borrower",
+      "actor": "agent",
+      "kind": "no_loan",
+      "title": "No loan",
+      "detail": "declined",
+      "data": {
+        "status": "declined"
+      }
+    }
+  ],
+  "honesty": "Both venues are training venues on one machine; every name is invented."
+}

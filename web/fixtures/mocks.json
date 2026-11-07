@@ -5,7 +5,7 @@
       "scenario": "dangerous_morning",
       "case_id": "C-1109-01",
       "ended_at": "2026-11-09T05:15:00-05:00",
-      "runs_left_this_hour": 58
+      "runs_left_this_hour": 45
     },
     "nobody_accepts": {
       "scenario": "nobody_accepts",
@@ -16,7 +16,7 @@
         "current_hash": "dc9d18030dbd2d68310c664804984f72501342d02bf13a9b4bc580231eeff5ea"
       },
       "ended_at": "2026-11-09T05:19:00-05:00",
-      "runs_left_this_hour": 57
+      "runs_left_this_hour": 44
     },
     "nightly_check": {
       "scenario": "nightly_check",
@@ -31,7 +31,7 @@
         }
       ],
       "ended_at": "2026-11-08T21:30:00-05:00",
-      "runs_left_this_hour": 56
+      "runs_left_this_hour": 43
     }
   },
   "today_by_scenario": {
@@ -125,5 +125,5 @@
       }
     }
   },
-  "_captured_at": "2026-11-07T00:48:39Z"
+  "_captured_at": "2026-11-07T01:20:25Z"
 }

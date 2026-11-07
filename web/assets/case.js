@@ -109,7 +109,7 @@
     $('#factPolicy').hidden = !p.policy_label;
     const calls = d.model_calls || [];
     setText('models-calls', calls.length + (calls.length === 1 ? ' call' : ' calls'));
-    const cost = present(d.model_cost_usd) ? fmtUsd(d.model_cost_usd) : '';
+    const cost = d.model_cost_label || (present(d.model_cost_usd) ? fmtUsd(d.model_cost_usd) : '');
     setText('models-cost', cost);
     $('#costSep').hidden = !cost;
     const rows = new Map();

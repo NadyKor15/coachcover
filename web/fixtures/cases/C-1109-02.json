@@ -3,6 +3,8 @@
   "status": "open",
   "status_label": "Open",
   "covered_time_label": null,
+  "covered_by": null,
+  "covered_via": null,
   "shift_label": "07:00 Teaching pool + Learn-to-Swim Level 1",
   "venue": {
     "id": "V1",
@@ -35,17 +37,17 @@
       "time_label": "10:15:00 UTC",
       "title": "Who is allowed",
       "total": 40,
-      "allowed": 3,
+      "allowed": 2,
       "blocked": null,
       "reasons": [
         {
-          "code": "ROLE_MISSING",
-          "label": "Not a Instructor",
+          "code": "LEVEL_MISSING",
+          "label": "Not cleared for LTS-1",
           "count": 13
         },
         {
-          "code": "LEVEL_MISSING",
-          "label": "Not cleared for LTS-1",
+          "code": "ROLE_MISSING",
+          "label": "Role: not an instructor",
           "count": 13
         },
         {
@@ -57,6 +59,11 @@
           "code": "RESERVE",
           "label": "Reserve (head coach)",
           "count": 3
+        },
+        {
+          "code": "CALLED_OUT",
+          "label": "Called out sick today",
+          "count": 1
         },
         {
           "code": "CERT_EXPIRED",
@@ -81,12 +88,6 @@
       ],
       "staff": [
         {
-          "id": "S05",
-          "name": "Marina Petrova",
-          "allowed": true,
-          "reason_label": null
-        },
-        {
           "id": "S02",
           "name": "Sofía García",
           "allowed": true,
@@ -99,116 +100,26 @@
           "reason_label": null
         },
         {
-          "id": "S27",
-          "name": "Anna Kim",
+          "id": "S05",
+          "name": "Marina Petrova",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Called out sick today"
         },
         {
           "id": "S35",
           "name": "Carlos Mendoza",
           "allowed": false,
-          "reason_label": "Not a Instructor"
+          "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S13",
-          "name": "Elena Kuznetsova",
+          "id": "S07",
+          "name": "Javier Morales",
           "allowed": false,
-          "reason_label": "Readers disagree — review"
+          "reason_label": "Certificate expired Nov 8"
         },
         {
-          "id": "S25",
-          "name": "Sofia Reyes",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
-        },
-        {
-          "id": "S31",
-          "name": "Mason Turner",
-          "allowed": false,
-          "reason_label": "Not a Instructor"
-        },
-        {
-          "id": "S08",
-          "name": "Grace Sullivan",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S30",
-          "name": "Nikita Morozov",
-          "allowed": false,
-          "reason_label": "Not a Instructor"
-        },
-        {
-          "id": "S34",
-          "name": "Logan Pierce",
-          "allowed": false,
-          "reason_label": "Not a Instructor"
-        },
-        {
-          "id": "S33",
-          "name": "Ekaterina Belova",
-          "allowed": false,
-          "reason_label": "Not a Instructor"
-        },
-        {
-          "id": "S21",
-          "name": "Pavel Orlov",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S09",
-          "name": "Lucas Reed",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
-        },
-        {
-          "id": "S40",
-          "name": "Polina Novikova",
-          "allowed": false,
-          "reason_label": "Not a Instructor"
-        },
-        {
-          "id": "S01",
-          "name": "Emma Carter",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S10",
-          "name": "Dmitri Volkov",
-          "allowed": false,
-          "reason_label": "Certificate expired Nov 2"
-        },
-        {
-          "id": "S28",
-          "name": "Ava Mitchell",
-          "allowed": false,
-          "reason_label": "Not a Instructor"
-        },
-        {
-          "id": "S32",
-          "name": "Isabela Cruz",
-          "allowed": false,
-          "reason_label": "Not a Instructor"
-        },
-        {
-          "id": "S38",
-          "name": "Paula Jiménez",
-          "allowed": false,
-          "reason_label": "Not a Instructor"
-        },
-        {
-          "id": "S36",
-          "name": "Ella Morgan",
-          "allowed": false,
-          "reason_label": "Not a Instructor"
-        },
-        {
-          "id": "S26",
-          "name": "Leo Martins",
+          "id": "S27",
+          "name": "Anna Kim",
           "allowed": false,
           "reason_label": "Not cleared for LTS-1"
         },
@@ -219,34 +130,40 @@
           "reason_label": "Not cleared for LTS-1"
         },
         {
-          "id": "S07",
-          "name": "Javier Morales",
+          "id": "S08",
+          "name": "Grace Sullivan",
           "allowed": false,
-          "reason_label": "Certificate expired Nov 8"
+          "reason_label": "Teaching at 7:00"
         },
         {
-          "id": "S04",
-          "name": "Daniel Brooks",
+          "id": "S25",
+          "name": "Sofia Reyes",
           "allowed": false,
           "reason_label": "Not cleared for LTS-1"
         },
         {
-          "id": "S37",
-          "name": "Andrei Kozlov",
+          "id": "S13",
+          "name": "Elena Kuznetsova",
           "allowed": false,
-          "reason_label": "Not a Instructor"
+          "reason_label": "Readers disagree — review"
         },
         {
-          "id": "S39",
-          "name": "Caleb Ward",
+          "id": "S33",
+          "name": "Ekaterina Belova",
           "allowed": false,
-          "reason_label": "Not a Instructor"
+          "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S16",
-          "name": "Andrés Delgado",
+          "id": "S30",
+          "name": "Nikita Morozov",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S32",
+          "name": "Isabela Cruz",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
         },
         {
           "id": "S19",
@@ -255,10 +172,100 @@
           "reason_label": "Teaching at 7:00"
         },
         {
+          "id": "S21",
+          "name": "Pavel Orlov",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
           "id": "S03",
           "name": "Valentina Castillo",
           "allowed": false,
           "reason_label": "Not cleared for LTS-1"
+        },
+        {
+          "id": "S10",
+          "name": "Dmitri Volkov",
+          "allowed": false,
+          "reason_label": "Certificate expired Nov 2"
+        },
+        {
+          "id": "S34",
+          "name": "Logan Pierce",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S38",
+          "name": "Paula Jiménez",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S40",
+          "name": "Polina Novikova",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S26",
+          "name": "Leo Martins",
+          "allowed": false,
+          "reason_label": "Not cleared for LTS-1"
+        },
+        {
+          "id": "S31",
+          "name": "Mason Turner",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S16",
+          "name": "Andrés Delgado",
+          "allowed": false,
+          "reason_label": "Not cleared for LTS-1"
+        },
+        {
+          "id": "S01",
+          "name": "Emma Carter",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S09",
+          "name": "Lucas Reed",
+          "allowed": false,
+          "reason_label": "Not cleared for LTS-1"
+        },
+        {
+          "id": "S04",
+          "name": "Daniel Brooks",
+          "allowed": false,
+          "reason_label": "Not cleared for LTS-1"
+        },
+        {
+          "id": "S28",
+          "name": "Ava Mitchell",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S36",
+          "name": "Ella Morgan",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S37",
+          "name": "Andrei Kozlov",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S39",
+          "name": "Caleb Ward",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
         },
         {
           "id": "S14",
@@ -294,7 +301,7 @@
           "id": "S29",
           "name": "Lucía Ramos",
           "allowed": false,
-          "reason_label": "Not a Instructor"
+          "reason_label": "Role: not an instructor"
         },
         {
           "id": "S11",
@@ -331,37 +338,30 @@
         {
           "id": "O-4",
           "time_label": "05:15",
-          "staff": "Marina Petrova",
+          "staff": "Sofía García",
           "result": "pending",
           "result_label": "asked, waiting",
-          "why_first": "Marina first: 0 h this week, Level 1 (beginner), same pool"
+          "why_first": "Sofía first: 6.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
         },
         {
           "id": "O-5",
           "time_label": "05:15",
-          "staff": "Sofía García",
-          "result": "pending",
-          "result_label": "asked, waiting",
-          "why_first": "Sofía second: 5 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
-        },
-        {
-          "id": "O-6",
-          "time_label": "05:15",
           "staff": "Diego Navarro",
           "result": "pending",
           "result_label": "asked, waiting",
-          "why_first": "Diego third: 5 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
+          "why_first": "Diego second: 6.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
         }
       ]
     }
   ],
   "proof": {
     "plan_id": null,
-    "plan_hash": "25b7212f8f2009e371958d121790aaa673edf28e3f64ed1a32a70f75c9f5b8f5",
+    "plan_hash": "7e3ff5eb63d5088146845298edc0c3cbdc59cd08a0543b64deb3ab14f3f74079",
     "policy_label": "cover = auto · plan B = propose"
   },
   "model_calls": [],
   "model_cost_usd": 0,
+  "model_cost_label": "0.0000¢",
   "risk": {
     "kids": 6,
     "refunds_usd": 180.0,
@@ -379,7 +379,7 @@
         "value": 30.0,
         "unit": "USD per child per group lesson",
         "assumption": false,
-        "source": "from the founder's coaching experience (product decision)",
+        "source": "from the founder's coaching experience",
         "note": "Price of one child in one group lesson."
       },
       "refund_share": {

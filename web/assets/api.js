@@ -56,6 +56,33 @@
 
   const delay = ms => new Promise(ok => setTimeout(ok, ms));
 
+  // network loans in fixture mode: &mock=<state> opens the loan in that state; approvals move it on
+  const LOAN_STATES = ['candidate', 'one_approval', 'one_approval_lender', 'assigned', 'declined_site_short', 'rejected_rules'];
+  const initialLoan = () => LOAN_STATES.find(s => MOCKS.has(s)) || 'candidate';
+  async function netMocks() {
+    if (!fx.net) {
+      const r = await fixtureFile('network_mocks.json');
+      if (r.status !== 200) throw new Error('fixtures/network_mocks.json: ' + r.status);
+      fx.net = r.body;
+    }
+    return fx.net;
+  }
+  async function approveLoan(body) {
+    const N = await netMocks();
+    const state = fx.loan || initialLoan();
+    const loan = (await fixtureFile(N.loan_files[state])).body;
+    if (MOCKS.has('approve_conflict')) return { status: 409, body: N.approve.repeat };
+    const side = ['borrower', 'lender'].find(k => loan[k] && loan[k].venue_id === (body && body.venue));
+    if (!side || loan[side].manager !== body.manager) return { status: 403, body: N.approve.forbidden };
+    if (loan.status === 'assigned') return { status: 409, body: N.approve.closed };
+    if (loan.status !== 'awaiting_approval') return { status: 409, body: N.approve.declined };
+    if (loan[side].approved) return { status: 409, body: N.approve.repeat };
+    const next = { candidate: { borrower: 'one_approval', lender: 'one_approval_lender' },
+                   one_approval: { lender: 'assigned' }, one_approval_lender: { borrower: 'assigned' } }[state];
+    fx.loan = next[side];
+    return { status: 200, body: state === 'candidate' ? N.approve.first : N.approve.second };
+  }
+
   async function fixtureGet(path) {
     const url = new URL(path, global.location.origin);
     const p = url.pathname;
@@ -63,6 +90,7 @@
       const M = await mocks();
       let file = 'today.json';
       MOCKS.forEach(k => { if (M.today_by_mock && M.today_by_mock[k]) file = M.today_by_mock[k]; });
+      if (MOCKS.has('network_open') || MOCKS.has('network_assigned')) file = MOCKS.has('network_open') ? 'today.network_open.json' : 'today.network_assigned.json';
       if (fx.scenario && M.today_by_scenario && M.today_by_scenario[fx.scenario]) file = M.today_by_scenario[fx.scenario];
       const r = await fixtureFile(file);
       if (r.status === 200 && r.body.plan_b && fx.approved[r.body.plan_b.id]) {
@@ -70,10 +98,14 @@
       }
       return r;
     }
-    let m = p.match(/^\/api\/offers\/([^/]+)$/);
+    if (p === '/api/week') return fixtureFile('week.json');
+    if (p === '/api/network') return fixtureFile('network.json');
+    let m = p.match(/^\/api\/network\/loans\/([^/]+)$/);
+    if (m) return fixtureFile((await netMocks()).loan_files[fx.loan || initialLoan()]);
+    m = p.match(/^\/api\/offers\/([^/]+)$/);
     if (m) return fixtureFile('offers/' + encodeURIComponent(decodeURIComponent(m[1])) + '.json');
     m = p.match(/^\/api\/cases\/([^/]+)$/);
-    if (m) return fixtureFile('cases/' + encodeURIComponent(decodeURIComponent(m[1])) + '.json');
+    if (m) return fixtureFile('cases/' + encodeURIComponent(decodeURIComponent(m[1])) + (MOCKS.has('network_loan') ? '.network_loan' : '') + '.json');
     return { status: 404, body: { error: 'no fixture for GET ' + p } };
   }
 
@@ -88,7 +120,15 @@
       fx.approved = {};
       return { status: 200, body: run };
     }
-    let m = p.match(/^\/api\/offers\/([^/]+)\/(accept|decline)$/);
+    let m = p.match(/^\/api\/network\/loans\/([^/]+)\/approve$/);
+    if (m) return approveLoan(body);
+    if (p === '/api/network/loans') {
+      const N = await netMocks();
+      if (MOCKS.has('ask_conflict')) return { status: 409, body: N.ask.conflict };
+      fx.loan = 'candidate';
+      return { status: 201, body: N.ask.created };
+    }
+    m = p.match(/^\/api\/offers\/([^/]+)\/(accept|decline)$/);
     if (m) {
       const o = M.offers[decodeURIComponent(m[1])];
       if (!o) return { status: 404, body: { error: 'no such offer' } };

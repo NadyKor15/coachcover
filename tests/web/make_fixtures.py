@@ -2,6 +2,10 @@
 
 Usage (stack from compose.yaml, replay mode, judge limit high enough for 4 runs):
     python3 tests/web/make_fixtures.py http://127.0.0.1:18088 web/fixtures
+The loan states other than the judge's network scene need Python inside the stack (--part all or ext):
+    python3 tests/web/make_fixtures.py http://127.0.0.1:18088 web/fixtures \\
+        --setup-cmd "docker compose -p ccweb-fx exec -T api python -"
+(--part core | ext | all, default all; ext runs first, core last, so the stack ends on the main story.)
 
 Order of calls (each judge run resets the training school):
   1. judge dangerous_morning → today.json, every offer of the case, the case page;
@@ -18,6 +22,8 @@ Standard library only.
 from __future__ import annotations
 
 import json
+import shlex
+import subprocess
 import sys
 import time
 import urllib.error
@@ -44,10 +50,140 @@ def ok(base: str, method: str, path: str, body: dict | None = None, expect: int 
     return answer
 
 
+# ---- the week and the network loans ----
+# Setups run as Python inside the stack (same steps as the lane's own tests): a fresh school, Marina's call-out and
+# every cleared person at Riverside saying no, so the hero shift is open with nobody left to ask.
+EXHAUST = """
+import os
+from datetime import timedelta
+import psycopg
+from coachcover import a2a
+from coachcover.demo import reset_school, set_clock, VOICE
+from coachcover.models import DbLedger, ModelClient
+from coachcover.pipeline import Pipeline
+from coachcover.seed import NOW, POLICY_ID
+conn = psycopg.connect(os.environ["DATABASE_URL"], autocommit=True)
+reset_school(conn)
+shift_id = conn.execute("SELECT id FROM shift WHERE staff_id = 'S05' AND venue_id = 'V1' ORDER BY starts_at, id LIMIT 1").fetchone()[0]
+p = Pipeline(conn, ModelClient(DbLedger(conn), mode="replay"), POLICY_ID)
+p.callout("S05", now=NOW, audio=VOICE.read_bytes(), filename=VOICE.name)
+case_id = conn.execute("SELECT id FROM cover_case WHERE shift_id = %s AND status = 'open'", (shift_id,)).fetchone()[0]
+t = NOW
+while True:
+    row = conn.execute("SELECT id FROM offer WHERE case_id = %s AND status = 'pending'", (case_id,)).fetchone()
+    if row is None:
+        break
+    t += timedelta(seconds=30)
+    p.respond(row[0], False, t)
+set_clock(conn, t + timedelta(minutes=1))
+a2a.ensure_network(conn)
+"""
+# Northside would keep only 3 guards on site or free, and its minimum is 4: it declines ("would leave itself short").
+SITE_SHORT = EXHAUST + "conn.execute(\"UPDATE ext_network_member SET min_guards = 4 WHERE venue_id = 'N1'\")\n"
+# Kai Morgan gets 32 h more this week: Northside (44 h) still offers him, Riverside (40 h) rejects him.
+OVER_HOURS = EXHAUST + """
+role = conn.execute("SELECT role_id FROM shift WHERE id = 'N-1110-1000'").fetchone()[0]
+for i, (day, begin, finish) in enumerate((("2026-11-08", "06:00", "14:00"), ("2026-11-11", "13:00", "21:00"),
+                                       ("2026-11-13", "06:00", "14:00"), ("2026-11-14", "06:00", "14:00"))):
+    conn.execute("INSERT INTO shift (id, venue_id, zone_id, role_id, starts_at, ends_at, staff_id)"
+                 " VALUES (%s, 'N1', 'N1-MAIN', %s, %s::timestamp AT TIME ZONE 'America/New_York',"
+                 " %s::timestamp AT TIME ZONE 'America/New_York', 'N01')",
+                 (f"N-EXTRA-{i}", role, f"{day} {begin}", f"{day} {finish}"))
+"""
+
+
+def run_setup(setup_cmd: list[str], code: str) -> None:
+    done = subprocess.run(setup_cmd, input=code, text=True, capture_output=True, timeout=180)
+    if done.returncode != 0:
+        raise SystemExit(f"setup failed: {done.stderr[-800:]}")
+
+
+def ext_fixtures(base: str, setup_cmd: list[str], save, out: Path) -> None:
+    hero = "L-1109-G002"
+    mocks: dict = {"_note": "Answers of the network routes, captured by tests/web/make_fixtures.py --part ext. In ?fixture=1 "
+                            "&mock=<state> opens a loan in that state: candidate, one_approval, one_approval_lender, "
+                            "assigned, declined_site_short, rejected_rules; &mock=approve_conflict gives the 409.",
+                   "loan_files": {}, "approve": {}, "ask": {}}
+
+    def loan_state(name: str, loan: dict) -> None:
+        save(f"loans/{name}.json", loan)
+        mocks["loan_files"][name] = f"loans/{name}.json"
+
+    # the week of the main story
+    ok(base, "POST", "/api/judge/run", {"scenario": "dangerous_morning"})
+    save("week.json", ok(base, "GET", "/api/week?venue=V1&start=2026-11-08"))
+
+    # the judge's network scene: 5 of 5 say no at Riverside, Northside lends Kai Morgan, both managers approve
+    run = ok(base, "POST", "/api/judge/run", {"scenario": "network_loan"})
+    if run.get("loan_status") != "assigned":
+        raise SystemExit(f"network_loan: expected an assigned loan, got {run}")
+    mocks["judge_run"] = run
+    loan_state("assigned", ok(base, "GET", f"/api/network/loans/{run['loan']}"))
+    save("today.network_assigned.json", ok(base, "GET", "/api/today"))
+    save(f"cases/{run['case_id']}.network_loan.json", ok(base, "GET", f"/api/cases/{run['case_id']}"))
+
+    # asking while own people are left: 409
+    ok(base, "POST", "/api/judge/run", {"scenario": "nobody_accepts"})
+    mocks["ask"]["conflict"] = ok(base, "POST", "/api/network/loans", {"shift_id": hero}, expect=409)
+
+    # the loan, approved Riverside first
+    run_setup(setup_cmd, EXHAUST)
+    save("network.json", ok(base, "GET", "/api/network"))
+    save("today.network_open.json", ok(base, "GET", "/api/today"))
+    created = ok(base, "POST", "/api/network/loans", {"shift_id": hero}, expect=201)
+    mocks["ask"]["created"] = created
+    loan_state("candidate", created)
+    ref = created["code"]
+    borrower, lender = created["borrower"], created["lender"]
+    approve = lambda who, expect=200: ok(base, "POST", f"/api/network/loans/{ref}/approve",  # noqa: E731
+                                         {"manager": who["manager"], "venue": who["venue_id"]}, expect=expect)
+    mocks["approve"]["forbidden"] = ok(base, "POST", f"/api/network/loans/{ref}/approve",
+                                       {"manager": lender["manager"], "venue": borrower["venue_id"]}, expect=403)
+    mocks["approve"]["first"] = approve(borrower)
+    loan_state("one_approval", ok(base, "GET", f"/api/network/loans/{ref}"))
+    mocks["approve"]["repeat"] = approve(borrower, 409)
+    mocks["approve"]["second"] = approve(lender)
+    mocks["approve"]["closed"] = approve(lender, 409)
+
+    # the same loan, approved Northside first
+    run_setup(setup_cmd, EXHAUST)
+    created = ok(base, "POST", "/api/network/loans", {"shift_id": hero}, expect=201)
+    ok(base, "POST", f"/api/network/loans/{created['code']}/approve",
+       {"manager": created["lender"]["manager"], "venue": created["lender"]["venue_id"]})
+    loan_state("one_approval_lender", ok(base, "GET", f"/api/network/loans/{created['code']}"))
+
+    # Northside declines: it would leave its own site short
+    run_setup(setup_cmd, SITE_SHORT)
+    loan = ok(base, "POST", "/api/network/loans", {"shift_id": hero}, expect=201)
+    if loan["status"] != "declined":
+        raise SystemExit(f"expected a declined loan, got {loan['status']}")
+    loan_state("declined_site_short", loan)
+    mocks["approve"]["declined"] = ok(base, "POST", f"/api/network/loans/{loan['code']}/approve",
+                                      {"manager": loan["borrower"]["manager"], "venue": loan["borrower"]["venue_id"]}, expect=409)
+
+    # Riverside rejects the offered person by its own rules
+    run_setup(setup_cmd, OVER_HOURS)
+    loan = ok(base, "POST", "/api/network/loans", {"shift_id": hero}, expect=201)
+    if loan["status"] != "rejected":
+        raise SystemExit(f"expected a rejected loan, got {loan['status']}")
+    loan_state("rejected_rules", loan)
+
+    ok(base, "POST", "/api/judge/run", {"scenario": "dangerous_morning"})
+    mocks["_captured_at"] = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    save("network_mocks.json", mocks)
+
+
 def main() -> None:
-    if len(sys.argv) != 3:
+    args = sys.argv[1:]
+    part = "all"
+    setup_cmd: list[str] | None = None
+    if "--part" in args:
+        i = args.index("--part"); part = args[i + 1]; del args[i:i + 2]
+    if "--setup-cmd" in args:
+        i = args.index("--setup-cmd"); setup_cmd = shlex.split(args[i + 1]); del args[i:i + 2]
+    if len(args) != 2 or part not in ("all", "core", "ext"):
         raise SystemExit(__doc__)
-    base, out = sys.argv[1].rstrip("/"), Path(sys.argv[2])
+    base, out = args[0].rstrip("/"), Path(args[1])
     written: list[str] = []
 
     def save(name: str, obj: dict) -> None:
@@ -58,6 +194,13 @@ def main() -> None:
 
     if ok(base, "GET", "/health").get("model_mode") != "replay":
         raise SystemExit("the stack must run in replay mode: fixtures are recorded answers, never live calls")
+    if part in ("all", "ext"):
+        if setup_cmd is None:
+            raise SystemExit("--part ext needs --setup-cmd: the loan states are set up by Python inside the stack")
+        ext_fixtures(base, setup_cmd, save, out)
+    if part == "ext":
+        print("\n".join(written))
+        return
     mocks: dict = {
         "_note": "Answers captured from the running API by tests/web/make_fixtures.py. In ?fixture=1 add "
                  "&mock=plan_changed or &mock=not_eligible for the 409 answers, &mock=ratio_open or &mock=ratio_covered "

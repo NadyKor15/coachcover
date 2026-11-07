@@ -18,7 +18,7 @@
   },
   "eligibility": {
     "total": 40,
-    "eligible": 10,
+    "eligible": 11,
     "reasons": [
       {
         "code": "CERT_EXPIRED",
@@ -34,7 +34,7 @@
       },
       {
         "code": "ROLE_MISSING",
-        "label": "Not a Instructor",
+        "label": "Role: not an instructor",
         "count": 13,
         "tone": "plain"
       },
@@ -51,14 +51,14 @@
         "tone": "plain"
       },
       {
-        "code": "OVERLAPS_COMMITMENT",
-        "label": "On deck at 14:00",
-        "count": 2,
+        "code": "IS_THE_ABSENT_PERSON",
+        "label": "Called out",
+        "count": 1,
         "tone": "plain"
       },
       {
-        "code": "IS_THE_ABSENT_PERSON",
-        "label": "Called out",
+        "code": "OVERLAPS_COMMITMENT",
+        "label": "On deck at 14:00",
         "count": 1,
         "tone": "plain"
       },
@@ -91,8 +91,8 @@
         "reason_label": null
       },
       {
-        "id": "S15",
-        "name": "Diego Navarro",
+        "id": "S18",
+        "name": "Chloe Hayes",
         "eligible": true,
         "highlight": false,
         "reason_label": null
@@ -112,15 +112,8 @@
         "reason_label": null
       },
       {
-        "id": "S21",
-        "name": "Pavel Orlov",
-        "eligible": true,
-        "highlight": false,
-        "reason_label": null
-      },
-      {
-        "id": "S18",
-        "name": "Chloe Hayes",
+        "id": "S15",
+        "name": "Diego Navarro",
         "eligible": true,
         "highlight": false,
         "reason_label": null
@@ -140,88 +133,25 @@
         "reason_label": null
       },
       {
-        "id": "S17",
-        "name": "Maria Lopez",
+        "id": "S21",
+        "name": "Pavel Orlov",
         "eligible": true,
         "highlight": false,
         "reason_label": null
       },
       {
-        "id": "S35",
-        "name": "Carlos Mendoza",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not a Instructor"
-      },
-      {
-        "id": "S02",
-        "name": "Sofía García",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Teaching at 16:00"
-      },
-      {
-        "id": "S13",
-        "name": "Elena Kuznetsova",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Readers disagree — review"
-      },
-      {
-        "id": "S31",
-        "name": "Mason Turner",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not a Instructor"
-      },
-      {
-        "id": "S30",
-        "name": "Nikita Morozov",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not a Instructor"
-      },
-      {
-        "id": "S34",
-        "name": "Logan Pierce",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not a Instructor"
-      },
-      {
-        "id": "S33",
-        "name": "Ekaterina Belova",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not a Instructor"
-      },
-      {
-        "id": "S09",
-        "name": "Lucas Reed",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
-      },
-      {
-        "id": "S40",
-        "name": "Polina Novikova",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not a Instructor"
-      },
-      {
         "id": "S01",
         "name": "Emma Carter",
-        "eligible": false,
+        "eligible": true,
         "highlight": false,
-        "reason_label": "On deck at 14:00"
+        "reason_label": null
       },
       {
-        "id": "S10",
-        "name": "Dmitri Volkov",
-        "eligible": false,
+        "id": "S17",
+        "name": "Maria Lopez",
+        "eligible": true,
         "highlight": false,
-        "reason_label": "Certificate expired Nov 2"
+        "reason_label": null
       },
       {
         "id": "S07",
@@ -231,36 +161,99 @@
         "reason_label": "Called out"
       },
       {
-        "id": "S28",
-        "name": "Ava Mitchell",
+        "id": "S35",
+        "name": "Carlos Mendoza",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not a Instructor"
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S13",
+        "name": "Elena Kuznetsova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Readers disagree — review"
+      },
+      {
+        "id": "S02",
+        "name": "Sofía García",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 16:00"
+      },
+      {
+        "id": "S33",
+        "name": "Ekaterina Belova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S30",
+        "name": "Nikita Morozov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S32",
         "name": "Isabela Cruz",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not a Instructor"
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S10",
+        "name": "Dmitri Volkov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 2"
+      },
+      {
+        "id": "S34",
+        "name": "Logan Pierce",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S38",
         "name": "Paula Jiménez",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not a Instructor"
+        "reason_label": "Role: not an instructor"
       },
       {
-        "id": "S36",
-        "name": "Ella Morgan",
+        "id": "S40",
+        "name": "Polina Novikova",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not a Instructor"
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S26",
         "name": "Leo Martins",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-2"
+      },
+      {
+        "id": "S31",
+        "name": "Mason Turner",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S16",
+        "name": "Andrés Delgado",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-2"
+      },
+      {
+        "id": "S09",
+        "name": "Lucas Reed",
         "eligible": false,
         "highlight": false,
         "reason_label": "Not cleared for LTS-2"
@@ -273,25 +266,32 @@
         "reason_label": "Not cleared for LTS-2"
       },
       {
+        "id": "S28",
+        "name": "Ava Mitchell",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S36",
+        "name": "Ella Morgan",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
         "id": "S37",
         "name": "Andrei Kozlov",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not a Instructor"
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S39",
         "name": "Caleb Ward",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not a Instructor"
-      },
-      {
-        "id": "S16",
-        "name": "Andrés Delgado",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S14",
@@ -326,7 +326,7 @@
         "name": "Lucía Ramos",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not a Instructor"
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S11",
@@ -373,6 +373,7 @@
   "offers": [],
   "outcome": {
     "covered_by": null,
+    "covered_via": null,
     "covered_time": null,
     "lessons_cancelled": 0
   },
@@ -401,7 +402,8 @@
     "uncovered_morning_usd": 150.0,
     "uncovered_morning_label": "If nobody had accepted: $150 (Refunds: 5 participants × $30)",
     "case_cost_cents": 0.0,
-    "manager_hour_usd": 25.0
+    "manager_hour_usd": 25.0,
+    "source": "from the founder's coaching experience"
   },
   "model_log": {
     "label": null,
