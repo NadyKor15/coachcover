@@ -160,6 +160,13 @@ def _plan_option_text(option: dict, preset: Preset) -> str:
         return f"move the lesson: makeup for {option['families']} families"
     if kind == "close":
         return f"cancel: {option['remedy']} for {option['families']} families"
+    if kind == "split":
+        return (f"{option['staff_name']} takes {option['children']} {participants} at the same time "
+                f"({option['participants_after']} of {option['capacity']}, norm ok)")
+    if kind == "move":
+        return f"move the {option['children']} newest {participants} to the nearest lesson of their level with room"
+    if kind == "cancel_lesson":
+        return f"cancel the whole lesson: {option['remedy']} for {option['families']} families"
     return kind
 
 

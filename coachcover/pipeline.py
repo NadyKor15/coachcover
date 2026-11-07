@@ -30,10 +30,10 @@ from psycopg.types.json import Jsonb
 from coachcover import messages as M
 from coachcover.model import Policy
 from coachcover.models import SECOND_READER_MODEL, TEXT_MODEL, ModelClient, ModelError, canonical_key, sha256_bytes
-from coachcover.planb import plan_b_options, strictest  # noqa: F401 - strictest kept importable from here
+from coachcover.planb import plan_b_options, ratio_plan_options, strictest  # noqa: F401 - strictest kept importable
 from coachcover.reasons_text import describe, describe_place
 from coachcover.repo import load_context, load_policy, load_shift, load_staff
-from coachcover.rules import Code, Ranked, assess, eligible, rank, ratio_reason
+from coachcover.rules import Code, Ranked, assess, eligible, group_norm, rank, ratio_reason
 
 
 
@@ -829,9 +829,11 @@ class Pipeline:
     # --- plan B ---------------------------------------------------------------
 
     def _plan_facts(self, case_id: int, now: datetime) -> dict:
-        shift_id, absent = self.conn.execute(
-            "SELECT shift_id, absent_staff_id FROM cover_case WHERE id = %s", (case_id,)
+        shift_id, absent, source = self.conn.execute(
+            "SELECT shift_id, absent_staff_id, source FROM cover_case WHERE id = %s", (case_id,)
         ).fetchone()
+        if source == "ratio":
+            return self._ratio_facts(case_id, shift_id, now)
         policy = self._policy()
         staff = {s.id: s for s in load_staff(self.conn, self.policy_id)}
         shift = load_shift(self.conn, shift_id)
@@ -859,6 +861,83 @@ class Pipeline:
             "recommended": 0,
             "rejected": rejected,
         })
+
+    def _lesson_seats(self, lesson_id: str) -> tuple[int, int, list[str]]:
+        """(instructors the lesson really has, its open seats' shift ids, its instructor count field): an extra seat
+        counts once it is staffed; base = the field minus every seat that is not cancelled."""
+        instructors = self.conn.execute("SELECT instructors FROM shift WHERE id = %s", (lesson_id,)).fetchone()[0]
+        seats = self.conn.execute("SELECT id, status FROM shift WHERE extra_for = %s AND status <> 'cancelled' ORDER BY id",
+                                  (lesson_id,)).fetchall()
+        base = instructors - len(seats)
+        staffed = sum(1 for _, st in seats if st == "scheduled")
+        return base + staffed, base, [sid for sid, st in seats if st == "open"]
+
+    def _ratio_facts(self, case_id: int, seat_id: str, now: datetime) -> dict:
+        """Plan B for a broken norm: only options that keep every lesson within its norm (planb.ratio_plan_options)."""
+        policy = self._policy()
+        staff = {s.id: s for s in load_staff(self.conn, self.policy_id)}
+        seat = load_shift(self.conn, seat_id)
+        lesson_id = self.conn.execute("SELECT extra_for FROM shift WHERE id = %s", (seat_id,)).fetchone()[0]
+        lesson = load_shift(self.conn, lesson_id)
+        group_id = self.conn.execute(
+            "SELECT data->>'group_id' FROM case_event WHERE case_id = %s AND kind = 'ratio_broken' ORDER BY seq LIMIT 1",
+            (case_id,),
+        ).fetchone()[0]
+        effective, _, _ = self._lesson_seats(lesson_id)
+        per = min(group_norm(g, policy.preset) for g in lesson.groups)
+        move = max(0, sum(g.size for g in lesson.groups) - per * effective)
+        moved = self._newest_families(group_id, move)
+        context = load_context(self.conn, self.policy_id, lesson)
+        info = self.shift_info(seat_id)
+        partner_ids = [r[0] for r in self.conn.execute(
+            "SELECT s.id FROM shift s WHERE s.venue_id = %s AND s.starts_at = %s AND s.ends_at = %s AND s.status = 'scheduled'"
+            " AND s.extra_for IS NULL AND s.id <> %s AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = s.id)"
+            " AND NOT EXISTS (SELECT 1 FROM shift_group a JOIN shift_group b ON b.group_id = a.group_id"
+            "  WHERE a.shift_id = s.id AND b.shift_id = %s) ORDER BY s.id",
+            (lesson.venue, lesson.start, lesson.end, lesson_id, lesson_id),
+        )]
+        later_ids = [r[0] for r in self.conn.execute(
+            "SELECT DISTINCT s.id, s.starts_at FROM shift s JOIN shift_group sg ON sg.shift_id = s.id"
+            " JOIN lesson_group g ON g.id = sg.group_id JOIN venue v ON v.id = s.venue_id"
+            " WHERE v.policy_id = %s AND s.status = 'scheduled' AND s.extra_for IS NULL AND s.starts_at > %s"
+            " AND s.starts_at < %s AND g.id <> %s AND g.level_id = (SELECT level_id FROM lesson_group WHERE id = %s)"
+            " ORDER BY s.starts_at, s.id",
+            (self.policy_id, lesson.start, lesson.start + self.RATIO_HORIZON, group_id, group_id),
+        )]
+        asked = {r[0] for r in self.conn.execute("SELECT staff_id FROM offer WHERE case_id = %s", (case_id,))}
+        options, rejected = ratio_plan_options(
+            seat=seat, lesson=lesson, group_id=group_id, move=move, moved_families=moved,
+            partners=[load_shift(self.conn, pid) for pid in partner_ids],
+            later=[load_shift(self.conn, sid) for sid in later_ids],
+            staff=staff, policy=policy, context=context, now=now, exclude=asked,
+        )
+        return plain({
+            "case_id": case_id,
+            "shift": {"id": seat_id, "label": info["label"], "venue": info["venue"], "zone_id": info["zone_id"],
+                      "start": info["start"], "end": info["end"], "role": info["role"]},
+            "options": options,
+            "recommended": 0,
+            "rejected": rejected,
+            "ratio": {"lesson_id": lesson_id, "group_id": group_id, "move": move, "max_per_instructor": per,
+                      "instructors": effective},
+        })
+
+    def _newest_families(self, group_id: str, move: int) -> list[tuple[str, int]]:
+        """Languages of the `move` newest children of a group, from its enrolments (unknown: the group's first language)."""
+        first = self.conn.execute("SELECT family_languages[1] FROM lesson_group WHERE id = %s", (group_id,)).fetchone()[0]
+        counts: dict[str, int] = {}
+        left = move
+        for added, language in self.conn.execute(
+            "SELECT added, language FROM group_enrollment WHERE group_id = %s ORDER BY at DESC, id DESC", (group_id,)
+        ):
+            if left <= 0:
+                break
+            take = min(left, added)
+            counts[language or first] = counts.get(language or first, 0) + take
+            left -= take
+        if left > 0:
+            counts[first] = counts.get(first, 0) + left
+        return sorted(counts.items())
 
     def _plan_text(self, facts: dict, now: datetime, case_id: int) -> tuple[dict, str]:
         key = {"shift": facts["shift"], "options": facts["options"]}
@@ -943,6 +1022,8 @@ class Pipeline:
         shift_id = snapshot["shift"]["id"]
         info = self.shift_info(shift_id)
         kind = chosen["kind"]
+        if kind in ("split", "move", "cancel_lesson"):
+            return self._apply_ratio_option(case_id, snapshot, chosen, now)
         if kind == "merge":
             for gid in [g["id"] for g in info["groups"]]:
                 self.conn.execute("INSERT INTO shift_group (shift_id, group_id) VALUES (%s, %s)", (chosen["into_shift_id"], gid))
@@ -984,6 +1065,83 @@ class Pipeline:
         self._event(case_id, now, "agent", "zone_closed", {**closure, "local_day": info["start"].astimezone(tz).date()})
         return closure
 
+    def _move_children(self, group_id: str, delta: int, families: dict[str, int]) -> None:
+        sign = 1 if delta > 0 else -1
+        row = self.conn.execute("SELECT size, family_counts FROM lesson_group WHERE id = %s FOR UPDATE", (group_id,)).fetchone()
+        counts = {k: int(v) for k, v in row[1].items()}
+        for lang, n in families.items():
+            counts[lang] = max(0, counts.get(lang, 0) + sign * n)
+        self.conn.execute("UPDATE lesson_group SET size = size + %s, family_counts = %s WHERE id = %s",
+                          (delta, Jsonb({k: v for k, v in counts.items() if v}), group_id))
+
+    def _settle_lesson(self, lesson_id: str, case_id: int, now: datetime) -> None:
+        """After children moved out: the lesson needs only the instructors it has; open seats and their cases close."""
+        effective, _, open_seats = self._lesson_seats(lesson_id)
+        for seat in open_seats:
+            self.conn.execute("UPDATE shift SET status = 'cancelled' WHERE id = %s", (seat,))
+            for (other,) in self.conn.execute("SELECT id FROM cover_case WHERE shift_id = %s AND status = 'open' AND id <> %s",
+                                              (seat, case_id)).fetchall():
+                self._close_case(other, now, "cancelled")
+                self._event(other, now, "agent", "seat_not_needed", {"by_case": case_id})
+        self.conn.execute("UPDATE shift SET instructors = %s WHERE id = %s OR (extra_for = %s AND status <> 'cancelled')",
+                          (effective, lesson_id, lesson_id))
+
+    def _apply_ratio_option(self, case_id: int, snapshot: dict, chosen: dict, now: datetime) -> dict:
+        ratio = snapshot["ratio"]
+        lesson_id, group_id = ratio["lesson_id"], ratio["group_id"]
+        group_name = self.conn.execute("SELECT name FROM lesson_group WHERE id = %s", (group_id,)).fetchone()[0]
+        kind = chosen["kind"]
+        if kind == "cancel_lesson":
+            lesson = self.shift_info(lesson_id)
+            seats = [r[0] for r in self.conn.execute("SELECT id FROM shift WHERE extra_for = %s", (lesson_id,))]
+            self.conn.execute("UPDATE shift SET status = 'cancelled' WHERE id = %s OR extra_for = %s", (lesson_id, lesson_id))
+            for (other,) in self.conn.execute("SELECT id FROM cover_case WHERE shift_id = ANY(%s) AND status = 'open' AND id <> %s",
+                                              ([lesson_id, *seats], case_id)).fetchall():
+                self._close_case(other, now, "cancelled")
+            for g in lesson["groups"]:
+                self.conn.execute(
+                    "INSERT INTO remedy (shift_id, group_id, kind, families, valid_until, case_id, created_at)"
+                    " VALUES (%s, %s, 'credit', %s, NULL, %s, %s)",
+                    (lesson_id, g["id"], g["size"], case_id, now),
+                )
+            sent = self._family_messages(lesson, "cancel", now, case_id=case_id, remedy="credit", until=None)
+            self._close_case(case_id, now, "plan_b")
+            self._event(case_id, now, "agent", "lesson_cancelled", {"shift_id": lesson_id, **sent})
+            return {"families": sent["families"]}
+        families = {k: int(v) for k, v in chosen["families"].items()}
+        children = chosen["children"]
+        self._move_children(group_id, -children, families)
+        if kind == "split":
+            new_id = f"{group_id}-S{case_id}"
+            self.conn.execute(
+                "INSERT INTO lesson_group (id, venue_id, zone_id, level_id, name, size, age_min, age_max, family_languages,"
+                " family_counts, weekday, starts_local, minutes, instructor_id)"
+                " SELECT %s, p.venue_id, p.zone_id, g.level_id, g.name || ' (split)', %s, g.age_min, g.age_max, %s, %s,"
+                " g.weekday, g.starts_local, g.minutes, p.staff_id FROM lesson_group g, shift p WHERE g.id = %s AND p.id = %s",
+                (new_id, children, sorted(families) or ["en"], Jsonb(families), group_id, chosen["into_shift_id"]),
+            )
+            self.conn.execute("INSERT INTO shift_group (shift_id, group_id) VALUES (%s, %s)", (chosen["into_shift_id"], new_id))
+            coach = chosen["staff_name"].split()[0]
+            for lang in families:
+                language = M.lang_or_en(lang)
+                self._message(now, "family", language, M.SPLIT_LESSON[language].format(group=group_name, coach=coach),
+                              group_id=new_id, case_id=case_id)
+            event, detail = "group_split", {"into_shift_id": chosen["into_shift_id"], "new_group_id": new_id}
+        else:
+            self._move_children(chosen["to_group_id"], children, families)
+            target = self.shift_info(chosen["to_shift_id"])
+            for lang in families:
+                language = M.lang_or_en(lang)
+                self._message(now, "family", language, M.MOVED_LESSON[language].format(
+                    group=group_name, when=self._when(target), venue=target["venue"]), group_id=chosen["to_group_id"],
+                    case_id=case_id)
+            event, detail = "children_moved", {"to_shift_id": chosen["to_shift_id"], "to_group_id": chosen["to_group_id"]}
+        self._settle_lesson(lesson_id, case_id, now)
+        self._close_case(case_id, now, "plan_b")
+        self._event(case_id, now, "agent", event, {**detail, "group_id": group_id, "children": children,
+                                                    "families": families})
+        return {"children": children, **detail}
+
     def _book_plan(self, case_id: int, shift_id: str, staff_id: str, now: datetime) -> None:
         info = self.shift_info(shift_id)
         self.conn.execute("UPDATE shift SET staff_id = %s, status = 'scheduled' WHERE id = %s", (staff_id, shift_id))
@@ -996,6 +1154,12 @@ class Pipeline:
 
     def _close_case(self, case_id: int, now: datetime, status: str) -> None:
         self.conn.execute("UPDATE cover_case SET status = %s, closed_at = %s WHERE id = %s", (status, now, case_id))
+        withdrawn = self.conn.execute(
+            "UPDATE offer SET status = 'withdrawn' WHERE case_id = %s AND status IN ('pending', 'held') AND NOT overtime"
+            " RETURNING id", (case_id,),
+        ).fetchall()
+        if withdrawn:
+            self._event(case_id, now, "agent", "offers_closed", {"offer_ids": [r[0] for r in withdrawn], "case": status})
 
     # --- families ---------------------------------------------------------------
 

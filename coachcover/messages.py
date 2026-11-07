@@ -34,6 +34,22 @@ HELD = {
     "es": "CoachCover: recibimos tu sí para {when}. Confirmamos en un minuto.",
     "ru": "CoachCover: твоё «да» на {when} получено. Подтвердим через минуту.",
 }
+SPLIT_LESSON = {
+    "en": "CoachCover: {group} is over its size limit today. Your child has the lesson at the same time with coach {coach}, "
+          "in a group of their own level.",
+    "es": "CoachCover: {group} supera hoy su límite de tamaño. Tu hijo tiene la clase a la misma hora con el entrenador {coach}, "
+          "en un grupo de su nivel.",
+    "ru": "CoachCover: в группе {group} сегодня больше детей, чем позволяет норма. Ваш ребёнок занимается в то же время "
+          "с тренером {coach}, в группе своего уровня.",
+}
+MOVED_LESSON = {
+    "en": "CoachCover: {group} is full today. Your child's lesson moves to {when} at {venue}, same level. "
+          "Reply if that time does not work.",
+    "es": "CoachCover: {group} está completo hoy. La clase de tu hijo pasa a {when} en {venue}, mismo nivel. "
+          "Responde si esa hora no te sirve.",
+    "ru": "CoachCover: группа {group} сегодня заполнена. Занятие вашего ребёнка переносится на {when}, {venue}, "
+          "тот же уровень. Ответьте, если это время не подходит.",
+}
 NO_LONGER = {
     "en": "CoachCover: thank you, but you can no longer take {when}: {why}.",
     "es": "CoachCover: gracias, pero ya no puedes cubrir {when}: {why}.",
@@ -161,4 +177,11 @@ def plan_b_fallback(facts: dict) -> dict:
             lines.append(f"Move the lesson: {option['families']} families get a makeup until {option['valid_until']}.")
         elif kind == "close":
             lines.append(f"Cancel and close: {option['families']} families get a {option['remedy']}.")
+        elif kind == "split":
+            lines.append(f"{option['staff_name']} takes {option['children']} children as a group of their level "
+                         f"({option['participants_after']} of {option['capacity']} places).")
+        elif kind == "move":
+            lines.append(f"Move the {option['children']} newest children to the nearest lesson of their level with room.")
+        elif kind == "cancel_lesson":
+            lines.append(f"Cancel the whole lesson: {option['families']} families get a {option['remedy']}.")
     return {"headline": f"No cover for {facts['shift']['label']}", "lines": lines}
