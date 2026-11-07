@@ -400,7 +400,7 @@
     "first_refusal": {
       "staff": "Javier Morales",
       "label": "free · BLOCKED: CPR/AED certificate expired Nov 8 · 8 kids · ratio 1:4",
-      "contrast_quote": "“An expired certificate does not block rostering.” — RosterElf help center"
+      "contrast_quote": "“An expired certificate does not block rostering.” — RosterElf, page for recreation centres"
     }
   },
   "timeline": [
@@ -517,7 +517,7 @@
     "source": "from the founder's coaching experience"
   },
   "model_log": {
-    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.060¢ · replayed from recorded Vultr answers",
+    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.060¢ · replay mode: recorded and prepared demo answers",
     "calls": 5,
     "usd": 0.0006
   },

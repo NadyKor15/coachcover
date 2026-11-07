@@ -185,7 +185,7 @@ def test_model_calls_are_recorded_answers():
     t = load("today.json")
     for c in load(f"cases/{t['callout']['case_id']}.json")["model_calls"]:
         assert c["source"].startswith("recorded answer tests/fixtures/models/"), c["source"]
-    assert "replayed from recorded" in t["model_log"]["label"]
+    assert "replay mode: recorded and prepared demo answers" in t["model_log"]["label"]  # honest: part of the replay answers are hand-made
 
 
 def test_mocks_match_the_fixtures():

@@ -195,7 +195,7 @@ def _model_log(conn, case_id: int, callout_id, live: bool) -> dict:
     ).fetchall()
     names = list(dict.fromkeys(SHORT_NAMES.get(m or req, m or req) for m, req, _, _ in rows))
     usd = round(sum(float(c) for _, _, c, _ in rows), 4)
-    where = "running on Vultr" if live else "replayed from recorded Vultr answers"
+    where = "running on Vultr" if live else "replay mode: recorded and prepared demo answers"
     label = f"Models: {' · '.join(names)} — {len(rows)} calls · {money_model.cost_label(usd)} · {where}" if rows else None
     return {"label": label, "calls": len(rows), "usd": usd}
 
