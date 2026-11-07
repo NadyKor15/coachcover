@@ -1,0 +1,26 @@
+{
+ "purpose": "extract_callout",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "transcript": "A pipe burst at my place, I can't come in today. Sorry."
+ },
+ "input_sha256": "f0bb2fac90be0bd5c7714ca44394accd485f6e940678d51abd8ec74529bd560a",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: written by hand to the extract_callout schema for Liam's text call-out (no start time named: all of his shifts today); to be recorded live on Vultr",
+ "duration_ms": 1300,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 428,
+   "completion_tokens": 55
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"language\": \"en\", \"absent\": true, \"start_times\": [], \"reason\": \"other\", \"summary_en\": \"Liam has a burst pipe at home and cannot come in today.\"}"
+    }
+   }
+  ]
+ }
+}

@@ -37,18 +37,18 @@
   },
   "approvals": 0,
   "approvals_needed": 2,
-  "created_at": "2026-11-09T10:15:30.122Z",
+  "created_at": "2026-11-09T10:15:30.123Z",
   "closed_at": null,
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "b03c41bf-f1d4-464b-889f-ef3565b72bbe",
-    "task_id": "10e086c4-be84-4482-b527-94dfdafd3c84",
+    "context_id": "7c1d53e1-8bce-4568-87dd-4e3f518cd605",
+    "task_id": "dc648222-b23f-474b-af07-08feed020390",
     "task_state": "TASK_STATE_INPUT_REQUIRED"
   },
   "steps": [
     {
       "seq": 1,
-      "at": "2026-11-09T10:15:30.122Z",
+      "at": "2026-11-09T10:15:30.123Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -69,7 +69,7 @@
     },
     {
       "seq": 2,
-      "at": "2026-11-09T10:15:30.122Z",
+      "at": "2026-11-09T10:15:30.123Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -87,7 +87,7 @@
     },
     {
       "seq": 3,
-      "at": "2026-11-09T10:15:31.122Z",
+      "at": "2026-11-09T10:15:31.123Z",
       "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
@@ -127,7 +127,7 @@
     },
     {
       "seq": 4,
-      "at": "2026-11-09T10:15:31.122Z",
+      "at": "2026-11-09T10:15:31.123Z",
       "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
@@ -161,7 +161,7 @@
     },
     {
       "seq": 5,
-      "at": "2026-11-09T10:15:32.122Z",
+      "at": "2026-11-09T10:15:32.123Z",
       "at_label": "10:15:32 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -182,7 +182,7 @@
     },
     {
       "seq": 6,
-      "at": "2026-11-09T10:15:33.122Z",
+      "at": "2026-11-09T10:15:33.123Z",
       "at_label": "10:15:33 UTC",
       "venue_id": "N1",
       "venue": "Northside",
@@ -197,7 +197,7 @@
     },
     {
       "seq": 7,
-      "at": "2026-11-09T10:15:34.122Z",
+      "at": "2026-11-09T10:15:34.123Z",
       "at_label": "10:15:34 UTC",
       "venue_id": "V1",
       "venue": "Riverside",

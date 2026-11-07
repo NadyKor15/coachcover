@@ -95,10 +95,11 @@ def test_reimport_saves_nothing_new_and_the_night_check_sees_the_imported_shifts
 
 
 # Gabriela Vargas has 18 h in the stored week; two 10 h rows make 38 h of the 40 h limit. A re-import must not
-# count the stored copy of her other imported row a second time (48 h would block both rows).
+# count the stored copy of her other imported row a second time (48 h would block both rows). Monday starts at 9:00:
+# she closed Lakeview on Sunday at 22:30, and 10 h of rest end at 8:30.
 TWO_LONG_DAYS = (b"Date,Start,End,Location,Position,Employee\n"
-                 b"11/09/2026,8:00 AM,6:00 PM,Lakeview Natatorium,Lifeguard,Gabriela Vargas\n"
-                 b"11/11/2026,8:00 AM,6:00 PM,Lakeview Natatorium,Lifeguard,Gabriela Vargas\n")
+                 b"11/09/2026,9:00 AM,7:00 PM,Lakeview Natatorium,Lifeguard,Gabriela Vargas\n"
+                 b"11/11/2026,9:00 AM,7:00 PM,Lakeview Natatorium,Lifeguard,Gabriela Vargas\n")
 
 
 def test_reimport_does_not_count_a_stored_imported_row_twice(api):

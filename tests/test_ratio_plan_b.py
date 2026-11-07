@@ -117,9 +117,11 @@ def test_every_plan_b_option_for_every_group_of_the_training_school_keeps_the_no
     p = pipeline(school, assign_cover="off")  # nobody is asked: plan B straight away
     assert over_the_norm(school, p) == []  # the school starts within the norms
     preset = load_policy(school, POLICY_ID).preset
+    early = NOW.replace(hour=5, minute=0)  # before the first lesson of the week, so every group is still ahead
+    t = early + timedelta(minutes=1)
     groups = school.execute(
         "SELECT g.id, s.id FROM lesson_group g JOIN shift_group sg ON sg.group_id = g.id JOIN shift s ON s.id = sg.shift_id"
-        " WHERE s.extra_for IS NULL AND s.status = 'scheduled' AND s.starts_at > %s ORDER BY g.id", (NOW,)
+        " WHERE s.extra_for IS NULL AND s.status = 'scheduled' AND s.starts_at > %s ORDER BY g.id", (early,)
     ).fetchall()
     assert len(groups) > 100
     seen, applied = set(), 0
@@ -128,11 +130,11 @@ def test_every_plan_b_option_for_every_group_of_the_training_school_keeps_the_no
         per = min(group_norm(g, preset) for g in lesson.groups)
         add = per * lesson.instructors - sum(g.size for g in lesson.groups) + 2  # two over the norm
         with school.transaction() as outer:
-            alerts = p.enroll(group_id, add, NOW, language="es")["alerts"]
+            alerts = p.enroll(group_id, add, early, language="es")["alerts"]
             assert alerts, group_id
             for case in (c for a in alerts for c in a["cases"]):
                 case_id = p.find_case(case["case_id"])
-                plan = p.propose_plan_b(case_id, T)
+                plan = p.propose_plan_b(case_id, t)
                 options = plan["snapshot"]["options"]
                 assert {o["kind"] for o in options} <= ALLOWED, (group_id, options)
                 kinds = [o["kind"] for o in options]
@@ -140,10 +142,10 @@ def test_every_plan_b_option_for_every_group_of_the_training_school_keeps_the_no
                 for index, option in enumerate(options):
                     seen.add(option["kind"])
                     with school.transaction() as inner:
-                        p.approve_plan_b(plan["plan_id"], plan["hash"], T, by="manager", option=index)
+                        p.approve_plan_b(plan["plan_id"], plan["hash"], t, by="manager", option=index)
                         assert over_the_norm(school, p) == [], (group_id, option["kind"])
                         applied += 1
                         raise psycopg.Rollback(inner)
             raise psycopg.Rollback(outer)
     # every group has an admissible option on the training week (cancel_lesson: the dedicated test above)
-    assert len(groups) == 120 and applied >= len(groups) and {"lead", "split", "move"} <= seen <= ALLOWED
+    assert len(groups) == 121 and applied >= len(groups) and {"lead", "split", "move"} <= seen <= ALLOWED

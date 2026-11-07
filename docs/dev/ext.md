@@ -74,8 +74,9 @@ Scenario (each step is a row of `ext_loan_step`, written by the side that took i
    the shift, closes the case (`shift_covered` event, `via: network_loan`), supersedes plan B, messages the
    person; team posts on both channels.
 
-Demo with the core's scenario: `POST /api/judge/run {"scenario": "nobody_accepts"}` leaves the hero shift open
-with plan B waiting; then `POST /api/network/loans {"shift_id": "L-1109-G002"}` and the two approvals.
+Demo: the judge scenario `network_loan` plays it on the deck story of the training school (Marina's 06:00 deck
+shift; `reset_school(conn, "deck")`). On the preschool morning (08:00, ages 3–5) Northside has nobody with the
+preschool training, so a loan for that lesson is declined.
 
 Two agents, two addresses on one machine: run two servers and point the borrower at the lender:
 ```bash

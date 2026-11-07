@@ -18,7 +18,8 @@ from coachcover.api import create_app
 from coachcover.demo import reset_school, set_clock
 from coachcover.models import DbLedger, ModelClient
 from coachcover.pipeline import Pipeline
-from coachcover.seed import NOW, POLICY_ID
+from coachcover.seed import DECK_NOW as NOW  # the network loan plays the deck story (Marina's 06:00 deck shift)
+from coachcover.seed import POLICY_ID
 from tests.conftest import TEST_DSN
 from tests.test_pipeline import RU_VOICE
 
@@ -47,7 +48,7 @@ def ext_app(dsn: str):
 @pytest.fixture
 def net(new_database, monkeypatch):
     conn = new_database()
-    reset_school(conn)
+    reset_school(conn, "deck")
     dsn = make_conninfo(TEST_DSN, dbname=conn.execute("SELECT current_database()").fetchone()[0])
     monkeypatch.setenv("DATABASE_URL", dsn)
     monkeypatch.delenv("COACHCOVER_MODEL_MODE", raising=False)

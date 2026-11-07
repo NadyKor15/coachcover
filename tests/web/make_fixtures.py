@@ -9,7 +9,7 @@ The loan states other than the judge's network scene need Python inside the stac
 
 Order of calls (each judge run resets the training school):
   1. judge dangerous_morning → today.json, every offer of the case, the case page;
-     enrol 2 children into G003 → today.ratio_open.json and the ratio case; the first offer of that case is the pending
+     enrol 2 children into G003 (Mon 09:00) → today.ratio_open.json and the ratio case; the first offer of that case is the pending
      phone screen; decline the second and accept the first (real 200 answers) → today.ratio_covered.json;
      accept Leo's stood-down offer → the real 409 answer.
   2. judge nobody_accepts → today.nobody_accepts.json; approve the plan with a wrong hash (real 409), then with its own
@@ -51,19 +51,21 @@ def ok(base: str, method: str, path: str, body: dict | None = None, expect: int 
 
 
 # ---- the week and the network loans ----
-# Setups run as Python inside the stack (same steps as the lane's own tests): a fresh school, Marina's call-out and
-# every cleared person at Riverside saying no, so the hero shift is open with nobody left to ask.
+# Setups run as Python inside the stack (same steps as the lane's own tests): a fresh school in the deck story (the
+# network loan's morning: Marina's 06:00 deck shift), her call-out and every cleared person at Riverside saying no, so
+# the hero shift is open with nobody left to ask.
 EXHAUST = """
 import os
 from datetime import timedelta
 import psycopg
 from coachcover import a2a
-from coachcover.demo import reset_school, set_clock, VOICE
+from coachcover.demo import reset_school, set_clock, VOICES
 from coachcover.models import DbLedger, ModelClient
 from coachcover.pipeline import Pipeline
-from coachcover.seed import NOW, POLICY_ID
+from coachcover.seed import DECK_NOW as NOW, POLICY_ID
 conn = psycopg.connect(os.environ["DATABASE_URL"], autocommit=True)
-reset_school(conn)
+reset_school(conn, "deck")
+VOICE = VOICES["deck"]
 shift_id = conn.execute("SELECT id FROM shift WHERE staff_id = 'S05' AND venue_id = 'V1' ORDER BY starts_at, id LIMIT 1").fetchone()[0]
 p = Pipeline(conn, ModelClient(DbLedger(conn), mode="replay"), POLICY_ID)
 p.callout("S05", now=NOW, audio=VOICE.read_bytes(), filename=VOICE.name)
@@ -78,6 +80,8 @@ while True:
 set_clock(conn, t + timedelta(minutes=1))
 a2a.ensure_network(conn)
 """
+# Asking the network right after the call-out, before Riverside's own cleared people were asked: the real 409.
+ASK_EARLY = EXHAUST.split("t = NOW\n")[0] + "set_clock(conn, NOW + timedelta(minutes=1))\na2a.ensure_network(conn)\n"
 # Northside would keep only 3 guards on site or free, and its minimum is 4: it declines ("would leave itself short").
 SITE_SHORT = EXHAUST + "conn.execute(\"UPDATE ext_network_member SET min_guards = 4 WHERE venue_id = 'N1'\")\n"
 # Kai Morgan gets 32 h more this week: Northside (44 h) still offers him, Riverside (40 h) rejects him.
@@ -117,7 +121,7 @@ def ext_fixtures(base: str, setup_cmd: list[str], save, out: Path) -> None:
     pick = week["fixes"]["standby"][0]
     cell = next(c for d in week["days"] for c in d["cells"] if c["shift_id"] == pick["shift_id"])
     today = ok(base, "GET", "/api/today")
-    lifeguard_only = next(s["id"] for s in today["eligibility"]["staff"] if s["reason_label"] == "No WSI")
+    lifeguard_only = next(s["id"] for s in today["eligibility"]["staff"] if s["reason_label"] == "Role: not an instructor")
     standby = {}
     standby["created"] = ok(base, "POST", "/api/standby", {"shift_id": pick["shift_id"], "staff_id": pick["staff_id"]}, expect=201)
     standby["repeat"] = ok(base, "POST", "/api/standby", {"shift_id": pick["shift_id"], "staff_id": pick["staff_id"]}, expect=409)
@@ -138,7 +142,7 @@ def ext_fixtures(base: str, setup_cmd: list[str], save, out: Path) -> None:
     save(f"cases/{run['case_id']}.network_loan.json", ok(base, "GET", f"/api/cases/{run['case_id']}"))
 
     # asking while own people are left: 409
-    ok(base, "POST", "/api/judge/run", {"scenario": "nobody_accepts"})
+    run_setup(setup_cmd, ASK_EARLY)
     mocks["ask"]["conflict"] = ok(base, "POST", "/api/network/loans", {"shift_id": hero}, expect=409)
 
     # the loan, approved Riverside first

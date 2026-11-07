@@ -98,22 +98,23 @@ def test_violations_are_measured_by_the_rules_for_both_strategies(result):
 
 
 def test_the_audit_is_not_blind():
-    """Must light: the same audit flags known-bad placements on the unchanged Monday (S27 Anna Kim's lifeguard card
+    """Must light: the same audit flags known-bad placements on the unchanged Monday (S27 Anna Kim's WSI card
     ended Nov 5; a lifeguard without the instructor role on a lesson; a merge over the group norm)."""
     world = load_world()
-    shift = world.shifts["G-1109-V1-0530"]
+    lesson = world.shifts["L-1109-G021"]  # Monday 16:00, Level 2: Anna is cleared for the level, not by her card
     morning = Morning(0, SEED, NOW.date(), world.staff, world.shifts, {}, (), {}, ())
     state = State(world, morning)
-    assert "CERT_EXPIRED" in _audit(state, "S27", shift, NOW)
+    assert "CERT_EXPIRED" in _audit(state, "S27", lesson, NOW)
     assert "ROLE_MISSING" in _audit(state, "S28", world.shifts["L-1109-G003"], NOW)  # a lifeguard on a lesson
-    # merges: Marina's 8 children aged 4-5 with the 6 next door break 1:4; the same post with 2 + 2 children fits
-    hero, next_door = world.shifts["L-1109-G002"], world.shifts["L-1109-G001"]
+    # merges: Marina's 8 children aged 3-5 with the 6 next door (lap lanes, 08:00) break 1:4; with 2 + 2 children
+    # the norm fits and only the preschool training of the teacher next door is missing
+    hero, next_door = world.shifts["L-1109-G002"], world.shifts["L-1109-G121"]
     teacher = next_door.assignee
     codes = _audit(state, teacher, State(world, morning).merge(next_door, hero), NOW)
     assert "RATIO_EXCEEDED" in codes and "IS_THE_ABSENT_PERSON" not in codes
     assert sim.primary_category(codes) in {"ratio", "program"}
     small = lambda s: replace(s, groups=tuple(replace(g, size=2) for g in s.groups))  # noqa: E731
-    assert _audit(state, teacher, State(world, morning).merge(small(next_door), small(hero)), NOW) == ()
+    assert _audit(state, teacher, State(world, morning).merge(small(next_door), small(hero)), NOW) == ("PROGRAM_MISSING",)
 
 
 def test_plan_b_follows_the_core_order_on_the_demo_morning():

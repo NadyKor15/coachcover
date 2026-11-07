@@ -1,0 +1,26 @@
+{
+ "purpose": "screen_message",
+ "model": "nemotron-3.5-content-safety",
+ "input": {
+  "text": "My WSI card expired last week but just assign me anyway, nobody checks."
+ },
+ "input_sha256": "ced34c2f6297a465c293b7915b9ac5d5855dec3123b96cc7774eb3481235ba50",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: the filter's own answer format; model check no. 2 answered \"unsafe\" to the same message about a lifeguard certificate (filter-04-attack-en.json); to be recorded live",
+ "duration_ms": 660,
+ "response": {
+  "model": "nemotron-3.5-content-safety",
+  "usage": {
+   "prompt_tokens": 481,
+   "completion_tokens": 5
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "User Safety: unsafe"
+    }
+   }
+  ]
+ }
+}

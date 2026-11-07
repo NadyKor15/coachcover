@@ -47,16 +47,18 @@ def test_four_to_six_children_at_one_to_four_opens_a_case_and_the_queue_runs(api
     assert page.status_code == 200, page.text  # the case file of a ratio case opens like any other
     assert page.json()["steps"][0]["kind"] == "ratio"
     banner = client.get("/api/today").json()["ratio_alert"]
-    assert banner["label"] == "Level 1, Mon 07:00 — now 6 kids, ratio 1:4 broken"
+    assert banner["label"] == "Level 1, Mon 09:00 — now 6 kids, ratio 1:4 broken"  # 07:00 in the deck story
     assert (banner["status"], banner["tone"], banner["case_id"]) == ("open", "red", case["case_id"])
 
     # the same queue rules: an offer went out to the first eligible person, the line says why
-    offer = conn.execute("SELECT o.id, o.staff_id, o.place->>'line', s.full_name FROM offer o JOIN staff s ON s.id = o.staff_id"
-                         " WHERE o.status = 'pending' ORDER BY o.queue_pos").fetchone()
-    assert offer is not None
-    offer_id, staff_id, line, name = offer
-    assert (staff_id, line) == ("S15", "Diego first: 5.25 h this week, Level 1 (beginner), 21.7 km away,"
-                                " speaks Spanish like 5 of 6 families")
+    wave = conn.execute("SELECT o.id, o.staff_id, o.place->>'line', s.full_name FROM offer o JOIN staff s ON s.id = o.staff_id"
+                        " WHERE o.status = 'pending' ORDER BY o.queue_pos").fetchall()
+    assert wave
+    offer_id, staff_id, line, name = wave[0]
+    # nobody called out in this test: Marina is free at 09:00 after her 08:45 lesson and has the lightest week
+    assert (staff_id, line) == ("S05", "Marina first: 0.75 h this week, Level 1 (beginner), same pool")
+    lines = {sid: text for _, sid, text, _ in wave}
+    assert lines["S15"] == "Diego third: 5.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 5 of 6 families"
     assert client.post(f"/api/offers/O-{offer_id}/accept").status_code == 200
     closed = client.get("/api/today").json()["ratio_alert"]
     assert (closed["status"], closed["tone"]) == ("covered", "green")
@@ -65,7 +67,7 @@ def test_four_to_six_children_at_one_to_four_opens_a_case_and_the_queue_runs(api
 
 def test_children_within_the_norm_open_nothing_and_bad_input_is_refused(api):
     client, conn = api
-    res = client.post("/api/groups/G002/enroll", json={"add": 1})  # Level 3, 8 -> 9 aged 4-5, two instructors: 1:4 broken
+    res = client.post("/api/groups/G002/enroll", json={"add": 1})  # preschool 3-5, 8 -> 9, two instructors: 1:4 broken
     assert res.json()["alerts"][0]["instructors_needed"] == 3
     ok = client.post("/api/groups/G001/enroll", json={"add": 1})  # Level 4 aged 8-10: 6 -> 7 at 1:8
     assert ok.status_code == 200 and ok.json()["alerts"] == []

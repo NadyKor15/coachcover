@@ -75,3 +75,13 @@ def school(new_database):
     conn = new_database()
     load_school(conn)
     return conn
+
+
+@pytest.fixture(scope="session")
+def deck_school(new_database):
+    """The deck story of the training school (judge scenario network_loan: Marina's 06:00 deck shift), read-only."""
+    from coachcover.seed import load_school
+
+    conn = new_database()
+    load_school(conn, story="deck")
+    return conn

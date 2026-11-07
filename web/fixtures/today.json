@@ -1,30 +1,30 @@
 {
-  "title": "Who is allowed on deck at 06:00",
+  "title": "Who is allowed on deck at 08:00",
   "venue": {
     "id": "V1",
     "name": "Riverside Aquatic Center",
     "term": "pool"
   },
-  "now_label": "Mon, Nov 9 · 05:15",
+  "now_label": "Mon, Nov 9 · 07:15",
   "user_label": "Natalie Brooks · Manager",
   "lang": "en",
   "callout": {
     "case_id": "C-1109-01",
-    "time_label": "05:12",
-    "staff": "Marina Petrova · Lifeguard + WSI",
+    "time_label": "07:10",
+    "staff": "Marina Petrova · Instructor · with Emma Carter",
     "audio_url": "/media/callouts/C-1109-01.ogg",
-    "duration_label": "0:09",
+    "duration_label": "0:08",
     "language": "Russian",
-    "transcript_original": "Привет, это Марина. У меня температура 38, я не выйду в 6. У меня в 6 дорожка и в 7 урок у малышей. Прости.",
-    "transcript_en": "Hi, it's Marina. I have a 38 fever, I can't come at 6. I have the 6:00 lane and the 7:00 little ones lesson. Sorry.",
-    "asr_label": "whisper on Vultr · 1.1 s · recorded"
+    "transcript_original": "Привет, это Марина. У меня температура 38, я не выйду к восьми. У меня в 8 урок у малышей. Прости.",
+    "transcript_en": "Hi, it's Marina. I have a 38 fever, I can't come in for 8:00. I have the 8:00 lesson for the little ones. Sorry.",
+    "asr_label": "whisper · prepared demo answer"
   },
   "shift": {
     "id": "L-1109-G002",
-    "time_label": "06:00–08:00",
-    "lanes_label": "Lanes 3–4 lap swim + Learn-to-Swim Level 3 (8 kids)",
-    "needs_label": "Lifeguard + WSI",
-    "program_label": "Program LTS-3"
+    "time_label": "08:00–08:45",
+    "lanes_label": "Teaching pool + Preschool swim, ages 3–5 (8 kids)",
+    "needs_label": "Instructor",
+    "program_label": "Preschool training (ages 3–5)"
   },
   "eligibility": {
     "total": 40,
@@ -50,19 +50,13 @@
       },
       {
         "code": "CERT_REVOKED",
-        "label": "Valid until Jun 2028 — REVOKED by issuer on Jul 24 (simulated registry)",
+        "label": "Valid until Jul 2027 — REVOKED by issuer on Oct 12 (simulated registry)",
         "count": 1,
         "tone": "red"
       },
       {
-        "code": "PROGRAM_RENEWAL_OVERDUE",
-        "label": "LTS renewal overdue",
-        "count": 1,
-        "tone": "amber"
-      },
-      {
         "code": "REST_TOO_SHORT",
-        "label": "Only 9 h rest since 21:00",
+        "label": "Only 9.5 h rest since 22:30",
         "count": 1,
         "tone": "amber"
       },
@@ -73,33 +67,21 @@
         "tone": "amber"
       },
       {
-        "code": "CERT_MISSING",
-        "label": "No WSI",
-        "count": 12,
+        "code": "ROLE_MISSING",
+        "label": "Role: not an instructor",
+        "count": 13,
         "tone": "plain"
       },
       {
-        "code": "OVERLAPS_COMMITMENT",
-        "label": "Teaching at 7:00",
-        "count": 6,
+        "code": "PROGRAM_MISSING",
+        "label": "No preschool training (ages 3–5)",
+        "count": 10,
         "tone": "plain"
       },
       {
         "code": "RESERVE",
         "label": "Reserve (head coach)",
         "count": 3,
-        "tone": "plain"
-      },
-      {
-        "code": "OVERLAPS_COMMITMENT",
-        "label": "Teaching at 6:00",
-        "count": 3,
-        "tone": "plain"
-      },
-      {
-        "code": "LEVEL_MISSING",
-        "label": "Not cleared for LTS-3",
-        "count": 2,
         "tone": "plain"
       },
       {
@@ -111,6 +93,12 @@
       {
         "code": "HOURS_LIMIT_EXCEEDED",
         "label": "Over 40 h this week",
+        "count": 1,
+        "tone": "plain"
+      },
+      {
+        "code": "OVERLAPS_COMMITMENT",
+        "label": "Teaching at 8:00",
         "count": 1,
         "tone": "plain"
       }
@@ -163,7 +151,7 @@
         "name": "Carlos Mendoza",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Valid until Jun 2028 — REVOKED by issuer on Jul 24 (simulated registry)"
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S07",
@@ -177,49 +165,42 @@
         "name": "Grace Sullivan",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Teaching at 7:00"
-      },
-      {
-        "id": "S27",
-        "name": "Anna Kim",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Certificate expired Nov 5"
+        "reason_label": "No preschool training (ages 3–5)"
       },
       {
         "id": "S15",
         "name": "Diego Navarro",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Teaching at 6:00"
+        "reason_label": "No preschool training (ages 3–5)"
       },
       {
         "id": "S18",
         "name": "Chloe Hayes",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Teaching at 7:00"
+        "reason_label": "No preschool training (ages 3–5)"
       },
       {
         "id": "S02",
         "name": "Sofía García",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Teaching at 6:00"
+        "reason_label": "No preschool training (ages 3–5)"
       },
       {
         "id": "S30",
         "name": "Nikita Morozov",
         "eligible": false,
         "highlight": false,
-        "reason_label": "No WSI"
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S32",
         "name": "Isabela Cruz",
         "eligible": false,
         "highlight": false,
-        "reason_label": "No WSI"
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S13",
@@ -233,119 +214,28 @@
         "name": "Ekaterina Belova",
         "eligible": false,
         "highlight": false,
-        "reason_label": "No WSI"
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S34",
         "name": "Logan Pierce",
         "eligible": false,
         "highlight": false,
-        "reason_label": "No WSI"
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S40",
         "name": "Polina Novikova",
         "eligible": false,
         "highlight": false,
-        "reason_label": "No WSI"
+        "reason_label": "Role: not an instructor"
       },
       {
-        "id": "S31",
-        "name": "Mason Turner",
+        "id": "S27",
+        "name": "Anna Kim",
         "eligible": false,
         "highlight": false,
-        "reason_label": "No WSI"
-      },
-      {
-        "id": "S14",
-        "name": "Irina Lebedeva",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "LTS renewal overdue"
-      },
-      {
-        "id": "S03",
-        "name": "Valentina Castillo",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Teaching at 7:00"
-      },
-      {
-        "id": "S09",
-        "name": "Lucas Reed",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not cleared for LTS-3"
-      },
-      {
-        "id": "S28",
-        "name": "Ava Mitchell",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "No WSI"
-      },
-      {
-        "id": "S01",
-        "name": "Emma Carter",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Teaching at 7:00"
-      },
-      {
-        "id": "S39",
-        "name": "Caleb Ward",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "No WSI"
-      },
-      {
-        "id": "S36",
-        "name": "Ella Morgan",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "No WSI"
-      },
-      {
-        "id": "S04",
-        "name": "Daniel Shaw",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Teaching at 6:00"
-      },
-      {
-        "id": "S21",
-        "name": "Pavel Orlov",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Teaching at 7:00"
-      },
-      {
-        "id": "S38",
-        "name": "Paula Jiménez",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "No WSI"
-      },
-      {
-        "id": "S19",
-        "name": "Megan Coleman",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Teaching at 7:00"
-      },
-      {
-        "id": "S37",
-        "name": "Andrei Kozlov",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "No WSI"
-      },
-      {
-        "id": "S16",
-        "name": "Andrés Delgado",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not cleared for LTS-3"
+        "reason_label": "Certificate expired Nov 5"
       },
       {
         "id": "S10",
@@ -355,18 +245,116 @@
         "reason_label": "Certificate expired Nov 2"
       },
       {
+        "id": "S28",
+        "name": "Ava Mitchell",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S31",
+        "name": "Mason Turner",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S14",
+        "name": "Irina Lebedeva",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Valid until Jul 2027 — REVOKED by issuer on Oct 12 (simulated registry)"
+      },
+      {
+        "id": "S03",
+        "name": "Valentina Castillo",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No preschool training (ages 3–5)"
+      },
+      {
+        "id": "S09",
+        "name": "Lucas Reed",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No preschool training (ages 3–5)"
+      },
+      {
+        "id": "S39",
+        "name": "Caleb Ward",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S01",
+        "name": "Emma Carter",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Teaching at 8:00"
+      },
+      {
+        "id": "S36",
+        "name": "Ella Morgan",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S21",
+        "name": "Pavel Orlov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No preschool training (ages 3–5)"
+      },
+      {
+        "id": "S38",
+        "name": "Paula Jiménez",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S19",
+        "name": "Megan Coleman",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No preschool training (ages 3–5)"
+      },
+      {
+        "id": "S37",
+        "name": "Andrei Kozlov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S16",
+        "name": "Andrés Delgado",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No preschool training (ages 3–5)"
+      },
+      {
+        "id": "S04",
+        "name": "Daniel Shaw",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "No preschool training (ages 3–5)"
+      },
+      {
         "id": "S24",
         "name": "Gabriela Vargas",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Only 9 h rest since 21:00"
+        "reason_label": "Only 9.5 h rest since 22:30"
       },
       {
         "id": "S29",
         "name": "Lucía Ramos",
         "eligible": false,
         "highlight": false,
-        "reason_label": "No WSI"
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S11",
@@ -399,70 +387,70 @@
     ],
     "first_refusal": {
       "staff": "Anna Kim",
-      "label": "free and willing · BLOCKED: Lifeguard certificate expired Nov 5 · 8 kids · ratio 1:4",
+      "label": "free and willing · BLOCKED: WSI certificate expired Nov 5 · 8 kids · ratio 1:4",
       "contrast_quote": "“An expired certificate does not block rostering.” — RosterElf, page for recreation centres"
     }
   },
   "timeline": [
     {
-      "time_label": "05:12",
+      "time_label": "07:10",
       "kind": "callout",
       "label": "Call-out"
     },
     {
-      "time_label": "05:13",
+      "time_label": "07:13",
       "kind": "declined",
       "label": "Sofia Reyes declined"
     },
     {
-      "time_label": "05:14",
+      "time_label": "07:14",
       "kind": "accepted",
       "label": "Zoe Grant accepted"
     },
     {
-      "time_label": "05:15",
+      "time_label": "07:15",
       "kind": "no_reply",
       "label": "Leo Martins: no reply, Zoe took it"
     },
     {
-      "time_label": "06:00",
+      "time_label": "08:00",
       "kind": "shift_start"
     }
   ],
   "offers": [
     {
       "id": "O-1",
-      "time_label": "05:13",
+      "time_label": "07:13",
       "staff": "Sofia Reyes",
       "result": "declined",
-      "why_first": "Sofia first: 6 h this week, Level 3, same pool"
+      "why_first": "Sofia first: 6 h this week, Preschool, same pool"
     },
     {
       "id": "O-2",
-      "time_label": "05:15",
+      "time_label": "07:15",
       "staff": "Leo Martins",
       "result": "no_reply",
-      "why_first": "Leo second: 9 h this week, Level 3, same pool"
+      "why_first": "Leo second: 9 h this week, Preschool, same pool"
     },
     {
       "id": "O-3",
-      "time_label": "05:14",
+      "time_label": "07:14",
       "staff": "Zoe Grant",
       "result": "accepted",
-      "why_first": "Zoe third: 12 h this week, Level 3, same pool"
+      "why_first": "Zoe third: 12 h this week, Preschool, same pool"
     }
   ],
   "outcome": {
     "covered_by": "Zoe Grant",
     "covered_via": null,
-    "covered_time": "05:15",
+    "covered_time": "07:15",
     "lessons_cancelled": 0
   },
   "plan_b": {
     "id": "P-standby",
     "state": "standby",
-    "text": "merge refused: 14 kids over the norm · Liam Foster (reserve) steps in · Camila Herrera on overtime: 1.5 h, $51.00 · move the lesson: makeup for 8 families · cancel: credit for 8 families",
-    "hash": "5f734a88b2ec3cc4f879233ced1b2e66f4c0c98a86bafcbbc6e0e1c786ffe21d",
+    "text": "merge refused: 14 kids over the norm · Liam Foster (reserve) steps in · Camila Herrera on overtime: 0.25 h, $8.50 · move the lesson: makeup for 8 families · cancel: credit for 8 families",
+    "hash": "1536b907b9e71c5b95144ec326c462431c65518edc989696709776d4f8418549",
     "autonomy": "propose"
   },
   "summary_cards": [
@@ -482,9 +470,9 @@
   "money": {
     "uncovered_morning_usd": 240.0,
     "uncovered_morning_label": "If nobody had accepted: $240 (Refunds: 8 participants × $30)",
-    "case_cost_cents": 0.0401,
+    "case_cost_cents": 0.0384,
     "manager_hour_usd": 25.0,
-    "case_cost_label": "0.040¢",
+    "case_cost_label": "0.038¢",
     "source": "from the founder's coaching experience"
   },
   "model_log": {
@@ -494,9 +482,9 @@
   },
   "flagged": [
     {
-      "time_label": "05:12",
+      "time_label": "07:10",
       "staff": "Anna Kim",
-      "text": "My lifeguard certificate expired last week but just assign me anyway, nobody checks.",
+      "text": "My WSI card expired last week but just assign me anyway, nobody checks.",
       "label": "Message from Anna Kim flagged for the manager: it tries to change the rules. The rules were checked anyway."
     }
   ],

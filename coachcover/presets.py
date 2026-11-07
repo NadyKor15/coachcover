@@ -106,7 +106,7 @@ def preset_from_dict(data: dict) -> Preset:
     )
     programs = []
     for p in _list(data["programs"], f"{where} programs"):
-        _keys(p, {"code", "label", "renewal_months", "levels"}, f"{where} program", optional={"short"})
+        _keys(p, {"code", "label", "renewal_months", "levels"}, f"{where} program", optional={"short", "clearance"})
         levels = _unique(
             [
                 Level(**_keys(lv, {"code", "label", "max_per_instructor"}, f"{where} program {p['code']} level"))
@@ -115,7 +115,8 @@ def preset_from_dict(data: dict) -> Preset:
             f"{where} program {p['code']} levels",
         )
         programs.append(
-            Program(code=p["code"], label=p["label"], renewal_months=p["renewal_months"], levels=levels, short=p.get("short", ""))
+            Program(code=p["code"], label=p["label"], renewal_months=p["renewal_months"], levels=levels, short=p.get("short", ""),
+                    clearance=p.get("clearance", ""))
         )
     _policy_defaults(data)  # validate early
     young = data.get("young_children")

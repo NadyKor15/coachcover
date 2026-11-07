@@ -279,7 +279,7 @@ def test_imported_schedule_gets_the_certification_layer():
     context = import_context(shifts, world.venues, others)
     rows = {row["staff_id"]: row for row in check_import(shifts, list(world.staff.values()), world.policy, context,
                                                            datetime(2026, 11, 9, 5, 0, tzinfo=NY))}
-    assert rows["S27"]["ok"] is False and "CERT_EXPIRED" in rows["S27"]["blocking"]  # Anna: lifeguard card ended Nov 5
+    assert rows["S27"]["ok"] is False and "CERT_EXPIRED" in rows["S27"]["blocking"]  # Anna, 08:00 instructor: WSI ended Nov 5
     assert rows["S07"]["ok"] is False and "CERT_EXPIRED" in rows["S07"]["blocking"]  # Javier: CPR expired Nov 8
     assert rows["S11"]["blocking"] == ["HOURS_LIMIT_EXCEEDED"]  # Camila: 39.5 h + 4 h
     assert rows["S08"]["ok"] is True and rows["S08"]["warnings"] == ["CERT_EXPIRES_ON_SHIFT_DAY"]  # Grace

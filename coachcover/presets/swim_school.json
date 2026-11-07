@@ -1,7 +1,7 @@
 {
   "code": "swim_school",
   "label": "Swim school",
-  "note": "Example values, not legal advice. Ratios follow the Georgia DPH Model Aquatic Safety Plan: 1:4 for young or beginner swimmers, 1:8 for ages 6-17. Two-year certificate validity matches common US lifeguard and instructor cards. Check your state rules and certifying agency. Overtime cost per hour is an example (1.5 x a typical instructor wage). Young children (5 and under) use 1:4 whatever their level, as in the same Georgia plan. Ten hours of rest between work on different days is an assumption (a fatigue rule of thumb), not a regulation.",
+  "note": "Example values, not legal advice. Ratios follow the Georgia DPH Model Aquatic Safety Plan: 1:4 for young or beginner swimmers, 1:8 for ages 6-17. Two-year certificate validity matches common US lifeguard and instructor cards. Check your state rules and certifying agency. Overtime cost per hour is an example (1.5 x a typical instructor wage). Young children (5 and under) use 1:4 whatever their level, as in the same Georgia plan. Only instructors who did the school's own preschool training teach the ages 3–5 program: a school rule from the founder's coaching experience, not an industry standard. Ten hours of rest between work on different days is an assumption (a fatigue rule of thumb), not a regulation.",
   "venue_term": {"en": "pool", "ru": "бассейн"},
   "young_children": {"max_age": 5, "max_per_instructor": 4},
   "min_rest_hours": 10,
@@ -35,6 +35,16 @@
         {"code": "4", "label": "Level 4", "max_per_instructor": 8},
         {"code": "5", "label": "Level 5", "max_per_instructor": 8},
         {"code": "6", "label": "Level 6", "max_per_instructor": 8}
+      ]
+    },
+    {
+      "code": "preschool",
+      "label": "Preschool swim, ages 3–5",
+      "short": "Preschool",
+      "clearance": "preschool training (ages 3–5)",
+      "renewal_months": 12,
+      "levels": [
+        {"code": "3-5", "label": "Preschool", "max_per_instructor": 4}
       ]
     }
   ],

@@ -8,7 +8,8 @@ import pytest
 from coachcover.models import DbLedger, ModelClient
 from coachcover.pipeline import Conflict, Pipeline
 from coachcover.presets import default_policy
-from coachcover.seed import NOW, POLICY_ID, load_school
+from coachcover.seed import DECK_NOW as NOW  # the deck story: Marina's 06:00 shift, the recorded voice note
+from coachcover.seed import POLICY_ID, load_school
 from tests.test_pipeline import HERO, RU_VOICE
 
 pytestmark = pytest.mark.db
@@ -21,7 +22,7 @@ def at(minutes: float):
 @pytest.fixture
 def morning(new_database):
     conn = new_database()
-    load_school(conn)
+    load_school(conn, story="deck")
     p = Pipeline(conn, ModelClient(DbLedger(conn), mode="replay"), POLICY_ID)
     result = p.callout("S05", now=NOW, audio=RU_VOICE, filename="ru-callout.ogg")
     case = next(c["case_id"] for c in result["cases"] if c["shift_id"] == HERO)
@@ -97,7 +98,7 @@ def test_before_the_deadline_plan_b_waits_for_the_queue(morning):
 
 def test_plan_b_by_the_deadline_does_not_wait_for_the_queue(new_database):
     conn = new_database()
-    load_school(conn)
+    load_school(conn, story="deck")
     p = Pipeline(conn, ModelClient(DbLedger(conn), mode="replay"), POLICY_ID)
     late_callout = at(26)  # 05:38: two minutes before the deadline, the first wave goes out
     cases = p.callout("S05", now=late_callout, text="Marina here, I am sick, I can't come to the 6 am lesson.")["cases"]

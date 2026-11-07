@@ -211,9 +211,6 @@ def load_world() -> World:
     """The training school from coachcover/seed.py as plain rule types."""
     school = school_seed.build_school()
     policy = default_policy(school_seed.PRESET, week_start=school_seed.WEEK_DAY)
-    if len(policy.preset.programs) != 1:
-        raise ValueError("the training school expects a preset with exactly one program")
-    program = next(iter(policy.preset.programs))
     venues = {vid: Venue(vid, tz, lat, lon) for vid, _, tz, lat, lon in school.venues}
     roles: dict[str, set[str]] = defaultdict(set)
     for sid, role in school.staff_roles:
@@ -225,16 +222,16 @@ def load_world() -> World:
                                                 revoked.get((row["cert_type"], row["card_number"]))))
     programs: dict[str, dict[str, StaffProgram]] = defaultdict(dict)
     for p in school.programs:
-        if p["program"] != program:
+        if p["program"] not in policy.preset.programs:
             raise ValueError(f"unexpected program {p['program']!r} in the training school")
-        programs[p["staff_id"]][program] = StaffProgram(program, p["renewed_at"], dict(p["levels"]))
+        programs[p["staff_id"]][p["program"]] = StaffProgram(p["program"], p["renewed_at"], dict(p["levels"]))
     staff = {
         sid: Staff(sid, name, frozenset(roles[sid]), tuple(certs[sid]), programs[sid], home,
                    frozenset(school_seed.staff_languages(lang)))
         for sid, name, lang, home in school.staff
     }
     groups = {
-        g["id"]: GroupRef(g["id"], program, g["level"], g["size"], g["age_min"], tuple(sorted(g["family_counts"].items())))
+        g["id"]: GroupRef(g["id"], g["program"], g["level"], g["size"], g["age_min"], tuple(sorted(g["family_counts"].items())))
         for g in school.groups
     }
     shifts = {
@@ -502,14 +499,17 @@ class State:
         self.booked[staff_id].append(Commitment(shift.id, "shift", shift.start, shift.end))
 
     def partners(self, shift: Shift) -> list[Shift]:
-        """Scheduled shifts with groups next to this one: same venue, role, start and end (as the core's plan B)."""
+        """Scheduled shifts with groups next to this one: same venue, role, start and end (as the core's plan B). A
+        shift teaching the same groups (a lesson's second instructor) is not a group next door."""
         open_ids = self.morning.open_ids
+        own = {g.id for g in shift.groups}
         return sorted(
             (
                 p for p in self.shifts.values()
                 if p.id != shift.id and p.id not in open_ids and p.groups and p.assignee is not None
                 and p.venue == shift.venue and p.role == shift.role
                 and _utc(p.start) == _utc(shift.start) and _utc(p.end) == _utc(shift.end)
+                and not own & {g.id for g in p.groups}
             ),
             key=lambda p: p.id,
         )

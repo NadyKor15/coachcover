@@ -12,11 +12,12 @@ from coachcover.presets import default_policy
 from coachcover.reasons_text import describe_place
 from coachcover.repo import load_context, load_policy, load_shift, load_staff
 from coachcover.rules import Code, assess, eligible, rank
-from coachcover.seed import NOW, POLICY_ID, build_school, load_school
+from coachcover.seed import DECK_NOW, HERO_SEAT, NOW, POLICY_ID, build_school, load_school
 
 pytestmark = pytest.mark.db
 
-DEMO_LESSON = "L-1109-G002"  # Marina's Monday 06:00-08:00 lanes + Level 3 (8 young kids) at V1
+DEMO_LESSON = "L-1109-G002"  # preschool: Marina's Monday 08:00-08:45 Preschool swim, ages 3-5 (8 kids, 2 instructors);
+#                              deck: her 06:00-08:00 lanes + Level 3 (8 young kids) at V1
 DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 
 
@@ -37,7 +38,7 @@ def test_preset_install_is_idempotent_and_refuses_a_different_copy(new_database)
     migrate(conn)
     install_preset(conn, "swim_school")
     install_preset(conn, "swim_school")
-    assert conn.execute("SELECT count(*) FROM program_level").fetchone()[0] == 6
+    assert conn.execute("SELECT count(*) FROM program_level").fetchone()[0] == 7  # Learn-to-Swim 1-6, preschool 3-5
     conn.execute("UPDATE preset SET source = source || '{\"label\": \"changed\"}' WHERE code = 'swim_school'")
     with pytest.raises(ValueError, match="different content"):
         install_preset(conn, "swim_school")
@@ -59,7 +60,8 @@ def test_school_size_and_languages(school):
     assert _count(school, "SELECT count(*) FROM zone") == 6
     assert _count(school, "SELECT count(*) FROM staff") == 40
     assert _count(school, "SELECT count(DISTINCT full_name) FROM staff") == 40
-    assert _count(school, "SELECT count(*) FROM lesson_group") == 120
+    assert _count(school, "SELECT count(*) FROM lesson_group") == 121  # + the lesson next door to the 08:00 one
+    assert len(build_school("deck").groups) == 120
     assert _count(school, "SELECT count(*) FROM lesson_group WHERE instructor_id IS NULL") == 0
     langs = {r[0] for r in school.execute("SELECT DISTINCT unnest(family_languages) FROM lesson_group")}
     assert langs == {"en", "es", "ru"}
@@ -67,11 +69,17 @@ def test_school_size_and_languages(school):
     assert _count(school, "SELECT count(*) FROM venue WHERE tz = 'America/New_York'") == 3
 
 
-def test_every_group_size_fits_its_level_norm(school):
-    over = school.execute(
-        "SELECT g.id FROM lesson_group g JOIN program_level l ON l.id = g.level_id WHERE g.size > l.max_per_instructor"
+@pytest.mark.parametrize("story", ["school", "deck_school"])
+def test_every_group_size_fits_its_level_norm(story, request):
+    conn = request.getfixturevalue(story)
+    over = conn.execute(
+        "SELECT g.id FROM lesson_group g JOIN program_level l ON l.id = g.level_id"
+        " WHERE g.size > l.max_per_instructor * (SELECT max(s.instructors) FROM shift s JOIN shift_group sg"
+        "  ON sg.shift_id = s.id WHERE sg.group_id = g.id)"
     ).fetchall()
     assert over == []
+    two = conn.execute("SELECT count(*) FROM shift WHERE id = 'L-1109-G002-I2'").fetchone()[0]
+    assert two == (1 if story == "school" else 0)  # preschool: the 08:00 lesson has its second instructor's seat
 
 
 def test_trap_counts_in_the_data(school):
@@ -110,11 +118,59 @@ def test_the_traps_meet_the_rules_at_the_morning_call_out(school):
     staff = {s.id: s for s in load_staff(school, POLICY_ID)}
     lesson = load_shift(school, DEMO_LESSON)
     guard = load_shift(school, DEMO_GUARD_BLOCK)
-    assert lesson.groups[0].level == "3" and lesson.venue == "V1"
+    group = lesson.groups[0]
+    assert (group.program, group.level, group.size, group.age_min) == ("preschool", "3-5", 8, 3)
+    assert (lesson.venue, lesson.zone, lesson.role, lesson.instructors) == ("V1", "V1-TEACH", "instructor", 2)
+    assert f"{lesson.start.astimezone(NOW.tzinfo):%H:%M}" == "08:00" and NOW.strftime("%H:%M") == "07:10"
     lesson_ctx, guard_ctx = load_context(school, POLICY_ID, lesson), load_context(school, POLICY_ID, guard)
 
     def decide(sid, shift, ctx):
         return eligible(staff[sid], shift, NOW, policy, ctx)
+
+    expired = decide("S07", lesson, lesson_ctx)
+    assert expired.codes[0] == Code.CERT_EXPIRED and expired.reasons[0].params["expires_on"] == "2026-11-08"
+    assert decide("S10", lesson, lesson_ctx).codes[0] == Code.CERT_EXPIRED
+    today = decide("S08", lesson, lesson_ctx)  # card ends today (a warning); no preschool training
+    assert today.codes == [Code.CERT_EXPIRES_ON_SHIFT_DAY, Code.PROGRAM_MISSING] and today.reasons[0].params["today"] is True
+    assert decide("S11", lesson, lesson_ctx).codes == [Code.HOURS_LIMIT_EXCEEDED]  # 39.5 h + 0.75 h
+    anna = decide("S27", lesson, lesson_ctx)  # free, cleared for preschool, but her WSI ended Nov 5
+    assert anna.codes == [Code.CERT_EXPIRED] and anna.reasons[0].params == {"cert_type": "wsi", "expires_on": "2026-11-05"}
+    assert decide("S13", lesson, lesson_ctx).codes[0] == Code.CERT_NEEDS_REVIEW
+    revoked = decide("S14", lesson, lesson_ctx)  # printed valid, revoked by the issuer (simulated registry)
+    assert revoked.codes == [Code.CERT_REVOKED, Code.PROGRAM_MISSING] and revoked.reasons[0].params["cert_type"] == "wsi"
+    rest = decide("S24", lesson, lesson_ctx)  # cleared for preschool; closed Lakeview's late swim on Sunday at 22:30
+    assert rest.codes == [Code.REST_TOO_SHORT] and rest.reasons[0].params["rest_hours"] == 9.5
+    second = decide("S01", lesson, lesson_ctx)  # Emma Carter teaches this lesson with Marina: her own seat
+    assert second.codes == [Code.OVERLAPS_COMMITMENT] and second.reasons[0].params["ref"] == HERO_SEAT
+    cleared = {sid for sid in staff if decide(sid, lesson, lesson_ctx).reasons == ()}
+    assert cleared == {"S06", "S17", "S20", "S22", "S25", "S26"}  # the five, plus Liam Foster (reserve, plan B only)
+    no_clearance = [sid for sid in staff if decide(sid, lesson, lesson_ctx).codes == [Code.PROGRAM_MISSING]]
+    # only the preschool training is missing: 8 instructors and the reserve head coaches Noah Bennett and Harper Hughes
+    assert len(no_clearance) == 10 and {"S12", "S23"} <= set(no_clearance)
+
+    assert decide("S27", guard, guard_ctx).codes == []  # her lifeguard card is fine: only the WSI ran out
+    assert decide("S28", lesson, lesson_ctx).codes[:3] == [Code.ROLE_MISSING, Code.CERT_MISSING, Code.PROGRAM_MISSING]
+    holder_view = dataclasses.replace(guard, assignee=None)  # judged as the person on the block, not a replacement
+    assert decide("S30", holder_view, guard_ctx).codes == [Code.CERT_EXPIRES_ON_SHIFT_DAY]  # her card ends today
+    over = decide("S29", guard, guard_ctx)
+    assert over.codes == [Code.HOURS_LIMIT_EXCEEDED] and over.reasons[0].params["hours_after"] == 42.5
+    # the instructor of the lesson next door (lap lanes, the same 08:00-08:45) is busy
+    neighbour = school.execute("SELECT staff_id FROM shift WHERE id = 'L-1109-G121'").fetchone()[0]
+    assert Code.OVERLAPS_COMMITMENT in decide(neighbour, lesson, lesson_ctx).codes
+
+
+def test_the_deck_story_traps_meet_the_rules_at_its_morning_call_out(deck_school):
+    """The deck story (network_loan): Marina's 06:00-08:00 deck shift, as the school was before the preschool morning."""
+    school = deck_school
+    policy = load_policy(school, POLICY_ID)
+    staff = {s.id: s for s in load_staff(school, POLICY_ID)}
+    lesson = load_shift(school, DEMO_LESSON)
+    guard = load_shift(school, DEMO_GUARD_BLOCK)
+    assert lesson.groups[0].level == "3" and lesson.venue == "V1"
+    lesson_ctx, guard_ctx = load_context(school, POLICY_ID, lesson), load_context(school, POLICY_ID, guard)
+
+    def decide(sid, shift, ctx):
+        return eligible(staff[sid], shift, DECK_NOW, policy, ctx)
 
     expired = decide("S07", lesson, lesson_ctx)
     assert expired.codes == [Code.CERT_EXPIRED] and expired.reasons[0].params["expires_on"] == "2026-11-08"
@@ -154,7 +210,7 @@ def test_the_morning_queue_is_ordered_and_explained(school):
     names = dict(school.execute("SELECT id, full_name FROM staff").fetchall())
     top = ranked[0]
     line = describe_place(top, names[top.candidate.staff_id].split()[0], "en", policy.preset)
-    assert line.startswith(f"{names[top.candidate.staff_id].split()[0]} first: ") and "Level 3" in line
+    assert line.startswith(f"{names[top.candidate.staff_id].split()[0]} first: ") and "Preschool, same pool" in line
     again = rank(assess(s, lesson, NOW, policy, context) for s in reversed(staff))
     assert [r.candidate.staff_id for r in again] == [r.candidate.staff_id for r in ranked]
 
@@ -178,7 +234,9 @@ def test_seed_is_deterministic(new_database):
     load_school(second)
     a, b = _dump(first), _dump(second)
     assert a == b
-    assert len(a["shift"]) == 205 and len(a["staff_cert"]) == 107  # 204 + Gabriela's Sunday evening before the week
+    # 204 + Gabriela's Sunday evening before the week + the lesson next door (G121) + Emma Carter's seat on G002
+    assert len(a["shift"]) == 207 and len(a["staff_cert"]) == 107
+    assert build_school("deck") == build_school("deck") and len(build_school("deck").shifts) == 205
 
 
 def test_loading_the_school_twice_fails(new_database):
