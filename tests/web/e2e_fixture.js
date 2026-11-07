@@ -554,7 +554,8 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
       G('Today: declined ring (offers)', '.off-ico.declined', 'border', 'parent'), G('Today: no-reply ring (offers)', '.off-ico.noreply', 'border', 'parent'),
       G('Today: accepted dot (offers)', '.off-ico.accepted', 'bg', 'parent'),
       G('Today: declined ring (timeline)', '.tl-mark.declined', 'border', 'white'), G('Today: no-reply ring (timeline)', '.tl-mark.noreply', 'border', 'white'),
-      G('Today: accepted dot (timeline)', '.tl-mark.accepted', 'bg', 'white')
+      G('Today: accepted dot (timeline)', '.tl-mark.accepted', 'bg', 'white'),
+      T('Today: covered banner (brand gold)', '#covered .txt'), T('Today: judge button (brand teal)', '.jbtn.primary')
     ]);
     for (const [mock, what] of [['ratio_open', 'Today: ratio banner, seat open'], ['ratio_covered', 'Today: ratio banner, covered']]) {
       await p.goto(base + 'index.html?fixture=1&mock=' + mock);
@@ -581,14 +582,15 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
       T('Case: blocked line', '[data-slot="blocked-row"]'), T('Case: red reason chip', '.reason.tone-risk'), T('Case: amber reason chip', '.reason.tone-fragile'),
       T('Case: accepted offer', '.offer.accepted'), G('Case: accepted mark', '.offer.accepted svg circle', 'fill', 'parent'),
       G('Case: declined bar', '.offer.declined', '--st-risk-dot', 'self'), G('Case: no-reply bar', '.offer.noreply', '--st-fragile-dot', 'self'),
-      G('Case: blocked mark', '.blocked svg', 'stroke-color', 'parent', { prop: '--st-risk-dot' })
+      G('Case: blocked mark', '.blocked svg', 'stroke-color', 'parent', { prop: '--st-risk-dot' }),
+      T('Case: covered pill (brand gold)', '#pill')
     ]);
     await p.close();
 
     p = await newPage(browser, 1920, 1080);
     await p.goto(base + 'network.html?loan=' + ref + '&fixture=1&mock=assigned');
     await ready(p);
-    await contrast(p, [G('Network: approval mark', '.approval .chk circle', 'fill', 'parent')]);
+    await contrast(p, [G('Network: approval mark', '.approval .chk circle', 'fill', 'parent'), T('Network: loan approved bar (brand gold)', '#result-text')]);
     for (const st of ['declined_site_short', 'rejected_rules']) {
       await p.goto(base + 'network.html?loan=' + ref + '&fixture=1&mock=' + st);
       await ready(p);
@@ -607,7 +609,9 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
       G('Week: fragile dashed border', '.cell[data-level="fragile"]', 'border', 'parent'),
       G('Week: legend dashed border', '.legend .sw[data-level="fragile"]', 'border', 'parent'),
       G('Week: fragile dot (list)', '.flist .dot[data-level="fragile"]', 'bg', 'parent'),
-      G('Week: at-risk diamond (list)', '.flist .dot[data-level="risk"]', 'bg', 'parent')
+      G('Week: at-risk diamond (list)', '.flist .dot[data-level="risk"]', 'bg', 'parent'),
+      T('Week: no-shift dash', '.cell[data-level="none"] .num'), T('Week: no-shift legend', '.legend .sw[data-level="none"]'),
+      T('Week: propose standby button (brand teal)', '.tip .btn')
     ]);
     await p.close();
 

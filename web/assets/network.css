@@ -5,7 +5,7 @@
   --ink:#0C121A; --ink-2:#1F252D; --meta:#363F47; --muted:#67696B;
   --teal:#07686A; --teal-ink:#0B6467; --teal-arrow:#156C6B; --logo:#07605F;
   --tint:#ECF6F3; --tint-line:#C3D7D3; --tile:#EFF4F0;
-  --gold:#A67F2F; --gold-check:#A47A25; --dash:#6F7171;
+  --gold:#A67F2F; --gold-bar:#86651F; --gold-check:#A47A25; --dash:#6F7171;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1920px;height:1024px;background:var(--page);overflow:hidden}
@@ -89,7 +89,7 @@ svg{display:block;flex:none}
 .approval .t b{font-size:22.9px;font-weight:700;color:var(--ink)}
 .approval .t span{font-size:23.87px;letter-spacing:-0.023em;color:#12181F}
 
-.result{position:relative;z-index:1;display:flex;align-items:center;margin:51px 0 0 14px;width:1546px;height:66px;border-radius:12px;background:var(--gold);color:#fff;padding-left:30px;white-space:nowrap}
+.result{position:relative;z-index:1;display:flex;align-items:center;margin:51px 0 0 14px;width:1546px;height:66px;border-radius:12px;background:var(--gold-bar);color:#fff;padding-left:30px;white-space:nowrap}
 .result .rchk{margin-right:27px}
 .result .t{position:relative;top:-1.75px;font-size:29.58px;font-weight:700;line-height:36px;letter-spacing:-0.33px;word-spacing:2.9px}
 .result .t [data-slot=result-start],.result .t [data-slot=case-id]{letter-spacing:-1px}

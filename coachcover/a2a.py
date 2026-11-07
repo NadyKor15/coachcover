@@ -1019,7 +1019,7 @@ def _step_text(kind: str, data: dict, venue: str, names: dict[str, str]) -> tupl
     guard_line = (f"{venue} keeps {guards.get('after')} on site or free {guards.get('window')} after the loan"
                   f" (minimum {guards.get('minimum')}; now {guards.get('before')})") if guards.get("window") else ""
     if kind == "asked_network":
-        return (f"{venue} agent: nobody cleared is left here, asks the network",
+        return (f"{venue} agent: no cleared staff left here · asks the network",
                 f"{data.get('cleared_here')} cleared here, {data.get('asked_here')} asked · {data.get('label')}")
     if kind == "request_sent":
         target = names.get(data.get("to"), data.get("to"))

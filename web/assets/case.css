@@ -4,7 +4,7 @@
   --bg:#FAF5EF; --line:#E2D9CD; --card:#FEFDFC;
   --teal:#08665C; --teal-ink:#0B5F57; --teal-soft:#D5E8E2; --dot:#017A6C;
   --ink:#0E1014; --ink-2:#121418; --muted:#3F4147; --muted-2:#56585E;
-  --gold:#9F7B33; --gold-ink:#83500B; --gold-soft:#FEF7E4; --gold-line:#C4A469;
+  --gold:#9F7B33; --gold-bar:#86651F; --gold-ink:#83500B; --gold-soft:#FEF7E4; --gold-line:#C4A469;
   --red-ink:#7E1010; --red-soft:#FDE2DF; --red-line:#CF7174;
   --chip:#EFEDEB; --row-line:#D9D8D7; --tbl-line:#CBCBCC;
 }
@@ -43,7 +43,7 @@ body[data-state="loading"] .main{visibility:hidden}
 .card{background:var(--card);border:1px solid var(--line);border-radius:15px}
 .head{margin-top:20px;height:93px;display:flex;align-items:flex-start;padding-left:24.4px}
 .case-title{width:972.6px;margin-top:23.2px;font-size:34px;letter-spacing:calc(-0.026em - 0.05px);line-height:40px;font-weight:750;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pill{width:228px;height:54px;margin-top:17px;border:1px solid #8F6418;border-radius:12px;background:var(--gold);color:#FFF9F0;display:flex;align-items:center;justify-content:center;font-size:23.9px;letter-spacing:0;font-weight:700;text-shadow:0 0 2px rgba(110,70,10,.55);white-space:nowrap}
+.pill{width:228px;height:54px;margin-top:17px;border:1px solid #6F5318;border-radius:12px;background:var(--gold-bar);color:#FFF9F0;display:flex;align-items:center;justify-content:center;font-size:23.9px;letter-spacing:0;font-weight:700;text-shadow:0 0 2px rgba(110,70,10,.55);white-space:nowrap}
 .pill.open{background:#EDE6DA;border-color:#C9BBA4;color:var(--ink);text-shadow:none}
 .btn{margin-left:54px;margin-top:18px;width:307px;height:51px;border:2px solid #4A918A;border-radius:11px;display:flex;align-items:center;padding:2px 0 0 19.5px;color:var(--teal-ink);font-size:20.8px;letter-spacing:0;font-weight:550;white-space:nowrap;background:var(--card);text-decoration:none}
 .btn svg{position:relative;top:-1px;width:28px;height:28px;flex:none;fill:none;stroke:var(--teal-ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;margin-right:7.8px}

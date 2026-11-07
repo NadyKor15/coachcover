@@ -87,6 +87,8 @@
           c.appendChild(el('span', 'num', '—'));
         } else {
           c.dataset.level = 'none';
+          c.title = 'No shift';
+          c.appendChild(el('span', 'num', '—'));
         }
         body.appendChild(c);
       });
@@ -104,6 +106,12 @@
       li.appendChild(el('span', 'lt', it.label + (LEVEL_WORD[it.level] ? ' (' + LEVEL_WORD[it.level] + ')' : '')));
       lg.appendChild(li);
     });
+    if (slot('cells').querySelector('.cell[data-level="none"]')) {
+      const li = el('div', 'li'); li.dataset.slot = 'legend-item'; li.dataset.level = 'none';
+      const sw = el('span', 'sw', '—'); sw.dataset.level = 'none'; li.appendChild(sw);
+      li.appendChild(el('span', 'lt', 'No shift'));
+      lg.appendChild(li);
+    }
     const hasPast = (w.days || []).some(d => (d.cells || []).some(c => c.past));
     if (hasPast && w.past_legend) {
       const li = el('div', 'li'); li.dataset.slot = 'legend-item'; li.dataset.level = 'past';

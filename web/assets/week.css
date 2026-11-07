@@ -125,7 +125,9 @@ h1{margin:39.5px 0 0 14.9px;font-weight:760;font-size:49.3px;line-height:60px;le
 .gbody{grid-template-rows:none}
 .cell .num{font-size:var(--num-fs,41.5px);line-height:1}
 .cell .tag{font-size:var(--tag-fs,15px)}
-.cell[data-level="none"]{background:transparent;border:0}
+.cell[data-level="none"]{background:transparent;border:0;color:var(--ink-3)}
+.cell[data-level="none"] .num{font-size:calc(var(--num-fs,41.5px) * .5);font-weight:500}
+.legend .sw[data-level="none"]{background:transparent;border:1.5px solid var(--grid-line);display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:20px;font-weight:600;line-height:1}
 .cell[data-level="past"]{background:var(--st-past-bg);color:var(--st-past-ink);border:1.5px solid var(--st-past-line);font-weight:600}
 .cell[data-level="past"] .num{font-size:calc(var(--num-fs,41.5px) * .6)}
 .legend .sw[data-level="past"]{background:var(--st-past-bg);border-color:var(--st-past-line)}
