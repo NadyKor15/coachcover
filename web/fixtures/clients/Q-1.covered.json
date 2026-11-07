@@ -12,21 +12,21 @@
   "day_label": "today",
   "time_label": "17:00–17:30",
   "answer_in_s": 0,
-  "answer_by_label": "09:12",
+  "answer_by_label": "12:42",
   "thread": [
     {
       "from": "school",
-      "time_label": "08:42",
+      "time_label": "12:12",
       "text": "Hi! Marina can't make it today, so Chloe can teach Lily's private lesson at 17:00 instead. Same time, same place at Riverside Aquatic Center. Is that OK? Reply YES or NO."
     },
     {
       "from": "family",
-      "time_label": "08:45",
+      "time_label": "12:15",
       "text": "Yes"
     },
     {
       "from": "school",
-      "time_label": "08:45",
+      "time_label": "12:15",
       "text": "Thank you! Chloe will teach Lily today at 17:00."
     }
   ],

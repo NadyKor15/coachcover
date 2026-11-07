@@ -35,14 +35,14 @@
     },
     "private_lesson": {
       "scenario": "private_lesson",
-      "case_id": "C-1109-02",
-      "ended_at": "2026-11-09T08:46:00-05:00",
+      "case_id": "C-1109-01",
+      "ended_at": "2026-11-09T12:16:00-05:00",
       "runs_left_this_hour": 493
     },
     "private_declined": {
       "scenario": "private_declined",
-      "case_id": "C-1109-02",
-      "ended_at": "2026-11-09T08:46:00-05:00",
+      "case_id": "C-1109-01",
+      "ended_at": "2026-11-09T12:16:00-05:00",
       "runs_left_this_hour": 492
     }
   },
@@ -140,5 +140,5 @@
       }
     }
   },
-  "_captured_at": "2026-11-07T21:56:10Z"
+  "_captured_at": "2026-11-07T22:46:02Z"
 }

@@ -93,7 +93,7 @@
     });
     setText('user', d.user_label);
     const caseId = d.callout && d.callout.case_id;
-    const href = 'case.html' + (caseId ? '?id=' + encodeURIComponent(caseId) + (CC.FIXTURE ? '&fixture=1' : '') : '');
+    const href = 'case.html' + (caseId ? '?id=' + encodeURIComponent(caseId) + (CC.FIXTURE ? '&' + CC.fixtureQuery() : '') : '');
     $('#navCases').href = href;
     document.querySelectorAll('.nav a[data-nav]').forEach(a => { a.href = a.dataset.nav + '.html' + (CC.FIXTURE ? '?fixture=1' : ''); });
     // the covered line and the timeline open the case of this morning
@@ -514,7 +514,7 @@
     box.className = 'alert ' + (['red', 'green', 'amber'].includes(a.tone) ? a.tone : 'amber');
     setText('alert-text', a.text);
     $('#alertMark').setAttribute('d', a.tone === 'green' ? 'M6.5 11.3l3.1 3 5.9-6.3' : 'M11 5.5v7M11 16.2v.3');
-    box.href = a.caseId ? 'case.html?id=' + encodeURIComponent(a.caseId) + (CC.FIXTURE ? '&fixture=1' : '') : '#';
+    box.href = a.caseId ? 'case.html?id=' + encodeURIComponent(a.caseId) + (CC.FIXTURE ? '&' + CC.fixtureQuery() : '') : '#';
     // keep the banner clear of the title
     const range = document.createRange();
     range.selectNodeContents(document.querySelector('h1'));

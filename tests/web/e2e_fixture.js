@@ -489,6 +489,30 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('case: accepted offer with its why line', accRow === accepted.staff + ' — accepted · ' + accepted.why_first, accRow);
     check('case: models line', await text(p, '.facts li:last-child') === 'Models: ' + caseFx.model_calls.length + ' calls · ' + caseFx.model_cost_label, await text(p, '.facts li:last-child'));
     check('case: plan hash shortened from data', await text(p, '[data-slot="plan-hash"]') === caseFx.proof.plan_hash.slice(0, 4) + '…' + caseFx.proof.plan_hash.slice(-4));
+    /* Proof: one row per model call (time ET · why · seconds · cents), its model, source and "shared by N cases" below,
+       a total that is the Models line's own count and cost; the rows' cents add up to it, their dollars to the case cost */
+    const callRows = await p.$$eval('[data-slot="call-row"]', rs => rs.map(r => ({ usd: r.dataset.usd,
+      cells: [...r.querySelectorAll('td')].map(td => td.textContent), meta: r.nextElementSibling ? r.nextElementSibling.textContent : '' })));
+    check('case: one Proof row per model call', callRows.length === caseFx.model_calls.length && callRows.length > 0, callRows.length);
+    check('case: each call row from data (ET time, why, seconds, cents)', callRows.every((r, i) => { const c = caseFx.model_calls[i];
+      return JSON.stringify(r.cells) === JSON.stringify([c.time_label, c.purpose_label, c.seconds_label, c.cost_label]) && / ET$/.test(c.time_label); }), callRows.map(r => r.cells));
+    check('case: each call names its model and source, and its share', callRows.every((r, i) => { const c = caseFx.model_calls[i];
+      return r.meta === [c.model_label, c.source_label, c.shared_label].filter(Boolean).join(' · '); }), callRows.map(r => r.meta));
+    check('case: "shared by 2 cases" is on the page', caseFx.model_calls.some(c => c.shared_label === 'shared by 2 cases') &&
+      (await p.$eval('.proof', x => x.innerText)).includes('shared by 2 cases'));
+    const totalLabel = await text(p, '[data-slot="calls-total-label"]');
+    check('case: Proof total = the Models line', totalLabel === caseFx.model_calls_total_label &&
+      (await text(p, '.facts li:last-child')) === 'Models: ' + totalLabel, totalLabel);
+    const centsOf = t => Math.round(parseFloat(String(t).replace(/[^\d.]/g, '')) * 10000);
+    check('case: the rows add up to the total, in cents as shown', callRows.reduce((a, r) => a + centsOf(r.cells[3]), 0) === centsOf(caseFx.model_cost_label),
+      [callRows.map(r => r.cells[3]), caseFx.model_cost_label]);
+    check('case: the rows add up to the case cost, in dollars', Math.abs(callRows.reduce((a, r) => a + Number(r.usd), 0) - caseFx.model_cost_usd) < 1e-9);
+    check('case: no Proof cell cut, one line each', await p.$$eval('.calls td', ts => ts.every(t => t.scrollWidth <= t.clientWidth + 1 && t.getBoundingClientRect().height <= 40)));
+    check('case: the Proof card holds its table, clear of the next card', await p.evaluate(() => {
+      const proof = document.querySelector('.proof').getBoundingClientRect(), table = document.querySelector('.calls').getBoundingClientRect();
+      const risk = document.getElementById('risk'), r = risk.hidden ? null : risk.getBoundingClientRect();
+      return table.bottom <= proof.bottom && table.right <= proof.right && (!r || proof.bottom <= r.top);
+    }));
     check('case: if-nobody-accepted card from data', await visible(p, '#risk') &&
       await p.$eval('#risk p', x => x.innerText) === caseFx.risk.kids + ' kids · refunds $' + caseFx.risk.refunds_usd + ' · $' + caseFx.risk.total_usd + ' at risk', await p.$eval('#risk p', x => x.innerText));
     check('case: price source under the sums', (await text(p, '[data-slot="risk-source"]')).endsWith(lessonSource));

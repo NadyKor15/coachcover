@@ -127,17 +127,34 @@
     const cost = d.model_cost_label || (present(d.model_cost_usd) ? fmtUsd(d.model_cost_usd) : '');
     setText('models-cost', cost);
     $('#costSep').hidden = !cost;
-    const rows = new Map();
-    calls.forEach(c => { const k = c.model_label || c.model || '?'; rows.set(k, (rows.get(k) || 0) + 1); });
+    // one row per model call: the step's time, why, seconds and cents; below it the model, where the answer came
+    // from and "shared by N cases" (a call-out's call split between the cases it opened); the last line adds up
     const tbody = $('#calls');
     tbody.textContent = '';
-    rows.forEach((n, model) => {
-      const tr = slotted(el('tr'), 'model-row');
-      tr.appendChild(slotted(el('td', null, model), 'model-name'));
-      tr.appendChild(slotted(el('td', null, n + (n === 1 ? ' call' : ' calls')), 'model-calls'));
+    calls.forEach(c => {
+      const tr = slotted(el('tr', 'call'), 'call-row');
+      tr.dataset.usd = present(c.cost_usd) ? String(c.cost_usd) : '';
+      tr.appendChild(slotted(el('td', 'c-time', c.time_label || ''), 'call-time'));
+      tr.appendChild(slotted(el('td', 'c-what', c.purpose_label || c.purpose || ''), 'call-purpose'));
+      tr.appendChild(slotted(el('td', 'c-sec', c.seconds_label || ''), 'call-seconds'));
+      tr.appendChild(slotted(el('td', 'c-cost', c.cost_label || ''), 'call-cost'));
       tbody.appendChild(tr);
+      const meta = slotted(el('tr', 'call-meta'), 'call-meta');
+      const td = el('td', null, [c.model_label || c.model, c.source_label, c.shared_label].filter(Boolean).join(' · '));
+      td.colSpan = 4;
+      meta.appendChild(td);
+      tbody.appendChild(meta);
     });
-    tbody.parentElement.hidden = rows.size === 0;
+    if (calls.length) {
+      const total = slotted(el('tr', 'call-total'), 'calls-total');
+      const head = el('td', null, 'Total');
+      const sum = slotted(el('td', 'c-cost', d.model_calls_total_label || ''), 'calls-total-label');
+      sum.colSpan = 3;
+      total.appendChild(head);
+      total.appendChild(sum);
+      tbody.appendChild(total);
+    }
+    tbody.parentElement.hidden = calls.length === 0;
   }
 
   function renderRisk(d) {

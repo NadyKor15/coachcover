@@ -120,6 +120,22 @@ def cost_label(usd: float) -> str:
     return f"${usd:,.2f}" if usd >= 0.01 else cents_label(usd * 100)
 
 
+def split_cents(parts_usd: Sequence[float | None], total_usd: float) -> list[str]:
+    """Each call's price in cents, for a table under cost_label(total): the same decimals as that label, rounded so
+    the rows add up to it exactly (largest remainder), never a row sum that misses the total by a rounding step."""
+    cents = total_usd * 100
+    places = 2 if cents >= 1 else 3 if cents >= 0.001 else 4  # as cents_label writes the total
+    unit = 10 ** places
+    target = round(float(f"{cents:.{places}f}") * unit)
+    exact = [None if usd is None else usd * 100 * unit for usd in parts_usd]
+    units = [None if e is None else int(e) for e in exact]
+    rest = target - sum(u for u in units if u is not None)
+    order = sorted((i for i, e in enumerate(exact) if e is not None), key=lambda i: exact[i] - units[i], reverse=True)
+    for i in order[:max(rest, 0)]:
+        units[i] += 1
+    return ["no price" if u is None else f"{u / unit:.{places}f}¢" for u in units]
+
+
 # --- the cost of an uncovered morning --------------------------------------------
 
 

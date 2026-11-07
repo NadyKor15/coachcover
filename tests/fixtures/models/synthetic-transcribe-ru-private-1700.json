@@ -1,0 +1,16 @@
+{
+ "purpose": "transcribe",
+ "model": "whisper-large-v3-turbo",
+ "input": {
+  "audio_sha256": "0295f0d1656dc6763d70f4b4e3e7b8eda2ae96fae28ca3a42b08cd11ea30c315"
+ },
+ "input_sha256": "08f8628b860368cd13a77f0e5d34eaabd56fa61fdb36b1276fa4a52123a68fa1",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: written by hand to the transcribe schema for ru-callout-private-1700.ogg (synthesized locally with macOS say -v Milena); to be recorded live on Vultr",
+ "duration_ms": 820,
+ "response": {
+  "text": " Привет, это Марина. Я заболела, в 5 не смогу провести индивидуальное занятие с Лили. Простите.",
+  "model": "whisper-large-v3-turbo",
+  "duration": 6.79
+ }
+}

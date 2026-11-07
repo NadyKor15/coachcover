@@ -385,6 +385,7 @@
   "model_calls": [],
   "model_cost_usd": 0.0,
   "model_cost_label": "0.0000¢",
+  "model_calls_total_label": "0 calls · 0.0000¢",
   "risk": {
     "kids": 6,
     "private": false,

@@ -5,6 +5,7 @@ private lesson with Lily (L-1109-P001). The first coach to say yes is held (no o
 family is asked; their "yes" books the coach after the rules run again, their "no" lets the coach go and offers
 Marina's nearest free time at the same hour (Wednesday 17:00: Tuesday 17:00 is her lesson with Vera), else a credit
 of one lesson at the private price. Silence: the coach is let go and the manager gets plan B (move or credit).
+The judge scenes of a private lesson play Marina's own midday note instead (12:10:10, after her 09:30 lesson): one case.
 """
 
 from datetime import date, datetime, timedelta
@@ -301,11 +302,11 @@ def test_the_family_answers_at_the_latest_an_hour_before_the_lesson(morning):
 def test_the_judge_scenarios_show_the_question_to_the_family(new_database):
     conn = new_database()
     result = run_scenario(conn, ModelClient(DbLedger(conn), mode="replay"), "private_lesson")
-    assert result["case_id"] == "C-1109-02"
+    assert result["case_id"] == "C-1109-01" and result["ended_at"] == at("12:16")
     screen = today(conn, seed.POLICY_ID, result["ended_at"], None, live=False)
     labels = [t.get("label") for t in screen["timeline"]]
     assert "Asked the parent" in labels and "Parent said yes" in labels
-    assert conn.execute("SELECT staff_id FROM shift WHERE id = %s", (HERO,)).fetchone() == ("S17",)  # the morning too
+    assert conn.execute("SELECT staff_id FROM shift WHERE id = %s", (HERO,)).fetchone() == ("S05",)  # she taught 09:30
     calls = conn.execute("SELECT purpose, ok, coalesce((ref->>'synthetic')::boolean, false) FROM model_call").fetchall()
     assert all(ok and synthetic for _, ok, synthetic in calls)  # every model answer prepared, none live
     conn2 = new_database()
@@ -315,7 +316,38 @@ def test_the_judge_scenarios_show_the_question_to_the_family(new_database):
     assert "Parent said no" in labels and "Moved to Marina, Wed 17:00" in labels
     assert date(2026, 11, 11) == conn2.execute("SELECT (starts_at AT TIME ZONE 'America/New_York')::date FROM shift"
                                                " WHERE id = 'L-1111-P001'").fetchone()[0]
-    assert timedelta(0) <= result["ended_at"] - at("08:46") < timedelta(minutes=1)
+    assert timedelta(0) <= result["ended_at"] - at("12:16") < timedelta(minutes=1)
+
+
+@pytest.mark.parametrize("scenario", ["private_lesson", "private_declined"])
+def test_the_private_scenes_play_their_own_voice_note_about_lily_at_1700(new_database, scenario):
+    """The private scenes do not replay the morning note (09:30, the little ones): Marina's midday note names her 17:00
+    private lesson with Lily. Her 09:30 lesson is over by 12:10, so the whole-day rule opens one case, and every time on
+    the scene starts at 12:10; the family answers within 30 min (12:42, well before 16:00)."""
+    from coachcover.demo import PRIVATE_NOW, PRIVATE_VOICE, VOICE
+
+    conn = new_database()
+    result = run_scenario(conn, ModelClient(DbLedger(conn), mode="replay"), scenario)
+    assert PRIVATE_VOICE.name == "ru-callout-private-1700.ogg" and PRIVATE_VOICE.read_bytes() != VOICE.read_bytes()
+    assert conn.execute("SELECT code, shift_id FROM cover_case").fetchall() == [("C-1109-01", PRIVATE)]  # one case
+    screen = today(conn, seed.POLICY_ID, result["ended_at"], None, live=False)
+    card = screen["callout"]
+    assert card["time_label"] == "12:10" and card["case_id"] == "C-1109-01"
+    assert "Лили" in card["transcript_original"] and "в 5" in card["transcript_original"]
+    assert "Lily" in card["transcript_en"] and "at five" in card["transcript_en"]
+    assert "9:30" not in card["transcript_original"] + card["transcript_en"]
+    assert "малыш" not in card["transcript_original"] and "little ones" not in card["transcript_en"]
+    assert screen["title"] == "Who is allowed on deck at 17:00"
+    assert screen["shift"]["time_label"] == "17:00–17:30" and "Lily" in screen["shift"]["lanes_label"]
+    understood = conn.execute("SELECT data FROM case_event WHERE kind = 'callout_understood'").fetchone()[0]
+    assert understood["understood"]["start_times"] == ["17:00"] and understood["by"] != "fallback"
+    assert understood["matched_shift_ids"] == [PRIVATE] and understood["rest_of_day_shift_ids"] == []
+    times = [t["time_label"] for t in screen["timeline"] if t.get("label")]
+    assert times[0] == "12:10" and all("12:10" <= t <= "12:16" for t in times)
+    first_ask = asks(conn, conn.execute("SELECT id FROM cover_case").fetchone()[0])[0]
+    assert first_ask[5] == PRIVATE_NOW.replace(minute=42)  # asked at 12:12, 30 min to answer
+    calls = conn.execute("SELECT purpose, ok, coalesce((ref->>'synthetic')::boolean, false) FROM model_call").fetchall()
+    assert calls and all(ok and synthetic for _, ok, synthetic in calls)
 
 
 def test_the_case_page_shows_the_schools_local_time(morning):

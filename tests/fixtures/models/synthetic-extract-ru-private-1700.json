@@ -1,0 +1,26 @@
+{
+ "purpose": "extract_callout",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "transcript": "Привет, это Марина. Я заболела, в 5 не смогу провести индивидуальное занятие с Лили. Простите."
+ },
+ "input_sha256": "2ca58c8f69de73d06d1815e46b2061c3e4898c8ba0209752b9cfec5f81b41b1e",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: written by hand to the extract_callout schema for ru-callout-private-1700.ogg (synthesized locally with macOS say -v Milena); to be recorded live on Vultr",
+ "duration_ms": 1350,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 441,
+   "completion_tokens": 55
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"language\": \"ru\", \"absent\": true, \"start_times\": [\"17:00\"], \"reason\": \"illness\", \"summary_en\": \"Marina is sick and can't teach her 17:00 private lesson with Lily.\"}"
+    }
+   }
+  ]
+ }
+}
