@@ -34,8 +34,9 @@ from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
-from coachcover import a2a, ext_db, forecast, mcp_server, notify
+from coachcover import a2a, ext_db, forecast, mcp_server, notify, whatif
 from coachcover.demo import clock_now
+from coachcover.models import ModelError
 from coachcover.seed import POLICY_ID
 
 MAX_AUDIO_BYTES = 10 * 1024 * 1024
@@ -151,6 +152,39 @@ def approve_loan(ref: str, body: LoanApprove, request: Request, conn: psycopg.Co
 @router.get("/api/week")
 def week(venue: str | None = None, start: date | None = None, conn: psycopg.Connection = Depends(get_conn)):
     return _call(forecast.week, conn, policy_id(), clock_now(conn), venue, start)
+
+
+# --- "what if?" (idea 6) ---------------------------------------------------------------------
+
+@router.post("/api/whatif")
+async def what_if(request: Request):
+    """JSON {"text": ...} or multipart with `text` or `audio`. Returns a plan with dry_run: true."""
+    text, audio, filename = None, None, "question.ogg"
+    if request.headers.get("content-type", "").startswith("application/json"):
+        try:
+            body = await request.json()
+        except ValueError:
+            return JSONResponse(status_code=422, content={"error": "send JSON {\"text\": ...}"})
+        text = body.get("text") if isinstance(body, dict) else None
+    else:
+        form = await request.form()
+        text = form.get("text")
+        upload = form.get("audio")
+        if upload is not None and hasattr(upload, "read"):
+            audio = await upload.read(MAX_AUDIO_BYTES + 1)
+            if len(audio) > MAX_AUDIO_BYTES:
+                return JSONResponse(status_code=413, content={"error": "audio is larger than 10 MB"})
+            filename = upload.filename or filename
+            text = None
+
+    def work():
+        with connect(dsn_of(request.app)) as conn:
+            try:
+                return _call(whatif.run, conn, policy_id(), clock_now(conn), text=text, audio=audio, filename=filename)
+            except ModelError as exc:
+                return JSONResponse(status_code=502, content={"error": f"model step failed: {exc}"})
+
+    return await to_thread.run_sync(work)
 
 
 # --- team chat posts (idea 10) -------------------------------------------------------------

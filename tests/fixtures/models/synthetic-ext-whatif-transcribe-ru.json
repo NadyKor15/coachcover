@@ -1,0 +1,17 @@
+{
+ "purpose": "transcribe",
+ "model": "whisper-large-v3-turbo",
+ "input": {
+  "audio_sha256": "886c31358c1238b1c39f00e81f7711677515179dffafe72c2ee73daabf322268"
+ },
+ "input_sha256": "69aca0c4888759f3264e47450b5234d98e66ec586635fcc6d758966bfde623b7",
+ "synthetic": true,
+ "source": "synthetic: the audio is macOS text-to-speech (voice Milena) of this exact sentence; the speech model was not called",
+ "duration_ms": 640,
+ "response": {
+  "text": " А если завтра и Мария заболеет?",
+  "model": "whisper-large-v3-turbo",
+  "language": "russian",
+  "duration": 2.08
+ }
+}
