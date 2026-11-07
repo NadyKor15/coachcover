@@ -41,21 +41,30 @@ python3 -m http.server 8080 --bind 127.0.0.1 -d web
 
 ## Fixture mode
 
-`?fixture=1` reads `fixtures/*.json` instead of the API. The files follow `docs/API-CONTRACT-2026-11-06.md` (training school, fictional names of the contract).
+`?fixture=1` reads `fixtures/*.json` instead of the API. Every file is an answer of the running API, captured by `tests/web/make_fixtures.py` (replay mode, training school), so the fixtures and the live screens tell the same story.
+
+```bash
+POSTGRES_PASSWORD=$(openssl rand -hex 16) API_PORT=18088 COACHCOVER_JUDGE_RUNS_PER_HOUR=60 \
+  docker compose -p ccweb-fx up -d --build          # own project name: own db, network and volume
+python3 tests/web/make_fixtures.py http://127.0.0.1:18088 web/fixtures
+docker compose -p ccweb-fx down -v --rmi local
+```
 
 | File | Stands for |
 |---|---|
-| `fixtures/today.json` | `GET /api/today` after the 5 a.m. call-out (default) |
-| `fixtures/today.nobody_accepts.json` | `GET /api/today` after the judge runs "Nobody accepts" |
-| `fixtures/offers/O-1.json` | `GET /api/offers/O-1` |
-| `fixtures/cases/C-1109-01.json` | `GET /api/cases/C-1109-01`, the case of the covered morning |
-| `fixtures/mocks.json` | answers of the POST calls |
+| `fixtures/today.json` | `GET /api/today` after the judge runs the 5 a.m. call-out (default) |
+| `fixtures/today.nobody_accepts.json`, `today.nightly_check.json` | `GET /api/today` after the other two judge runs |
+| `fixtures/today.ratio_open.json`, `today.ratio_covered.json` | `GET /api/today` after 2 children are enrolled into G003: ratio banner red, then green |
+| `fixtures/offers/O-*.json` | `GET /api/offers/{id}`: every offer of the morning, plus one open offer for the phone screen |
+| `fixtures/cases/C-*.json` | `GET /api/cases/{id}`: the morning's case and the ratio case |
+| `fixtures/mocks.json` | the real answers of the POST calls, captured in the same run |
 
-POST calls in fixture mode:
+POST calls and switches in fixture mode:
 
-- `POST /api/judge/run` answers `{"case_id": …}` per scenario, then the screen re-reads `/api/today`. "Night check" has no fixture of its own and shows the default morning.
-- `POST /api/plans/{id}/approve` answers 200 when the hash matches; add `&mock=plan_changed` to get `409 {"reason":"plan changed", …}`.
-- `POST /api/offers/{id}/accept|decline` answers 200; add `&mock=not_eligible` to get `409 {"reason": …}` on accept.
+- `POST /api/judge/run` answers what the API answered for that scenario, then the screen re-reads `/api/today`.
+- `POST /api/plans/{id}/approve` answers 200 when the hash matches; `&mock=plan_changed` gives the real `409 {"reason":"plan changed", …}`.
+- `POST /api/offers/{id}/accept|decline` answers the real 200; `&mock=not_eligible` gives the real 409 on accept.
+- `&mock=ratio_open` / `&mock=ratio_covered` show the ratio banner states.
 
 ## Endpoints the screens use
 
@@ -74,14 +83,17 @@ How fields are used, beyond the plain slots:
 - `plan_b.state`: `standby` (button off), `proposed` or `pending` (button on), `approved` / `done` / `executed` (shown as approved).
 - `timeline[].kind`: `callout`, `declined`, `no_reply`, `accepted`, `plan_b`, `shift_start`; other kinds get a grey mark. A label that starts with a staff name is split into name + result on two lines.
 - `offers[].result`: same words as `kind`. The row text after the name comes from the timeline label of the same person and time ("no reply in 5 min"), else from `result`. `why_first` is shown under the accepted offer.
-- `eligibility.reasons[].tone`: `red`, `amber` (needs review), anything else plain. Chips split the label before a trailing date or qualifier ("Certificate expired | Nov 5", "Over 40 h | this week"); an optional `detail` field overrides the split.
+- `eligibility.reasons[].tone`: `red`, `amber` (needs review), anything else plain.
 - `eligibility.first_refusal.label`: shown after the staff name; the word `BLOCKED:` is set in bold when present.
-- `money`: every value is optional. `null`, `0` and `"…"` count as unknown and are not shown; with no known value the block is hidden.
+- `money`: `uncovered_morning_label` "If nobody had accepted: $240 (Refunds: 8 participants × $30)" is shown as title, sum and detail; the line under it is the lesson price source (`money.source_label` when the API has it, else `risk.assumptions.lesson_price.source` of the morning's case, without the internal "(TG …)" reference); "This cover: … in model calls" from `case_cost_cents`. `null`, `0` and `"…"` count as unknown; with no known value the block is hidden.
+- `ratio_alert`: banner right of the title, red while the seat is open, green once covered (`label · action_label`); a click opens that case. Without a ratio case the same place shows `night_check.label` in amber.
+- `eligibility.reasons`: one-line chips in up to 3 rows; chips with the same code and the same first words become one chip ("Certificate expired" ×3, exact labels in the tooltip and on the case page); what does not fit folds into "+N more".
+- `offers[].why_first`: shown under the accepted offer with the key "why <first name>".
 - `summary_cards[]`: icon is picked by the title (tomorrow → calendar, expiring/certificate → certificate, closures → pool).
 
-## Case JSON (proposed shape for `GET /api/cases/{id}`)
+## Case JSON (`GET /api/cases/{id}`)
 
-The contract lists the steps of a case but no fields. The page reads this shape (see `fixtures/cases/C-1109-01.json`):
+The page reads these fields (see `fixtures/cases/C-1109-01.json`); kinds it has no layout for (`flagged`, `night_check`, `ratio`) show their title and summary:
 
 - top: `case_id`, `status` (`covered` gives the gold pill), `status_label`, `covered_time_label`, `shift_label`, `venue{id,name}`, `date_label`, `user_label`, `opened_at`, `closed_at` (UTC);
 - `steps[]` in time order, each `{kind, at (UTC ISO), time_label ("10:12:04 UTC"), title}` plus by kind:
@@ -98,7 +110,6 @@ The contract lists the steps of a case but no fields. The page reads this shape 
 
 ```bash
 python3 -m pytest tests/web                      # fixtures follow the contract and tell one story
-python3 tests/web/make_fixtures.py web/fixtures   # rebuilds the fixtures from one script
 PLAYWRIGHT_MODULE=<…/node_modules/playwright> node tests/web/e2e_fixture.js --shots web/shots   # buttons, 200 and 409 paths
 python3 tests/web/compare_regions.py web/shots/ref-variant-C.png web/shots/C-fixture-1920.png  # region diff against the approved HTML
 ```

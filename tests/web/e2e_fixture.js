@@ -50,76 +50,117 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
   const server = await serve();
   const base = 'http://127.0.0.1:' + server.address().port + '/';
   const browser = await chromium.launch();
-  const today = JSON.parse(fs.readFileSync(path.join(WEB, 'fixtures/today.json'), 'utf8'));
-  const offerFx = JSON.parse(fs.readFileSync(path.join(WEB, 'fixtures/offers/O-1.json'), 'utf8'));
+  const fx = name => JSON.parse(fs.readFileSync(path.join(WEB, 'fixtures', name), 'utf8'));
+  const today = fx('today.json'), nobody = fx('today.nobody_accepts.json'), night = fx('today.nightly_check.json');
+  const ratioOpen = fx('today.ratio_open.json'), ratioCovered = fx('today.ratio_covered.json'), mocks = fx('mocks.json');
+  const caseId = today.callout.case_id, caseFx = fx('cases/' + caseId + '.json');
+  const accepted = today.offers.find(o => o.result === 'accepted');
+  const acceptedFx = fx('offers/' + accepted.id + '.json');
+  const pendingId = fs.readdirSync(path.join(WEB, 'fixtures/offers')).map(f => f.replace('.json', ''))
+    .find(id => fx('offers/' + id + '.json').state === 'pending');
+  const pendingFx = fx('offers/' + pendingId + '.json');
+  const hoursOf = s => ((s || '').match(/(\d+(?:\.\d+)?) h this week/) || [])[1];
+  const when = o => o.shift_start + '–' + o.shift_end + ' ' + o.shift_day;
+  const lessonSource = String(caseFx.risk.assumptions.lesson_price.source || '').replace(/\s*\(TG \d+\)\s*$/, '');
   try {
-    /* ---------- screen C, fixture: first look ---------- */
+    /* ---------- screen C, fixture: the morning as the API answers it ---------- */
     let p = await newPage(browser, 1920, 1080);
     await p.goto(base + 'index.html?fixture=1');
     await ready(p);
     check('C: state ready', await p.evaluate(() => document.body.dataset.state) === 'ready');
-    check('C: title', await text(p, 'h1') === 'Who is allowed on deck at 06:00');
+    check('C: title from data', await text(p, 'h1') === today.title);
     const nav = await texts(p, '.nav li');
     check('C: menu', JSON.stringify(nav) === JSON.stringify(['Today', 'Staff & Certificates', 'Cases', 'Groups', 'Closures', 'Reports', 'Schedule', 'Settings']), nav);
-    check('C: Schedule not first', nav.indexOf('Schedule') > 0);
+    const e = today.eligibility;
     const dots = await p.$$eval('.dot', ds => ds.map(d => ({ cls: d.className, title: d.title })));
-    check('C: 40 dots', dots.length === 40, dots.length);
-    check('C: 6 lit', dots.filter(d => /\b(on|gold)\b/.test(d.cls)).length === 6);
+    check('C: one dot per person', dots.length === e.staff.length && e.staff.length === e.total, dots.length);
+    check('C: lit dots = eligible', dots.filter(d => /\b(on|gold)\b/.test(d.cls)).length === e.eligible);
     const gold = dots.filter(d => /\bgold\b/.test(d.cls));
-    check('C: one gold = Maria Lopez', gold.length === 1 && gold[0].title.startsWith('Maria Lopez'), gold);
-    const anna = dots.find(d => d.title.startsWith('Anna Kim'));
-    check('C: Anna Kim dimmed in the grid', anna && !/\b(on|gold)\b/.test(anna.cls), anna);
-    const counts = await p.$$eval('[data-slot="reason-count"]', es => es.map(e => +e.textContent.replace('×', '')));
-    check('C: reason counts add up to 34', counts.reduce((a, b) => a + b, 0) === 34, counts);
-    check('C: refusal line', await text(p, '#refusal') === 'Anna Kim · free and willing · BLOCKED: Lifeguard certificate expired Nov 5 · 8 kids · ratio 1:4', await text(p, '#refusal'));
-    check('C: RosterElf quote', (await text(p, '#refusalQuote')).includes('RosterElf help center'));
-    check('C: timeline times', JSON.stringify(await texts(p, '.tl-time')) === JSON.stringify(['05:12', '05:13', '05:15', '05:19', '06:00']), await texts(p, '.tl-time'));
-    check('C: timeline labels', JSON.stringify(await texts(p, '.tl-chip')) === JSON.stringify(['Call-out', 'Sofia Reyes declined', 'Leo Martins no reply in 5 min', 'Maria Lopez accepted']), await texts(p, '.tl-chip'));
-    const chipBoxes = await p.$$eval('.tl-chip', es => es.map(e => { const r = e.getBoundingClientRect(); return [r.left, r.right]; }));
+    check('C: gold dot = the person who took it', gold.length === 1 && gold[0].title.startsWith(accepted.staff), gold);
+    const anna = dots.find(d => d.title.startsWith(e.first_refusal.staff));
+    check('C: the first refusal is dimmed in the grid', anna && !/\b(on|gold)\b/.test(anna.cls), anna);
+    const counts = await p.$$eval('[data-slot="reason-count"]', es => es.map(x => +x.textContent.replace('×', '')));
+    check('C: chip counts add up to the filtered people', counts.reduce((a, b) => a + b, 0) === e.total - e.eligible, counts);
+    const chipText = (await texts(p, '[data-slot="reason-chip"]')).join(' | ');
+    for (const code of ['CERT_REVOKED', 'REST_TOO_SHORT']) {
+      const r = e.reasons.find(x => x.code === code);
+      check('C: chip from data ' + code, r && chipText.includes(r.label), r && r.label);
+    }
+    check('C: revoked chip says simulated registry', /REVOKED by issuer .*\(simulated registry\)/.test(chipText), chipText);
+    check('C: refusal line from data', await text(p, '#refusal') === e.first_refusal.staff + ' · ' + e.first_refusal.label, await text(p, '#refusal'));
+    check('C: RosterElf quote from data', await text(p, '#refusalQuote') === e.first_refusal.contrast_quote);
+    const inCard = await p.evaluate(() => { const c = document.querySelector('.staff').getBoundingClientRect();
+      return ['#chips', '#refusal', '#refusalQuote'].every(s => { const r = document.querySelector(s).getBoundingClientRect(); return r.bottom <= c.bottom - 2 && r.right <= c.right; }); });
+    check('C: chips, refusal and quote stay inside the card', inCard);
+    check('C: timeline times', JSON.stringify(await texts(p, '.tl-time')) === JSON.stringify(today.timeline.map(t => t.time_label)), await texts(p, '.tl-time'));
+    const chipBoxes = await p.$$eval('.tl-chip', es => es.map(x => { const r = x.getBoundingClientRect(); return [r.left, r.right]; }));
     check('C: timeline chips do not overlap', chipBoxes.every((b, i) => i === 0 || chipBoxes[i - 1][1] + 8 < b[0]), chipBoxes);
-    check('C: offer rows', JSON.stringify(await texts(p, '.off-row')) === JSON.stringify(['05:13 Sofia Reyes — declined', '05:15 Leo Martins — no reply in 5 min', '05:19 Maria Lopez — accepted']), await texts(p, '.off-row'));
-    check('C: why first at the accepted offer', await visible(p, '#whyFirst') && await text(p, '[data-slot="why-first"]') === 'Maria first: 12 h this week, Level 3, same pool');
-    check('C: voice note original (RU)', /[А-Яа-я]/.test(await text(p, '[data-slot="callout-original"]')));
-    check('C: voice note translation (EN)', (await text(p, '[data-slot="callout-transcript"]')).includes("I can't come at 6"));
-    check('C: Marina Petrova from data', await text(p, '[data-slot="callout-staff"]') === 'Marina Petrova · Lifeguard + WSI');
-    check('C: both transcripts fit the card uncut', await p.evaluate(() => {
-      const card = document.querySelector('.callout').getBoundingClientRect(), tx = document.querySelector('.tx').getBoundingClientRect();
-      return tx.bottom <= card.bottom - 8 && [...document.querySelectorAll('.tx-t')].every(e => e.scrollHeight <= e.clientHeight + 1);
-    }));
-    check('C: whisper line', await text(p, '[data-slot="callout-asr"]') === 'whisper on Vultr · 1.0 s');
+    const rows = await texts(p, '.off-row');
+    check('C: offer rows from data', rows.length === Math.min(3, today.offers.length) &&
+      today.offers.slice(-3).every((o, i) => rows[i].startsWith(o.time_label + ' ' + o.staff + ' — ')), rows);
+    check('C: why line under the accepted offer', await visible(p, '#whyFirst') && await text(p, '[data-slot="why-first"]') === accepted.why_first);
+    check('C: why label names the person', await text(p, '[data-slot="why-name"]') === 'why ' + accepted.staff.split(' ')[0] &&
+      await p.$eval('[data-slot="why-name"]', x => x.innerText) === 'WHY ' + accepted.staff.split(' ')[0].toUpperCase());
+    check('C: voice note original + translation from data', await text(p, '[data-slot="callout-original"]') === '“' + today.callout.transcript_original + '”' &&
+      await text(p, '[data-slot="callout-transcript"]') === '“' + today.callout.transcript_en + '”');
+    check('C: whisper line from data', await text(p, '[data-slot="callout-asr"]') === today.callout.asr_label);
     check('C: tagline', await text(p, '.tagline') === "Not who's free — who's allowed. Running on Vultr.");
-    check('C: covered banner', await text(p, '[data-slot="covered"]') === '06:00 covered by Maria Lopez · 0 lessons cancelled');
-    check('C: money shows only the case cost', await visible(p, '#money') && await text(p, '[data-slot="money-case"]') === '0.3¢' &&
-      !(await visible(p, '#moneyHour')) && !(await visible(p, '#moneyUncovered')));
+    check('C: covered banner', await text(p, '[data-slot="covered"]') === today.outcome.covered_time + ' covered by ' + today.outcome.covered_by + ' · ' + today.outcome.lessons_cancelled + ' lessons cancelled');
+    const label = today.money.uncovered_morning_label.match(/^(.*?):\s*(\$[\d,.]+)\s*\((.*)\)$/);
+    check('C: money from data', await text(p, '[data-slot="money-head"]') === label[1] && await text(p, '[data-slot="money-big"]') === label[2] &&
+      await text(p, '[data-slot="money-detail"]') === label[3], [await text(p, '#money'), label]);
+    check('C: money source caption', lessonSource && await text(p, '[data-slot="money-source"]') === lessonSource, await text(p, '[data-slot="money-source"]'));
+    check('C: case cost line', await visible(p, '#moneyCase') && (await text(p, '#moneyCase')).includes('¢'));
     check('C: plan B standby, button disabled', await text(p, '#planbHead') === 'Plan B ready if no one accepts' && await p.$eval('#approve', b => b.disabled));
-    check('C: Cases link goes to the case', (await p.$eval('#navCases', a => a.getAttribute('href'))) === 'case.html?id=C-1109-01&fixture=1');
+    check('C: plan B text fits two lines', await p.evaluate(() => { const t = document.querySelector('[data-slot="planb-text"]');
+      return t.scrollHeight - parseFloat(getComputedStyle(t).paddingTop) <= parseFloat(getComputedStyle(t).lineHeight) * 2 + 2; }));
+    check('C: no ratio banner without a ratio case', !(await visible(p, '#alert')));
+    check('C: Cases link goes to the case', (await p.$eval('#navCases', a => a.getAttribute('href'))) === 'case.html?id=' + caseId + '&fixture=1');
     check('C: no console errors', p._errors.length === 0, p._errors);
     const geo0 = await geometry(p);
     check('C: blocks where the layout puts them', geo0 === '.band:144+182 .grid:342+500 .covered:861+67 .planb:940+76 #money:861+155 .foot:1044+22', geo0);
 
-    /* judge mode: nobody accepts → approve (200) */
+    /* judge mode: nobody accepts → approve (200), night check, back to the morning */
     await p.click('[data-scenario="nobody_accepts"]');
-    await p.waitForFunction(() => /C-1109-02/.test(document.getElementById('judgeStatus').textContent));
+    await p.waitForFunction(() => /Nobody accepts” done/.test(document.getElementById('judgeStatus').textContent));
     await p.waitForFunction(() => !document.getElementById('approve').disabled);
-    check('C judge: nobody accepts → case id shown', (await text(p, '#judgeStatus')).includes('case C-1109-02'));
-    check('C judge: banner not covered', (await text(p, '[data-slot="covered"]')).startsWith('06:00 not covered yet'));
-    check('C judge: timeline has plan B', (await texts(p, '.tl-chip')).includes('Plan B proposed'));
-    check('C judge: why first hidden when nobody accepted', !(await visible(p, '#whyFirst')));
+    check('C judge: nobody accepts → case id shown', (await text(p, '#judgeStatus')).includes('case ' + mocks.judge_run.nobody_accepts.case_id));
+    check('C judge: banner not covered', (await text(p, '[data-slot="covered"]')).includes('not covered yet'));
     check('C judge: plan B needs approval', await text(p, '#planbHead') === 'Plan B needs your approval');
+    check('C judge: why line hidden when nobody accepted', !(await visible(p, '#whyFirst')));
     check('C judge: layout does not move between states', await geometry(p) === geo0, await geometry(p));
     await shot(p, 'C-fixture-nobody-accepts.png');
     await p.click('#approve');
     await p.waitForFunction(() => document.getElementById('planbHead').textContent === 'Plan B approved');
     check('C approve: 200 → approved', await text(p, '#approve') === 'Approved' && await p.$eval('#approve', b => b.disabled));
     await p.click('[data-scenario="nightly_check"]');
-    await p.waitForFunction(() => /C-1109-N1/.test(document.getElementById('judgeStatus').textContent));
-    check('C judge: night check → case id shown', (await text(p, '#judgeStatus')).includes('“Night check” done · case C-1109-N1'));
+    await p.waitForFunction(() => /Night check” done/.test(document.getElementById('judgeStatus').textContent));
+    await p.waitForFunction(() => !document.getElementById('alert').hidden);
+    check('C judge: night check banner from data', await text(p, '[data-slot="alert-text"]') === night.night_check.label && await p.$eval('#alert', a => a.classList.contains('amber')));
+    check('C judge: night check title from data', await text(p, 'h1') === night.title);
+    await shot(p, 'C-fixture-night-check.png');
     await p.click('[data-scenario="dangerous_morning"]');
-    await p.waitForFunction(() => /C-1109-01/.test(document.getElementById('judgeStatus').textContent));
-    await p.waitForFunction(() => document.querySelector('[data-slot="covered"]').textContent.includes('covered by Maria Lopez'));
-    check('C judge: 5 a.m. call-out → back to the covered morning', true);
+    await p.waitForFunction(t => document.querySelector('h1').textContent === t && document.getElementById('alert').hidden, today.title);
+    check('C judge: 5 a.m. call-out → back to the covered morning', (await text(p, '[data-slot="covered"]')).includes('covered by ' + today.outcome.covered_by));
     check('C judge: no console errors', p._errors.length === 0, p._errors);
     await p.close();
+
+    /* ratio norm banner: red while the seat is open, green once covered */
+    for (const [mock, fxd, tone] of [['ratio_open', ratioOpen, 'red'], ['ratio_covered', ratioCovered, 'green']]) {
+      p = await newPage(browser, 1920, 1080);
+      await p.goto(base + 'index.html?fixture=1&mock=' + mock);
+      await ready(p);
+      const a = fxd.ratio_alert;
+      check('C ratio ' + mock + ': banner tone ' + tone, await visible(p, '#alert') && await p.$eval('#alert', (x, t) => x.classList.contains(t), tone));
+      check('C ratio ' + mock + ': banner text from data', await text(p, '[data-slot="alert-text"]') === a.label + ' · ' + a.action_label);
+      check('C ratio ' + mock + ': banner opens the ratio case', (await p.$eval('#alert', x => x.getAttribute('href'))) === 'case.html?id=' + a.case_id + '&fixture=1');
+      check('C ratio ' + mock + ': banner clear of the title', await p.evaluate(() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('h1'));
+        return document.getElementById('alert').getBoundingClientRect().left > r.getBoundingClientRect().right + 10; }));
+      check('C ratio ' + mock + ': layout does not move', await geometry(p) === geo0);
+      await shot(p, 'C-fixture-' + mock.replace('_', '-') + '.png');
+      await p.close();
+    }
+    check('C ratio: covered says who', ratioCovered.ratio_alert.action_label.startsWith('Covered by '));
 
     /* plan changed → 409 line */
     p = await newPage(browser, 1920, 1080);
@@ -134,13 +175,13 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await shot(p, 'C-fixture-plan-changed-409.png');
     await p.close();
 
-    /* live wiring: /api/* calls, hash in the approve body, 409 from the server */
+    /* live wiring: /api/* calls, hash in the approve body, 409 and 429 from the server */
     p = await newPage(browser, 1920, 1080);
-    const nobody = JSON.parse(fs.readFileSync(path.join(WEB, 'fixtures/today.nobody_accepts.json'), 'utf8'));
     let approveBody = null, todayCalls = 0, judgeBody = null;
     await p.route('**/api/today*', r => { todayCalls++; r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(nobody) }); });
-    await p.route('**/api/plans/*/approve', r => { approveBody = r.request().postDataJSON(); r.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ reason: 'plan changed', current_hash: 'x' }) }); });
-    await p.route('**/api/judge/run', r => { judgeBody = r.request().postDataJSON(); r.fulfill({ status: 429, contentType: 'application/json', body: JSON.stringify({ detail: 'too many runs' }) }); });
+    await p.route('**/api/cases/*', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(caseFx) }));
+    await p.route('**/api/plans/*/approve', r => { approveBody = r.request().postDataJSON(); r.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify(mocks.plans[nobody.plan_b.id].conflict) }); });
+    await p.route('**/api/judge/run', r => { judgeBody = r.request().postDataJSON(); r.fulfill({ status: 429, contentType: 'application/json', body: JSON.stringify({ error: 'limit of 6 judge runs per hour reached' }) }); });
     await p.goto(base + 'index.html');
     await ready(p);
     check('live: GET /api/today used', todayCalls >= 1);
@@ -154,23 +195,22 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('live: judge 429 shown, not swallowed', (await text(p, '#judgeStatus')).includes('429'), await text(p, '#judgeStatus'));
     await p.close();
 
-    /* money block layout with all three values (test-only numbers, never in fixtures) */
+    /* money block: hidden without data; case cost alone when nothing else is known (test-only values) */
     p = await newPage(browser, 1920, 1080);
-    const full = JSON.parse(JSON.stringify(today));
-    full.money = { uncovered_morning_usd: 111, uncovered_morning_label: null, case_cost_cents: 0.3, manager_hour_usd: 22 };
-    await p.route('**/fixtures/today.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(full) }));
+    const empty = JSON.parse(JSON.stringify(today));
+    empty.money = { uncovered_morning_usd: null, uncovered_morning_label: null, case_cost_cents: null, manager_hour_usd: null };
+    await p.route('**/fixtures/today.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(empty) }));
     await p.goto(base + 'index.html?fixture=1');
     await ready(p);
-    check('money: three lines when data has them', await visible(p, '#moneyHour') && await visible(p, '#moneyUncovered') &&
-      await text(p, '[data-slot="money-manager-hour"]') === '$22' && await text(p, '[data-slot="money-uncovered"]') === '$111');
-    check('money: block stays inside its card', await p.$eval('#money', m => m.scrollHeight <= m.clientHeight + 1 && m.scrollWidth <= m.clientWidth + 1));
-    const empty = JSON.parse(JSON.stringify(today));
-    empty.money = { uncovered_morning_usd: 0, uncovered_morning_label: '…', case_cost_cents: null, manager_hour_usd: 0 };
+    check('money: hidden when there is no data', !(await visible(p, '#money')));
     await p.unroute('**/fixtures/today.json');
-    await p.route('**/fixtures/today.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(empty) }));
+    const caseOnly = JSON.parse(JSON.stringify(today));
+    caseOnly.money = { uncovered_morning_usd: null, uncovered_morning_label: null, case_cost_cents: 0.25, manager_hour_usd: null };
+    await p.route('**/fixtures/today.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(caseOnly) }));
     await p.reload();
     await ready(p);
-    check('money: hidden when there is no data (0, null, "…")', !(await visible(p, '#money')));
+    check('money: case cost alone', await text(p, '[data-slot="money-head"]') === 'Cost of this cover' && await text(p, '[data-slot="money-big"]') === '0.3¢' &&
+      !(await visible(p, '[data-slot="money-source"]')));
     await p.close();
 
     /* load failure is shown */
@@ -183,93 +223,93 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
 
     /* ---------- screen P2 ---------- */
     p = await newPage(browser, 430, 1080);
-    await p.goto(base + 'offer.html?id=O-1&fixture=1');
+    await p.goto(base + 'offer.html?id=' + accepted.id + '&fixture=1');
     await ready(p);
     const why = await texts(p, '[data-slot="why-text"]');
-    check('P2: why you from data', JSON.stringify(why) === JSON.stringify(offerFx.why), why);
-    const hoursC = (today.offers.find(o => o.result === 'accepted').why_first.match(/(\d+(?:\.\d+)?) h this week/) || [])[1];
-    const hoursP = (why.join(' ').match(/(\d+(?:\.\d+)?) h this week/) || [])[1];
-    check('P2: hours equal to "why first" on screen C', hoursC && hoursC === hoursP, [hoursC, hoursP]);
-    check('P2: ask line', await text(p, '.ask') === 'Can you cover 06:00–08:00 today?');
-    check('P2: timer 4:12', await text(p, '[data-slot="expires-in"]') === '4:12');
-    await p.click('[data-action="accept"]');
-    await p.waitForSelector('#result:not([hidden])');
-    check('P2 accept: 200 → accepted', await text(p, '#result') === 'Accepted. You cover 06:00–08:00 today.', await text(p, '#result'));
-    await shot(p, 'P2-fixture-accepted.png');
+    check('P2: why you from data', JSON.stringify(why) === JSON.stringify(acceptedFx.why), why);
+    check('P2: hours equal to the why line on screen C', hoursOf(accepted.why_first) && hoursOf(accepted.why_first) === hoursOf(why.join(' ')), [accepted.why_first, why]);
+    check('P2: answered offer shows its state, no buttons', await text(p, '#result') === 'Accepted. You cover ' + when(acceptedFx) + '.' && !(await visible(p, '#buttons')));
     check('P2: no console errors', p._errors.length === 0, p._errors);
+    await shot(p, 'P2-fixture-answered.png');
     await p.close();
 
     p = await newPage(browser, 430, 1080);
-    await p.goto(base + 'offer.html?id=O-1&fixture=1&mock=not_eligible');
+    await p.goto(base + 'offer.html?id=' + pendingId + '&fixture=1');
+    await ready(p);
+    check('P2 pending: ask line', await text(p, '.ask') === 'Can you cover ' + pendingFx.shift_start + '–' + pendingFx.shift_end + ' ' + pendingFx.shift_day + '?');
+    const left = pendingFx.expires_in_s;
+    check('P2 pending: timer from data', await text(p, '[data-slot="expires-in"]') === Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0'));
+    check('P2 pending: buttons', await visible(p, '#buttons'));
+    await p.click('[data-action="accept"]');
+    await p.waitForSelector('#result:not([hidden])');
+    check('P2 accept: 200 → accepted', await text(p, '#result') === 'Accepted. You cover ' + when(pendingFx) + '.', await text(p, '#result'));
+    await shot(p, 'P2-fixture-accepted.png');
+    await p.close();
+
+    p = await newPage(browser, 430, 1080);
+    await p.goto(base + 'offer.html?id=' + pendingId + '&fixture=1&mock=not_eligible');
     await ready(p);
     await p.click('[data-action="accept"]');
     await p.waitForSelector('#result:not([hidden])');
-    check('P2 accept: 409 → no longer eligible + reason', await text(p, '#result') === 'You are no longer eligible for this shift: already booked 06:00–08:00', await text(p, '#result'));
+    check('P2 accept: 409 → no longer eligible + reason from the API', await text(p, '#result') === 'You are no longer eligible for this shift: ' + mocks.offers[pendingId].accept_conflict.reason, await text(p, '#result'));
     await shot(p, 'P2-fixture-not-eligible-409.png');
     await p.close();
 
     p = await newPage(browser, 430, 1080);
-    await p.goto(base + 'offer.html?id=O-1&fixture=1');
+    await p.goto(base + 'offer.html?id=' + pendingId + '&fixture=1');
     await ready(p);
     await p.click('[data-action="decline"]');
     await p.waitForSelector('#result:not([hidden])');
     check('P2 decline: 200 → declined', await text(p, '#result') === 'Declined. Thank you for answering.');
     await p.close();
 
-    /* P2 live wiring: 409 reason from the server, then a 500 that keeps the buttons */
+    /* P2 live wiring: a 500 keeps the buttons, then a 409 reason from the server */
     p = await newPage(browser, 430, 1080);
     let acceptCalls = 0;
-    await p.route('**/api/offers/O-1', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(offerFx) }));
-    await p.route('**/api/offers/O-1/accept', r => { acceptCalls++; r.fulfill({ status: 500, body: '' }); });
-    await p.goto(base + 'offer.html?id=O-1');
+    await p.route('**/api/offers/' + pendingId, r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(pendingFx) }));
+    await p.route('**/api/offers/' + pendingId + '/accept', r => { acceptCalls++; r.fulfill({ status: 500, body: '' }); });
+    await p.goto(base + 'offer.html?id=' + pendingId);
     await ready(p);
     await p.click('[data-action="accept"]');
     await p.waitForSelector('#loadErr:not([hidden])');
     check('P2 live: 500 shown and buttons stay', acceptCalls === 1 && (await text(p, '#loadErr')).includes('HTTP 500') && !(await p.$eval('[data-action="accept"]', b => b.disabled)));
-    await p.unroute('**/api/offers/O-1/accept');
-    await p.route('**/api/offers/O-1/accept', r => r.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ reason: 'Lifeguard certificate expired Nov 5' }) }));
+    await p.unroute('**/api/offers/' + pendingId + '/accept');
+    await p.route('**/api/offers/' + pendingId + '/accept', r => r.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ reason: 'Lifeguard certificate expired Nov 5' }) }));
     await p.click('[data-action="accept"]');
     await p.waitForSelector('#result:not([hidden])');
     check('P2 live: 409 reason from the server', await text(p, '#result') === 'You are no longer eligible for this shift: Lifeguard certificate expired Nov 5');
     await p.close();
 
     /* ---------- case page ---------- */
-    const caseFx = JSON.parse(fs.readFileSync(path.join(WEB, 'fixtures/cases/C-1109-01.json'), 'utf8'));
     p = await newPage(browser, 1920, 1080);
-    await p.goto(base + 'case.html?id=C-1109-01&fixture=1');
+    await p.goto(base + 'case.html?id=' + caseId + '&fixture=1');
     await ready(p);
+    const steps = Object.fromEntries(caseFx.steps.map(s => [s.kind, s]));
     check('case: state ready', await p.evaluate(() => document.body.dataset.state) === 'ready');
-    check('case: title', await text(p, '.case-title') === 'Case C-1109-01 · 06:00 Lanes 3–4 + Learn-to-Swim Level 3', await text(p, '.case-title'));
-    check('case: pill', await text(p, '#pill') === 'Covered · 05:19', await text(p, '#pill'));
-    check('case: steps in order', JSON.stringify(await texts(p, '[data-slot="step-title"]')) === JSON.stringify(['Voice call-out', 'Shift identified', 'Who is allowed', 'Offers in order', 'Schedule covered']));
-    check('case: UTC stamps', JSON.stringify(await texts(p, '[data-slot="step-time"]')) === JSON.stringify(['10:12:04 UTC', '10:12:06 UTC', '10:12:07 UTC', '10:12:08 UTC', '10:19:31 UTC']));
+    check('case: title from data', await text(p, '.case-title') === 'Case ' + caseFx.case_id + ' · ' + caseFx.shift_label);
+    check('case: title not cut', await p.$eval('.case-title', t => t.scrollWidth <= t.clientWidth + 1));
+    check('case: pill', await text(p, '#pill') === caseFx.status_label + ' · ' + caseFx.covered_time_label);
+    check('case: steps in order', JSON.stringify(await texts(p, '[data-slot="step-title"]')) === JSON.stringify(caseFx.steps.map(s => s.title)));
+    check('case: UTC stamps', JSON.stringify(await texts(p, '[data-slot="step-time"]')) === JSON.stringify(caseFx.steps.map(s => s.time_label)));
     check('case: voice note = screen C', await text(p, '[data-slot="callout-original"]') === '“' + today.callout.transcript_original + '”' &&
       await text(p, '[data-slot="callout-translation"]') === '“' + today.callout.transcript_en + '”');
-    check('case: Anna Kim blocked', await text(p, '[data-slot="blocked-row"]') === 'Anna Kim · ' + today.eligibility.first_refusal.label);
-    check('case: 40 → 6', await text(p, '[data-slot="allowed-summary"]') === '40 staff → 6 allowed');
-    const caseCounts = await p.$$eval('[data-slot="reason-count"]', es => es.map(e => +e.textContent.replace('×', '')));
-    check('case: reasons add up to 34', caseCounts.reduce((a, b) => a + b, 0) === 34, caseCounts);
-    check('case: offers', JSON.stringify(await texts(p, '[data-slot="offer-row"]')) === JSON.stringify(['Sofia Reyes — declined', 'Leo Martins — no reply in 5 min', 'Maria Lopez — accepted · Maria first: 12 h this week, Level 3, same pool']), await texts(p, '[data-slot="offer-row"]'));
-    check('case: models line', await text(p, '.facts li:last-child') === 'Models: 4 calls · $0.003', await text(p, '.facts li:last-child'));
-    check('case: model table', JSON.stringify(await texts(p, '[data-slot="model-row"]')) === JSON.stringify(['whisper-large-v3-turbo 1 call', 'muse-glimmer-30b 2 calls', 'nemotron-omni 1 call']), await texts(p, '[data-slot="model-row"]'));
+    check('case: blocked line = screen C refusal', await text(p, '[data-slot="blocked-row"]') === e.first_refusal.staff + ' · ' + e.first_refusal.label);
+    const caseCounts = await p.$$eval('[data-slot="reason-count"]', es => es.map(x => +x.textContent.replace('×', '')));
+    check('case: reasons add up', caseCounts.reduce((a, b) => a + b, 0) === steps.allowed.total - steps.allowed.allowed, caseCounts);
+    const accRow = (await texts(p, '[data-slot="offer-row"]')).find(t => t.startsWith(accepted.staff));
+    check('case: accepted offer with its why line', accRow === accepted.staff + ' — accepted · ' + accepted.why_first, accRow);
+    check('case: models line', await text(p, '.facts li:last-child') === 'Models: ' + caseFx.model_calls.length + ' calls · $' + Number(caseFx.model_cost_usd.toPrecision(2)), await text(p, '.facts li:last-child'));
     check('case: plan hash shortened from data', await text(p, '[data-slot="plan-hash"]') === caseFx.proof.plan_hash.slice(0, 4) + '…' + caseFx.proof.plan_hash.slice(-4));
-    check('case: risk block hidden without money', !(await visible(p, '#risk')));
+    check('case: if-nobody-accepted card from data', await visible(p, '#risk') &&
+      await p.$eval('#risk p', x => x.innerText) === caseFx.risk.kids + ' kids · refunds $' + caseFx.risk.refunds_usd + ' · $' + caseFx.risk.total_usd + ' at risk', await p.$eval('#risk p', x => x.innerText));
+    check('case: price source under the sums', (await text(p, '[data-slot="risk-source"]')).endsWith(lessonSource));
+    check('case: no horizontal scroll', await p.evaluate(() => document.documentElement.scrollWidth <= 1920));
     check('case: tagline', await text(p, '.foot') === 'Not who’s free — who’s allowed. Running on Vultr.');
     const dl = await p.evaluate(async () => { const a = document.getElementById('download'); return { name: a.download, body: await (await fetch(a.href)).text() }; });
-    check('case: download = the case JSON', dl.name === 'case-C-1109-01.json' && JSON.stringify(JSON.parse(dl.body)) === JSON.stringify(caseFx), dl.name);
+    check('case: download = the case JSON', dl.name === 'case-' + caseId + '.json' && JSON.stringify(JSON.parse(dl.body)) === JSON.stringify(caseFx), dl.name);
     const rail = await p.evaluate(() => { const r = document.getElementById('rail').getBoundingClientRect(), d = [...document.querySelectorAll('.s-dot')].map(x => x.getBoundingClientRect()); return [r.top, r.bottom, d[0].top + 10, d[d.length - 1].top + 10]; });
     check('case: rail from first dot to last', Math.abs(rail[0] - rail[2]) < 1.5 && Math.abs(rail[1] - rail[3]) < 1.5, rail);
     check('case: no console errors', p._errors.length === 0, p._errors);
-    await p.close();
-
-    /* risk block shows only the sums the data has (test-only numbers, never in fixtures) */
-    p = await newPage(browser, 1920, 1080);
-    const withMoney = JSON.parse(JSON.stringify(caseFx));
-    withMoney.risk = { kids: 8, refunds_usd: 111, overtime_usd: null, total_usd: 222 };
-    await p.route('**/fixtures/cases/C-1109-01.json', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(withMoney) }));
-    await p.goto(base + 'case.html?id=C-1109-01&fixture=1');
-    await ready(p);
-    check('case risk: only known sums', await visible(p, '#risk') && await p.$eval('#risk p', e => e.innerText) === '8 kids · refunds $111 · $222 at risk', await p.$eval('#risk p', e => e.innerText));
     await p.close();
 
     /* case: errors are shown */
@@ -282,19 +322,25 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('case: no id → error line', (await text(p, '#loadErr')).startsWith('No case id'));
     await p.close();
 
-    /* screen C opens the case: covered line and timeline */
+    /* screen C opens the case: covered line, timeline, ratio banner */
     p = await newPage(browser, 1920, 1080);
     await p.goto(base + 'index.html?fixture=1');
     await ready(p);
-    await Promise.all([p.waitForURL('**/case.html?id=C-1109-01&fixture=1'), p.click('#covered')]);
-    check('C → case: covered line opens the case', p.url().endsWith('case.html?id=C-1109-01&fixture=1'));
+    const caseUrl = '**/case.html?id=' + caseId + '&fixture=1';
+    await Promise.all([p.waitForURL(caseUrl), p.click('#covered')]);
+    check('C → case: covered line opens the case', p.url().endsWith('case.html?id=' + caseId + '&fixture=1'));
     await p.goto(base + 'index.html?fixture=1');
     await ready(p);
-    await Promise.all([p.waitForURL('**/case.html?id=C-1109-01&fixture=1'), p.click('.band', { position: { x: 1500, y: 150 } })]);
-    check('C → case: timeline opens the case', p.url().endsWith('case.html?id=C-1109-01&fixture=1'));
+    await Promise.all([p.waitForURL(caseUrl), p.click('.band', { position: { x: 1500, y: 150 } })]);
+    check('C → case: timeline opens the case', p.url().endsWith('case.html?id=' + caseId + '&fixture=1'));
     await ready(p);
     await Promise.all([p.waitForURL('**/index.html?fixture=1'), p.click('.nav li[data-href]')]);
     check('case → Today', p.url().endsWith('index.html?fixture=1'));
+    await p.goto(base + 'index.html?fixture=1&mock=ratio_open');
+    await ready(p);
+    await Promise.all([p.waitForURL('**/case.html?id=' + ratioOpen.ratio_alert.case_id + '&fixture=1'), p.click('#alert')]);
+    await ready(p);
+    check('C → ratio case from the banner', (await text(p, '[data-slot="case-id"]')) === ratioOpen.ratio_alert.case_id);
     await p.close();
   } finally {
     await browser.close();
