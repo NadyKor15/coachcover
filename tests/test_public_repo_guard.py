@@ -12,7 +12,7 @@ PATTERNS = re.compile(
 )
 SKIP_DIRS = {".git", ".venv", "__pycache__", ".pytest_cache", ".ruff_cache", "node_modules"}
 SKIP_FILES = {ROOT / "uv.lock", Path(__file__).resolve()}
-SKIP_TREES = (ROOT / "web" / "fixtures",)
+SKIP_TREES = ()  # web/fixtures is scanned too: the screens lane re-shoots it clean
 BINARY = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".ogg", ".mp3", ".wav", ".pdf", ".zip", ".woff", ".woff2"}
 
 

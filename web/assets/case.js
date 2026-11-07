@@ -21,13 +21,13 @@
   /* ---------- steps ---------- */
   function line(cls, text, slot) { return slotted(el('div', 's-line ' + cls, text), slot); }
 
-  // a chip's status: the answer's tone when it has one, else the same code groups the Today screen gets as red / amber
+  // a chip's status: the answer's tone (risk / fragile) when it has one; the code groups below are only a fallback
   const RISK_CODES = new Set(['CERT_EXPIRED', 'CERT_EXPIRES_DURING_SHIFT', 'CERT_NOT_YET_VALID', 'CERT_REVOKED', 'RATIO_EXCEEDED']);
   const FRAGILE_CODES = new Set(['CERT_NEEDS_REVIEW', 'PROGRAM_RENEWAL_OVERDUE', 'REST_TOO_SHORT']);
   function toneClass(r) {
     const t = String(r.tone || '').toLowerCase();
-    if (t === 'red' || (!t && RISK_CODES.has(r.code))) return ' tone-risk';
-    if (t === 'amber' || (!t && FRAGILE_CODES.has(r.code))) return ' tone-fragile';
+    if (t === 'risk' || t === 'red' || (!t && RISK_CODES.has(r.code))) return ' tone-risk';
+    if (t === 'fragile' || t === 'amber' || (!t && FRAGILE_CODES.has(r.code))) return ' tone-fragile';
     return '';
   }
 

@@ -81,9 +81,10 @@ a2a.ensure_network(conn)
 # Northside would keep only 3 guards on site or free, and its minimum is 4: it declines ("would leave itself short").
 SITE_SHORT = EXHAUST + "conn.execute(\"UPDATE ext_network_member SET min_guards = 4 WHERE venue_id = 'N1'\")\n"
 # Kai Morgan gets 32 h more this week: Northside (44 h) still offers him, Riverside (40 h) rejects him.
+# Riverside's week is Mon 9 - Sun 15, Northside's Sun 8 - Sat 14: the Sunday block counts on Riverside's side only.
 OVER_HOURS = EXHAUST + """
 role = conn.execute("SELECT role_id FROM shift WHERE id = 'N-1110-1000'").fetchone()[0]
-for i, (day, begin, finish) in enumerate((("2026-11-08", "06:00", "14:00"), ("2026-11-11", "13:00", "21:00"),
+for i, (day, begin, finish) in enumerate((("2026-11-15", "06:00", "14:00"), ("2026-11-11", "13:00", "21:00"),
                                        ("2026-11-13", "06:00", "14:00"), ("2026-11-14", "06:00", "14:00"))):
     conn.execute("INSERT INTO shift (id, venue_id, zone_id, role_id, starts_at, ends_at, staff_id)"
                  " VALUES (%s, 'N1', 'N1-MAIN', %s, %s::timestamp AT TIME ZONE 'America/New_York',"
@@ -109,9 +110,23 @@ def ext_fixtures(base: str, setup_cmd: list[str], save, out: Path) -> None:
         save(f"loans/{name}.json", loan)
         mocks["loan_files"][name] = f"loans/{name}.json"
 
-    # the week of the main story
+    # the week of the main story (the API's own week: Monday to Sunday), then standby proposals on it
     ok(base, "POST", "/api/judge/run", {"scenario": "dangerous_morning"})
-    save("week.json", ok(base, "GET", "/api/week?venue=V1&start=2026-11-08"))
+    week = ok(base, "GET", "/api/week?venue=V1")
+    save("week.json", week)
+    pick = week["fixes"]["standby"][0]
+    cell = next(c for d in week["days"] for c in d["cells"] if c["shift_id"] == pick["shift_id"])
+    today = ok(base, "GET", "/api/today")
+    lifeguard_only = next(s["id"] for s in today["eligibility"]["staff"] if s["reason_label"] == "No WSI")
+    standby = {}
+    standby["created"] = ok(base, "POST", "/api/standby", {"shift_id": pick["shift_id"], "staff_id": pick["staff_id"]}, expect=201)
+    standby["repeat"] = ok(base, "POST", "/api/standby", {"shift_id": pick["shift_id"], "staff_id": pick["staff_id"]}, expect=409)
+    standby["holder"] = ok(base, "POST", "/api/standby", {"shift_id": pick["shift_id"], "staff_id": cell["holder"]["staff_id"]}, expect=409)
+    standby["not_cleared"] = ok(base, "POST", "/api/standby", {"shift_id": pick["shift_id"], "staff_id": lifeguard_only}, expect=409)
+    standby["unknown"] = ok(base, "POST", "/api/standby", {"shift_id": "L-0000-NONE", "staff_id": pick["staff_id"]}, expect=404)
+    save("week_mocks.json", {"_note": "Answers of POST /api/standby on the week above, captured by make_fixtures.py. In ?fixture=1 the "
+                                      "first proposal answers created (201), the same one again repeat (409); &mock=standby_conflict "
+                                      "answers not_cleared (409).", "standby": standby})
 
     # the judge's network scene: 5 of 5 say no at Riverside, Northside lends Kai Morgan, both managers approve
     run = ok(base, "POST", "/api/judge/run", {"scenario": "network_loan"})

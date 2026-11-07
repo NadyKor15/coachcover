@@ -360,7 +360,8 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('week: every fragile shift is a fragile or at-risk cell with its number and tag', week.fragile.every(id => {
       const c = wcells.find(x => x.shift === id); const d = byId[id];
       return c && c.level === LV[d.level] && c.txt === d.backups + (d.level === 'at_risk' ? ' at risk' : ' fragile'); }), wcells.filter(c => c.level !== 'safe' && c.level !== 'none'));
-    check('week: started shifts are grey', wcells.filter(c => c.level === 'past').length > 0);
+    const pastCells = week.days.flatMap(d => d.cells).filter(c => c.past).length;
+    check('week: started shifts are grey (when the week has any)', pastCells === 0 || wcells.filter(c => c.level === 'past').length > 0);
     const legend = await texts(p, '[data-slot="legend-item"]');
     check('week: legend from data, threshold included', legend.includes(week.legend.find(l => l.level === 'fragile').label + ' (fragile)') &&
       legend.includes(week.legend.find(l => l.level === 'at_risk').label + ' (at risk)') && legend.includes(week.legend.find(l => l.level === 'safe').label + ' (safe)'), legend);
@@ -371,11 +372,38 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('week: diamond for at risk, dot for fragile', wdots.every(l => l === 'risk' || l === 'fragile') && wdots.includes('risk'), wdots);
     check('week: tips from data', JSON.stringify(await texts(p, '[data-slot="tip-text"]')) === JSON.stringify([week.fixes.standby[0].text, week.fixes.training.best.text]));
     check('week: tips fit their boxes', await p.$$eval('.tip', es => es.every(t => t.scrollHeight <= t.clientHeight + 1)));
+    const wm = fx('week_mocks.json').standby;
     await p.click('[data-slot="tip-action"]');
-    check('week: Propose standby only says what it can do', (await text(p, '[data-slot="tip-result"]')).startsWith('Not sent'));
+    await p.waitForFunction(() => document.querySelector('[data-slot="tip-action"]').textContent.startsWith('Proposed'));
+    check('week: Propose standby 201 -> "Proposed · SB-n", button off', await text(p, '[data-slot="tip-action"]') === 'Proposed · ' + wm.created.id &&
+      await p.$eval('[data-slot="tip-action"]', b => b.disabled) && (await text(p, '[data-slot="tip-result"]')).startsWith('Nothing is booked'));
+    check('week: proposal is for the suggested person and shift', wm.created.shift_id === week.fixes.standby[0].shift_id && wm.created.staff_id === week.fixes.standby[0].staff_id && wm.created.status === 'proposed');
     check('week: menu links', (await p.$eval('[data-nav="network"]', a => a.getAttribute('href'))) === 'network.html?fixture=1' &&
       (await p.$eval('[data-nav="today"]', a => a.getAttribute('href'))) === 'index.html?fixture=1');
     check('week: no console errors', p._errors.length === 0, p._errors);
+    await p.close();
+
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'week.html?fixture=1&mock=standby_conflict');
+    await ready(p);
+    await p.click('[data-slot="tip-action"]');
+    await p.waitForFunction(() => (document.querySelector('[data-slot="tip-result"]') || {}).textContent);
+    check('week: Propose standby 409 -> the reason, button back', await text(p, '[data-slot="tip-result"]') === 'Not proposed — ' + wm.not_cleared.error &&
+      !(await p.$eval('[data-slot="tip-action"]', b => b.disabled)));
+    await p.close();
+    p = await newPage(browser, 1920, 1080);
+    let sbBody = null;
+    let weekUrl = null;
+    await p.route('**/api/today*', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(today) }));
+    await p.route('**/api/week*', r => { weekUrl = r.request().url(); r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(week) }); });
+    await p.route('**/api/standby', r => { sbBody = r.request().postDataJSON(); r.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify(wm.holder) }); });
+    await p.goto(base + 'week.html');
+    await ready(p);
+    await p.click('[data-slot="tip-action"]');
+    await p.waitForFunction(() => (document.querySelector('[data-slot="tip-result"]') || {}).textContent);
+    check('week live: asks the API for the manager\'s venue', weekUrl && new URL(weekUrl).searchParams.get('venue') === today.venue.id, weekUrl);
+    check('week live: standby sends shift and person', sbBody && sbBody.shift_id === week.fixes.standby[0].shift_id && sbBody.staff_id === week.fixes.standby[0].staff_id, sbBody);
+    check('week live: 409 holder reason shown', await text(p, '[data-slot="tip-result"]') === 'Not proposed — ' + wm.holder.error);
     await p.close();
 
     /* ---------- network: the loan step by step, both managers, the 409s ---------- */

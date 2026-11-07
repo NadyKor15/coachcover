@@ -122,6 +122,14 @@
     }
     let m = p.match(/^\/api\/network\/loans\/([^/]+)\/approve$/);
     if (m) return approveLoan(body);
+    if (p === '/api/standby') {
+      const W = (await fixtureFile('week_mocks.json')).body.standby;
+      if (MOCKS.has('standby_conflict')) return { status: 409, body: W.not_cleared };
+      const key = (body && body.shift_id) + '|' + (body && body.staff_id);
+      if (fx.standby && fx.standby[key]) return { status: 409, body: W.repeat };
+      fx.standby = Object.assign(fx.standby || {}, { [key]: true });
+      return { status: 201, body: W.created };
+    }
     if (p === '/api/network/loans') {
       const N = await netMocks();
       if (MOCKS.has('ask_conflict')) return { status: 409, body: N.ask.conflict };

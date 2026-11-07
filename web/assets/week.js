@@ -17,9 +17,13 @@
   const startOf = c => String(c.time_label || '').split('–')[0];
   const dayOf = c => String(c.label || '').split(' ')[0];
 
-  function weekPath() {
+  // without ?venue= the API answers for every venue of the school; the screen is one venue: the manager's
+  function weekPath(today) {
     const q = new URLSearchParams();
-    ['venue', 'start'].forEach(k => { const v = CC.params.get(k); if (v) q.set(k, v); });
+    const venue = CC.params.get('venue') || (today && today.venue && today.venue.id);
+    if (venue) q.set('venue', venue);
+    const start = CC.params.get('start');
+    if (start) q.set('start', start);
     const s = q.toString();
     return '/api/week' + (s ? '?' + s : '');
   }
@@ -163,11 +167,19 @@
       if (t.action) {
         const btn = el('button', 'btn', t.action); btn.type = 'button'; btn.dataset.slot = 'tip-action';
         btn.dataset.shift = t.standby.shift_id; btn.dataset.staff = t.standby.staff_id;
-        // the API has no standby route yet: say so instead of pretending the proposal went out
-        btn.addEventListener('click', () => {
+        // only a proposal: POST /api/standby books nothing; 201 → "Proposed · SB-n", 409 / 404 → the reason
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          const r = await CC.post('/api/standby', { shift_id: t.standby.shift_id, staff_id: t.standby.staff_id });
           let done = tx.querySelector('.done');
           if (!done) { done = el('span', 'done'); done.dataset.slot = 'tip-result'; tx.appendChild(done); }
-          done.textContent = 'Not sent: the API has no standby proposal yet';
+          if (r.status === 201 && r.body && r.body.id) {
+            btn.textContent = 'Proposed · ' + r.body.id;
+            done.textContent = 'Nothing is booked until the manager approves.';
+          } else {
+            btn.disabled = false;
+            done.textContent = 'Not proposed — ' + ((r.body && (r.body.error || r.body.detail)) || CC.errorText(r));
+          }
           fitTip(box);
         });
         box.appendChild(btn);
@@ -188,14 +200,16 @@
   }
 
   async function load() {
-    const [r, t] = await Promise.all([CC.get(weekPath()), CC.get('/api/today')]);
+    const t = await CC.get('/api/today');
+    const today = t.status === 200 ? t.body : null;
+    const r = await CC.get(weekPath(today));  // without start: the API's own Monday to Sunday
     const err = $('#loadErr');
     if (r.status === 200 && r.body && typeof r.body === 'object') {
-      render(r.body, t.status === 200 ? t.body : null);
+      render(r.body, today);
       err.hidden = true;
       document.body.dataset.state = 'ready';
     } else {
-      err.textContent = 'Could not load ' + weekPath() + ' — ' + CC.errorText(r);
+      err.textContent = 'Could not load ' + weekPath(today) + ' — ' + CC.errorText(r);
       err.hidden = false;
       document.body.dataset.state = 'error';
     }

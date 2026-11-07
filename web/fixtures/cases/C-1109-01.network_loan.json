@@ -13,7 +13,7 @@
   "date_label": "Mon, Nov 9",
   "user_label": "Dana Ruiz · Manager",
   "opened_at": "2026-11-09T10:12:00Z",
-  "closed_at": "2026-11-09T10:17:20Z",
+  "closed_at": "2026-11-09T10:17:22Z",
   "steps": [
     {
       "kind": "callout",
@@ -51,72 +51,86 @@
         {
           "code": "CERT_MISSING",
           "label": "No WSI",
-          "count": 12
+          "count": 12,
+          "tone": "risk"
         },
         {
           "code": "OVERLAPS_COMMITMENT",
           "label": "Teaching at 7:00",
-          "count": 6
+          "count": 6,
+          "tone": "risk"
         },
         {
           "code": "RESERVE",
           "label": "Reserve (head coach)",
-          "count": 3
+          "count": 3,
+          "tone": "risk"
         },
         {
           "code": "OVERLAPS_COMMITMENT",
           "label": "Teaching at 6:00",
-          "count": 3
+          "count": 3,
+          "tone": "risk"
         },
         {
           "code": "LEVEL_MISSING",
           "label": "Not cleared for LTS-3",
-          "count": 2
+          "count": 2,
+          "tone": "risk"
         },
         {
           "code": "IS_THE_ABSENT_PERSON",
           "label": "Called out",
-          "count": 1
+          "count": 1,
+          "tone": "risk"
         },
         {
           "code": "CERT_EXPIRED",
           "label": "Certificate expired Nov 2",
-          "count": 1
+          "count": 1,
+          "tone": "risk"
         },
         {
           "code": "CERT_EXPIRED",
           "label": "Certificate expired Nov 5",
-          "count": 1
+          "count": 1,
+          "tone": "risk"
         },
         {
           "code": "CERT_EXPIRED",
           "label": "Certificate expired Nov 8",
-          "count": 1
+          "count": 1,
+          "tone": "risk"
         },
         {
           "code": "PROGRAM_RENEWAL_OVERDUE",
           "label": "LTS renewal overdue",
-          "count": 1
+          "count": 1,
+          "tone": "fragile"
         },
         {
           "code": "REST_TOO_SHORT",
           "label": "Only 9 h rest since 21:00",
-          "count": 1
+          "count": 1,
+          "tone": "fragile"
         },
         {
           "code": "HOURS_LIMIT_EXCEEDED",
           "label": "Over 40 h this week",
-          "count": 1
+          "count": 1,
+          "tone": "risk"
         },
         {
           "code": "CERT_NEEDS_REVIEW",
           "label": "Readers disagree — review",
-          "count": 1
+          "count": 1,
+          "tone": "fragile"
         },
         {
           "code": "CERT_REVOKED",
           "label": "Valid until Jun 2028 — REVOKED by issuer on Jul 24 (simulated registry)",
-          "count": 1
+          "count": 1,
+          "tone": "risk"
         }
       ],
       "staff": [
@@ -169,34 +183,16 @@
           "reason_label": "Certificate expired Nov 8"
         },
         {
-          "id": "S27",
-          "name": "Anna Kim",
-          "allowed": false,
-          "reason_label": "Certificate expired Nov 5"
-        },
-        {
-          "id": "S18",
-          "name": "Chloe Hayes",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
           "id": "S08",
           "name": "Grace Sullivan",
           "allowed": false,
           "reason_label": "Teaching at 7:00"
         },
         {
-          "id": "S13",
-          "name": "Elena Kuznetsova",
+          "id": "S27",
+          "name": "Anna Kim",
           "allowed": false,
-          "reason_label": "Readers disagree — review"
-        },
-        {
-          "id": "S02",
-          "name": "Sofía García",
-          "allowed": false,
-          "reason_label": "Teaching at 6:00"
+          "reason_label": "Certificate expired Nov 5"
         },
         {
           "id": "S15",
@@ -205,10 +201,16 @@
           "reason_label": "Teaching at 6:00"
         },
         {
-          "id": "S33",
-          "name": "Ekaterina Belova",
+          "id": "S18",
+          "name": "Chloe Hayes",
           "allowed": false,
-          "reason_label": "No WSI"
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S02",
+          "name": "Sofía García",
+          "allowed": false,
+          "reason_label": "Teaching at 6:00"
         },
         {
           "id": "S30",
@@ -223,28 +225,16 @@
           "reason_label": "No WSI"
         },
         {
-          "id": "S19",
-          "name": "Zoe Coleman",
+          "id": "S13",
+          "name": "Elena Kuznetsova",
           "allowed": false,
-          "reason_label": "Teaching at 7:00"
+          "reason_label": "Readers disagree — review"
         },
         {
-          "id": "S03",
-          "name": "Valentina Castillo",
+          "id": "S33",
+          "name": "Ekaterina Belova",
           "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S21",
-          "name": "Pavel Orlov",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S10",
-          "name": "Dmitri Volkov",
-          "allowed": false,
-          "reason_label": "Certificate expired Nov 2"
+          "reason_label": "No WSI"
         },
         {
           "id": "S34",
@@ -259,26 +249,20 @@
           "reason_label": "No WSI"
         },
         {
-          "id": "S38",
-          "name": "Paula Jiménez",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
           "id": "S31",
           "name": "Mason Turner",
           "allowed": false,
           "reason_label": "No WSI"
         },
         {
-          "id": "S16",
-          "name": "Andrés Delgado",
+          "id": "S14",
+          "name": "Irina Lebedeva",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-3"
+          "reason_label": "LTS renewal overdue"
         },
         {
-          "id": "S01",
-          "name": "Emma Carter",
+          "id": "S03",
+          "name": "Valentina Castillo",
           "allowed": false,
           "reason_label": "Teaching at 7:00"
         },
@@ -289,20 +273,20 @@
           "reason_label": "Not cleared for LTS-3"
         },
         {
-          "id": "S04",
-          "name": "Daniel Brooks",
-          "allowed": false,
-          "reason_label": "Teaching at 6:00"
-        },
-        {
           "id": "S28",
           "name": "Ava Mitchell",
           "allowed": false,
           "reason_label": "No WSI"
         },
         {
-          "id": "S37",
-          "name": "Andrei Kozlov",
+          "id": "S01",
+          "name": "Emma Carter",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S39",
+          "name": "Caleb Ward",
           "allowed": false,
           "reason_label": "No WSI"
         },
@@ -313,16 +297,46 @@
           "reason_label": "No WSI"
         },
         {
-          "id": "S39",
-          "name": "Caleb Ward",
+          "id": "S04",
+          "name": "Daniel Brooks",
+          "allowed": false,
+          "reason_label": "Teaching at 6:00"
+        },
+        {
+          "id": "S21",
+          "name": "Pavel Orlov",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S38",
+          "name": "Paula Jiménez",
           "allowed": false,
           "reason_label": "No WSI"
         },
         {
-          "id": "S14",
-          "name": "Irina Lebedeva",
+          "id": "S19",
+          "name": "Zoe Coleman",
           "allowed": false,
-          "reason_label": "LTS renewal overdue"
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S37",
+          "name": "Andrei Kozlov",
+          "allowed": false,
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S16",
+          "name": "Andrés Delgado",
+          "allowed": false,
+          "reason_label": "Not cleared for LTS-3"
+        },
+        {
+          "id": "S10",
+          "name": "Dmitri Volkov",
+          "allowed": false,
+          "reason_label": "Certificate expired Nov 2"
         },
         {
           "id": "S24",
@@ -419,8 +433,8 @@
     },
     {
       "kind": "covered",
-      "at": "2026-11-09T10:17:20Z",
-      "time_label": "10:17:20 UTC",
+      "at": "2026-11-09T10:17:22Z",
+      "time_label": "10:17:22 UTC",
       "title": "Schedule covered",
       "summary": "06:00 covered by Kai Morgan · 0 lessons cancelled"
     }

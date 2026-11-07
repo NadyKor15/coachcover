@@ -1,7 +1,7 @@
 {
   "offer_id": "O-4",
   "state": "pending",
-  "staff": "Sofía García",
+  "staff": "Diego Navarro",
   "shift_day": "today",
   "shift_start": "07:00",
   "shift_end": "07:30",
@@ -9,12 +9,12 @@
   "shift_detail": "Teaching pool + Learn-to-Swim Level 1 (beginner) (6 kids)",
   "needs_label": "Instructor",
   "why": [
-    "WSI — valid to Dec 2026",
-    "CPR/AED — valid to Apr 2028",
+    "WSI — valid to Feb 2028",
+    "CPR/AED — valid to Sep 2027",
     "LTS-1 program — current",
-    "6.25 h this week"
+    "5.25 h this week"
   ],
-  "why_first": "Sofía first: 6.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families",
+  "why_first": "Diego first: 5.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families",
   "expires_in_s": 299,
   "window_s": 300,
   "manager": {

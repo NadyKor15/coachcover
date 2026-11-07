@@ -62,8 +62,8 @@
   }
   function toneOf(t) {
     const s = String(t || '').toLowerCase();
-    if (s === 'red' || s === 'expired') return 'expired';
-    if (s === 'amber' || s === 'gold' || s === 'review') return 'review';
+    if (s === 'red' || s === 'risk' || s === 'expired') return 'expired';
+    if (s === 'amber' || s === 'fragile' || s === 'gold' || s === 'review') return 'review';
     return 'plain';
   }
   // the API's cents format (money.cents_label): 2 decimals from 1¢, else 3, below 0.001¢ 4
@@ -451,7 +451,7 @@
     const hasUnc = present(m.uncovered_morning_usd) || presentLabel(m.uncovered_morning_label);
     box.hidden = !(hasCase || hasUnc);
     $('#moneyCase').hidden = !(hasCase && hasUnc);
-    setText('money-case', hasCase ? fmtCents(m.case_cost_cents) : '');
+    setText('money-case', hasCase ? (m.case_cost_label || fmtCents(m.case_cost_cents)) : '');
     let head = '', big = '', detail = '';
     if (hasUnc) {
       const parts = presentLabel(m.uncovered_morning_label) ? String(m.uncovered_morning_label).match(UNCOVERED) : null;
@@ -460,7 +460,7 @@
       detail = parts ? (parts[3] || '') : (presentLabel(m.uncovered_morning_label) ? m.uncovered_morning_label : '');
     } else if (hasCase) {
       head = 'Cost of this cover';
-      big = fmtCents(m.case_cost_cents);
+      big = m.case_cost_label || fmtCents(m.case_cost_cents);
       detail = 'in model calls';
     }
     setText('money-head', head);

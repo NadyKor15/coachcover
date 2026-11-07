@@ -43,59 +43,68 @@
         {
           "code": "LEVEL_MISSING",
           "label": "Not cleared for LTS-1",
-          "count": 13
+          "count": 13,
+          "tone": "risk"
         },
         {
           "code": "ROLE_MISSING",
           "label": "Role: not an instructor",
-          "count": 13
+          "count": 13,
+          "tone": "risk"
         },
         {
           "code": "OVERLAPS_COMMITMENT",
           "label": "Teaching at 7:00",
-          "count": 4
+          "count": 4,
+          "tone": "risk"
         },
         {
           "code": "RESERVE",
           "label": "Reserve (head coach)",
-          "count": 3
+          "count": 3,
+          "tone": "risk"
         },
         {
           "code": "CALLED_OUT",
           "label": "Called out sick today",
-          "count": 1
+          "count": 1,
+          "tone": "risk"
         },
         {
           "code": "CERT_EXPIRED",
           "label": "Certificate expired Nov 2",
-          "count": 1
+          "count": 1,
+          "tone": "risk"
         },
         {
           "code": "CERT_EXPIRED",
           "label": "Certificate expired Nov 8",
-          "count": 1
+          "count": 1,
+          "tone": "risk"
         },
         {
           "code": "CERT_NEEDS_REVIEW",
           "label": "Readers disagree — review",
-          "count": 1
+          "count": 1,
+          "tone": "fragile"
         },
         {
           "code": "OVERLAPS_COMMITMENT",
           "label": "Teaching at 6:00",
-          "count": 1
+          "count": 1,
+          "tone": "risk"
         }
       ],
       "staff": [
         {
-          "id": "S02",
-          "name": "Sofía García",
+          "id": "S15",
+          "name": "Diego Navarro",
           "allowed": true,
           "reason_label": null
         },
         {
-          "id": "S15",
-          "name": "Diego Navarro",
+          "id": "S02",
+          "name": "Sofía García",
           "allowed": true,
           "reason_label": null
         },
@@ -118,6 +127,12 @@
           "reason_label": "Certificate expired Nov 8"
         },
         {
+          "id": "S08",
+          "name": "Grace Sullivan",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
           "id": "S27",
           "name": "Anna Kim",
           "allowed": false,
@@ -130,28 +145,10 @@
           "reason_label": "Not cleared for LTS-1"
         },
         {
-          "id": "S08",
-          "name": "Grace Sullivan",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
           "id": "S25",
           "name": "Sofia Reyes",
           "allowed": false,
           "reason_label": "Not cleared for LTS-1"
-        },
-        {
-          "id": "S13",
-          "name": "Elena Kuznetsova",
-          "allowed": false,
-          "reason_label": "Readers disagree — review"
-        },
-        {
-          "id": "S33",
-          "name": "Ekaterina Belova",
-          "allowed": false,
-          "reason_label": "Role: not an instructor"
         },
         {
           "id": "S30",
@@ -166,38 +163,20 @@
           "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S19",
-          "name": "Zoe Coleman",
+          "id": "S13",
+          "name": "Elena Kuznetsova",
           "allowed": false,
-          "reason_label": "Teaching at 7:00"
+          "reason_label": "Readers disagree — review"
         },
         {
-          "id": "S21",
-          "name": "Pavel Orlov",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S03",
-          "name": "Valentina Castillo",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
-        },
-        {
-          "id": "S10",
-          "name": "Dmitri Volkov",
-          "allowed": false,
-          "reason_label": "Certificate expired Nov 2"
-        },
-        {
-          "id": "S34",
-          "name": "Logan Pierce",
+          "id": "S33",
+          "name": "Ekaterina Belova",
           "allowed": false,
           "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S38",
-          "name": "Paula Jiménez",
+          "id": "S34",
+          "name": "Logan Pierce",
           "allowed": false,
           "reason_label": "Role: not an instructor"
         },
@@ -208,28 +187,22 @@
           "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S26",
-          "name": "Leo Martins",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
-        },
-        {
           "id": "S31",
           "name": "Mason Turner",
           "allowed": false,
           "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S16",
-          "name": "Andrés Delgado",
+          "id": "S03",
+          "name": "Valentina Castillo",
           "allowed": false,
           "reason_label": "Not cleared for LTS-1"
         },
         {
-          "id": "S01",
-          "name": "Emma Carter",
+          "id": "S14",
+          "name": "Irina Lebedeva",
           "allowed": false,
-          "reason_label": "Teaching at 7:00"
+          "reason_label": "Not cleared for LTS-1"
         },
         {
           "id": "S09",
@@ -238,8 +211,8 @@
           "reason_label": "Not cleared for LTS-1"
         },
         {
-          "id": "S04",
-          "name": "Daniel Brooks",
+          "id": "S26",
+          "name": "Leo Martins",
           "allowed": false,
           "reason_label": "Not cleared for LTS-1"
         },
@@ -250,16 +223,10 @@
           "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S36",
-          "name": "Ella Morgan",
+          "id": "S01",
+          "name": "Emma Carter",
           "allowed": false,
-          "reason_label": "Role: not an instructor"
-        },
-        {
-          "id": "S37",
-          "name": "Andrei Kozlov",
-          "allowed": false,
-          "reason_label": "Role: not an instructor"
+          "reason_label": "Teaching at 7:00"
         },
         {
           "id": "S39",
@@ -268,8 +235,56 @@
           "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S14",
-          "name": "Irina Lebedeva",
+          "id": "S36",
+          "name": "Ella Morgan",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S04",
+          "name": "Daniel Brooks",
+          "allowed": false,
+          "reason_label": "Not cleared for LTS-1"
+        },
+        {
+          "id": "S21",
+          "name": "Pavel Orlov",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S38",
+          "name": "Paula Jiménez",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S19",
+          "name": "Zoe Coleman",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S37",
+          "name": "Andrei Kozlov",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S16",
+          "name": "Andrés Delgado",
+          "allowed": false,
+          "reason_label": "Not cleared for LTS-1"
+        },
+        {
+          "id": "S10",
+          "name": "Dmitri Volkov",
+          "allowed": false,
+          "reason_label": "Certificate expired Nov 2"
+        },
+        {
+          "id": "S24",
+          "name": "Gabriela Vargas",
           "allowed": false,
           "reason_label": "Not cleared for LTS-1"
         },
@@ -288,12 +303,6 @@
         {
           "id": "S22",
           "name": "Ethan Price",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
-        },
-        {
-          "id": "S24",
-          "name": "Gabriela Vargas",
           "allowed": false,
           "reason_label": "Not cleared for LTS-1"
         },
@@ -338,25 +347,25 @@
         {
           "id": "O-4",
           "time_label": "05:15",
-          "staff": "Sofía García",
+          "staff": "Diego Navarro",
           "result": "pending",
           "result_label": "asked, waiting",
-          "why_first": "Sofía first: 6.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
+          "why_first": "Diego first: 5.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
         },
         {
           "id": "O-5",
           "time_label": "05:15",
-          "staff": "Diego Navarro",
+          "staff": "Sofía García",
           "result": "pending",
           "result_label": "asked, waiting",
-          "why_first": "Diego second: 6.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
+          "why_first": "Sofía second: 6 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
         }
       ]
     }
   ],
   "proof": {
     "plan_id": null,
-    "plan_hash": "7e3ff5eb63d5088146845298edc0c3cbdc59cd08a0543b64deb3ab14f3f74079",
+    "plan_hash": "04b7015d8f1229418e999a763dfc6d55b3b556532ee67a939eddb3e90b0a72a7",
     "policy_label": "cover = auto · plan B = propose"
   },
   "model_calls": [],
