@@ -419,7 +419,9 @@
       const start = shiftStart || o.covered_time || '';
       add(null, (start ? start + ' ' : '') + 'not covered yet');
       add('sep', ' · ');
-      add(null, approved ? 'plan B approved' : p ? 'plan B needs your approval' : 'offers running');
+      // standby = plan B is ready but opens 20 min before the start; only a proposed plan asks the manager now
+      add(null, approved ? 'plan B approved' : p && p.state === 'standby' ? 'plan B ready, opens 20 min before the start'
+        : p ? 'plan B needs your approval' : 'offers running');
     }
   }
 
