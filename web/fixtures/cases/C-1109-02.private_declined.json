@@ -417,7 +417,7 @@
       "at": "2026-11-09T13:44:30Z",
       "time_label": "08:44:30 ET",
       "title": "Asked the parent about Marina, Wed 17:00",
-      "summary": "“No problem, Lily stays with Marina. Her lesson moves to Wed, Nov 11 at 17:00 with Marina. Does that work? Reply YES or NO.” · answer by 09:14 · written by the text model"
+      "summary": "“No problem, Lily stays with Marina. The lesson moves to Wed, Nov 11 at 17:00. Does that work? Reply YES or NO.” · answer by 09:14 · written by the text model"
     },
     {
       "kind": "family",
@@ -448,8 +448,8 @@
       "ms": 1050,
       "input_tokens": null,
       "output_tokens": null,
-      "cost_usd": 0.000103,
-      "source": "recorded answer tests/fixtures/models/synthetic-transcribe-ru-0930.json (synthetic)"
+      "cost_usd": 5.15e-05,
+      "source": "recorded answer tests/fixtures/models/synthetic-transcribe-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
     },
     {
       "at": "2026-11-09T13:40:10Z",
@@ -459,8 +459,8 @@
       "ms": 600,
       "input_tokens": 480,
       "output_tokens": 5,
-      "cost_usd": 2.5e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-filter-voice-ru-0930.json (synthetic)"
+      "cost_usd": 1.25e-05,
+      "source": "recorded answer tests/fixtures/models/synthetic-filter-voice-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
     },
     {
       "at": "2026-11-09T13:40:10Z",
@@ -470,8 +470,8 @@
       "ms": 1400,
       "input_tokens": 445,
       "output_tokens": 60,
-      "cost_usd": 0.000171,
-      "source": "recorded answer tests/fixtures/models/synthetic-extract-ru-0930.json (synthetic)"
+      "cost_usd": 8.55e-05,
+      "source": "recorded answer tests/fixtures/models/synthetic-extract-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
     },
     {
       "at": "2026-11-09T13:40:10Z",
@@ -481,8 +481,8 @@
       "ms": 900,
       "input_tokens": 140,
       "output_tokens": 36,
-      "cost_usd": 7.1e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-translate-ru-0930.json (synthetic)"
+      "cost_usd": 3.55e-05,
+      "source": "recorded answer tests/fixtures/models/synthetic-translate-ru-0930.json (synthetic) · the call-out's call, shared by 2 cases"
     },
     {
       "at": "2026-11-09T13:42:00Z",
@@ -507,8 +507,8 @@
       "source": "recorded answer tests/fixtures/models/synthetic-family-question-lily-reschedule-en.json (synthetic)"
     }
   ],
-  "model_cost_usd": 0.000594,
-  "model_cost_label": "0.059¢",
+  "model_cost_usd": 0.000409,
+  "model_cost_label": "0.041¢",
   "risk": {
     "kids": null,
     "private": true,

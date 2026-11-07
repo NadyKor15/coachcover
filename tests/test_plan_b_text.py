@@ -131,3 +131,10 @@ def test_the_childrens_norm_plan_reads_as_plain_words(new_database):
     lines = snapshot["text"]["lines"]
     assert lines and all(not M.PLAN_IDS.search(line) and not M.PLAN_CODES.search(line) for line in lines), lines
     assert M.plan_text_problems(M.plan_b_view(snapshot), snapshot["text"]) == []
+
+
+def test_the_morning_strip_says_the_plan_in_a_few_words():
+    lines = [M.plan_b_short_line(o) for o in M.plan_b_view(facts(EVERY_KIND))["options"]]
+    assert lines[1:5] == ["Liam Foster (reserve) steps in", "Camila Herrera: 15 min overtime ($8.50)",
+                          "Move it: makeup for 8 families by Dec 9", "Cancel: credit for 8 families"]
+    assert not any(M.PLAN_IDS.search(x) or M.PLAN_CODES.search(x) or M.DECIMAL_HOURS.search(x) for x in lines)

@@ -443,7 +443,7 @@
   "plan_b": {
     "id": "P-standby",
     "state": "standby",
-    "text": "move the lesson to Marina, Wed 17:00 · cancel: a credit for one lesson ($50)",
+    "text": "Move it to Marina, Wed 17:00 · Cancel: credit for one lesson ($50)",
     "hash": "73fa2907ff572011592543aee789ad49865b68b7b5dcdffa818c408f34b63834",
     "autonomy": "propose"
   },
@@ -476,6 +476,7 @@
   },
   "flagged": [],
   "night_check": null,
+  "network_loan": null,
   "ratio_alert": null,
   "judge": {
     "running": false,

@@ -393,7 +393,7 @@
   "plan_b": {
     "id": "P-standby",
     "state": "standby",
-    "text": "Noah Bennett (reserve) steps in · Camila Herrera on overtime: 0.25 h, $8.50 · move the lesson: makeup for 5 families · cancel: credit for 5 families",
+    "text": "Noah Bennett (reserve) steps in · Camila Herrera: 15 min overtime ($8.50) · Move it: makeup for 5 families by Dec 9 · Cancel: credit for 5 families",
     "hash": "1cd370defe0b5d09fa451b3bfabbaaec0dadfb43277f712007c1f94e4eadf339",
     "autonomy": "propose"
   },
@@ -430,6 +430,7 @@
     "label": "Night check 21:30: Javier Morales — CPR/AED card ends Nov 8, before Mon 16:00 · replacement proposed to the manager",
     "status": "open"
   },
+  "network_loan": null,
   "ratio_alert": null,
   "judge": {
     "running": false,

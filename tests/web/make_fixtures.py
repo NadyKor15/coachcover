@@ -56,9 +56,9 @@ def ok(base: str, method: str, path: str, body: dict | None = None, expect: int 
 
 
 # ---- the week and the network loans ----
-# Setups run as Python inside the stack (same steps as the lane's own tests): a fresh school in the deck story (the
-# network loan's morning: Marina's 06:00 deck shift), her call-out and every cleared person at Riverside saying no, so
-# the hero shift is open with nobody left to ask.
+# Setups run as Python inside the stack: a fresh school in the preschool story (the judge's network morning: Marina's
+# 09:30 preschool lesson), her call-out and every cleared person at Riverside saying no, so the lesson is open with
+# nobody left to ask.
 EXHAUST = """
 import os
 from datetime import timedelta
@@ -67,10 +67,10 @@ from coachcover import a2a
 from coachcover.demo import reset_school, set_clock, VOICES
 from coachcover.models import DbLedger, ModelClient
 from coachcover.pipeline import Pipeline
-from coachcover.seed import DECK_NOW as NOW, POLICY_ID
+from coachcover.seed import NOW, POLICY_ID
 conn = psycopg.connect(os.environ["DATABASE_URL"], autocommit=True)
-reset_school(conn, "deck")
-VOICE = VOICES["deck"]
+reset_school(conn)
+VOICE = VOICES["preschool"]
 shift_id = conn.execute("SELECT id FROM shift WHERE staff_id = 'S05' AND venue_id = 'V1' ORDER BY starts_at, id LIMIT 1").fetchone()[0]
 p = Pipeline(conn, ModelClient(DbLedger(conn), mode="replay"), POLICY_ID)
 p.callout("S05", now=NOW, audio=VOICE.read_bytes(), filename=VOICE.name)

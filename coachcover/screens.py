@@ -217,11 +217,10 @@ def _plan_option_text(option: dict, preset: Preset) -> str:
 
 
 def _plan_text(facts: dict, preset: Preset) -> str:
-    parts = list(M.plan_b_fallback(facts)["lines"])  # the same words as the plan the manager approves
+    parts = [M.plan_b_short_line(o) for o in M.plan_b_view(facts)["options"]]  # the plan in a few words
     for r in facts.get("rejected", []):
         if r["kind"] == "merge" and "RATIO_EXCEEDED" in r["codes"]:
-            parts.insert(0, f"Merging next door is refused: {r['participants']} {preset.copy.get('participants', 'participants')}"
-                            " would be over the norm.")
+            parts.insert(0, f"No merge: {r['participants']} {preset.copy.get('participants', 'participants')} over the norm")
     return " · ".join(parts)
 
 

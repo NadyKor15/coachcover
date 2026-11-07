@@ -6,8 +6,8 @@
   "network_id": "demo-network",
   "shift": {
     "id": "L-1109-G002",
-    "label": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
-    "time_label": "Mon 06:00–08:00"
+    "label": "Mon 09:30–10:15 · Swim instructor · Riverside Aquatic Center",
+    "time_label": "Mon 09:30–10:15"
   },
   "case": {
     "id": 1,
@@ -28,41 +28,41 @@
     "agent_url": "http://agent-north:8000/a2a/N1",
     "approved": {
       "by": "Omar Haddad",
-      "at": "2026-11-09T10:15:30.139Z",
-      "at_label": "10:15:30 UTC"
+      "at": "2026-11-09T13:43:30.133Z",
+      "at_label": "13:43:30 UTC"
     }
   },
   "candidate": {
     "staff_id": "N01",
     "name": "Kai Morgan",
     "from_venue": "Northside Aquatic Center",
-    "line": "Kai first: 8 h this week, Level 3, 8.6 km away",
+    "line": "Kai first: 8 h this week, Preschool, 8.6 km away",
     "week_hours": 8.0
   },
   "approvals": 1,
   "approvals_needed": 2,
-  "created_at": "2026-11-09T10:15:30.074Z",
+  "created_at": "2026-11-09T13:43:30.072Z",
   "closed_at": null,
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "1c7419d9-48f1-40b5-be03-dc42bc318940",
-    "task_id": "84e9fe5a-1ce7-4bd0-bfd7-3e29080df17f",
+    "context_id": "021097d5-5af3-4fee-8add-ba0f73512a1c",
+    "task_id": "c1f0d50a-6e67-4ccf-8217-66cf6a9fd6b0",
     "task_state": "TASK_STATE_INPUT_REQUIRED"
   },
   "steps": [
     {
       "seq": 1,
-      "at": "2026-11-09T10:15:30.074Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T13:43:30.072Z",
+      "at_label": "13:43:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
       "actor": "agent",
       "kind": "asked_network",
       "title": "Riverside agent: no cleared staff left here · asks the network",
-      "detail": "5 cleared here, 5 asked · Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+      "detail": "5 cleared here, 5 asked · Mon 09:30–10:15 · Swim instructor · Riverside Aquatic Center",
       "data": {
-        "label": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+        "label": "Mon 09:30–10:15 · Swim instructor · Riverside Aquatic Center",
         "lenders": [
           "N1"
         ],
@@ -73,8 +73,8 @@
     },
     {
       "seq": 2,
-      "at": "2026-11-09T10:15:30.074Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T13:43:30.072Z",
+      "at_label": "13:43:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -91,15 +91,15 @@
     },
     {
       "seq": 3,
-      "at": "2026-11-09T10:15:31.074Z",
-      "at_label": "10:15:31 UTC",
+      "at": "2026-11-09T13:43:31.072Z",
+      "at_label": "13:43:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
       "actor": "agent",
       "kind": "checked_own_people",
       "title": "Northside agent checked its 5 people by Northside rules: 1 cleared",
-      "detail": "Northside keeps 3 on site or free 06:00–08:00 after the loan (minimum 3; now 4)",
+      "detail": "Northside keeps 3 on site or free 09:30–10:15 after the loan (minimum 3; now 4)",
       "data": {
         "rules": {
           "policy_id": "northside",
@@ -109,15 +109,15 @@
           "ok": true,
           "after": 3,
           "before": 4,
-          "window": "06:00–08:00",
+          "window": "09:30–10:15",
           "minimum": 3,
           "on_site": [
-            "N02"
+            "N02",
+            "N05"
           ],
           "free_cleared": [
             "N01",
-            "N03",
-            "N05"
+            "N03"
           ]
         },
         "people": 5,
@@ -125,37 +125,37 @@
         "excluded": [],
         "blocked_by": {
           "CERT_EXPIRED": 1,
-          "CERT_MISSING": 3
+          "ROLE_MISSING": 3
         }
       }
     },
     {
       "seq": 4,
-      "at": "2026-11-09T10:15:31.074Z",
-      "at_label": "10:15:31 UTC",
+      "at": "2026-11-09T13:43:31.072Z",
+      "at_label": "13:43:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
       "actor": "agent",
       "kind": "offered",
       "title": "Northside agent offers Kai Morgan",
-      "detail": "Kai first: 8 h this week, Level 3, 8.6 km away · Northside keeps 3 on site or free 06:00–08:00 after the loan (minimum 3; now 4)",
+      "detail": "Kai first: 8 h this week, Preschool, 8.6 km away · Northside keeps 3 on site or free 09:30–10:15 after the loan (minimum 3; now 4)",
       "data": {
-        "line": "Kai first: 8 h this week, Level 3, 8.6 km away",
+        "line": "Kai first: 8 h this week, Preschool, 8.6 km away",
         "name": "Kai Morgan",
         "guards": {
           "ok": true,
           "after": 3,
           "before": 4,
-          "window": "06:00–08:00",
+          "window": "09:30–10:15",
           "minimum": 3,
           "on_site": [
-            "N02"
+            "N02",
+            "N05"
           ],
           "free_cleared": [
             "N01",
-            "N03",
-            "N05"
+            "N03"
           ]
         },
         "cleared": 1,
@@ -165,8 +165,8 @@
     },
     {
       "seq": 5,
-      "at": "2026-11-09T10:15:32.074Z",
-      "at_label": "10:15:32 UTC",
+      "at": "2026-11-09T13:43:32.072Z",
+      "at_label": "13:43:32 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -186,8 +186,8 @@
     },
     {
       "seq": 6,
-      "at": "2026-11-09T10:15:33.074Z",
-      "at_label": "10:15:33 UTC",
+      "at": "2026-11-09T13:43:33.072Z",
+      "at_label": "13:43:33 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -201,8 +201,8 @@
     },
     {
       "seq": 7,
-      "at": "2026-11-09T10:15:34.074Z",
-      "at_label": "10:15:34 UTC",
+      "at": "2026-11-09T13:43:34.072Z",
+      "at_label": "13:43:34 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -227,8 +227,8 @@
     },
     {
       "seq": 8,
-      "at": "2026-11-09T10:15:30.139Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T13:43:30.133Z",
+      "at_label": "13:43:30 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",

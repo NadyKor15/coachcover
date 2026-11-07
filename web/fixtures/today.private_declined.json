@@ -470,6 +470,7 @@
   },
   "flagged": [],
   "night_check": null,
+  "network_loan": null,
   "ratio_alert": null,
   "judge": {
     "running": false,

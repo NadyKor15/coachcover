@@ -232,7 +232,7 @@
     const r = await CC.post('/api/network/loans/' + encodeURIComponent(ui.loan.code) + '/approve', { manager: who.manager, venue: who.venue_id });
     if (r.status === 200) delete ui.errors[who.venue_id];
     else ui.errors[who.venue_id] = 'Not approved — ' + ((r.body && (r.body.error || r.body.detail)) || CC.errorText(r));
-    await loadLoan();
+    await loadLoan(ui.loan.code);
   }
 
   async function ask() {

@@ -452,6 +452,34 @@ def plan_b_line(item: dict) -> str:
     return k
 
 
+def plan_b_short_line(item: dict) -> str:
+    """One option in a few words, for the morning screen's plan B strip (two lines at most)."""
+    k = item["kind"]
+    families = item.get("families")
+    fam = f"{families} famil{'y' if families == 1 else 'ies'}"
+    if k == "merge":
+        return f"Merge with {item['who']}'s group ({item['participants']} of {item['places']})"
+    if k == "lead":
+        return f"{item['who']} (reserve) steps in"
+    if k == "overtime":
+        return f"{item['who']}: {item['overtime'].replace(' minutes', ' min')} overtime ({item['cost']})"
+    if k == "reschedule":
+        return f"Move it: makeup for {fam} by {item['until']}"
+    if k == "close":
+        return f"Cancel: {item.get('remedy', 'credit')} for {fam}"
+    if k == "split":
+        return f"{item['who']} takes {item['children']} children at the same time"
+    if k == "move":
+        return f"Move {item['children']} children to the next lesson with room"
+    if k == "cancel_lesson":
+        return f"Cancel the lesson: {item.get('remedy', 'credit')} for {fam}"
+    if k == "reschedule_own":
+        return f"Move it to {item['who'].split()[0]}, {item['when']}"
+    if k == "credit":
+        return f"Cancel: credit for one lesson ({item['amount']})"
+    return k
+
+
 def plan_b_fallback(facts: dict) -> dict:
     view = plan_b_view(facts)
     return {"headline": f"No cover yet for {view['shift']}", "lines": [plan_b_line(o) for o in view["options"]]}

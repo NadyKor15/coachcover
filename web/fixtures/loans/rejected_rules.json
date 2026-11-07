@@ -6,8 +6,8 @@
   "network_id": "demo-network",
   "shift": {
     "id": "L-1109-G002",
-    "label": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
-    "time_label": "Mon 06:00–08:00"
+    "label": "Mon 09:30–10:15 · Swim instructor · Riverside Aquatic Center",
+    "time_label": "Mon 09:30–10:15"
   },
   "case": {
     "id": 1,
@@ -31,28 +31,28 @@
   "candidate": null,
   "approvals": 0,
   "approvals_needed": 2,
-  "created_at": "2026-11-09T10:15:30.083Z",
-  "closed_at": "2026-11-09T10:15:36.083Z",
+  "created_at": "2026-11-09T13:43:30.074Z",
+  "closed_at": "2026-11-09T13:43:36.074Z",
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "2b1574ec-f97a-4c18-979a-f991d6a85507",
-    "task_id": "31792d61-fdbc-484a-8013-d3cea1dd41b1",
+    "context_id": "8bb7aeb7-6b2d-44c1-85bd-08d5f50fd7b2",
+    "task_id": "d54979fc-075e-4bf0-96c1-99c4ec2c283e",
     "task_state": "TASK_STATE_REJECTED"
   },
   "steps": [
     {
       "seq": 1,
-      "at": "2026-11-09T10:15:30.083Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T13:43:30.074Z",
+      "at_label": "13:43:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
       "actor": "agent",
       "kind": "asked_network",
       "title": "Riverside agent: no cleared staff left here · asks the network",
-      "detail": "5 cleared here, 5 asked · Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+      "detail": "5 cleared here, 5 asked · Mon 09:30–10:15 · Swim instructor · Riverside Aquatic Center",
       "data": {
-        "label": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center",
+        "label": "Mon 09:30–10:15 · Swim instructor · Riverside Aquatic Center",
         "lenders": [
           "N1"
         ],
@@ -63,8 +63,8 @@
     },
     {
       "seq": 2,
-      "at": "2026-11-09T10:15:30.083Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T13:43:30.074Z",
+      "at_label": "13:43:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -81,15 +81,15 @@
     },
     {
       "seq": 3,
-      "at": "2026-11-09T10:15:31.083Z",
-      "at_label": "10:15:31 UTC",
+      "at": "2026-11-09T13:43:31.074Z",
+      "at_label": "13:43:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
       "actor": "agent",
       "kind": "checked_own_people",
       "title": "Northside agent checked its 5 people by Northside rules: 1 cleared",
-      "detail": "Northside keeps 3 on site or free 06:00–08:00 after the loan (minimum 3; now 4)",
+      "detail": "Northside keeps 3 on site or free 09:30–10:15 after the loan (minimum 3; now 4)",
       "data": {
         "rules": {
           "policy_id": "northside",
@@ -99,15 +99,15 @@
           "ok": true,
           "after": 3,
           "before": 4,
-          "window": "06:00–08:00",
+          "window": "09:30–10:15",
           "minimum": 3,
           "on_site": [
-            "N02"
+            "N02",
+            "N05"
           ],
           "free_cleared": [
             "N01",
-            "N03",
-            "N05"
+            "N03"
           ]
         },
         "people": 5,
@@ -115,37 +115,37 @@
         "excluded": [],
         "blocked_by": {
           "CERT_EXPIRED": 1,
-          "CERT_MISSING": 3
+          "ROLE_MISSING": 3
         }
       }
     },
     {
       "seq": 4,
-      "at": "2026-11-09T10:15:31.083Z",
-      "at_label": "10:15:31 UTC",
+      "at": "2026-11-09T13:43:31.074Z",
+      "at_label": "13:43:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
       "actor": "agent",
       "kind": "offered",
       "title": "Northside agent offers Kai Morgan",
-      "detail": "Kai first: 32 h this week, Level 3, 8.6 km away · Northside keeps 3 on site or free 06:00–08:00 after the loan (minimum 3; now 4)",
+      "detail": "Kai first: 32 h this week, Preschool, 8.6 km away · Northside keeps 3 on site or free 09:30–10:15 after the loan (minimum 3; now 4)",
       "data": {
-        "line": "Kai first: 32 h this week, Level 3, 8.6 km away",
+        "line": "Kai first: 32 h this week, Preschool, 8.6 km away",
         "name": "Kai Morgan",
         "guards": {
           "ok": true,
           "after": 3,
           "before": 4,
-          "window": "06:00–08:00",
+          "window": "09:30–10:15",
           "minimum": 3,
           "on_site": [
-            "N02"
+            "N02",
+            "N05"
           ],
           "free_cleared": [
             "N01",
-            "N03",
-            "N05"
+            "N03"
           ]
         },
         "cleared": 1,
@@ -155,18 +155,18 @@
     },
     {
       "seq": 5,
-      "at": "2026-11-09T10:15:32.083Z",
-      "at_label": "10:15:32 UTC",
+      "at": "2026-11-09T13:43:32.074Z",
+      "at_label": "13:43:32 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
       "actor": "agent",
       "kind": "checked_offer",
       "title": "Riverside agent re-checked Kai Morgan",
-      "detail": "blocked by Riverside rules: would have 42 h in the week of 2026-11-09 (limit 40 h)",
+      "detail": "blocked by Riverside rules: would have 40.75 h in the week of 2026-11-09 (limit 40 h)",
       "data": {
         "ok": false,
-        "why": "would have 42 h in the week of 2026-11-09 (limit 40 h)",
+        "why": "would have 40.75 h in the week of 2026-11-09 (limit 40 h)",
         "name": "Kai Morgan",
         "codes": [
           "HOURS_LIMIT_EXCEEDED"
@@ -178,17 +178,17 @@
     },
     {
       "seq": 6,
-      "at": "2026-11-09T10:15:33.083Z",
-      "at_label": "10:15:33 UTC",
+      "at": "2026-11-09T13:43:33.074Z",
+      "at_label": "13:43:33 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
       "actor": "agent",
       "kind": "offer_withdrawn",
       "title": "Northside agent withdrew the offer",
-      "detail": "would have 42 h in the week of 2026-11-09 (limit 40 h)",
+      "detail": "would have 40.75 h in the week of 2026-11-09 (limit 40 h)",
       "data": {
-        "why": "would have 42 h in the week of 2026-11-09 (limit 40 h)",
+        "why": "would have 40.75 h in the week of 2026-11-09 (limit 40 h)",
         "codes": [
           "HOURS_LIMIT_EXCEEDED"
         ]
@@ -196,8 +196,8 @@
     },
     {
       "seq": 7,
-      "at": "2026-11-09T10:15:34.083Z",
-      "at_label": "10:15:34 UTC",
+      "at": "2026-11-09T13:43:34.074Z",
+      "at_label": "13:43:34 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -216,15 +216,15 @@
     },
     {
       "seq": 8,
-      "at": "2026-11-09T10:15:35.083Z",
-      "at_label": "10:15:35 UTC",
+      "at": "2026-11-09T13:43:35.074Z",
+      "at_label": "13:43:35 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
       "actor": "agent",
       "kind": "checked_own_people",
       "title": "Northside agent checked its 5 people by Northside rules: 0 cleared",
-      "detail": "Northside keeps 4 on site or free 06:00–08:00 after the loan (minimum 3; now 4)",
+      "detail": "Northside keeps 4 on site or free 09:30–10:15 after the loan (minimum 3; now 4)",
       "data": {
         "rules": {
           "policy_id": "northside",
@@ -234,15 +234,15 @@
           "ok": true,
           "after": 4,
           "before": 4,
-          "window": "06:00–08:00",
+          "window": "09:30–10:15",
           "minimum": 3,
           "on_site": [
-            "N02"
+            "N02",
+            "N05"
           ],
           "free_cleared": [
             "N01",
-            "N03",
-            "N05"
+            "N03"
           ]
         },
         "people": 5,
@@ -252,14 +252,14 @@
         ],
         "blocked_by": {
           "CERT_EXPIRED": 1,
-          "CERT_MISSING": 3
+          "ROLE_MISSING": 3
         }
       }
     },
     {
       "seq": 9,
-      "at": "2026-11-09T10:15:35.083Z",
-      "at_label": "10:15:35 UTC",
+      "at": "2026-11-09T13:43:35.074Z",
+      "at_label": "13:43:35 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -273,15 +273,15 @@
           "ok": true,
           "after": 4,
           "before": 4,
-          "window": "06:00–08:00",
+          "window": "09:30–10:15",
           "minimum": 3,
           "on_site": [
-            "N02"
+            "N02",
+            "N05"
           ],
           "free_cleared": [
             "N01",
-            "N03",
-            "N05"
+            "N03"
           ]
         },
         "reason": "NO_CLEARED_PERSON"
@@ -289,8 +289,8 @@
     },
     {
       "seq": 10,
-      "at": "2026-11-09T10:15:36.083Z",
-      "at_label": "10:15:36 UTC",
+      "at": "2026-11-09T13:43:36.074Z",
+      "at_label": "13:43:36 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -307,8 +307,8 @@
     },
     {
       "seq": 11,
-      "at": "2026-11-09T10:15:36.083Z",
-      "at_label": "10:15:36 UTC",
+      "at": "2026-11-09T13:43:36.074Z",
+      "at_label": "13:43:36 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
