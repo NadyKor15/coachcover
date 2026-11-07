@@ -22,7 +22,7 @@
   "shift": {
     "id": "L-1109-P001",
     "time_label": "17:00–17:30",
-    "lanes_label": "Teaching pool + Private · Lily, age 6, Level 2",
+    "lanes_label": "Teaching pool · Private lesson · Lily, age 6, Level 2",
     "needs_label": "Instructor",
     "program_label": "Learn-to-Swim Level 2",
     "private": true
@@ -69,7 +69,7 @@
       },
       {
         "code": "LEVEL_MISSING",
-        "label": "Not cleared for LTS-2",
+        "label": "Not cleared for Learn-to-Swim Level 2",
         "count": 6,
         "tone": "plain"
       },
@@ -273,14 +273,14 @@
         "name": "Leo Martins",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
+        "reason_label": "Not cleared for Learn-to-Swim Level 2"
       },
       {
         "id": "S09",
         "name": "Lucas Reed",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
+        "reason_label": "Not cleared for Learn-to-Swim Level 2"
       },
       {
         "id": "S39",
@@ -315,28 +315,28 @@
         "name": "Andrés Delgado",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
+        "reason_label": "Not cleared for Learn-to-Swim Level 2"
       },
       {
         "id": "S04",
         "name": "Daniel Shaw",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
+        "reason_label": "Not cleared for Learn-to-Swim Level 2"
       },
       {
         "id": "S24",
         "name": "Gabriela Vargas",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
+        "reason_label": "Not cleared for Learn-to-Swim Level 2"
       },
       {
         "id": "S20",
         "name": "Mateo Romero",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
+        "reason_label": "Not cleared for Learn-to-Swim Level 2"
       },
       {
         "id": "S22",

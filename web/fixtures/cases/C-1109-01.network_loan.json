@@ -33,7 +33,7 @@
       "time_label": "05:12:00 ET",
       "title": "Shift identified",
       "shift_id": "L-1109-G002",
-      "summary": "06:00–08:00 · Needs: Lifeguard + WSI · Program LTS-3",
+      "summary": "06:00–08:00 · Needs: Lifeguard + WSI · Learn-to-Swim Level 3",
       "model_tag": "muse-glimmer-30b"
     },
     {
@@ -74,7 +74,7 @@
         },
         {
           "code": "LEVEL_MISSING",
-          "label": "Not cleared for LTS-3",
+          "label": "Not cleared for Learn-to-Swim Level 3",
           "count": 2,
           "tone": "risk"
         },
@@ -104,7 +104,7 @@
         },
         {
           "code": "PROGRAM_RENEWAL_OVERDUE",
-          "label": "LTS renewal overdue",
+          "label": "Learn-to-Swim renewal overdue",
           "count": 1,
           "tone": "fragile"
         },
@@ -258,7 +258,7 @@
           "id": "S14",
           "name": "Irina Lebedeva",
           "allowed": false,
-          "reason_label": "LTS renewal overdue"
+          "reason_label": "Learn-to-Swim renewal overdue"
         },
         {
           "id": "S03",
@@ -270,7 +270,7 @@
           "id": "S09",
           "name": "Lucas Reed",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-3"
+          "reason_label": "Not cleared for Learn-to-Swim Level 3"
         },
         {
           "id": "S28",
@@ -330,7 +330,7 @@
           "id": "S16",
           "name": "Andrés Delgado",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-3"
+          "reason_label": "Not cleared for Learn-to-Swim Level 3"
         },
         {
           "id": "S10",

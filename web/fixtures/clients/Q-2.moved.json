@@ -4,9 +4,9 @@
   "state": "yes",
   "signed": "Parent of Lily",
   "child": "Lily",
-  "lesson": "Private · Lily, age 6, Level 2",
+  "lesson": "Private lesson · Lily, age 6, Level 2",
   "venue": "Riverside Aquatic Center",
-  "question": "Move Lily's lesson to Wed, Nov 11?",
+  "question": "Lily's lesson is moved to Wed, Nov 11",
   "coach": "Marina Petrova",
   "instead_of": null,
   "day_label": "Wed, Nov 11",
@@ -43,7 +43,8 @@
   "current": null,
   "outcome": {
     "kind": "moved",
-    "line": "Lily's lesson with Marina is on Wed, Nov 11 at 17:00"
+    "line": "Lily's lesson with Marina is on Wed, Nov 11 at 17:00",
+    "day": "Wed, Nov 11"
   },
   "manager": {
     "name": "Natalie Brooks",

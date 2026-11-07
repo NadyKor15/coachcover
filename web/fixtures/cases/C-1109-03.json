@@ -28,7 +28,7 @@
       "time_label": "08:45:00 ET",
       "title": "Shift identified",
       "shift_id": "L-1109-G003-I2",
-      "summary": "10:30–11:00 · Needs: Instructor · Program LTS-1",
+      "summary": "10:30–11:00 · Needs: Instructor · Learn-to-Swim Level 1 (beginner)",
       "model_tag": null
     },
     {
@@ -48,7 +48,7 @@
         },
         {
           "code": "LEVEL_MISSING",
-          "label": "Not cleared for LTS-1",
+          "label": "Not cleared for Learn-to-Swim Level 1 (beginner)",
           "count": 11,
           "tone": "risk"
         },
@@ -160,13 +160,13 @@
           "id": "S18",
           "name": "Chloe Hayes",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S25",
           "name": "Sofia Reyes",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S13",
@@ -238,19 +238,19 @@
           "id": "S26",
           "name": "Leo Martins",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S03",
           "name": "Valentina Castillo",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S09",
           "name": "Lucas Reed",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S39",
@@ -286,31 +286,31 @@
           "id": "S16",
           "name": "Andrés Delgado",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S04",
           "name": "Daniel Shaw",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S24",
           "name": "Gabriela Vargas",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S20",
           "name": "Mateo Romero",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S22",
           "name": "Ethan Price",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S29",
@@ -322,7 +322,7 @@
           "id": "S11",
           "name": "Camila Herrera",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 1 (beginner)"
         },
         {
           "id": "S06",

@@ -5,7 +5,7 @@
   "covered_time_label": null,
   "covered_by": null,
   "covered_via": null,
-  "shift_label": "17:00 Teaching pool + Private · Lily, age 6, Level 2",
+  "shift_label": "17:00 Teaching pool · Private lesson · Lily, age 6, Level 2",
   "venue": {
     "id": "V1",
     "name": "Riverside Aquatic Center"
@@ -56,7 +56,7 @@
         },
         {
           "code": "LEVEL_MISSING",
-          "label": "Not cleared for LTS-2",
+          "label": "Not cleared for Learn-to-Swim Level 2",
           "count": 6,
           "tone": "risk"
         },
@@ -264,13 +264,13 @@
           "id": "S26",
           "name": "Leo Martins",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-2"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S09",
           "name": "Lucas Reed",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-2"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S39",
@@ -300,25 +300,25 @@
           "id": "S16",
           "name": "Andrés Delgado",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-2"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S04",
           "name": "Daniel Shaw",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-2"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S24",
           "name": "Gabriela Vargas",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-2"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S20",
           "name": "Mateo Romero",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-2"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S22",

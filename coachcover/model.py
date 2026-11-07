@@ -128,7 +128,7 @@ class Program:
         """What a person must hold for this program and level, as a screen phrase starting with a capital."""
         if self.clearance:
             return self.clearance[:1].upper() + self.clearance[1:]
-        return f"Program {self.short or self.label}-{level}"
+        return self.title(level)  # by name ("Learn-to-Swim Level 2"), never the short code
 
 
 @dataclass(frozen=True)

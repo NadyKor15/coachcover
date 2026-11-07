@@ -301,6 +301,14 @@ def test_standby_answers():
     assert sb["unknown"]["error"]
 
 
+def test_no_short_codes_of_programs_or_levels_on_any_screen():
+    """Programs and levels by name ("Learn-to-Swim Level 2"), never the preset's short code ("LTS-2")."""
+    hits = [f"{p.relative_to(FX)}: {m.group(0)}" for p in sorted(FX.rglob("*.json"))
+            for m in re.finditer(r".{0,30}\bLTS\b.{0,20}", p.read_text(encoding="utf-8"))]
+    assert hits == []
+    assert re.search(r"\bLTS\b", "Not cleared for LTS-2")  # the check can see a code
+
+
 def test_the_familys_page_follows_its_answers():
     """The family's page: the open question, then each real answer of the API; the parent is never named and no id
     shows in the texts."""
@@ -316,5 +324,11 @@ def test_the_familys_page_follows_its_answers():
     assert covered["state"] == "yes" and covered["outcome"]["kind"] == "covered" and covered["current"] is None
     assert no["state"] == "no" and no["current"] == "Q-2" and second["kind"] == "reschedule" and second["state"] == "asked"
     assert load("clients/Q-2.moved.json")["outcome"]["kind"] == "moved"
+    # once the case is decided the headline says what happened; while a question is open it asks
+    assert asked["question"].endswith("?") and second["question"].endswith("?")
+    for name in ("Q-1.covered", "Q-1.moved", "Q-1.credit", "Q-2.moved", "Q-2.credit"):
+        assert not load(f"clients/{name}.json")["question"].endswith("?"), name
+    assert load("clients/Q-2.moved.json")["question"] == "Lily's lesson is moved to Wed, Nov 11"
+    assert load("clients/Q-1.covered.json")["question"] == "Chloe will teach Lily today"
     assert load("clients/Q-2.credit.json")["outcome"]["line"] == "A credit for one lesson ($50)"
     assert load("clients/mocks.json")["closed"]["body"]["reason"].startswith("Thanks — this question was already closed")

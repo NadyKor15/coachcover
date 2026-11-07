@@ -332,6 +332,8 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await p.waitForSelector('#result:not([hidden])');
     check('family yes: the line from the API names the coach', await text(p, '#result') === 'Thank you! ' + q1yes.outcome.line + '.' &&
       (await text(p, '#result')).includes(first(q1yes.coach)), await text(p, '#result'));
+    check('family yes: the headline says what happened, not the question', await text(p, '[data-slot="question"]') === q1yes.question &&
+      !q1yes.question.endsWith('?') && q1yes.question.includes(first(q1yes.coach)), await text(p, '[data-slot="question"]'));
     check('family yes: ok tone, no buttons, no answer-by', await p.$eval('#result', r => r.classList.contains('ok')) && !(await visible(p, '#buttons')) && !(await visible(p, '#answerBy')));
     check('family yes: the thread has the answer and the reply', await sides(p) === fromOf(q1yes) &&
       JSON.stringify(await texts(p, '[data-slot="message-time"]')) === JSON.stringify(q1yes.thread.map(m => (m.from === 'family' ? 'You · ' : '') + m.time_label)));
@@ -362,6 +364,8 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await p.waitForSelector('#result:not([hidden])');
     check('family new time yes: moved, line from the API', await text(p, '#result') === 'All set. ' + q2moved.outcome.line + '.' &&
       await p.$eval('#result', r => r.classList.contains('ok')), await text(p, '#result'));
+    check('family new time yes: the headline says the lesson moved', await text(p, '[data-slot="question"]') === q2moved.question &&
+      q2moved.question.includes('is moved to') && !q2moved.question.endsWith('?'), await text(p, '[data-slot="question"]'));
     check('family new time yes: the note goes, the thread is complete', !(await visible(p, '#notice')) && await sides(p) === fromOf(q2moved) && !(await visible(p, '#buttons')));
     check('family new time yes: no ids, nothing overflows', await noIds(p) && (await overflow(p)).length === 0, await overflow(p));
     check('family no then yes: no console errors', p._errors.length === 0, p._errors);
@@ -389,6 +393,8 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
       check('family ' + mock + ': no buttons, the outcome line', !(await visible(p, '#buttons')) && !(await visible(p, '#answerBy')) &&
         await text(p, '#result') === line && await p.$eval('#result', (r, t) => r.classList.contains(t), tone), await text(p, '#result'));
       check('family ' + mock + ': the whole thread', await sides(p) === fromOf(q));
+      check('family ' + mock + ': a statement for the headline', !(await text(p, '[data-slot="question"]')).endsWith('?'),
+        await text(p, '[data-slot="question"]'));
       check('family ' + mock + ': no ids, nothing overflows', await noIds(p) && (await overflow(p)).length === 0, await overflow(p));
       check('family ' + mock + ': no console errors', p._errors.length === 0, p._errors);
       await shot(p, 'client-fixture-' + name + '.png');

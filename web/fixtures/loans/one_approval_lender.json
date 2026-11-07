@@ -28,7 +28,7 @@
     "agent_url": "http://agent-north:8000/a2a/N1",
     "approved": {
       "by": "Omar Haddad",
-      "at": "2026-11-09T10:15:30.394Z",
+      "at": "2026-11-09T10:15:30.131Z",
       "at_label": "10:15:30 UTC"
     }
   },
@@ -41,18 +41,18 @@
   },
   "approvals": 1,
   "approvals_needed": 2,
-  "created_at": "2026-11-09T10:15:30.240Z",
+  "created_at": "2026-11-09T10:15:30.069Z",
   "closed_at": null,
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "2eb0ca49-4cc0-48d6-abaf-d89233d86b7b",
-    "task_id": "b580e3b7-b975-432a-8648-537e8a9f76b9",
+    "context_id": "809ab4c3-7d5a-4591-b04c-46b4ffb8c795",
+    "task_id": "e507d330-fa00-4b5d-b3ab-a4cb97920f67",
     "task_state": "TASK_STATE_INPUT_REQUIRED"
   },
   "steps": [
     {
       "seq": 1,
-      "at": "2026-11-09T10:15:30.240Z",
+      "at": "2026-11-09T10:15:30.069Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -73,7 +73,7 @@
     },
     {
       "seq": 2,
-      "at": "2026-11-09T10:15:30.240Z",
+      "at": "2026-11-09T10:15:30.069Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -91,7 +91,7 @@
     },
     {
       "seq": 3,
-      "at": "2026-11-09T10:15:31.240Z",
+      "at": "2026-11-09T10:15:31.069Z",
       "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
@@ -131,7 +131,7 @@
     },
     {
       "seq": 4,
-      "at": "2026-11-09T10:15:31.240Z",
+      "at": "2026-11-09T10:15:31.069Z",
       "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
@@ -165,7 +165,7 @@
     },
     {
       "seq": 5,
-      "at": "2026-11-09T10:15:32.240Z",
+      "at": "2026-11-09T10:15:32.069Z",
       "at_label": "10:15:32 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -186,7 +186,7 @@
     },
     {
       "seq": 6,
-      "at": "2026-11-09T10:15:33.240Z",
+      "at": "2026-11-09T10:15:33.069Z",
       "at_label": "10:15:33 UTC",
       "venue_id": "N1",
       "venue": "Northside",
@@ -201,7 +201,7 @@
     },
     {
       "seq": 7,
-      "at": "2026-11-09T10:15:34.240Z",
+      "at": "2026-11-09T10:15:34.069Z",
       "at_label": "10:15:34 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -227,7 +227,7 @@
     },
     {
       "seq": 8,
-      "at": "2026-11-09T10:15:30.394Z",
+      "at": "2026-11-09T10:15:30.131Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "N1",
       "venue": "Northside",

@@ -79,11 +79,15 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
         program = preset.programs.get(params["program"])
         if program is not None and program.clearance:
             return f"No {program.clearance}"
-        return f"No {_program_short(preset, params['program'])} program"
+        return f"No {program.label if program else params['program']} program"
     if code == "LEVEL_MISSING":
-        return f"Not cleared for {_program_short(preset, params['program'])}-{params['level']}"
+        program = preset.programs.get(params["program"])
+        if program is not None and params["level"] in program.levels:
+            return f"Not cleared for {program.title(params['level'])}"  # "Learn-to-Swim Level 2", not a code
+        return f"Not cleared for {params['program']} {params['level']}"
     if code == "PROGRAM_RENEWAL_OVERDUE":
-        return f"{_program_short(preset, params['program'])} renewal overdue"
+        program = preset.programs.get(params["program"])
+        return f"{program.label if program else params['program']} renewal overdue"
     if code == "HOURS_LIMIT_EXCEEDED":
         return f"Over {params['limit_hours']:g} h this week"
     if code == "OVERLAPS_COMMITMENT":
@@ -119,6 +123,11 @@ def _co_teachers(conn: psycopg.Connection, shift_id: str) -> list[str]:
     )]
 
 
+def _private_label(name: str) -> str:
+    """A private lesson's group name for screens: "Private · Lily, age 6, Level 2" -> "Private lesson · Lily, age 6, Level 2"."""
+    return "Private lesson · " + name.removeprefix("Private · ") if name.startswith("Private · ") else name
+
+
 def _shift_labels(info: dict, shift, preset: Preset, co_teachers: list[str] | None = None) -> dict:
     tz = ZoneInfo(info["tz"])
     role = preset.roles[shift.role]
@@ -129,7 +138,8 @@ def _shift_labels(info: dict, shift, preset: Preset, co_teachers: list[str] | No
     program = None
     if shift.groups and info.get("private"):
         g = shift.groups[0]
-        lanes += f" + {info['groups'][0]['name']}"  # "Private · Lily, age 6, Level 2": one child, no count
+        # "Teaching pool · Private lesson · Lily, age 6, Level 2": one child, no count
+        lanes += " · " + _private_label(info["groups"][0]["name"])
         program = preset.programs[g.program].title(g.level)
     elif shift.groups:
         g = shift.groups[0]
@@ -692,7 +702,7 @@ def offer_phone(conn: psycopg.Connection, policy_id: str, offer_ref: str, now: d
         if held:
             prog = preset.programs.get(g[0])
             why.append(f"{prog.needs(g[1])} — current" if prog is not None and prog.clearance
-                       else f"{_program_short(preset, g[0])}-{g[1]} program — current")
+                       else f"{prog.title(g[1]) if prog is not None else g[0]} — current")
     if place and place.get("week_hours") is not None:
         why.append(f"{place['week_hours']:g} h this week")
     manager = conn.execute("SELECT manager_name FROM policy WHERE id = %s", (policy_id,)).fetchone()[0]
@@ -714,6 +724,17 @@ def offer_phone(conn: psycopg.Connection, policy_id: str, offer_ref: str, now: d
         "window_s": int((expires - sent).total_seconds()),
         "manager": {"name": manager, "role": "Manager"} if manager else None,
     })
+
+
+def _family_headline(kind: str, outcome: dict | None, coach: str, child: str, day: str) -> str:
+    """The family's page headline: the open question, or, once the case is decided, what happened."""
+    if outcome is None:
+        return f"Can {coach.split()[0]} teach {child} {day}?" if kind == "cover" else f"Move {child}'s lesson to {day}?"
+    if outcome["kind"] == "covered":
+        return f"{outcome['coach']} will teach {child} {outcome['day']}"
+    if outcome["kind"] == "moved":
+        return f"{child}'s lesson is moved to {outcome['day']}"
+    return f"{child}'s lesson is cancelled, with a credit"
 
 
 def client_page(conn: psycopg.Connection, policy_id: str, ask_ref: str, now: datetime) -> dict:
@@ -763,11 +784,13 @@ def client_page(conn: psycopg.Connection, policy_id: str, ask_ref: str, now: dat
                                         (case_id,)).fetchall():
         if kind_e == "shift_covered":
             outcome = {"kind": "covered", "line": f"{data['name'].split()[0]} teaches {child} {day_label(info['start'])}"
-                                                  f" at {_clock(info['start'], tz)}"}
+                                                  f" at {_clock(info['start'], tz)}",
+                       "coach": data["name"].split()[0], "day": day_label(info["start"])}
         elif kind_e == "private_moved":
             local = datetime.fromisoformat(data["start"]).astimezone(tz)
             outcome = {"kind": "moved", "line": f"{child}'s lesson with {data['name'].split()[0]} is on "
-                                               f"{local:%a}, {local:%b} {local.day} at {local:%H:%M}"}
+                                               f"{local:%a}, {local:%b} {local.day} at {local:%H:%M}",
+                       "day": f"{local:%a}, {local:%b} {local.day}"}
         else:
             outcome = {"kind": "credit", "line": f"A credit for one lesson (${data['amount_usd']:g})"}
     manager = conn.execute("SELECT manager_name FROM policy WHERE id = %s", (policy_id,)).fetchone()[0]
@@ -778,10 +801,9 @@ def client_page(conn: psycopg.Connection, policy_id: str, ask_ref: str, now: dat
         "state": status,
         "signed": f"Parent of {child}",
         "child": child,
-        "lesson": info["groups"][0]["name"],
+        "lesson": _private_label(info["groups"][0]["name"]),
         "venue": info["venue"],
-        "question": (f"Can {coach.split()[0]} teach {child} {day_label(start)}?" if kind == "cover"
-                     else f"Move {child}'s lesson to {day_label(start)}?"),
+        "question": _family_headline(kind, outcome, coach, child, day_label(start)),
         "coach": coach,
         "instead_of": names.get(absent) if kind == "cover" else None,
         "day_label": day_label(start),

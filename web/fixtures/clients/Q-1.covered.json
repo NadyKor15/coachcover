@@ -4,9 +4,9 @@
   "state": "yes",
   "signed": "Parent of Lily",
   "child": "Lily",
-  "lesson": "Private · Lily, age 6, Level 2",
+  "lesson": "Private lesson · Lily, age 6, Level 2",
   "venue": "Riverside Aquatic Center",
-  "question": "Can Chloe teach Lily today?",
+  "question": "Chloe will teach Lily today",
   "coach": "Chloe Hayes",
   "instead_of": "Marina Petrova",
   "day_label": "today",
@@ -33,7 +33,9 @@
   "current": null,
   "outcome": {
     "kind": "covered",
-    "line": "Chloe teaches Lily today at 17:00"
+    "line": "Chloe teaches Lily today at 17:00",
+    "coach": "Chloe",
+    "day": "today"
   },
   "manager": {
     "name": "Natalie Brooks",

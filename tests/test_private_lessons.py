@@ -371,3 +371,29 @@ def test_the_screens_speak_of_a_private_lesson_in_plain_words(morning):
     page = case_page(conn, seed.POLICY_ID, case, live=False)
     assert page["status_label"] == "Moved" and page["risk"]["private"] is True and page["risk"]["kids"] is None
     assert page["risk"]["total_usd"] == 50.0
+
+
+def test_programs_levels_and_the_private_lesson_card_read_as_names(morning):
+    """No preset short codes on screens; the private lesson's card: "Teaching pool · Private lesson · Lily, age 6, Level 2"."""
+    from coachcover.screens import client_page, reason_label
+
+    conn, p, cases = morning
+    preset = default_policy("swim_school").preset
+    tz = NY
+    assert reason_label("LEVEL_MISSING", {"program": "learn_to_swim", "level": "2"}, preset, conn, tz) == \
+        "Not cleared for Learn-to-Swim Level 2"
+    assert reason_label("PROGRAM_MISSING", {"program": "learn_to_swim"}, preset, conn, tz) == "No Learn-to-Swim program"
+    assert reason_label("PROGRAM_RENEWAL_OVERDUE", {"program": "learn_to_swim"}, preset, conn, tz) == "Learn-to-Swim renewal overdue"
+    assert preset.programs["learn_to_swim"].needs("1") == "Learn-to-Swim Level 1 (beginner)"
+    case = chloe_says_yes(conn, p, cases)
+    conn.execute("INSERT INTO ops.judge_state (id, running, scenario, case_code) VALUES (true, false, 'private_lesson',"
+                 " 'C-1109-02') ON CONFLICT (id) DO UPDATE SET case_code = 'C-1109-02'")
+    screen = today(conn, seed.POLICY_ID, at("08:43"), None, live=False)
+    assert screen["shift"]["lanes_label"] == "Teaching pool · Private lesson · Lily, age 6, Level 2"
+    assert all("LTS" not in chip["label"] for chip in screen["eligibility"]["reasons"])
+    assert "Not cleared for Learn-to-Swim Level 2" in {chip["label"] for chip in screen["eligibility"]["reasons"]}
+    page = client_page(conn, seed.POLICY_ID, "Q-1", at("08:43"))
+    assert (page["question"], page["lesson"]) == ("Can Chloe teach Lily today?", "Private lesson · Lily, age 6, Level 2")
+    p.family_respond(asks(conn, case)[0][0], False, at("08:44"))
+    p.family_respond(asks(conn, case)[1][0], False, at("08:46"))
+    assert client_page(conn, seed.POLICY_ID, "Q-1", at("08:46"))["question"] == "Lily's lesson is cancelled, with a credit"
