@@ -14,7 +14,7 @@ elif [ "$(docker ps -a --filter "name=^${NAME}$" --format '{{.Names}}')" = "$NAM
     echo "$NAME started"
 else
     docker run -d --name "$NAME" -p "127.0.0.1:${PORT}:5432" \
-        -e POSTGRES_HOST_AUTH_METHOD=trust "$IMAGE" >/dev/null
+        -e POSTGRES_HOST_AUTH_METHOD=trust "$IMAGE" -c max_connections=300 >/dev/null  # each test database keeps its connection to the end
     echo "$NAME created"
 fi
 
