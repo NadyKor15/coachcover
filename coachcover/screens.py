@@ -571,7 +571,9 @@ def _family_case_steps(events: list, tz: ZoneInfo) -> list[dict]:
         name = (data.get("name") or "").split(" ")[0]
         if kind == "family_asked":
             by = _clock(datetime.fromisoformat(data["answer_by"]), tz)
-            source = "written by the text model" if data.get("text_source") == "model" else "standard text"
+            source = ("written by the text model" if data.get("text_source") == "model"
+                      else "standard text: the model's draft failed the check" if data.get("model_text_rejected")
+                      else "standard text")
             if data.get("kind") == "cover":
                 add(at, "family", "Asked the parent", f"“{data['text']}” · {name} is held for this time · "
                                                       f"answer by {by} · {source}")

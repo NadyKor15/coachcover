@@ -1137,7 +1137,7 @@ _ROWS = (
     ("Median minutes from call-out to a closed shift", "median_minutes_to_close"),
     ("90th percentile, minutes", "p90_minutes_to_close"),
     ("Closed after the shift had started", "closed_after_shift_start"),
-    ("Closed without a person (no manager step), %", "closed_without_human_pct"),
+    ("Closed by CoachCover with no manager step, %", "closed_without_human_pct"),
     ("Group lessons cancelled or moved", "lessons_cancelled"),
     ("Participants left without their group lesson", "participants_without_lesson"),
     ("Private lessons (one child, one coach) that needed cover", "private_lessons"),
@@ -1176,7 +1176,7 @@ _WHAT_IF_ROWS = (
     ("Median minutes to close", "median_minutes_to_close"),
     ("90th percentile, minutes", "p90_minutes_to_close"),
     ("Closed after the shift had started", "closed_after_shift_start"),
-    ("Closed without a person, %", "closed_without_human_pct"),
+    ("Closed by CoachCover with no manager step, %", "closed_without_human_pct"),
 )
 
 
@@ -1211,8 +1211,8 @@ BEFORE_AFTER_ROWS = (
     ("Minutes from call-out to closed, p90", "p90_minutes_to_close"),
     ("Minutes from call-out to closed, mean", "mean_minutes_to_close"),
     ("Closed after the shift started", "closed_after_shift_start"),
-    ("Closed without a person", "closed_without_human"),
-    ("Closed without a person, %", "closed_without_human_pct"),
+    ("Closed by CoachCover with no manager step", "closed_without_human"),
+    ("Closed by CoachCover with no manager step, %", "closed_without_human_pct"),
     ("Shifts covered (offer or plan B)", "covered"),
     ("Group lessons cancelled or moved", "lessons_cancelled"),
     ("Children without their lesson", "participants_without_lesson"),
@@ -1334,7 +1334,7 @@ def report_markdown(result: dict) -> str:
         "- The baseline manager never checks anything. A careful manager would check some things; the replay counts what nobody checks.",
         "- A shift counts as closed when a person is booked or the fallback is decided; the time runs from the call-out.",
         "- In plan B a reserve person is booked on the manager's approval without being asked, as the core does; the baseline manager never calls a reserve person.",
-        "- \"Closed without a person\" is 0 for the baseline by construction: the manager books every shift by hand.",
+        "- \"Closed by CoachCover with no manager step\" is 0 for the baseline by construction: the manager books every shift by hand.",
         "- Plan B by the deadline: the manager acts on it after noticing the card; the offers of the open wave keep running until then.",
         "- Private lessons: how families answer is assumed, not measured (the parameters above). While the family is asked, the "
         "held coach is not blocked for the morning's other cases in this replay (the core blocks that time). A lesson moved to "

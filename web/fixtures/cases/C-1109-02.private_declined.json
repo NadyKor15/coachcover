@@ -417,7 +417,7 @@
       "at": "2026-11-09T13:44:30Z",
       "time_label": "08:44:30 ET",
       "title": "Asked the parent about Marina, Wed 17:00",
-      "summary": "“No problem, Lily stays with Marina. Marina can teach her on Wed, Nov 11 at 17:00 instead. Does that work? Reply YES or NO.” · answer by 09:14 · written by the text model"
+      "summary": "“No problem, Lily stays with Marina. Her lesson moves to Wed, Nov 11 at 17:00 with Marina. Does that work? Reply YES or NO.” · answer by 09:14 · written by the text model"
     },
     {
       "kind": "family",
@@ -490,9 +490,9 @@
       "model": "muse-glimmer-30b",
       "model_label": "muse-glimmer-30b",
       "ms": 1100,
-      "input_tokens": 240,
+      "input_tokens": 260,
       "output_tokens": 52,
-      "cost_usd": 0.000112,
+      "cost_usd": 0.000117,
       "source": "recorded answer tests/fixtures/models/synthetic-family-question-lily-cover-en.json (synthetic)"
     },
     {
@@ -501,14 +501,14 @@
       "model": "muse-glimmer-30b",
       "model_label": "muse-glimmer-30b",
       "ms": 1000,
-      "input_tokens": 230,
+      "input_tokens": 250,
       "output_tokens": 44,
-      "cost_usd": 0.000102,
+      "cost_usd": 0.000107,
       "source": "recorded answer tests/fixtures/models/synthetic-family-question-lily-reschedule-en.json (synthetic)"
     }
   ],
-  "model_cost_usd": 0.000584,
-  "model_cost_label": "0.058¢",
+  "model_cost_usd": 0.000594,
+  "model_cost_label": "0.059¢",
   "risk": {
     "kids": null,
     "private": true,

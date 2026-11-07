@@ -6,24 +6,27 @@
   "language": "en",
   "child": "Lily",
   "coach": "Marina",
+  "day": "Wed, Nov 11",
+  "time": "17:00",
+  "venue": "Riverside Aquatic Center",
   "when": "Wed, Nov 11 at 17:00",
-  "venue": "Riverside Aquatic Center"
+  "say": "Lily keeps their own coach, Marina. The lesson moves to Wed, Nov 11 at 17:00 with Marina. Ask the parent if that works."
  },
- "input_sha256": "4b478a375186ca238c740c2aa655ab7ae4dc81040ebc90e1c4d8787faed2db08",
+ "input_sha256": "6a6253774903a1d90a40c27a3ec3e6bb0d45721ae796f0fb94766471465a1b7d",
  "synthetic": true,
  "source": "synthetic: written by hand to the family_question schema, only facts from input",
  "duration_ms": 1000,
  "response": {
   "model": "muse-glimmer-30b",
   "usage": {
-   "prompt_tokens": 230,
+   "prompt_tokens": 250,
    "completion_tokens": 44
   },
   "choices": [
    {
     "message": {
      "role": "assistant",
-     "content": "{\"body\": \"No problem, Lily stays with Marina. Marina can teach her on Wed, Nov 11 at 17:00 instead. Does that work? Reply YES or NO.\"}"
+     "content": "{\"body\": \"No problem, Lily stays with Marina. Her lesson moves to Wed, Nov 11 at 17:00 with Marina. Does that work? Reply YES or NO.\"}"
     }
    }
   ]
