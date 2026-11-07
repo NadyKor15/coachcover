@@ -20,6 +20,7 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
+from coachcover import ext_db, notify
 from coachcover.checks import store_night_report
 from coachcover.demo import clock_now
 from coachcover.models import DbLedger, ModelClient
@@ -38,7 +39,9 @@ def tick(conn: psycopg.Connection, policy_id: str, now: datetime, night_hour: in
         opened = pipeline.night_cover(report, now) if created else []
         night = {"for_date": report["for_date"], "created": created, "problems": len(report["problems"]),
                  "cases": [c["code"] for c in opened]}
-    return {"expired_offers": expired, "night_report": night}
+    ext_db.ensure_schema(conn)
+    posts = notify.sweep(conn, policy_id, now)  # one team-chat post per closed cover (simulated delivery)
+    return {"expired_offers": expired, "night_report": night, "team_posts": len(posts)}
 
 
 def _log(**fields) -> None:

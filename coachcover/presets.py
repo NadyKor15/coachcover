@@ -15,7 +15,7 @@ from coachcover.model import MONEY_KEYS, WEEKDAYS, CertType, Level, Policy, Pres
 PRESET_DIR = Path(__file__).parent / "presets"
 
 _PRESET_KEYS = {"code", "label", "note", "venue_term", "cert_types", "roles", "programs", "policy_defaults"}
-_PRESET_OPTIONAL = {"note", "young_children", "copy", "money", "min_rest_hours", "offers"}
+_PRESET_OPTIONAL = {"note", "young_children", "copy", "money", "min_rest_hours", "offers", "forecast"}
 _PRICE_KEYS = {"value", "unit", "assumption", "note"}
 _DEFAULT_KEYS = {
     "max_weekly_hours",

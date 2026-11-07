@@ -12,7 +12,7 @@
     {
       "venue_id": "N1",
       "policy_id": "northside",
-      "manager_name": "Hannah Cole",
+      "manager_name": "Omar Haddad",
       "min_guards": 3,
       "policy": {"preset": "swim_school", "name": "Northside Aquatic Center (fictional)", "overrides": {"max_weekly_hours": 44}},
       "venue": {"name": "Northside Aquatic Center", "tz": "America/New_York", "lat": 34.02, "lon": -84.36,

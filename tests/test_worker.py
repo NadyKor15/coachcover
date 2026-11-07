@@ -44,3 +44,14 @@ def test_night_check_runs_once_and_opens_a_case_as_the_policy_says(new_database)
     assert [p["staff_id"] for p in report["problems"]] == ["S07"]
     assert all(e["days_left"] <= 30 for e in report["expiring_30"])
     assert tick(conn, POLICY_ID, NOW)["night_report"] is None  # before the night hour nothing is written
+
+
+def test_each_tick_posts_closed_covers_to_the_team_chat_once(new_database):
+    from coachcover.demo import reset_school, run_scenario
+
+    conn = new_database()
+    reset_school(conn)
+    run = run_scenario(conn, ModelClient(DbLedger(conn), mode="replay"), "dangerous_morning")
+    assert tick(conn, POLICY_ID, run["ended_at"] + timedelta(seconds=5))["team_posts"] == 1  # Maria covered 06:00
+    assert tick(conn, POLICY_ID, run["ended_at"] + timedelta(seconds=10))["team_posts"] == 0  # never twice
+    assert conn.execute("SELECT count(*) FROM ext_team_post").fetchone()[0] >= 1

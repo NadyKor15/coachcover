@@ -93,7 +93,7 @@ COACHCOVER_A2A_PEERS='...same...' uvicorn --factory coachcover.api:create_app --
  "case": {"id": 1, "ref": "C-1109-01", "link": "/case.html?id=C-1109-01"},
  "borrower": {"venue_id": "V1", "venue_name": "Riverside Aquatic Center", "manager": "Dana Ruiz",
               "agent_url": "http://…/a2a/V1", "approved": {"by": "Dana Ruiz", "at": "2026-11-09T10:18:00.142Z", "at_label": "10:18:00 UTC"}},
- "lender": {"venue_id": "N1", "venue_name": "Northside Aquatic Center", "manager": "Hannah Cole", "agent_url": "…", "approved": null},
+ "lender": {"venue_id": "N1", "venue_name": "Northside Aquatic Center", "manager": "Omar Haddad", "agent_url": "…", "approved": null},
  "candidate": {"staff_id": "N01", "name": "Kai Morgan", "from_venue": "Northside Aquatic Center",
                "line": "Kai first: 8 h this week, Level 3, 8.6 km away, 4.2 yr at this level", "week_hours": 8.0},
  "approvals": 1, "approvals_needed": 2, "created_at": "…Z", "closed_at": null,

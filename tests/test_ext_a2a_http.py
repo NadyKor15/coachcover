@@ -86,7 +86,7 @@ def test_loan_over_http_between_two_addresses(two_servers):
         # each manager approves at their own venue's address
         one = http.post(f"{borrower.url}/api/network/loans/{loan['code']}/approve", json={"manager": "Dana Ruiz", "venue": "V1"})
         assert one.json()["status"] == "awaiting_approval"
-        two = http.post(f"{lender.url}/api/network/loans/{loan['code']}/approve", json={"manager": "Hannah Cole", "venue": "N1"})
+        two = http.post(f"{lender.url}/api/network/loans/{loan['code']}/approve", json={"manager": "Omar Haddad", "venue": "N1"})
         assert two.status_code == 200, two.text
         assert two.json()["status"] == "assigned"
         task = http.post(f"{lender.url}/a2a/N1", headers={"A2A-Version": "1.0"}, json={

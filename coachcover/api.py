@@ -24,7 +24,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from coachcover import screens, views
+from coachcover import ext_api, screens, views
 from coachcover.db import migrate
 from coachcover.demo import SCENARIOS, clock_now, reset_school, run_scenario
 from coachcover.models import DbLedger, ModelClient, ModelError
@@ -102,6 +102,7 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
         yield
 
     app = FastAPI(title="CoachCover API", version="0.2.0", lifespan=lifespan)
+    app.state.dsn = dsn  # the extension router reads the same database
 
     def get_conn() -> Iterator[psycopg.Connection]:
         with connect() as conn:
@@ -275,6 +276,10 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
             conn.execute("INSERT INTO ops.judge_run (client) VALUES (%s)", (client,))
         result = run_scenario(conn, ModelClient(DbLedger(conn)), scenario)
         return {**result, "runs_left_this_hour": runs_per_hour - used - 1}
+
+    # the extensions (network loans over A2A, MCP, week, what-if, binder, team posts) come before the static
+    # mount: a mount on "/" takes every path added after it
+    app.include_router(ext_api.router)
 
     if web.is_dir():
         for route, page in (("/offer", "offer.html"), ("/case", "case.html")):

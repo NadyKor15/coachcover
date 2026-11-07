@@ -25,7 +25,7 @@ from tests.test_pipeline import RU_VOICE
 pytestmark = pytest.mark.db
 
 BORROWER_MANAGER = "Dana Ruiz"
-LENDER_MANAGER = "Hannah Cole"
+LENDER_MANAGER = "Omar Haddad"
 
 
 def ext_app(dsn: str):
