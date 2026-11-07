@@ -29,8 +29,9 @@ STARTS = {"preschool": NOW, "deck": DECK_NOW}  # the demo clock after a reset
 # the voice note comes 10 s after the reset clock (08:40:10): the offers' 5-minute timers then end after Zoe's
 # 60-second window (08:44 + 60 s = 08:45:00), so Leo stands down instead of timing out at the same second
 CALLOUT_DELAY = {"preschool": timedelta(seconds=10), "deck": timedelta(0)}
-# the private-lesson scenes: Marina taught her 09:30 lesson and fell ill by midday. Her note (also say -v Milena):
-# "Привет, это Марина. Я заболела, в пять не смогу провести индивидуальное занятие с Лили. Простите." Her 17:00 private
+# the private-lesson scenes: Marina taught her 09:30 lesson and fell ill by midday. Her note (also say -v Milena, -r 150,
+# the name stressed so the speech model hears "Лили"): "Привет, это Марина. Я заболела, в пять не смогу провести
+# индивидуальное занятие с Лили. Простите." Her 17:00 private
 # lesson with Lily is the only shift of her day still ahead, so the whole-day rule opens one case.
 PRIVATE_VOICE = AUDIO / "ru-callout-private-1700.ogg"
 PRIVATE_NOW = NOW.replace(hour=12, minute=10)  # 12:10 ET: the scene's own clock; the note comes 10 s later
