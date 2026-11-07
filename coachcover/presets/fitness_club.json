@@ -4,6 +4,7 @@
   "note": "Example values, not legal advice. Class caps per instructor are an assumption (room size and class format), not a regulation. Overtime cost per hour is an example. Ten hours of rest between work on different days is an assumption, not a regulation.",
   "venue_term": {"en": "club", "ru": "клуб"},
   "min_rest_hours": 10,
+  "offers": {"wave_size": 3, "collect_seconds": 60, "plan_b_minutes_before_start": 20},
   "copy": {
     "title": "Who can teach the {time} class",
     "participants": "members",

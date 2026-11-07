@@ -31,10 +31,10 @@ def test_uncovered_morning_refunds_overtime_and_optional_inspection():
     cost = uncovered_cost([six, seven, deck], params)
     assert cost["participants"] == 9 and cost["overtime_hours"] == 4.5
     assert [(line["shift_id"], line["usd"]) for line in cost["lines"]] == [
-        ("A", 60.0), ("D", 153.0), ("B", 75.0)]  # 4 x $15; 4.5 h x $34; 5 x $15, in start order
-    assert cost["total_usd"] == 288.0
+        ("A", 120.0), ("D", 153.0), ("B", 150.0)]  # 4 x $30; 4.5 h x $34; 5 x $30, in start order
+    assert cost["total_usd"] == 423.0
     fined = uncovered_cost([six], money_params(SWIM.preset.money, SWIM.overtime_cost_per_hour, inspection_penalty=500.0))
-    assert fined["total_usd"] == 560.0 and fined["lines"][-1]["kind"] == "inspection"
+    assert fined["total_usd"] == 620.0 and fined["lines"][-1]["kind"] == "inspection"
     assert uncovered_cost([], params)["total_usd"] == 0  # no shift, no fine
     with pytest.raises(ValueError, match="twice"):
         uncovered_cost([six, six], params)
@@ -58,7 +58,8 @@ def test_every_price_says_whether_it_is_an_assumption():
     assert set(info) == {"lesson_price", "refund_share", "hourly_wage", "overtime_multiplier", "inspection_penalty",
                          "manager_hour"}
     assert all({"value", "unit", "assumption", "source", "note"} <= set(v) for v in info.values())
-    assert info["lesson_price"]["assumption"] and info["manager_hour"]["assumption"] and info["hourly_wage"]["assumption"]
+    assert not info["lesson_price"]["assumption"] and info["lesson_price"]["source"].endswith("(product decision)")
+    assert info["manager_hour"]["assumption"] and info["hourly_wage"]["assumption"]
     assert info["inspection_penalty"]["value"] == 0  # off unless a school sets it
     assert info["overtime_multiplier"]["assumption"] is False and "Fair Labor Standards" in info["overtime_multiplier"]["source"]
     own = money_params(SWIM.preset.money, SWIM.overtime_cost_per_hour, lesson_price=28.0).as_dict()["lesson_price"]
@@ -93,7 +94,7 @@ def test_calls_cost_recomputes_tokens_and_uses_the_ledger_for_audio():
 
 
 def test_labels():
-    assert usd(105) == "$105" and usd(2.5) == "$2.50" and usd(1234.5) == "$1,234.50"
+    assert usd(210) == "$210" and usd(2.5) == "$2.50" and usd(1234.5) == "$1,234.50"
     assert cents_label(0.0138) == "0.014¢" and cents_label(0.0004) == "0.0004¢" and cents_label(1.234) == "1.23¢"
 
 
@@ -104,15 +105,15 @@ def test_card_adds_lines_by_kind_and_compares_with_models_and_the_manager():
     bill = {"cents": 0.0138, "calls": 2, "own_calls": 0, "shared_calls": 2, "shared_between_cases": 2}
     card = nobody_accepted_card(uncovered_cost(shifts, params), params, case_bill=bill, manager_minutes=6.0,
                                 manager_minutes_source="synthetic replay")
-    assert card["title"] == "If nobody had accepted" and card["total_usd"] == 173.0 and card["total_label"] == "$173"
+    assert card["title"] == "If nobody had accepted" and card["total_usd"] == 278.0 and card["total_label"] == "$278"
     assert [(x["kind"], x["usd"], x["label"]) for x in card["lines"]] == [
-        ("refunds", 105.0, "Refunds: 7 participants × $15"),
+        ("refunds", 210.0, "Refunds: 7 participants × $30"),
         ("overtime", 68.0, "Overtime: 2 h × $22.67 × 1.5"),
     ]
     models, manager = card["compare"]
     assert models["label"] == "Models for this cover: 0.014¢ (1/2 of 2 call-out call(s))"
     assert manager["usd"] == 2.5 and "6 min" in manager["label"] and "synthetic replay" in manager["label"]
-    assert card["assumptions"]["lesson_price"]["assumption"] is True
+    assert card["assumptions"]["lesson_price"]["assumption"] is False
 
 
 # --- from the database: one judge morning on recordings -------------------------------------
@@ -132,8 +133,8 @@ def test_today_money_after_the_judge_morning(new_database):
     money = out["money"]
     assert set(money) == CONTRACT_MONEY_KEYS
     # Marina's shift: 8 children (seed FIXED_GROUPS), refunds at the preset's lesson price
-    assert money["uncovered_morning_usd"] == 120.0 and out["uncovered"]["participants"] == 8
-    assert money["uncovered_morning_label"] == "If nobody had accepted: $120 (Refunds: 8 participants × $15)"
+    assert money["uncovered_morning_usd"] == 240.0 and out["uncovered"]["participants"] == 8
+    assert money["uncovered_morning_label"] == "If nobody had accepted: $240 (Refunds: 8 participants × $30)"
     assert money["manager_hour_usd"] == 25.0
     # one call-out, one case: all four call-out calls are this case's, plus its own (Anna's message filter)
     assert out["case_cost"]["shared_calls"] == 4 and out["case_cost"]["shared_between_cases"] == 1
@@ -154,7 +155,7 @@ def test_prices_come_from_the_preset_and_the_loader_is_strict():
 
     from coachcover.presets import preset_from_dict, read_preset_file
 
-    assert SWIM.preset.money["lesson_price"]["value"] == 15.0 and SWIM.preset.money["lesson_price"]["assumption"] is True
+    assert SWIM.preset.money["lesson_price"]["value"] == 30.0 and SWIM.preset.money["lesson_price"]["assumption"] is False
     assert default_policy("fitness_club").preset.money["lesson_price"]["unit"] == "USD per participant per class"
     broken = {
         "missing price": lambda d: d["money"].pop("manager_hour"),

@@ -26,7 +26,7 @@ DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 def test_migrations_apply_once(new_database):
     conn = new_database()
     versions = ["001_init", "002_pipeline", "003_review_fixes", "004_callouts_and_ops", "005_screens_and_filter",
-                "006_safety_layer"]
+                "006_safety_layer", "007_offer_waves"]
     assert migrate(conn) == versions
     assert migrate(conn) == []
     assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == versions

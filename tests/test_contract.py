@@ -89,7 +89,7 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     # names and the story, from the data
     assert today["title"] == "Who is allowed on deck at 06:00"
     assert today["venue"] == {"id": "V1", "name": "Riverside Aquatic Center", "term": "pool"}
-    assert today["user_label"] == "Dana Ruiz · Manager" and today["now_label"] == "Mon, Nov 9 · 05:19"
+    assert today["user_label"] == "Dana Ruiz · Manager" and today["now_label"] == "Mon, Nov 9 · 05:15"
     callout = today["callout"]
     assert callout["staff"] == "Marina Petrova · Lifeguard + WSI" and callout["case_id"] == "C-1109-01"
     assert callout["transcript_original"] == ref["callout"]["transcript_original"]
@@ -112,15 +112,15 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert [(o["staff"], o["result"]) for o in today["offers"]] == [
         ("Sofia Reyes", "declined"), ("Leo Martins", "no_reply"), ("Maria Lopez", "accepted")]
     maria = today["offers"][-1]
-    assert maria["why_first"] == "Maria first: 12 h this week, Level 3, same pool" and maria["time_label"] == "05:19"
+    assert maria["why_first"] == "Maria third: 12 h this week, Level 3, same pool" and maria["time_label"] == "05:14"
     assert [(t["time_label"], t["kind"]) for t in today["timeline"]] == [
-        ("05:12", "callout"), ("05:13", "declined"), ("05:18", "no_reply"), ("05:19", "accepted"), ("06:00", "shift_start")]
+        ("05:12", "callout"), ("05:13", "declined"), ("05:14", "accepted"), ("05:15", "no_reply"), ("06:00", "shift_start")]
     assert today["outcome"] == {"covered_by": "Maria Lopez", "covered_time": "06:00", "lessons_cancelled": 0}
     assert today["plan_b"]["state"] == "standby" and today["plan_b"]["autonomy"] == "propose"
     assert "merge refused" in today["plan_b"]["text"]  # the kids' norm refuses the merge, live
-    money = today["money"]  # from coachcover.money with the preset's prices (assumptions)
-    assert money["uncovered_morning_usd"] == 120.0  # 8 children x $15
-    assert money["uncovered_morning_label"] == "If nobody had accepted: $120 (Refunds: 8 participants × $15)"
+    money = today["money"]  # from coachcover.money with the preset's prices
+    assert money["uncovered_morning_usd"] == 240.0  # 8 children x $30, the founder's price (product decision)
+    assert money["uncovered_morning_label"] == "If nobody had accepted: $240 (Refunds: 8 participants × $30)"
     assert money["manager_hour_usd"] == 25.0 and 0 < money["case_cost_cents"] < 1
     assert today["model_log"]["calls"] >= 4 and today["model_log"]["usd"] > 0
     assert today["flagged"][0]["staff"] == "Anna Kim"  # her "assign me anyway" message was flagged
@@ -150,7 +150,7 @@ def test_case_page_matches_the_fixture(api):
     client.post("/api/judge/run", json={"scenario": "dangerous_morning"})
     page = client.get("/api/cases/C-1109-01").json()
     assert shape_gaps(page, load("cases/C-1109-01.json")) == []
-    assert (page["status"], page["status_label"], page["covered_time_label"]) == ("covered", "Covered", "05:19")
+    assert (page["status"], page["status_label"], page["covered_time_label"]) == ("covered", "Covered", "05:15")
     kinds = [s["kind"] for s in page["steps"]]
     assert kinds[0] == "callout" and kinds[-1] == "covered" and {"shift", "allowed", "offers", "flagged"} <= set(kinds)
     allowed = next(s for s in page["steps"] if s["kind"] == "allowed")
@@ -162,8 +162,9 @@ def test_case_page_matches_the_fixture(api):
     assert whisper["ms"] == 1050 and whisper["cost_usd"] > 0 and "transcribe-ru.json" in whisper["source"]
     assert page["model_cost_usd"] == pytest.approx(sum(c["cost_usd"] or 0 for c in page["model_calls"]))
     risk = page["risk"]
-    assert (risk["kids"], risk["refunds_usd"], risk["overtime_usd"], risk["total_usd"]) == (8, 120.0, None, 120.0)
-    assert risk["assumptions"]["lesson_price"]["assumption"] is True
+    assert (risk["kids"], risk["refunds_usd"], risk["overtime_usd"], risk["total_usd"]) == (8, 240.0, None, 240.0)
+    assert risk["assumptions"]["lesson_price"]["assumption"] is False  # a product decision
+    assert risk["assumptions"]["manager_hour"]["assumption"] is True
     assert page["proof"]["policy_label"] == "cover = auto · plan B = propose"
     download = client.get("/api/cases/C-1109-01?download=true")
     assert "attachment" in download.headers["content-disposition"] and download.json() == page
@@ -198,7 +199,7 @@ def test_nightly_check_opens_a_case_for_the_manager(api):
     assert approval[1] == "pending"
     assert conn.execute("SELECT count(*) FROM offer").fetchone() == (0,)  # nothing happens before the manager says yes
     assert client.post(f"/api/approvals/{approval[0]}/approve", json={"by": "manager:Dana"}).status_code == 200
-    assert conn.execute("SELECT count(*) FROM offer WHERE status = 'pending'").fetchone() == (1,)
+    assert conn.execute("SELECT count(*) FROM offer WHERE status = 'pending'").fetchone() == (3,)  # one wave of three
 
 
 def test_accept_rechecked_at_yes_answers_409_with_a_reason(api):
@@ -233,7 +234,7 @@ def test_stats_in_the_contract_shape(api):
     assert stats["runs"] == 1 and stats["eligibility_violations"] == 0
     assert stats["sim"]["synthetic"] is True and stats["sim"]["coachcover_violations"] == 0
     assert stats["sim"]["mornings"] == 50 and stats["sim"]["baseline_violations"] > 0
-    assert stats["closed_without_human_pct"] == 100.0 and stats["median_minutes_to_cover"] == 7.0
+    assert stats["closed_without_human_pct"] == 100.0 and stats["median_minutes_to_cover"] == 3.0
 
 
 def test_static_screens_are_served(new_database, tmp_path):

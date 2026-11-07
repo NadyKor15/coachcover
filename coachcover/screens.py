@@ -312,18 +312,13 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
     timeline = [{"time_label": _clock(first_event[k][0], tz), "kind": "callout", "label": "Call-out"}
                 for k in ("callout_received", "night_check_found") if k in first_event][:1]
     rows = []
+    stood = _stood_down(conn, case_id)
     for oid, sid, ostatus, sent, expires, responded, line in offers:
-        result, when, label = {
-            "declined": ("declined", responded, f"{names[sid]} declined"),
-            "expired": ("no_reply", expires, f"{names[sid]} no reply in {int((expires - sent).total_seconds() // 60)} min"),
-            "accepted": ("accepted", responded, f"{names[sid]} accepted"),
-            "released": ("accepted", responded, f"{names[sid]} accepted"),
-            "withdrawn": ("declined", responded or expires, f"{names[sid]} no longer eligible"),
-            "pending": ("pending", sent, f"{names[sid]} asked"),
-        }[ostatus]
+        result, when, label, _ = _offer_result(ostatus, sid, sent, expires, responded, stood.get(oid), names,
+                                               preset.offer_collect_seconds)
         rows.append({"id": f"O-{oid}", "time_label": _clock(when, tz), "staff": names[sid], "result": result,
                      "why_first": line})
-        if result != "pending":
+        if result not in ("pending", "held"):
             timeline.append({"time_label": _clock(when, tz), "kind": result, "label": label, "_at": when})
     plans = conn.execute(
         "SELECT id, snapshot, snapshot_hash, status, created_at, decided_at FROM plan_b WHERE case_id = %s"
@@ -396,6 +391,38 @@ def info_absent_name(conn: psycopg.Connection, case_id: int) -> str | None:
         "SELECT s.full_name FROM cover_case c JOIN staff s ON s.id = c.absent_staff_id WHERE c.id = %s", (case_id,)
     ).fetchone()
     return row[0] if row else None
+
+
+def _stood_down(conn: psycopg.Connection, case_id: int) -> dict[int, tuple[datetime, str]]:
+    """Offers withdrawn because someone else got the shift: offer id -> (when, winner's staff id)."""
+    return {
+        int(data["offer_id"]): (at, data["covered_by"])
+        for at, data in conn.execute(
+            "SELECT at, data FROM case_event WHERE case_id = %s AND kind = 'offer_stood_down'", (case_id,)
+        ).fetchall()
+    }
+
+
+def _offer_result(ostatus: str, sid: str, sent, expires, responded, stood, names: dict, collect: int) -> tuple:
+    """(result, when, timeline label, short label) of one offer."""
+    name = names[sid]
+    if ostatus == "withdrawn" and stood:
+        at, winner = stood
+        first = names.get(winner, winner).split()[0]
+        if responded is None:
+            return "no_reply", at, f"{name}: no reply, {first} took it", f"no reply, {first} took it"
+        return "stood_down", at, f"{name} said yes, {first} was higher in the queue", f"said yes, {first} was higher"
+    minutes = int((expires - sent).total_seconds() // 60)
+    return {
+        "declined": ("declined", responded, f"{name} declined", "declined"),
+        "expired": ("no_reply", expires, f"{name} no reply in {minutes} min", f"no reply in {minutes} min"),
+        "accepted": ("accepted", responded, f"{name} accepted", "accepted"),
+        "released": ("accepted", responded, f"{name} accepted", "accepted, later gave it back"),
+        "withdrawn": ("declined", responded or expires, f"{name} no longer eligible", "no longer eligible"),
+        "held": ("held", responded, f"{name} said yes, waiting {collect} s for anyone higher",
+                 f"said yes, waiting {collect} s for anyone higher"),
+        "pending": ("pending", sent, f"{name} asked", "asked, waiting"),
+    }[ostatus]
 
 
 def _ratio_alert(conn: psycopg.Connection, venue_id: str, now: datetime, tz: ZoneInfo, preset: Preset) -> dict | None:
@@ -633,15 +660,10 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
     ).fetchall()
     if offers:
         rows = []
+        stood = _stood_down(conn, case_id)
         for oid, sid, ostatus, sent, expires, responded, line in offers:
-            result, when, result_label = {
-                "declined": ("declined", responded, "declined"),
-                "expired": ("no_reply", expires, f"no reply in {int((expires - sent).total_seconds() // 60)} min"),
-                "accepted": ("accepted", responded, "accepted"),
-                "released": ("accepted", responded, "accepted, later gave it back"),
-                "withdrawn": ("declined", responded or expires, "no longer eligible"),
-                "pending": ("pending", sent, "asked, waiting"),
-            }[ostatus]
+            result, when, _, result_label = _offer_result(ostatus, sid, sent, expires, responded, stood.get(oid), names,
+                                                          preset.offer_collect_seconds)
             rows.append({"id": f"O-{oid}", "time_label": _clock(when, tz), "staff": names[sid], "result": result,
                          "result_label": result_label, "why_first": line})
         steps.append({"kind": "offers", "at": _utc(offers[0][3]), "time_label": _utc_label(offers[0][3]),

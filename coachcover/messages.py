@@ -24,6 +24,16 @@ CONFIRMED = {
     "es": "CoachCover: confirmado, {when} en {venue} es tuyo. ¡Gracias!",
     "ru": "CoachCover: подтверждено, {when} в {venue} за тобой. Спасибо!",
 }
+STOOD_DOWN = {
+    "en": "CoachCover: thanks — {name} already covered {when}.",
+    "es": "CoachCover: gracias — {name} ya cubrió {when}.",
+    "ru": "CoachCover: спасибо — {when} уже закрыл(а) {name}.",
+}
+HELD = {
+    "en": "CoachCover: got your yes for {when}. Confirming in a minute.",
+    "es": "CoachCover: recibimos tu sí para {when}. Confirmamos en un minuto.",
+    "ru": "CoachCover: твоё «да» на {when} получено. Подтвердим через минуту.",
+}
 NO_LONGER = {
     "en": "CoachCover: thank you, but you can no longer take {when}: {why}.",
     "es": "CoachCover: gracias, pero ya no puedes cubrir {when}: {why}.",

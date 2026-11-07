@@ -536,11 +536,11 @@ class Pipeline:
             shift_id, status = case
             if status != "open":
                 return None
-            pending = self.conn.execute(
-                "SELECT id FROM offer WHERE case_id = %s AND status = 'pending'", (case_id,)
+            active = self.conn.execute(
+                "SELECT id FROM offer WHERE case_id = %s AND status IN ('pending', 'held') ORDER BY queue_pos", (case_id,)
             ).fetchone()
-            if pending:
-                return {"offer_id": pending[0]}
+            if active:
+                return {"offer_id": active[0]}
             ranked, names, policy, _ = self.ranked(shift_id, now)
             if policy.autonomy["assign_cover"] == "off":
                 self._event(case_id, now, "agent", "offers_off", {"why": "policy: assign_cover is off"})
@@ -548,7 +548,18 @@ class Pipeline:
             offered = {r[0] for r in self.conn.execute("SELECT staff_id FROM offer WHERE case_id = %s", (case_id,))}
             queue = [r for r in ranked if r.candidate.decision.ok and r.candidate.staff_id not in offered]
             if queue:
-                return self._send_offer(case_id, shift_id, queue[0], names, policy, now, len(offered) + 1)
+                # a wave: the next people in queue order, all at once (product decision)
+                wave = self.conn.execute("SELECT coalesce(max(wave), 0) + 1 FROM offer WHERE case_id = %s",
+                                         (case_id,)).fetchone()[0]
+                members = queue[: policy.preset.offer_wave_size]
+                sent = [self._send_offer(case_id, shift_id, r, names, policy, now, len(offered) + i + 1, wave=wave,
+                                         wave_place=i + 1) for i, r in enumerate(members)]
+                if len(members) > 1:
+                    self._event(case_id, now, "agent", "wave_sent", {
+                        "wave": wave, "staff_ids": [x["staff_id"] for x in sent],
+                        "collect_seconds": policy.preset.offer_collect_seconds,
+                    })
+                return {**sent[0], "offers": sent, "wave": wave}
             self._event(case_id, now, "agent", "queue_exhausted", {"offered": len(offered)})
             # an approved option that left the case open did not work out (the overtime person said no)
             failed = self.conn.execute(
@@ -559,16 +570,17 @@ class Pipeline:
         return self.propose_plan_b(case_id, now)
 
     def _send_offer(self, case_id: int, shift_id: str, r: Ranked, names: dict, policy: Policy, now: datetime,
-                    pos: int, overtime: bool = False) -> dict:
+                    pos: int, overtime: bool = False, wave: int = 1, wave_place: int = 1) -> dict:
         staff_id = r.candidate.staff_id
         info = self.shift_info(shift_id)
         expires = now + timedelta(minutes=policy.offer_timeout_minutes)
-        first = dataclasses.replace(r, position=1)  # offered now: first of those still in the queue
-        place = {**r.place(), "line": describe_place(first, names[staff_id].split()[0], "en", policy.preset), "overtime": overtime}
+        here = dataclasses.replace(r, position=wave_place)  # the place among those still in the queue
+        place = {**r.place(), "line": describe_place(here, names[staff_id].split()[0], "en", policy.preset),
+                 "overtime": overtime, "wave": wave, "wave_place": wave_place}
         offer_id = self.conn.execute(
-            "INSERT INTO offer (case_id, shift_id, staff_id, queue_pos, place, sent_at, expires_at, overtime)"
-            " VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
-            (case_id, shift_id, staff_id, pos, Jsonb(plain(place)), now, expires, overtime),
+            "INSERT INTO offer (case_id, shift_id, staff_id, queue_pos, place, sent_at, expires_at, overtime, wave)"
+            " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+            (case_id, shift_id, staff_id, pos, Jsonb(plain(place)), now, expires, overtime, wave),
         ).fetchone()[0]
         lang = M.lang_or_en(self._staff_row(staff_id)["language"])
         body = M.OFFER[lang].format(when=self._when(info), venue=info["venue"], what=self._what(info),
@@ -578,7 +590,7 @@ class Pipeline:
         self._message(now, "staff", lang, body, staff_id=staff_id, case_id=case_id, offer_id=offer_id)
         self._event(case_id, now, "agent", "offer_sent", {
             "offer_id": offer_id, "staff_id": staff_id, "name": names[staff_id], "queue_pos": pos,
-            "line": place["line"], "expires_at": expires, "overtime": overtime,
+            "line": place["line"], "expires_at": expires, "overtime": overtime, "wave": wave,
         })
         return {"offer_id": offer_id, "staff_id": staff_id}
 
@@ -593,9 +605,105 @@ class Pipeline:
             for offer_id, case_id, staff_id in rows:
                 self.conn.execute("UPDATE offer SET status = 'expired' WHERE id = %s", (offer_id,))
                 self._event(case_id, now, "agent", "offer_expired", {"offer_id": offer_id, "staff_id": staff_id})
-        for case_id in dict.fromkeys(case_id for _, case_id, _ in rows):
-            self._offer_next(case_id, now)
+        collect = timedelta(seconds=self._policy().preset.offer_collect_seconds)
+        windows = [r[0] for r in self.conn.execute(
+            "SELECT case_id FROM offer WHERE status = 'held' GROUP BY case_id HAVING min(responded_at) + %s <= %s",
+            (collect, now),
+        )]
+        for case_id in dict.fromkeys([*(case_id for _, case_id, _ in rows), *windows]):
+            self._settle_or_next(case_id, now)
+        self._plan_b_by_deadline(now)
         return len(rows)
+
+    def _plan_b_by_deadline(self, now: datetime) -> list[int]:
+        """Plan B goes to the manager `plan_b_minutes_before_start` before the shift, even while offers are out."""
+        minutes = self._policy().preset.plan_b_minutes_before_start
+        if minutes is None:
+            return []
+        due = [r[0] for r in self.conn.execute(
+            "SELECT c.id FROM cover_case c JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id"
+            " WHERE v.policy_id = %s AND c.status = 'open' AND s.status = 'open' AND s.starts_at - %s <= %s"
+            " AND NOT EXISTS (SELECT 1 FROM plan_b p WHERE p.case_id = c.id) ORDER BY s.starts_at, c.id",
+            (self.policy_id, timedelta(minutes=minutes), now),
+        )]
+        for case_id in due:
+            with self.conn.transaction():
+                self._event(case_id, now, "agent", "plan_b_deadline", {"minutes_before_start": minutes})
+            self.propose_plan_b(case_id, now)
+        return due
+
+    def _settle_or_next(self, case_id: int, now: datetime) -> dict | None:
+        """After an answer or a timer: give the shift to the highest "yes" once nobody higher can still answer or
+        the collection window is over; tell the others; with nothing left open, send the next wave."""
+        policy = self._policy()
+        with self.conn.transaction():
+            status = self.conn.execute("SELECT status FROM cover_case WHERE id = %s FOR UPDATE", (case_id,)).fetchone()[0]
+            if status != "open":
+                return None
+            rows = self.conn.execute(
+                "SELECT id, staff_id, status, queue_pos, responded_at, shift_id FROM offer"
+                " WHERE case_id = %s AND status IN ('pending', 'held') AND NOT overtime ORDER BY queue_pos",
+                (case_id,),
+            ).fetchall()
+            held = [r for r in rows if r[2] == "held"]
+            if held:
+                window_end = min(r[4] for r in held) + timedelta(seconds=policy.preset.offer_collect_seconds)
+                higher_open = any(r[2] == "pending" and r[3] < held[0][3] for r in rows)
+                if higher_open and now < window_end:
+                    return {"collecting_until": window_end}
+                for offer_id, staff_id, _, _, _, shift_id in held:
+                    person = next(s for s in load_staff(self.conn, self.policy_id) if s.id == staff_id)
+                    shift = load_shift(self.conn, shift_id)
+                    decision = eligible(person, shift, now, policy, load_context(self.conn, self.policy_id, shift))
+                    blocking = [r for r in decision.reasons if r.blocking]
+                    if blocking:
+                        self._refuse_yes(case_id, offer_id, staff_id, shift_id, blocking, policy, now)
+                        continue
+                    return self._take(case_id, offer_id, staff_id, shift_id, policy, now)
+            elif rows:
+                return None
+        return self._offer_next(case_id, now)
+
+    def _refuse_yes(self, case_id: int, offer_id: int, staff_id: str, shift_id: str, blocking: list, policy: Policy,
+                    now: datetime) -> str:
+        self.conn.execute("UPDATE offer SET status = 'withdrawn', responded_at = coalesce(responded_at, %s) WHERE id = %s",
+                          (now, offer_id))
+        why = "; ".join(describe(r, "en", policy.preset) for r in blocking)
+        self._event(case_id, now, "agent", "accept_rejected",
+                    {"offer_id": offer_id, "staff_id": staff_id, "codes": [r.code.value for r in blocking], "why": why})
+        lang = M.lang_or_en(self._staff_row(staff_id)["language"])
+        self._message(now, "staff", lang, M.NO_LONGER[lang].format(when=self._when(self.shift_info(shift_id)), why=why),
+                      staff_id=staff_id, case_id=case_id, offer_id=offer_id)
+        return why
+
+    def _take(self, case_id: int, offer_id: int, staff_id: str, shift_id: str, policy: Policy, now: datetime) -> dict:
+        """This "yes" gets the shift (or, in propose mode, the manager's card); everyone else still open stands down."""
+        self.conn.execute("UPDATE offer SET status = 'accepted', responded_at = coalesce(responded_at, %s) WHERE id = %s",
+                          (now, offer_id))
+        if policy.autonomy["assign_cover"] == "propose":
+            approval = self.conn.execute(
+                "INSERT INTO approval (case_id, action, payload, created_at) VALUES (%s, 'assign_cover', %s, %s) RETURNING id",
+                (case_id, Jsonb({"offer_id": offer_id, "staff_id": staff_id, "shift_id": shift_id}), now),
+            ).fetchone()[0]
+            self._event(case_id, now, "agent", "awaiting_approval",
+                        {"approval_id": approval, "action": "assign_cover", "staff_id": staff_id})
+        else:
+            self._book(case_id, shift_id, staff_id, now, via={"offer_id": offer_id, "overtime": False})
+        self._stand_down(case_id, staff_id, shift_id, now)
+        return {"offer_id": offer_id, "staff_id": staff_id, "taken": True}
+
+    def _stand_down(self, case_id: int, winner: str, shift_id: str, now: datetime) -> None:
+        name = self._staff_row(winner)["name"].split()[0]
+        when = self._when(self.shift_info(shift_id))
+        for offer_id, staff_id in self.conn.execute(
+            "UPDATE offer SET status = 'withdrawn' WHERE case_id = %s AND status IN ('pending', 'held') AND NOT overtime"
+            " RETURNING id, staff_id", (case_id,),
+        ).fetchall():
+            self._event(case_id, now, "agent", "offer_stood_down", {"offer_id": offer_id, "staff_id": staff_id,
+                                                                    "covered_by": winner})
+            lang = M.lang_or_en(self._staff_row(staff_id)["language"])
+            self._message(now, "staff", lang, M.STOOD_DOWN[lang].format(name=name, when=when),
+                          staff_id=staff_id, case_id=case_id, offer_id=offer_id)
 
     def respond(self, offer_id: int, accept: bool, now: datetime) -> dict:
         """A staff answer. The person is checked again at the moment of "yes"."""
@@ -610,8 +718,13 @@ class Pipeline:
             if row is None:
                 raise NotFound(f"unknown offer {offer_id}")
             case_id, shift_id, staff_id, status, overtime = row
-            self.conn.execute("SELECT 1 FROM cover_case WHERE id = %s FOR UPDATE", (case_id,))
+            case_status = self.conn.execute("SELECT status FROM cover_case WHERE id = %s FOR UPDATE", (case_id,)).fetchone()[0]
             if status != "pending":
+                holder = self.conn.execute("SELECT s.full_name FROM shift sh JOIN staff s ON s.id = sh.staff_id"
+                                           " WHERE sh.id = %s", (shift_id,)).fetchone()
+                if case_status in ("covered", "plan_b") and holder and accept:
+                    raise Conflict(f"Thanks — {holder[0].split()[0]} already covered it",
+                                   {"status": status, "covered_by": holder[0]})
                 raise Conflict(f"offer {offer_id} is {status}", {"status": status})
             info = self.shift_info(shift_id)
             if not accept:
@@ -625,13 +738,17 @@ class Pipeline:
                 decision = eligible(person, shift, now, policy, load_context(self.conn, self.policy_id, shift))
                 blocking = [r for r in decision.reasons if r.blocking and not (overtime and r.code == Code.HOURS_LIMIT_EXCEEDED)]
                 if blocking:
-                    self.conn.execute("UPDATE offer SET status = 'withdrawn', responded_at = %s WHERE id = %s", (now, offer_id))
-                    why = "; ".join(describe(r, "en", policy.preset) for r in blocking)
-                    refused = why
-                    self._event(case_id, now, "agent", "accept_rejected",
-                                {"offer_id": offer_id, "staff_id": staff_id, "codes": [r.code.value for r in blocking], "why": why})
+                    refused = self._refuse_yes(case_id, offer_id, staff_id, shift_id, blocking, policy, now)
+                    move_on = True
+                elif not overtime and policy.preset.offer_collect_seconds > 0:
+                    # a wave: hold the "yes"; the highest "yes" gets the shift (see _settle_or_next)
+                    self.conn.execute("UPDATE offer SET status = 'held', responded_at = %s WHERE id = %s", (now, offer_id))
+                    self._event(case_id, now, "staff", "offer_yes_held", {
+                        "offer_id": offer_id, "staff_id": staff_id,
+                        "collect_seconds": policy.preset.offer_collect_seconds,
+                    })
                     lang = M.lang_or_en(self._staff_row(staff_id)["language"])
-                    self._message(now, "staff", lang, M.NO_LONGER[lang].format(when=self._when(info), why=why),
+                    self._message(now, "staff", lang, M.HELD[lang].format(when=self._when(info)),
                                   staff_id=staff_id, case_id=case_id, offer_id=offer_id)
                     move_on = True
                 elif policy.autonomy["assign_cover"] == "propose" and not overtime:
@@ -645,8 +762,10 @@ class Pipeline:
                 else:
                     self.conn.execute("UPDATE offer SET status = 'accepted', responded_at = %s WHERE id = %s", (now, offer_id))
                     self._book(case_id, shift_id, staff_id, now, via={"offer_id": offer_id, "overtime": overtime})
+                    if not overtime:
+                        self._stand_down(case_id, staff_id, shift_id, now)
         if move_on:
-            self._offer_next(case_id, now)
+            self._settle_or_next(case_id, now)
         state = self.offer_state(offer_id)
         if refused:
             state["reason"] = refused
@@ -665,6 +784,7 @@ class Pipeline:
         self.conn.execute("UPDATE shift SET staff_id = %s, status = 'scheduled' WHERE id = %s", (staff_id, shift_id))
         opened_at = self.conn.execute("SELECT opened_at FROM cover_case WHERE id = %s", (case_id,)).fetchone()[0]
         self.conn.execute("UPDATE cover_case SET status = 'covered', closed_at = %s WHERE id = %s", (now, case_id))
+        self.conn.execute("UPDATE plan_b SET status = 'superseded' WHERE case_id = %s AND status = 'proposed'", (case_id,))
         person = self._staff_row(staff_id)
         self._event(case_id, now, "agent", "shift_covered", {
             **via, "staff_id": staff_id, "name": person["name"],

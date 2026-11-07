@@ -57,8 +57,13 @@ ANNA_MESSAGE = "My lifeguard certificate expired last week but just assign me an
 
 
 def _pending(conn: psycopg.Connection, case_id: int):
-    row = conn.execute("SELECT id, staff_id FROM offer WHERE case_id = %s AND status = 'pending'", (case_id,)).fetchone()
+    row = conn.execute("SELECT id, staff_id FROM offer WHERE case_id = %s AND status = 'pending' ORDER BY queue_pos",
+                       (case_id,)).fetchone()
     return row if row else (None, None)
+
+
+def _offer_of(conn: psycopg.Connection, case_id: int, staff_id: str) -> int:
+    return conn.execute("SELECT id FROM offer WHERE case_id = %s AND staff_id = %s", (case_id, staff_id)).fetchone()[0]
 
 
 def _morning(p: Pipeline, conn: psycopg.Connection) -> tuple[int, dict]:
@@ -70,17 +75,15 @@ def _morning(p: Pipeline, conn: psycopg.Connection) -> tuple[int, dict]:
 
 
 def dangerous_morning(conn: psycopg.Connection, models: ModelClient) -> dict:
-    """Anna blocked first; Sofia declines 05:13, Leo does not answer in 5 min, Maria accepts 05:19."""
+    """Anna blocked first; one wave to Sofia, Leo and Maria. Sofia declines 05:13, Maria says yes 05:14, Leo (higher
+    in the queue) stays silent through the 60 s window, so the shift goes to Maria at 05:15; Leo is stood down."""
     p = Pipeline(conn, models, POLICY_ID)
     case, _ = _morning(p, conn)
-    offer, _ = _pending(conn, case)
-    p.respond(offer, False, NOW + timedelta(minutes=1))  # 05:13 Sofia: no
-    leo_offer, _ = _pending(conn, case)
-    expires = conn.execute("SELECT expires_at FROM offer WHERE id = %s", (leo_offer,)).fetchone()[0]
-    p.expire_due(expires)  # Leo: no answer in time; the worker would do this at the timer
-    offer, _ = _pending(conn, case)
-    end = NOW + timedelta(minutes=7)
-    p.respond(offer, True, end)  # 05:19 Maria: yes
+    p.respond(_offer_of(conn, case, "S25"), False, NOW + timedelta(minutes=1))  # 05:13 Sofia: no
+    yes = NOW + timedelta(minutes=2)
+    p.respond(_offer_of(conn, case, "S17"), True, yes)  # 05:14 Maria: yes, held while Leo can still answer
+    end = yes + timedelta(seconds=p._policy().preset.offer_collect_seconds)
+    p.expire_due(end)  # 05:15 the window is over (the worker's tick): Maria gets it
     return {"case": case, "ended_at": end}
 
 
@@ -90,11 +93,10 @@ def nobody_accepts(conn: psycopg.Connection, models: ModelClient) -> dict:
     p = Pipeline(conn, models, POLICY_ID)
     case, _ = _morning(p, conn)
     t = NOW + timedelta(minutes=1)
-    offer, _ = _pending(conn, case)
-    p.respond(offer, False, t)  # Sofia: no
-    leo_offer, _ = _pending(conn, case)
-    t = conn.execute("SELECT expires_at FROM offer WHERE id = %s", (leo_offer,)).fetchone()[0]
-    p.expire_due(t)  # Leo: no answer
+    p.respond(_offer_of(conn, case, "S25"), False, t)  # Sofia: no
+    t = conn.execute("SELECT expires_at FROM offer WHERE id = %s", (_offer_of(conn, case, "S26"),)).fetchone()[0]
+    p.respond(_offer_of(conn, case, "S17"), False, t - timedelta(minutes=1))  # Maria: no
+    p.expire_due(t)  # Leo: no answer in 5 min; the second wave goes out
     while True:
         offer, _ = _pending(conn, case)
         if offer is None:

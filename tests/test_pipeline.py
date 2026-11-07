@@ -74,22 +74,24 @@ def test_voice_callout_to_covered_shift_with_case_file(school):
     assert list(cases) == [HERO]  # one shift from 06:00 to 08:00 holds the lane and the 07:00 lesson
     case = cases[HERO]
     assert p.case_code(case) == "C-1109-01"
-    first_offer, first = pending(school, case)
-    assert first == "S25"  # Sofia: fewest hours this week
-    p.respond(first_offer, False, minutes(1))  # 05:13 no
-    second_offer, second = pending(school, case)
-    assert second == "S26"  # Leo
-    p.expire_due(minutes(6))  # 05:18, his 5 minutes are over
-    third_offer, third = pending(school, case)
-    assert third == "S17"  # Maria
-    line = school.execute("SELECT place->>'line' FROM offer WHERE id = %s", (third_offer,)).fetchone()[0]
-    assert line == "Maria first: 12 h this week, Level 3, same pool"
-    state = p.respond(third_offer, True, minutes(7))  # 05:19 yes
-    assert (state["status"], state["case_status"]) == ("accepted", "covered")
+    wave = school.execute("SELECT staff_id, wave, place->>'line' FROM offer WHERE case_id = %s ORDER BY queue_pos",
+                          (case,)).fetchall()
+    assert [(sid, w) for sid, w, _ in wave] == [("S25", 1), ("S26", 1), ("S17", 1)]  # one wave of three, queue order
+    assert wave[2][2] == "Maria third: 12 h this week, Level 3, same pool"
+    offer = dict((sid, oid) for oid, sid in school.execute("SELECT id, staff_id FROM offer WHERE case_id = %s", (case,)))
+    p.respond(offer["S25"], False, minutes(1))  # 05:13 Sofia: no
+    held = p.respond(offer["S17"], True, minutes(2))  # 05:14 Maria: yes, held while Leo (higher) may still answer
+    assert (held["status"], held["case_status"]) == ("held", "open")
+    p.expire_due(minutes(2.5))  # inside the 60 s window: nothing moves
+    assert school.execute("SELECT status FROM offer WHERE id = %s", (offer["S17"],)).fetchone() == ("held",)
+    p.expire_due(minutes(3))  # 05:15 the window is over: Maria gets it, Leo stands down
+    assert school.execute("SELECT staff_id, status FROM offer WHERE case_id = %s ORDER BY queue_pos", (case,)).fetchall() == [
+        ("S25", "declined"), ("S26", "withdrawn"), ("S17", "accepted")]
     assert school.execute("SELECT staff_id, status FROM shift WHERE id = %s", (HERO,)).fetchone() == ("S17", "scheduled")
     assert events(school, case) == [
         "callout_received", "voice_transcribed", "message_screened", "callout_understood", "shift_opened",
-        "candidates_ranked", "offer_sent", "offer_declined", "offer_sent", "offer_expired", "offer_sent", "shift_covered",
+        "candidates_ranked", "offer_sent", "offer_sent", "offer_sent", "wave_sent", "offer_declined", "offer_yes_held",
+        "shift_covered", "offer_stood_down",
     ]
     ranked = school.execute("SELECT data FROM case_event WHERE case_id = %s AND kind = 'candidates_ranked'", (case,)).fetchone()[0]
     assert (ranked["total"], ranked["eligible"], ranked["reserve"]) == (40, 5, 3)

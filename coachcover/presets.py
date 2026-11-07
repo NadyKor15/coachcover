@@ -15,7 +15,7 @@ from coachcover.model import MONEY_KEYS, WEEKDAYS, CertType, Level, Policy, Pres
 PRESET_DIR = Path(__file__).parent / "presets"
 
 _PRESET_KEYS = {"code", "label", "note", "venue_term", "cert_types", "roles", "programs", "policy_defaults"}
-_PRESET_OPTIONAL = {"note", "young_children", "copy", "money", "min_rest_hours"}
+_PRESET_OPTIONAL = {"note", "young_children", "copy", "money", "min_rest_hours", "offers"}
 _PRICE_KEYS = {"value", "unit", "assumption", "note"}
 _DEFAULT_KEYS = {
     "max_weekly_hours",
@@ -133,7 +133,21 @@ def preset_from_dict(data: dict) -> Preset:
         copy=_copy(data),
         money=_money(data),
         min_rest_hours=data.get("min_rest_hours"),
+        **_offers(data),
     )
+
+
+def _offers(data: dict) -> dict:
+    """Offer waves (product decision): how many at once, how long to collect answers, when plan B goes out anyway."""
+    offers = data.get("offers")
+    if offers is None:
+        return {}
+    _keys(offers, set(), "preset offers", optional={"wave_size", "collect_seconds", "plan_b_minutes_before_start"})
+    return {
+        "offer_wave_size": offers.get("wave_size", 1),
+        "offer_collect_seconds": offers.get("collect_seconds", 0),
+        "plan_b_minutes_before_start": offers.get("plan_b_minutes_before_start"),
+    }
 
 
 def _money(data: dict) -> dict:

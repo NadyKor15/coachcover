@@ -131,6 +131,9 @@ class Preset:
     copy: Mapping[str, str] = field(default_factory=dict)  # screen and prompt texts of this kind of business
     money: Mapping[str, Mapping[str, object]] = field(default_factory=dict)  # prices for the money card, see MONEY_KEYS
     min_rest_hours: float | None = None  # rest a person needs between work on different days; None: no rule
+    offer_wave_size: int = 1  # offers sent at once, in queue order (product decision)
+    offer_collect_seconds: int = 0  # after the first "yes" of a wave, wait this long for a "yes" from higher up
+    plan_b_minutes_before_start: int | None = None  # plan B goes to the manager this long before the start
 
     def __post_init__(self) -> None:
         _require_code(self.code, "preset code")
@@ -143,6 +146,13 @@ class Preset:
             and 0 < self.min_rest_hours <= 24
         ):
             raise ValueError(f"preset {self.code}: min_rest_hours must be a number in (0, 24]")
+        if not _positive_int(self.offer_wave_size):
+            raise ValueError(f"preset {self.code}: offers.wave_size must be an int >= 1")
+        if not isinstance(self.offer_collect_seconds, int) or isinstance(self.offer_collect_seconds, bool) \
+                or not 0 <= self.offer_collect_seconds <= 3600:
+            raise ValueError(f"preset {self.code}: offers.collect_seconds must be an int from 0 to 3600")
+        if self.plan_b_minutes_before_start is not None and not _positive_int(self.plan_b_minutes_before_start):
+            raise ValueError(f"preset {self.code}: offers.plan_b_minutes_before_start must be an int >= 1")
         for kind, items in (("role", self.roles), ("cert type", self.cert_types), ("program", self.programs)):
             for key, item in items.items():
                 if key != item.code:
