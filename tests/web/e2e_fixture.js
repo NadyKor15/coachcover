@@ -478,7 +478,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('case: title not cut', await p.$eval('.case-title', t => t.scrollWidth <= t.clientWidth + 1));
     check('case: pill', await text(p, '#pill') === caseFx.status_label + ' · ' + caseFx.covered_time_label);
     check('case: steps in order', JSON.stringify(await texts(p, '[data-slot="step-title"]')) === JSON.stringify(caseFx.steps.map(s => s.title)));
-    check('case: UTC stamps', JSON.stringify(await texts(p, '[data-slot="step-time"]')) === JSON.stringify(caseFx.steps.map(s => s.time_label)));
+    check('case: local stamps', JSON.stringify(await texts(p, '[data-slot="step-time"]')) === JSON.stringify(caseFx.steps.map(s => s.time_label)));
     check('case: voice note = screen C', await text(p, '[data-slot="callout-original"]') === '“' + today.callout.transcript_original + '”' &&
       await text(p, '[data-slot="callout-translation"]') === '“' + today.callout.transcript_en + '”');
     check('case: blocked line = screen C refusal', await text(p, '[data-slot="blocked-row"]') === e.first_refusal.staff + ' · ' + e.first_refusal.label);
@@ -635,7 +635,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     const msgKinds = await p.$$eval('[data-slot="message"]', es => es.map(e => e.dataset.kind));
     check('network: messages are the agents talking', JSON.stringify(msgKinds) === JSON.stringify(cand.steps.filter(s => ['request_sent', 'offered', 'checked_offer'].includes(s.kind)).map(s => s.kind)), msgKinds);
     const heads = await texts(p, '[data-slot="message-head"]');
-    check('network: UTC stamps from the steps', heads.every(h => / UTC · /.test(h)) && heads[0].startsWith(cand.steps.find(s => s.kind === 'request_sent').at_label), heads);
+    check('network: local stamps from the steps, no UTC, no ASCII arrow', heads.every(h => / ET · /.test(h) && !/UTC|->/.test(h)) && heads[0].startsWith(cand.steps.find(s => s.kind === 'request_sent').at_label), heads);
     check('network: two approve buttons, one per manager', JSON.stringify(await texts(p, '[data-slot^="approve-"]')) === JSON.stringify(['Approve as ' + cand.borrower.manager, 'Approve as ' + cand.lender.manager]));
     check('network: waiting for both', await text(p, '#result-text') === cand.status_label);
     await shot(p, 'network-fixture-candidate.png');

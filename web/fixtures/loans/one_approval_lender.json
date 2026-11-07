@@ -28,8 +28,8 @@
     "agent_url": "http://agent-north:8000/a2a/N1",
     "approved": {
       "by": "Omar Haddad",
-      "at": "2026-11-09T13:43:30.133Z",
-      "at_label": "13:43:30 UTC"
+      "at": "2026-11-09T13:43:30.145Z",
+      "at_label": "08:43:30 ET"
     }
   },
   "candidate": {
@@ -45,15 +45,15 @@
   "closed_at": null,
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "021097d5-5af3-4fee-8add-ba0f73512a1c",
-    "task_id": "c1f0d50a-6e67-4ccf-8217-66cf6a9fd6b0",
+    "context_id": "f3437c32-5322-4fc2-ab6c-242d20e6e30b",
+    "task_id": "dfd06ec0-ec66-46f6-a92d-adb4ac4655e2",
     "task_state": "TASK_STATE_INPUT_REQUIRED"
   },
   "steps": [
     {
       "seq": 1,
       "at": "2026-11-09T13:43:30.072Z",
-      "at_label": "13:43:30 UTC",
+      "at_label": "08:43:30 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -74,7 +74,7 @@
     {
       "seq": 2,
       "at": "2026-11-09T13:43:30.072Z",
-      "at_label": "13:43:30 UTC",
+      "at_label": "08:43:30 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -92,7 +92,7 @@
     {
       "seq": 3,
       "at": "2026-11-09T13:43:31.072Z",
-      "at_label": "13:43:31 UTC",
+      "at_label": "08:43:31 ET",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -132,7 +132,7 @@
     {
       "seq": 4,
       "at": "2026-11-09T13:43:31.072Z",
-      "at_label": "13:43:31 UTC",
+      "at_label": "08:43:31 ET",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -166,7 +166,7 @@
     {
       "seq": 5,
       "at": "2026-11-09T13:43:32.072Z",
-      "at_label": "13:43:32 UTC",
+      "at_label": "08:43:32 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -187,7 +187,7 @@
     {
       "seq": 6,
       "at": "2026-11-09T13:43:33.072Z",
-      "at_label": "13:43:33 UTC",
+      "at_label": "08:43:33 ET",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -202,7 +202,7 @@
     {
       "seq": 7,
       "at": "2026-11-09T13:43:34.072Z",
-      "at_label": "13:43:34 UTC",
+      "at_label": "08:43:34 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -227,8 +227,8 @@
     },
     {
       "seq": 8,
-      "at": "2026-11-09T13:43:30.133Z",
-      "at_label": "13:43:30 UTC",
+      "at": "2026-11-09T13:43:30.145Z",
+      "at_label": "08:43:30 ET",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",

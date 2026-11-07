@@ -7,7 +7,7 @@ Routes:
   POST /a2a/{venue_id}                        a venue's agent, A2A 1.0 JSON-RPC (SendMessage, GetTask)
   GET  /api/network                           members of the network and their agents
   POST /api/network/loans                     the borrower's agent asks the network for a person {shift_id}
-  GET  /api/network/loans/{ref}               a loan with its steps (UTC stamps) for the screen
+  GET  /api/network/loans/{ref}               a loan with its steps (venue time for people, UTC in `at`)
   POST /api/network/loans/{ref}/approve       a manager approves for their own venue {manager, venue}
   GET  /api/week?venue=&start=                fragile shifts of a week and what would fix them
   POST /api/whatif                            "what if X is off too?": a plan without actions (dry run)

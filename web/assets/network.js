@@ -98,7 +98,7 @@
     const card = el('article', 'msg c-' + lane);
     card.dataset.slot = 'message';
     card.dataset.kind = s.kind;
-    card.appendChild(Object.assign(el('div', 'head', s.at_label + ' · ' + from + (to ? ' -> ' + to : '') + ':'), { title: s.at }))
+    card.appendChild(Object.assign(el('div', 'head', s.at_label + ' · ' + from + (to ? ' → ' + to : '') + ':'), { title: s.at }))
       .dataset.slot = 'message-head';
     let facts;
     if (s.kind === 'request_sent') {

@@ -22,7 +22,7 @@
     "approved": {
       "by": "Natalie Brooks",
       "at": "2026-11-09T13:44:40.000Z",
-      "at_label": "13:44:40 UTC"
+      "at_label": "08:44:40 ET"
     }
   },
   "lender": {
@@ -33,7 +33,7 @@
     "approved": {
       "by": "Omar Haddad",
       "at": "2026-11-09T13:45:20.000Z",
-      "at_label": "13:45:20 UTC"
+      "at_label": "08:45:20 ET"
     }
   },
   "candidate": {
@@ -49,15 +49,15 @@
   "closed_at": "2026-11-09T13:45:22.000Z",
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "65fbb91f-e98d-4903-b297-e1cf23fe8bff",
-    "task_id": "ed753e64-e901-420d-988b-f033ade41ef7",
+    "context_id": "73df42dd-d638-4b47-b3fb-3d52d73775be",
+    "task_id": "728b67da-b1b7-42c4-870c-e201f11faf3b",
     "task_state": "TASK_STATE_COMPLETED"
   },
   "steps": [
     {
       "seq": 1,
       "at": "2026-11-09T13:43:40.000Z",
-      "at_label": "13:43:40 UTC",
+      "at_label": "08:43:40 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -78,7 +78,7 @@
     {
       "seq": 2,
       "at": "2026-11-09T13:43:40.000Z",
-      "at_label": "13:43:40 UTC",
+      "at_label": "08:43:40 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -96,7 +96,7 @@
     {
       "seq": 3,
       "at": "2026-11-09T13:43:41.000Z",
-      "at_label": "13:43:41 UTC",
+      "at_label": "08:43:41 ET",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -136,7 +136,7 @@
     {
       "seq": 4,
       "at": "2026-11-09T13:43:41.000Z",
-      "at_label": "13:43:41 UTC",
+      "at_label": "08:43:41 ET",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -170,7 +170,7 @@
     {
       "seq": 5,
       "at": "2026-11-09T13:43:42.000Z",
-      "at_label": "13:43:42 UTC",
+      "at_label": "08:43:42 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -191,7 +191,7 @@
     {
       "seq": 6,
       "at": "2026-11-09T13:43:43.000Z",
-      "at_label": "13:43:43 UTC",
+      "at_label": "08:43:43 ET",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -206,7 +206,7 @@
     {
       "seq": 7,
       "at": "2026-11-09T13:43:44.000Z",
-      "at_label": "13:43:44 UTC",
+      "at_label": "08:43:44 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -232,7 +232,7 @@
     {
       "seq": 8,
       "at": "2026-11-09T13:44:40.000Z",
-      "at_label": "13:44:40 UTC",
+      "at_label": "08:44:40 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -248,7 +248,7 @@
     {
       "seq": 9,
       "at": "2026-11-09T13:45:20.000Z",
-      "at_label": "13:45:20 UTC",
+      "at_label": "08:45:20 ET",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -264,7 +264,7 @@
     {
       "seq": 10,
       "at": "2026-11-09T13:45:20.000Z",
-      "at_label": "13:45:20 UTC",
+      "at_label": "08:45:20 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -284,7 +284,7 @@
     {
       "seq": 11,
       "at": "2026-11-09T13:45:20.000Z",
-      "at_label": "13:45:20 UTC",
+      "at_label": "08:45:20 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -300,7 +300,7 @@
     {
       "seq": 12,
       "at": "2026-11-09T13:45:21.000Z",
-      "at_label": "13:45:21 UTC",
+      "at_label": "08:45:21 ET",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -335,7 +335,7 @@
     {
       "seq": 13,
       "at": "2026-11-09T13:45:22.000Z",
-      "at_label": "13:45:22 UTC",
+      "at_label": "08:45:22 ET",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",

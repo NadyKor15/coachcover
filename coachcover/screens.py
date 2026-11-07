@@ -16,6 +16,7 @@ from coachcover.checks import night_report
 from coachcover.model import Preset
 from coachcover.models import MODEL_LABELS, SHORT_NAMES, canonical_key
 from coachcover.pipeline import NotFound, Pipeline, plain
+from coachcover.reasons_text import local_stamp
 from coachcover.repo import load_policy, load_shift, load_staff
 from coachcover.rules import cert_expiry, group_norm, required_certs
 
@@ -848,14 +849,8 @@ def _utc(value: datetime) -> str:
     return value.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-# a short name for the venue's zone on the case page ("08:40:10 ET"); machine fields stay in UTC
-ZONE_SHORT = {"America/New_York": "ET", "America/Detroit": "ET", "America/Chicago": "CT", "America/Denver": "MT",
-              "America/Phoenix": "MT", "America/Los_Angeles": "PT", "Pacific/Honolulu": "HT", "America/Anchorage": "AKT"}
-
-
 def _local_label(value: datetime, tz: ZoneInfo) -> str:
-    local = value.astimezone(tz)
-    return f"{local:%H:%M:%S} {ZONE_SHORT.get(str(tz)) or local.tzname()}"
+    return local_stamp(value, tz)  # "08:40:10 ET": the venue's time; machine fields stay in UTC
 
 
 def model_calls(conn: psycopg.Connection, case_id: int, callout_id) -> list[dict]:

@@ -111,5 +111,7 @@ def test_pdf_and_digest(api):
 
 
 def test_latin1_text_survives():
-    assert binder._t("Sofía García – 06:00→07:00 “ok”") == "Sofía García - 06:00->07:00 \"ok\""
+    # an arrow reads "to" (the PDF's Latin-1 font has no arrow; never "->")
+    assert binder._t("Sofía García – 06:00→07:00 “ok”") == "Sofía García - 06:00 to 07:00 \"ok\""
+    assert binder._t("Riverside → Northside") == "Riverside to Northside"
     assert binder._t("Марина") == "??????"

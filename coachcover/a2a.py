@@ -1008,8 +1008,12 @@ STATUS_LABEL = {
 }
 
 
-def _utc_label(at: datetime) -> str:
-    return f"{at.astimezone(UTC):%H:%M:%S} UTC"
+def _time_label(conn: psycopg.Connection, at: datetime, venue_id: str | None) -> str:
+    """A step's moment for people, in that venue's own time ("08:43:40 ET"); `at` stays in UTC for machines."""
+    from coachcover.reasons_text import local_stamp
+
+    row = conn.execute("SELECT tz FROM venue WHERE id = %s", (venue_id,)).fetchone() if venue_id else None
+    return local_stamp(at, row[0] if row else "UTC")
 
 
 def _step_text(kind: str, data: dict, venue: str, names: dict[str, str]) -> tuple[str, str]:
@@ -1074,14 +1078,15 @@ def loan_view(conn: psycopg.Connection, ref: str | int, base_url: str) -> dict:
         at = loan[f"{who}_approved_at"]
         return {"venue_id": venue_id, "venue_name": m.venue_name, "manager": m.manager_name,
                 "agent_url": agent_url(venue_id, base_url),
-                "approved": {"by": loan[f"{who}_approved_by"], "at": iso_z(at), "at_label": _utc_label(at)} if at else None}
+                "approved": {"by": loan[f"{who}_approved_by"], "at": iso_z(at),
+                             "at_label": _time_label(conn, at, venue_id)} if at else None}
 
     steps = []
     for seq, at, venue_id, actor, kind, data in conn.execute(
         "SELECT seq, at, venue_id, actor, kind, data FROM ext_loan_step WHERE loan_id = %s ORDER BY seq", (loan["id"],)
     ):
         title, detail = _step_text(kind, data, names.get(venue_id, venue_id), names)
-        steps.append({"seq": seq, "at": iso_z(at), "at_label": _utc_label(at), "venue_id": venue_id,
+        steps.append({"seq": seq, "at": iso_z(at), "at_label": _time_label(conn, at, venue_id), "venue_id": venue_id,
                       "venue": names.get(venue_id, venue_id),
                       "side": "borrower" if venue_id == loan["borrower_venue"] else "lender",
                       "actor": actor, "kind": kind, "title": title, "detail": detail, "data": data})

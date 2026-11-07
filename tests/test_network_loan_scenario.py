@@ -97,3 +97,47 @@ def test_a_lender_agent_still_starting_gives_a_clear_503_and_costs_no_run(api, m
     assert res.status_code == 503 and res.headers["Retry-After"] == "5"
     assert res.json()["error"] == "Northside agent is starting, try again in a few seconds"
     assert conn.execute("SELECT count(*) FROM ops.judge_run").fetchone()[0] == before
+
+
+def test_people_read_the_venues_time_and_real_arrows_never_utc(api):
+    """Every text a person reads after the network scene: the loan's steps in the venue's time ("08:43:40 ET"), no
+    "UTC" and no ASCII arrow "->"; machine fields (`at`) stay in UTC."""
+    import re
+
+    client, conn = api
+    run = client.post("/api/judge/run", json={"scenario": "network_loan"}).json()
+    loan = client.get(f"/api/network/loans/{run['loan']}").json()
+    assert [s["at_label"] for s in loan["steps"]][:2] == ["08:43:40 ET", "08:43:40 ET"]
+    assert all(s["at"].endswith("Z") for s in loan["steps"])
+    assert loan["borrower"]["approved"]["at_label"] == "08:44:40 ET"
+    machine = {"at", "opened_at", "closed_at", "start", "end", "starts_at", "ends_at", "generated_at", "created_at", "now"}
+    seen = []
+
+    def walk(where, value, key=""):
+        if isinstance(value, dict):
+            for k, v in value.items():
+                walk(where, v, k)
+        elif isinstance(value, list):
+            for v in value:
+                walk(where, v, key)
+        elif isinstance(value, str) and key not in machine and (re.search(r"\bUTC\b", value) or "->" in value):
+            seen.append((where, key, value))
+
+    for url in ("/api/today", f"/api/cases/{run['case_id']}", f"/api/network/loans/{run['loan']}", "/api/week?venue=V1",
+                "/api/binder.json?venue=V1&from=2026-11-09&to=2026-11-09", "/api/team-posts"):
+        walk(url, client.get(url).json())
+    assert seen == []
+    assert re.search(r"\bUTC\b", "13:43:40 UTC") and "->" in "A -> B"  # the walk can see both
+
+
+def test_the_inspectors_binder_prints_the_venues_time_not_utc(api):
+    from coachcover import binder
+    from coachcover.demo import clock_now
+    from coachcover.seed import POLICY_ID
+
+    client, conn = api
+    client.post("/api/judge/run", json={"scenario": "network_loan"})
+    data = binder.build(conn, POLICY_ID, "V1", None, None, clock_now(conn))
+    text = binder.render(data, compress=False).decode("latin-1")
+    assert "generated Nov 9, 08:45 ET" in text and "UTC" not in text and "->" not in text
+    assert "UTC" in data["generated_at"] or data["generated_at"].endswith("+00:00")  # the machine field keeps UTC
