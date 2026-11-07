@@ -311,7 +311,8 @@
     const list = $('#offers');
     list.textContent = '';
     const all = d.offers || [];
-    const rows = all.slice(-3);
+    // the card reads as a log: newest answers, in time order (the queue position is in the WHY line)
+    const rows = all.slice(-3).slice().sort((x, y) => String(x.time_label || '').localeCompare(String(y.time_label || '')));
     // no offers yet: say why instead of an empty card
     const policy = (d.plan_b && d.plan_b.autonomy) || '';
     setText('offers-empty', all.length ? '' : (d.night_check && !d.callout
@@ -355,7 +356,8 @@
     if (accepted) {
       setText('why-first', accepted.why_first);
       setText('why-name', 'why ' + String(accepted.staff || '').split(' ')[0]);
-      const row = list.querySelector('[data-offer-id="' + CSS.escape(accepted.id || '') + '"]') || list.lastElementChild;
+      // under the last row of the log (rows are in time order; the line names the person, so it needs no neighbour)
+      const row = list.lastElementChild;
       why.style.top = (row.offsetTop + row.offsetHeight - 2) + 'px';
       why.hidden = false;
     } else why.hidden = true;

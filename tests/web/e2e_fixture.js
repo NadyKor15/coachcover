@@ -97,8 +97,12 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('C: timeline chips do not overlap', chipBoxes.every((b, i) => i === 0 || chipBoxes[i - 1][1] + 8 < b[0]), chipBoxes);
     const rows = await texts(p, '.off-row');
     check('C: offer rows from data', rows.length === Math.min(3, today.offers.length) &&
-      today.offers.slice(-3).every((o, i) => rows[i].startsWith(o.time_label + ' ' + o.staff + ' — ')), rows);
+      today.offers.slice(-3).slice().sort((x, y) => x.time_label.localeCompare(y.time_label))
+        .every((o, i) => rows[i].startsWith(o.time_label + ' ' + o.staff + ' — ')), rows);  // a log in time order
     check('C: why line under the accepted offer', await visible(p, '#whyFirst') && await text(p, '[data-slot="why-first"]') === accepted.why_first);
+    const whyClear = await p.evaluate(() => { const w = document.getElementById('whyFirst').getBoundingClientRect();
+      return [...document.querySelectorAll('.off-row')].every(r => { const b = r.getBoundingClientRect(); return w.top >= b.bottom - 3 || w.bottom <= b.top + 3; }); });
+    check('C: why line overlaps no offer row', whyClear);
     check('C: why label names the person', await text(p, '[data-slot="why-name"]') === 'why ' + accepted.staff.split(' ')[0] &&
       await p.$eval('[data-slot="why-name"]', x => x.innerText) === 'WHY ' + accepted.staff.split(' ')[0].toUpperCase());
     check('C: voice note original + translation from data', await text(p, '[data-slot="callout-original"]') === '“' + today.callout.transcript_original + '”' &&
