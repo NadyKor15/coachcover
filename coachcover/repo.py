@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import timedelta
+from datetime import datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
 import psycopg
 
@@ -117,4 +118,22 @@ def load_context(conn: psycopg.Connection, policy_id: str, around: Shift) -> Con
         (policy_id, window_to, window_from),
     ):
         commitments[sid].append(Commitment(ref, "shift", start, end))
-    return Context(load_venues(conn, policy_id), {k: tuple(v) for k, v in commitments.items()})
+    return Context(load_venues(conn, policy_id), {k: tuple(v) for k, v in commitments.items()},
+                   load_absences(conn, policy_id, window_from, window_to))
+
+
+def load_absences(conn: psycopg.Connection, policy_id: str, window_from, window_to) -> dict:
+    """People who called out: the whole local day of each shift they called out from (venue time)."""
+    absences: dict[str, list[tuple]] = defaultdict(list)
+    for sid, start, tz in conn.execute(
+        "SELECT c.absent_staff_id, s.starts_at, v.tz FROM cover_case c JOIN shift s ON s.id = c.shift_id"
+        " JOIN venue v ON v.id = s.venue_id WHERE v.policy_id = %s AND c.source = 'callout'"
+        " AND c.absent_staff_id IS NOT NULL AND s.starts_at < %s AND s.ends_at > %s ORDER BY 1, 2",
+        (policy_id, window_to, window_from),
+    ):
+        day = start.astimezone(ZoneInfo(tz)).date()
+        first = datetime.combine(day, time(0), tzinfo=ZoneInfo(tz))
+        window = (first, first + timedelta(days=1))
+        if window not in absences[sid]:
+            absences[sid].append(window)
+    return {k: tuple(v) for k, v in absences.items()}

@@ -157,7 +157,7 @@ def test_before_after_waves_keep_zero_violations_and_close_sooner(result):
     assert after_median < before_median
     assert table["Closed after the shift started"][1] == 0  # plan B by the deadline: nothing is late
     assert table["Shifts that needed cover"][0] == table["Shifts that needed cover"][1]
-    assert "## Before / after: offer waves (product decision)" in sim.report_markdown(result)
+    assert "## Before / after: offer waves" in sim.report_markdown(result)
 
 
 def test_stats_block_follows_the_contract(result):

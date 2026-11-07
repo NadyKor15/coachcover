@@ -170,7 +170,7 @@
   },
   "coachcover": {
    "cases": 82,
-   "placements": 77,
+   "placements": 76,
    "violations": 0,
    "violations_pct_of_placements": 0.0,
    "violations_by_reason": {
@@ -192,28 +192,28 @@
    "violations_by_code": {},
    "expired_certificate_placements": 0,
    "median_minutes_to_close": 10.9,
-   "p90_minutes_to_close": 32.0,
-   "mean_minutes_to_close": 14.0,
+   "p90_minutes_to_close": 27.0,
+   "mean_minutes_to_close": 13.9,
    "closed_after_shift_start": 0,
-   "closed_without_human": 50,
-   "closed_without_human_pct": 61.0,
-   "covered": 77,
+   "closed_without_human": 49,
+   "closed_without_human_pct": 59.8,
+   "covered": 76,
    "lessons_cancelled": 4,
    "participants_without_lesson": 17,
-   "shifts_without_groups_left_empty": 1,
+   "shifts_without_groups_left_empty": 2,
    "approved_overtime": 0,
    "outcomes": {
-    "covered": 50,
+    "covered": 49,
     "moved": 4,
     "reserve": 27,
-    "uncovered": 1
+    "uncovered": 2
    },
    "channels": {
-    "offer": 50,
-    "plan_b": 32
+    "offer": 49,
+    "plan_b": 33
    },
-   "asked_total": 491,
-   "manager_minutes_total": 33.0,
+   "asked_total": 475,
+   "manager_minutes_total": 35.0,
    "manager_minutes_median_per_morning": 0.0
   }
  },
@@ -285,7 +285,7 @@
    "strategy": "coachcover",
    "summary": {
     "cases": 82,
-    "placements": 77,
+    "placements": 76,
     "violations": 0,
     "violations_pct_of_placements": 0.0,
     "violations_by_reason": {
@@ -306,29 +306,29 @@
     },
     "violations_by_code": {},
     "expired_certificate_placements": 0,
-    "median_minutes_to_close": 21.4,
-    "p90_minutes_to_close": 56.5,
-    "mean_minutes_to_close": 26.4,
+    "median_minutes_to_close": 21.8,
+    "p90_minutes_to_close": 53.8,
+    "mean_minutes_to_close": 26.0,
     "closed_after_shift_start": 7,
-    "closed_without_human": 54,
-    "closed_without_human_pct": 65.9,
-    "covered": 77,
+    "closed_without_human": 52,
+    "closed_without_human_pct": 63.4,
+    "covered": 76,
     "lessons_cancelled": 4,
     "participants_without_lesson": 17,
-    "shifts_without_groups_left_empty": 1,
+    "shifts_without_groups_left_empty": 2,
     "approved_overtime": 0,
     "outcomes": {
-     "covered": 54,
+     "covered": 52,
      "moved": 4,
-     "reserve": 23,
-     "uncovered": 1
+     "reserve": 24,
+     "uncovered": 2
     },
     "channels": {
-     "offer": 54,
-     "plan_b": 28
+     "offer": 52,
+     "plan_b": 30
     },
-    "asked_total": 426,
-    "manager_minutes_total": 29.0,
+    "asked_total": 415,
+    "manager_minutes_total": 32.0,
     "manager_minutes_median_per_morning": 0.0
    }
   }
@@ -798,14 +798,14 @@
      "channel": "plan_b",
      "staff_id": "S06",
      "human": true,
-     "closed_at": "2026-11-12T05:32-05:00",
-     "minutes": 22.0,
+     "closed_at": "2026-11-12T05:27-05:00",
+     "minutes": 17.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 4,
+     "asked": 3,
      "manager_minutes": 1.0
     },
     {
@@ -1112,8 +1112,8 @@
      "channel": "offer",
      "staff_id": "S26",
      "human": false,
-     "closed_at": "2026-11-09T04:50-05:00",
-     "minutes": 14.6,
+     "closed_at": "2026-11-09T04:49-05:00",
+     "minutes": 13.6,
      "late": false,
      "violation": null,
      "codes": [],
@@ -1583,14 +1583,14 @@
      "channel": "offer",
      "staff_id": "S26",
      "human": false,
-     "closed_at": "2026-11-12T04:55-05:00",
-     "minutes": 16.0,
+     "closed_at": "2026-11-12T04:50-05:00",
+     "minutes": 11.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 9,
+     "asked": 6,
      "manager_minutes": 0.0
     },
     {
@@ -1765,16 +1765,16 @@
      "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S04",
+     "staff_id": "S14",
      "human": false,
-     "closed_at": "2026-11-13T05:09-05:00",
-     "minutes": 11.0,
+     "closed_at": "2026-11-13T05:15-05:00",
+     "minutes": 17.5,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 6,
+     "asked": 12,
      "manager_minutes": 0.0
     }
    ]
@@ -1905,34 +1905,34 @@
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S04",
+     "staff_id": "S22",
      "human": false,
-     "closed_at": "2026-11-09T04:54-05:00",
-     "minutes": 3.8,
+     "closed_at": "2026-11-09T04:57-05:00",
+     "minutes": 6.0,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 2,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1109-G001",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-09T05:09-05:00",
+     "minutes": 17.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1109-G001",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S22",
-     "human": false,
-     "closed_at": "2026-11-09T05:03-05:00",
-     "minutes": 11.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 5,
-     "manager_minutes": 0.0
+     "manager_minutes": 1.0
     }
    ]
   },
@@ -2194,14 +2194,14 @@
      "channel": "offer",
      "staff_id": "S24",
      "human": false,
-     "closed_at": "2026-11-11T05:46-05:00",
-     "minutes": 8.7,
+     "closed_at": "2026-11-11T05:45-05:00",
+     "minutes": 7.7,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 5,
+     "asked": 4,
      "manager_minutes": 0.0
     }
    ]
@@ -2704,7 +2704,7 @@
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 14,
+     "asked": 12,
      "manager_minutes": 1.0
     },
     {
@@ -2998,7 +2998,7 @@
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 11,
+     "asked": 10,
      "manager_minutes": 1.0
     },
     {
@@ -3543,14 +3543,14 @@
      "channel": "plan_b",
      "staff_id": "S12",
      "human": true,
-     "closed_at": "2026-11-10T05:32-05:00",
-     "minutes": 23.7,
+     "closed_at": "2026-11-10T05:31-05:00",
+     "minutes": 22.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 7,
+     "asked": 6,
      "manager_minutes": 1.0
     },
     {
@@ -4622,7 +4622,7 @@
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 11,
+     "asked": 10,
      "manager_minutes": 1.0
     },
     {
@@ -4805,7 +4805,7 @@
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 12,
+     "asked": 10,
      "manager_minutes": 1.0
     },
     {
@@ -4839,7 +4839,7 @@
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 9,
+     "asked": 8,
      "manager_minutes": 1.0
     }
    ]
@@ -5355,19 +5355,19 @@
     {
      "shift_id": "G-1113-V1-0530",
      "lesson": false,
-     "outcome": "reserve",
+     "outcome": "uncovered",
      "channel": "plan_b",
-     "staff_id": "S06",
+     "staff_id": null,
      "human": true,
-     "closed_at": "2026-11-13T05:21-05:00",
-     "minutes": 14.0,
+     "closed_at": "2026-11-13T05:24-05:00",
+     "minutes": 17.8,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 13,
-     "manager_minutes": 1.0
+     "asked": 14,
+     "manager_minutes": 2.0
     }
    ]
   },
@@ -6136,8 +6136,8 @@
      "channel": "offer",
      "staff_id": "S02",
      "human": false,
-     "closed_at": "2026-11-09T04:55-05:00",
-     "minutes": 8.4,
+     "closed_at": "2026-11-09T04:54-05:00",
+     "minutes": 7.9,
      "late": false,
      "violation": null,
      "codes": [],
@@ -6153,14 +6153,14 @@
      "channel": "plan_b",
      "staff_id": "S12",
      "human": true,
-     "closed_at": "2026-11-09T05:29-05:00",
-     "minutes": 32.0,
+     "closed_at": "2026-11-09T05:24-05:00",
+     "minutes": 27.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 10,
+     "asked": 9,
      "manager_minutes": 1.0
     }
    ]
@@ -7147,7 +7147,7 @@
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 11,
+     "asked": 10,
      "manager_minutes": 1.0
     },
     {
@@ -7164,7 +7164,7 @@
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 12,
+     "asked": 10,
      "manager_minutes": 1.0
     }
    ]
@@ -7312,7 +7312,7 @@
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 11,
+     "asked": 10,
      "manager_minutes": 1.0
     },
     {
@@ -7322,14 +7322,14 @@
      "channel": "plan_b",
      "staff_id": "S06",
      "human": true,
-     "closed_at": "2026-11-12T05:32-05:00",
-     "minutes": 27.0,
+     "closed_at": "2026-11-12T05:27-05:00",
+     "minutes": 22.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 7,
+     "asked": 6,
      "manager_minutes": 1.0
     },
     {
@@ -7339,14 +7339,14 @@
      "channel": "plan_b",
      "staff_id": "S12",
      "human": true,
-     "closed_at": "2026-11-12T05:58-05:00",
-     "minutes": 32.0,
+     "closed_at": "2026-11-12T05:53-05:00",
+     "minutes": 27.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 10,
+     "asked": 9,
      "manager_minutes": 1.0
     }
    ]
@@ -7526,8 +7526,8 @@
    ],
    [
     "People placed",
-    77,
-    77
+    76,
+    76
    ],
    [
     "Placements that break a rule",
@@ -7541,18 +7541,18 @@
    ],
    [
     "Minutes from call-out to closed, median",
-    21.4,
+    21.8,
     10.9
    ],
    [
     "Minutes from call-out to closed, p90",
-    56.5,
-    32.0
+    53.8,
+    27.0
    ],
    [
     "Minutes from call-out to closed, mean",
-    26.4,
-    14.0
+    26.0,
+    13.9
    ],
    [
     "Closed after the shift started",
@@ -7561,18 +7561,18 @@
    ],
    [
     "Closed without a person",
-    54,
-    50
+    52,
+    49
    ],
    [
     "Closed without a person, %",
-    65.9,
-    61.0
+    63.4,
+    59.8
    ],
    [
     "Shifts covered (offer or plan B)",
-    77,
-    77
+    76,
+    76
    ],
    [
     "Lessons cancelled or moved",
@@ -7586,8 +7586,8 @@
    ],
    [
     "Shifts without groups left empty",
-    1,
-    1
+    2,
+    2
    ],
    [
     "Approved overtime",
@@ -7596,27 +7596,27 @@
    ],
    [
     "Offers sent (people asked)",
-    426,
-    491
+    415,
+    475
    ],
    [
     "Manager minutes, total",
-    29.0,
-    33.0
+    32.0,
+    35.0
    ]
   ],
   "outcomes": {
    "before": {
-    "covered": 54,
+    "covered": 52,
     "moved": 4,
-    "reserve": 23,
-    "uncovered": 1
+    "reserve": 24,
+    "uncovered": 2
    },
    "after": {
-    "covered": 50,
+    "covered": 49,
     "moved": 4,
     "reserve": 27,
-    "uncovered": 1
+    "uncovered": 2
    }
   }
  }

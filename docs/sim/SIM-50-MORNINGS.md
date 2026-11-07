@@ -17,18 +17,18 @@ The school is fictional (`coachcover/seed.py`): 3 venues, 40 staff, 204 shifts i
 |   of them: over the weekly hours limit | 5 | 0 |
 |   of them: group norm broken | 0 | 0 |
 | Placements with an expired certificate (any reason list) | 16 | 0 |
-| People placed (cover, merge, reserve, overtime) | 82 | 77 |
+| People placed (cover, merge, reserve, overtime) | 82 | 76 |
 | Median minutes from call-out to a closed shift | 13.4 | 10.9 |
-| 90th percentile, minutes | 15.8 | 32.0 |
+| 90th percentile, minutes | 15.8 | 27.0 |
 | Closed after the shift had started | 0 | 0 |
-| Closed without a person (no manager step), % | 0.0 | 61.0 |
+| Closed without a person (no manager step), % | 0.0 | 59.8 |
 | Lessons cancelled or moved | 0 | 4 |
 | Participants left without their lesson | 0 | 17 |
-| Shifts without groups left empty | 0 | 1 |
+| Shifts without groups left empty | 0 | 2 |
 | Approved overtime | 0 | 0 |
 | Manager minutes, median per morning | 6.0 | 0.0 |
 
-Outcomes, baseline: {'covered': 82}; CoachCover: {'covered': 50, 'moved': 4, 'reserve': 27, 'uncovered': 1}.
+Outcomes, baseline: {'covered': 82}; CoachCover: {'covered': 49, 'moved': 4, 'reserve': 27, 'uncovered': 2}.
 Blocking codes behind the baseline violations: {'CERT_EXPIRED': 16, 'CERT_MISSING': 8, 'CERT_NEEDS_REVIEW': 3, 'CERT_REVOKED': 3, 'HOURS_LIMIT_EXCEEDED': 2, 'LEVEL_MISSING': 15, 'PROGRAM_MISSING': 8, 'PROGRAM_RENEWAL_OVERDUE': 2, 'REST_TOO_SHORT': 8, 'ROLE_MISSING': 8}.
 
 A placement is one person put on a shift (cover, the teacher of a merged group, a reserve person, approved overtime). It is a violation when `rules.eligible` returns a blocking reason for that person and shift at the moment of booking. The breakdown counts each violation once, under the first of: role, certificate, program, hours, group norm. CoachCover's approved overtime is not counted as a violation: the manager approved it with its price, as the core does.
@@ -38,31 +38,31 @@ A placement is one person put on a shift (cover, the teacher of a merged group, 
 - **Group chat + phone tree.** The manager sees the call-out after 10.0 min, posts in the staff chat (2.0 min per post) and books the first "yes" that comes before the shift starts (+1.0 min). After 10.0 min without a "yes" the manager also phones free people who hold the shift's role, in a random order, 3.0 min per call. Cards, programs, weekly hours and the group norm are not checked: that is how a chat and a general scheduler work. Nobody by the start: a lesson goes into the group next to it without checking the norm, otherwise it is cancelled; a shift without groups stays empty.
 - **CoachCover.** 1.0 min after the call-out the case opens. The rules rank every non-reserve person; offers go to eligible people only, in waves of 3 in queue order, with the policy's timer (5 min); the highest "yes" wins once nobody above it can still answer, at most 60 s after the first "yes"; the rules run again at "yes". Plan B goes to the manager 20 min before the shift starts even while offers are out (a "yes" before the manager acts still covers the shift), or earlier when nobody is left, in the core's order: merge into the group next to it within the norm, a reserve person, overtime (an offer to a person blocked only by hours), move the lesson, close. Plan B is `propose` in the policy, so the manager approves it (10.0 min to see the card, 1.0 min to decide). If an overtime offer is not taken, the manager goes to the next option.
 
-## Before / after: offer waves (product decision)
+## Before / after: offer waves
 
 CoachCover on the same 50 mornings, before (one offer at a time) and after (waves + plan B by the deadline). The baseline does not change.
 
 | Metric | Before: one offer at a time, plan B when the queue is empty | After: waves of 3, highest yes in 60 s, plan B 20 min before the start |
 |---|---:|---:|
 | Shifts that needed cover | 82 | 82 |
-| People placed | 77 | 77 |
+| People placed | 76 | 76 |
 | Placements that break a rule | 0 | 0 |
 | Placements with an expired card | 0 | 0 |
-| Minutes from call-out to closed, median | 21.4 | 10.9 |
-| Minutes from call-out to closed, p90 | 56.5 | 32.0 |
-| Minutes from call-out to closed, mean | 26.4 | 14.0 |
+| Minutes from call-out to closed, median | 21.8 | 10.9 |
+| Minutes from call-out to closed, p90 | 53.8 | 27.0 |
+| Minutes from call-out to closed, mean | 26.0 | 13.9 |
 | Closed after the shift started | 7 | 0 |
-| Closed without a person | 54 | 50 |
-| Closed without a person, % | 65.9 | 61.0 |
-| Shifts covered (offer or plan B) | 77 | 77 |
+| Closed without a person | 52 | 49 |
+| Closed without a person, % | 63.4 | 59.8 |
+| Shifts covered (offer or plan B) | 76 | 76 |
 | Lessons cancelled or moved | 4 | 4 |
 | Children without their lesson | 17 | 17 |
-| Shifts without groups left empty | 1 | 1 |
+| Shifts without groups left empty | 2 | 2 |
 | Approved overtime | 0 | 0 |
-| Offers sent (people asked) | 426 | 491 |
-| Manager minutes, total | 29.0 | 33.0 |
+| Offers sent (people asked) | 415 | 475 |
+| Manager minutes, total | 32.0 | 35.0 |
 
-Outcomes before: {'covered': 54, 'moved': 4, 'reserve': 23, 'uncovered': 1}; after: {'covered': 50, 'moved': 4, 'reserve': 27, 'uncovered': 1}.
+Outcomes before: {'covered': 52, 'moved': 4, 'reserve': 24, 'uncovered': 2}; after: {'covered': 49, 'moved': 4, 'reserve': 27, 'uncovered': 2}.
 
 ## What if (not the main table)
 
@@ -70,10 +70,10 @@ Outcomes before: {'covered': 54, 'moved': 4, 'reserve': 23, 'uncovered': 1}; aft
 |---|---:|---:|
 | Placements without permission | 42 | 0 |
 |   no role / certificate / program / hours / group norm | 0 / 22 / 14 / 6 / 0 | 0 / 0 / 0 / 0 / 0 |
-| Median minutes to close | 13.5 | 21.4 |
-| 90th percentile, minutes | 15.8 | 56.5 |
+| Median minutes to close | 13.5 | 21.8 |
+| 90th percentile, minutes | 15.8 | 53.8 |
 | Closed after the shift had started | 0 | 7 |
-| Closed without a person, % | 0.0 | 65.9 |
+| Closed without a person, % | 0.0 | 63.4 |
 
 - `baseline_manager_checks_role`: Baseline where the manager takes only people who hold the shift's role (job title); cards, programs, hours and the group norm are still not checked.
 - `coachcover_one_offer_at_a_time`: CoachCover before 2026-11-07: one offer at a time, plan B only when the queue is empty (the 'before' column of the before/after table).
