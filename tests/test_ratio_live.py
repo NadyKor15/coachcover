@@ -52,10 +52,10 @@ def test_four_to_six_children_at_one_to_four_opens_a_case_and_the_queue_runs(api
 
     # the same queue rules: an offer went out to the first eligible person, the line says why
     offer = conn.execute("SELECT o.id, o.staff_id, o.place->>'line', s.full_name FROM offer o JOIN staff s ON s.id = o.staff_id"
-                         " WHERE o.status = 'pending'").fetchone()
+                         " WHERE o.status = 'pending' ORDER BY o.queue_pos").fetchone()
     assert offer is not None
     offer_id, staff_id, line, name = offer
-    assert (staff_id, line) == ("S02", "Sofía first: 6.25 h this week, Level 1 (beginner), 21.7 km away,"
+    assert (staff_id, line) == ("S15", "Diego first: 5.25 h this week, Level 1 (beginner), 21.7 km away,"
                                 " speaks Spanish like 5 of 6 families")
     assert client.post(f"/api/offers/O-{offer_id}/accept").status_code == 200
     closed = client.get("/api/today").json()["ratio_alert"]

@@ -164,7 +164,9 @@ def week(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str 
         raise ValueError(f"unknown venue {venue_id!r}")
     shown = [v for v in venues if venue_id is None or v[0] == venue_id]
     tz = ZoneInfo(shown[0][2])
-    first = week_start_date(start or now.astimezone(tz).date(), policy.week_start)
+    # by default the week starts today at the venue (no grey days already gone); an explicit start snaps to the
+    # policy week
+    first = week_start_date(start, policy.week_start) if start else now.astimezone(tz).date()
     week_from, week_to = _week_bounds(first, tz)
     ids = [sid for (sid,) in conn.execute(
         "SELECT s.id FROM shift s WHERE s.venue_id = ANY(%s) AND s.status IN ('scheduled', 'open')"
@@ -251,8 +253,7 @@ def week(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str 
                         for c in fragile if c["standby"]],
             "training": {
                 "best": {**best, "text": f"Train {best['count']} more in {best['label']} → {best['makes_safe']} of "
-                                         f"{best['of']} fragile shifts become safe · about ${best['cost_usd']:,.0f}"
-                                         + (" (assumed course price)" if best["cost_source"] != "preset" else "")}
+                                         f"{best['of']} fragile shifts become safe · about ${best['cost_usd']:,.0f}"}
                 if best else None,
                 "options": options[:5],
             },

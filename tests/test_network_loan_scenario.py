@@ -41,8 +41,52 @@ def test_network_loan_covers_the_hero_shift_with_both_approvals(api):
     loan = client.get(f"/api/network/loans/{body['loan']}").json()
     assert loan["approvals"] == 2 and (loan["borrower"]["manager"], loan["lender"]["manager"]) == ("Dana Ruiz", "Omar Haddad")
     assert loan["lender"]["venue_name"].startswith("Northside")
+    checked = next(s for s in loan["steps"] if s["kind"] == "checked_offer")
+    assert (checked["title"], checked["detail"]) == ("Riverside agent re-checked Kai Morgan", "cleared by Riverside rules")
+    assert client.get("/api/network").json()["networks"][0]["name"] == "Bay Swim Network"
     # every eligible person at Riverside was asked first; nobody cleared was left
     asked = conn.execute("SELECT count(*), count(*) FILTER (WHERE o.status = 'declined') FROM offer o"
                          " JOIN cover_case c ON c.id = o.case_id WHERE c.code = 'C-1109-01'").fetchone()
     assert asked[0] == asked[1] == 5
     assert conn.execute("SELECT staff_id FROM shift WHERE id = 'L-1109-G002'").fetchone() == ("N01",)
+
+
+def test_loan_steps_follow_each_other_in_time_on_both_agents(api):
+    """Request < Northside's offer < Riverside's check < approvals < booking: the lender stamps after the message it
+    answers, on the same demo clock, never before the borrower's request."""
+    client, conn = api
+    assert client.post("/api/judge/run", json={"scenario": "network_loan"}).status_code == 200
+    steps = conn.execute("SELECT seq, at, venue_id, kind FROM ext_loan_step ORDER BY seq").fetchall()
+    times = [at for _, at, _, _ in steps]
+    assert times == sorted(times), steps  # never back in time
+    first = {kind: at for _, at, _, kind in reversed(steps)}
+    lender_first = min(at for _, at, venue, _ in steps if venue == "N1")
+    assert first["request_sent"] < lender_first < first["checked_offer"] < first["approved"], steps
+    assert first["approved"] < max(at for _, at, _, kind in steps if kind == "approved") <= times[-1]
+
+
+class _Down:
+    """An HTTP client for an agent that is not up yet."""
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def get(self, url, **kw):
+        import httpx
+        raise httpx.ConnectError("connection refused", request=httpx.Request("GET", url))
+
+    post = get
+
+
+def test_a_lender_agent_still_starting_gives_a_clear_503_and_costs_no_run(api, monkeypatch):
+    client, conn = api
+    monkeypatch.setattr(a2a, "HTTP_CLIENT", _Down)
+    monkeypatch.setenv("COACHCOVER_AGENT_WAIT_SECONDS", "0.3")
+    before = conn.execute("SELECT count(*) FROM ops.judge_run").fetchone()[0]
+    res = client.post("/api/judge/run", json={"scenario": "network_loan"})
+    assert res.status_code == 503 and res.headers["Retry-After"] == "5"
+    assert res.json()["error"] == "Northside agent is starting, try again in a few seconds"
+    assert conn.execute("SELECT count(*) FROM ops.judge_run").fetchone()[0] == before

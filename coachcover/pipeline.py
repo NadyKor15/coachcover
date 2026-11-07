@@ -439,6 +439,42 @@ class Pipeline:
                            "staff_id": staff_id, "mode": mode})
         return opened
 
+    # --- standby for a fragile shift -------------------------------------------------
+
+    def propose_standby(self, shift_id: str, staff_id: str, now: datetime, by: str = "manager") -> dict:
+        """Propose a person as standby for a shift. Only a proposal (autonomy "propose"): nothing is booked. The
+        person must be cleared for the shift by the rules right now; the holder cannot be their own standby."""
+        info = self.shift_info(shift_id)
+        person = self._staff_row(staff_id)
+        policy = self._policy()
+        staff = next((s for s in load_staff(self.conn, self.policy_id) if s.id == staff_id), None)
+        if staff is None:
+            raise NotFound(f"unknown person {staff_id}")
+        shift = load_shift(self.conn, shift_id)
+        decision = eligible(staff, shift, now, policy, load_context(self.conn, self.policy_id, shift))
+        blocking = [r for r in decision.reasons if r.blocking]
+        if blocking:
+            raise Conflict(f"{person['name']} is not cleared for {info['label']}: "
+                           + "; ".join(describe(r, "en", policy.preset) for r in blocking),
+                           {"codes": [r.code.value for r in blocking]})
+        text = f"Standby proposed: {person['name']} for {info['label']}. Nothing is booked until the manager approves."
+        with self.conn.transaction():
+            try:
+                with self.conn.transaction():
+                    row = self.conn.execute(
+                        "INSERT INTO standby_proposal (shift_id, staff_id, text, created_by, created_at)"
+                        " VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                        (shift_id, staff_id, text, by, now),
+                    ).fetchone()
+            except psycopg.errors.UniqueViolation:
+                raise Conflict(f"{person['name']} is already proposed as standby for {info['label']}") from None
+            case = self.conn.execute("SELECT id FROM cover_case WHERE shift_id = %s AND status = 'open'", (shift_id,)).fetchone()
+            if case:
+                self._event(case[0], now, "manager", "standby_proposed",
+                            {"standby_id": f"SB-{row[0]}", "staff_id": staff_id, "name": person["name"], "by": by})
+        return {"id": f"SB-{row[0]}", "shift_id": shift_id, "staff_id": staff_id, "name": person["name"],
+                "status": "proposed", "mode": "propose", "text": text}
+
     # --- enrolment: the children-per-instructor norm, live --------------------------
 
     RATIO_HORIZON = timedelta(days=7)

@@ -17,7 +17,7 @@ from coachcover.seed import NOW, POLICY_ID
 from tests.conftest import TEST_DSN
 from tests.test_ext_a2a import ext_app
 
-WEEK = date(2026, 11, 8)
+WEEK = date(2026, 11, 9)  # the training school's week: Mon 9 - Sun 15
 
 
 # --- pure: legend and levels -------------------------------------------------------------
@@ -156,7 +156,9 @@ def test_week_endpoint(school_db, monkeypatch):
     app = ext_app(dsn)
     with TestClient(app) as client:
         body = client.get("/api/week", params={"venue": "V1", "start": "2026-11-10"}).json()
-        assert body["week"]["start"] == "2026-11-08" and body["venue"]["id"] == "V1"
-        assert len(body["days"]) == 7 and body["days"][1]["label"] == "Mon 9"
+        assert body["week"]["start"] == "2026-11-09" and body["venue"]["id"] == "V1"  # snapped to the school's Monday
+        assert len(body["days"]) == 7 and (body["days"][0]["label"], body["days"][6]["label"]) == ("Mon 9", "Sun 15")
+        default = client.get("/api/week", params={"venue": "V1"}).json()  # without a start: today at the venue
+        assert default["week"]["start"] == "2026-11-09" and default["days"][0]["label"] == "Mon 9"
         assert {"legend", "counts", "fragile", "fixes", "assumptions", "headline"} <= set(body)
         assert client.get("/api/week", params={"venue": "nope"}).status_code == 422

@@ -26,7 +26,7 @@ DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 def test_migrations_apply_once(new_database):
     conn = new_database()
     versions = ["001_init", "002_pipeline", "003_review_fixes", "004_callouts_and_ops", "005_screens_and_filter",
-                "006_safety_layer", "007_offer_waves"]
+                "006_safety_layer", "007_offer_waves", "008_standby"]
     assert migrate(conn) == versions
     assert migrate(conn) == []
     assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == versions
@@ -44,7 +44,7 @@ def test_preset_install_is_idempotent_and_refuses_a_different_copy(new_database)
 
 
 def test_policy_read_back_equals_the_preset_policy(school):
-    assert load_policy(school, POLICY_ID) == default_policy("swim_school")
+    assert load_policy(school, POLICY_ID) == default_policy("swim_school", week_start="monday")  # the school's week
 
 
 # --- the training school ----------------------------------------------------
@@ -89,7 +89,7 @@ def test_trap_counts_in_the_data(school):
     assert overdue == [("S14",)]
     week_hours = school.execute(
         "SELECT staff_id, sum(extract(epoch FROM ends_at - starts_at)) / 3600 AS h FROM shift"
-        " WHERE starts_at >= '2026-11-08 00:00 America/New_York' AND starts_at < '2026-11-15 00:00 America/New_York'"
+        " WHERE starts_at >= '2026-11-09 00:00 America/New_York' AND starts_at < '2026-11-16 00:00 America/New_York'"
         " GROUP BY staff_id HAVING sum(extract(epoch FROM ends_at - starts_at)) / 3600 > 32 ORDER BY staff_id"
     ).fetchall()
     assert [(s, float(h)) for s, h in week_hours] == [("S11", 39.5), ("S29", 38.0)]
@@ -178,7 +178,7 @@ def test_seed_is_deterministic(new_database):
     load_school(second)
     a, b = _dump(first), _dump(second)
     assert a == b
-    assert len(a["shift"]) == 204 and len(a["staff_cert"]) == 107
+    assert len(a["shift"]) == 205 and len(a["staff_cert"]) == 107  # 204 + Gabriela's Sunday evening before the week
 
 
 def test_loading_the_school_twice_fails(new_database):
