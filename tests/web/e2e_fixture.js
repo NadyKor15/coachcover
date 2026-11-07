@@ -59,7 +59,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
   const pendingId = fs.readdirSync(path.join(WEB, 'fixtures/offers')).map(f => f.replace('.json', ''))
     .find(id => fx('offers/' + id + '.json').state === 'pending');
   const pendingFx = fx('offers/' + pendingId + '.json');
-  const hoursOf = s => ((s || '').match(/(\d+(?:\.\d+)?) h this week/) || [])[1];
+  const hoursOf = s => ((s || '').match(/((?:\d+ h)?(?: ?\d+ min)?) this week/) || [])[1];  // "5 h 45 min", "6 h"
   const when = o => o.shift_start + '–' + o.shift_end + ' ' + o.shift_day;
   const lessonSource = String(caseFx.risk.assumptions.lesson_price.source || '').replace(/\s*\(TG \d+\)\s*$/, '');
   try {

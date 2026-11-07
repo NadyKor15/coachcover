@@ -90,7 +90,8 @@ def test_review_12_text_agrees_with_the_block():
     decision = eligible(instructor(), shift, AT, SWIM, ctx(S1=week))
     assert decision.codes == [Code.HOURS_LIMIT_EXCEEDED]
     assert decision.reasons[0].params["hours_after"] > 40
-    assert "40.01 h" in describe(decision.reasons[0], "en")
+    text = describe(decision.reasons[0], "en")  # hours and minutes, rounded up: still over the limit
+    assert "would have 40 h 1 min in the week of" in text and text.endswith("(limit 40 h)")
 
 
 # risk decision: program renewal is checked over the whole shift, like a certificate

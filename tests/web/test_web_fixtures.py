@@ -57,7 +57,7 @@ def today_files() -> list[str]:
 
 
 def hours(text: str | None) -> str | None:
-    m = re.search(r"(\d+(?:\.\d+)?) h this week", text or "")
+    m = re.search(r"((?:\d+ h)?(?: ?\d+ min)?) this week", text or "")  # "5 h 45 min", "6 h", "30 min"
     return m.group(1) if m else None
 
 

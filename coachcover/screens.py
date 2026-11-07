@@ -17,7 +17,7 @@ from coachcover.checks import night_report
 from coachcover.model import Preset
 from coachcover.models import MODEL_LABELS, SHORT_NAMES, canonical_key
 from coachcover.pipeline import NotFound, Pipeline, plain
-from coachcover.reasons_text import local_stamp
+from coachcover.reasons_text import hours_words, local_stamp
 from coachcover.repo import load_policy, load_shift, load_staff
 from coachcover.rules import cert_expiry, group_norm, required_certs
 
@@ -92,7 +92,7 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
         program = preset.programs.get(params["program"])
         return f"{program.label if program else params['program']} renewal overdue"
     if code == "HOURS_LIMIT_EXCEEDED":
-        return f"Over {params['limit_hours']:g} h this week"
+        return f"Over {hours_words(params['limit_hours'])} this week"
     if code == "OVERLAPS_COMMITMENT":
         teaching = conn.execute("SELECT EXISTS (SELECT 1 FROM shift_group WHERE shift_id = %s)", (params["ref"],)).fetchone()[0]
         return f"{'Teaching' if teaching else 'On deck'} at {_short_clock(params['start'], tz)}"
@@ -730,7 +730,7 @@ def offer_phone(conn: psycopg.Connection, policy_id: str, offer_ref: str, now: d
             why.append(f"{prog.needs(g[1])} — current" if prog is not None and prog.clearance
                        else f"{prog.title(g[1]) if prog is not None else g[0]} — current")
     if place and place.get("week_hours") is not None:
-        why.append(f"{place['week_hours']:g} h this week")
+        why.append(f"{hours_words(place['week_hours'])} this week")  # "5 h 45 min", as on Today
     manager = conn.execute("SELECT manager_name FROM policy WHERE id = %s", (policy_id,)).fetchone()[0]
     labels = _shift_labels(info, shift, preset, _co_teachers(conn, shift_id))
     return plain({

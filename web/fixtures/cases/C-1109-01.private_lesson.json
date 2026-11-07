@@ -364,7 +364,7 @@
           "staff": "Chloe Hayes",
           "result": "accepted",
           "result_label": "said yes, the family agreed",
-          "why_first": "Chloe first: 5.75 h this week, Level 2, 21.7 km away"
+          "why_first": "Chloe first: 5 h 45 min this week, Level 2, 21.7 km away"
         },
         {
           "id": "O-2",
@@ -372,7 +372,7 @@
           "staff": "Diego Navarro",
           "result": "no_reply",
           "result_label": "no reply, Chloe said yes first",
-          "why_first": "Diego second: 5.75 h this week, Level 2, 21.7 km away"
+          "why_first": "Diego second: 5 h 45 min this week, Level 2, 21.7 km away"
         },
         {
           "id": "O-3",

@@ -412,7 +412,7 @@
       "time_label": "12:12",
       "staff": "Chloe Hayes",
       "result": "accepted",
-      "why_first": "Chloe first: 5.75 h this week, Level 2, 21.7 km away",
+      "why_first": "Chloe first: 5 h 45 min this week, Level 2, 21.7 km away",
       "result_label": "said yes"
     },
     {
@@ -420,7 +420,7 @@
       "time_label": "12:12",
       "staff": "Diego Navarro",
       "result": "no_reply",
-      "why_first": "Diego second: 5.75 h this week, Level 2, 21.7 km away",
+      "why_first": "Diego second: 5 h 45 min this week, Level 2, 21.7 km away",
       "result_label": "no reply, Chloe said yes first"
     },
     {

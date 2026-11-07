@@ -7,6 +7,7 @@ given.
 
 from __future__ import annotations
 
+import math
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
@@ -31,7 +32,7 @@ TEMPLATES: dict[str, dict[str, str]] = {
         Code.PROGRAM_MISSING: "not trained in {program}",
         Code.LEVEL_MISSING: "not cleared for {program}, {level}",
         Code.PROGRAM_RENEWAL_OVERDUE: "{program} renewal was due on {due_on}",
-        Code.HOURS_LIMIT_EXCEEDED: "would have {hours_after} h in the week of {week_start} (limit {limit_hours} h)",
+        Code.HOURS_LIMIT_EXCEEDED: "would have {hours_after} in the week of {week_start} (limit {limit_hours})",
         Code.OVERLAPS_COMMITMENT: "already booked {start}-{end}",
         Code.REST_TOO_SHORT: "only {rest_hours} h of rest since {since} (needs {min_rest_hours} h)",
         "REST_TOO_SHORT_AFTER": "only {rest_hours} h of rest before {until} (needs {min_rest_hours} h)",
@@ -52,7 +53,7 @@ TEMPLATES: dict[str, dict[str, str]] = {
         Code.PROGRAM_MISSING: "нет программы {program}",
         Code.LEVEL_MISSING: "нет допуска к {program}, {level}",
         Code.PROGRAM_RENEWAL_OVERDUE: "обновление программы {program} просрочено с {due_on}",
-        Code.HOURS_LIMIT_EXCEEDED: "будет {hours_after} ч за неделю с {week_start} (лимит {limit_hours} ч)",
+        Code.HOURS_LIMIT_EXCEEDED: "будет {hours_after} за неделю с {week_start} (лимит {limit_hours})",
         Code.OVERLAPS_COMMITMENT: "уже занят {start}–{end}",
         Code.REST_TOO_SHORT: "отдых только {rest_hours} ч после {since} (нужно {min_rest_hours} ч)",
         "REST_TOO_SHORT_AFTER": "отдых только {rest_hours} ч до {until} (нужно {min_rest_hours} ч)",
@@ -74,6 +75,17 @@ def _number(value: object) -> str:
     if isinstance(value, float) and value.is_integer():
         return str(int(value))
     return str(value)
+
+
+def hours_words(value: object, lang: str = "en", up: bool = False) -> str:
+    """Hours of a week for people, never as a fraction: 6 -> "6 h", 5.75 -> "5 h 45 min", 0.5 -> "30 min", 0 -> "0 h"
+    (ru: "5 ч 45 мин"). `up` rounds up to the minute: ten seconds over a 40 h limit read "40 h 1 min", not "40 h"."""
+    minutes = round(float(value) * 60, 6)
+    h, m = divmod(math.ceil(minutes) if up else round(minutes), 60)
+    hours, minutes = ("ч", "мин") if lang == "ru" else ("h", "min")
+    if m == 0:
+        return f"{h} {hours}"
+    return f"{m} {minutes}" if h == 0 else f"{h} {hours} {m} {minutes}"
 
 
 def describe(reason: Reason, lang: str = "en", preset: Preset | None = None) -> str:
@@ -103,7 +115,10 @@ def describe(reason: Reason, lang: str = "en", preset: Preset | None = None) -> 
     for name in ("start", "end", "since", "until"):
         if name in params:
             params[name] = _time_text(params[name])
-    for name in ("hours_after", "limit_hours", "rest_hours", "min_rest_hours"):
+    for name in ("hours_after", "limit_hours"):  # hours of the week: "41 h 15 min", never "41.25"
+        if name in params:
+            params[name] = hours_words(params[name], lang, up=name == "hours_after")  # over the limit reads over it
+    for name in ("rest_hours", "min_rest_hours"):
         if name in params:
             params[name] = _number(params[name])
     return TEMPLATES[lang][key].format(**params)
@@ -116,7 +131,7 @@ _PLACE = {
         "position": "#{n}",
         "head": "{name} {position}: ",
         "not_eligible": "not eligible",
-        "hours": "{hours} h this week",
+        "hours": "{hours} this week",
         "not_cleared": "not cleared for {levels}",
         "same_venue": "same {venue}",
         "km": "{km} km away",
@@ -129,7 +144,7 @@ _PLACE = {
         "position": "№{n}",
         "head": "{name}, {position}: ",
         "not_eligible": "не допущен(а)",
-        "hours": "{hours} ч на этой неделе",
+        "hours": "{hours} на этой неделе",
         "not_cleared": "нет допуска к {levels}",
         "same_venue": "тот же {venue}",
         "km": "{km} км",
@@ -156,14 +171,15 @@ def _level_text(program: str, level: str, preset: Preset | None) -> str:
 
 
 def describe_place(ranked: Ranked, name: str, lang: str = "en", preset: Preset | None = None) -> str:
-    """One line for a queue place, e.g. "Zoe first: 12 h this week, Level 3, same venue". Tenure stays in place()."""
+    """One line for a queue place, e.g. "Zoe first: 12 h this week, Level 3, same venue" ("Chloe first: 5 h 45 min this
+    week, …": never decimal hours). Tenure stays in place()."""
     if lang not in LANGUAGES:
         raise ValueError(f"unsupported language {lang!r}; use one of {LANGUAGES}")
     t = _PLACE[lang]
     place = ranked.place()
     position = t["ordinals"].get(place["position"]) or t["position"].format(n=place["position"])
     parts = [] if place["eligible"] else [t["not_eligible"]]
-    parts.append(t["hours"].format(hours=_number(place["week_hours"])))
+    parts.append(t["hours"].format(hours=hours_words(place["week_hours"], lang)))
     levels = ", ".join(_level_text(program, level, preset) for program, level in place["levels"])
     if place["level_match"] is True:
         parts.append(levels)

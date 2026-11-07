@@ -14,7 +14,7 @@
     "end": "2026-11-15",
     "label": "Nov 9 – Nov 15"
   },
-  "now": "2026-11-09T13:45:00.044522+00:00",
+  "now": "2026-11-09T13:45:00.033165+00:00",
   "threshold": 1,
   "backups_from": "venue",
   "legend": [
@@ -751,7 +751,7 @@
             "staff_id": "S23",
             "name": "Harper Hughes",
             "from_reserve": true,
-            "line": "Harper first: 10.25 h this week, Level 5, 28.2 km away"
+            "line": "Harper first: 10 h 15 min this week, Level 5, 28.2 km away"
           }
         },
         {
@@ -2251,7 +2251,7 @@
         "staff_id": "S23",
         "name": "Harper Hughes",
         "from_reserve": true,
-        "line": "Harper first: 10.25 h this week, Level 5, 28.2 km away",
+        "line": "Harper first: 10 h 15 min this week, Level 5, 28.2 km away",
         "text": "Put Harper Hughes on standby for Tue 15:15–15:45 · Swim instructor · Level 5"
       },
       {

@@ -49,8 +49,8 @@
   "closed_at": "2026-11-09T13:45:22.000Z",
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "d3ec66a3-3eeb-4065-9629-72c23fa373f3",
-    "task_id": "ff36578d-c20f-47da-8927-8a1f70675929",
+    "context_id": "a219fded-cd54-43d9-bc6c-fe83afe90d7b",
+    "task_id": "46ea22f1-dde0-498d-bd03-4ee7b7e78295",
     "task_state": "TASK_STATE_COMPLETED"
   },
   "steps": [

@@ -48,6 +48,7 @@ from coachcover.model import Commitment, Context, GroupRef, Policy, Shift, Staff
 from coachcover.planb import is_private, own_coach_slot, private_plan_options
 from coachcover.planb import plan_b_options as core_plan_b_options
 from coachcover.presets import default_policy
+from coachcover.reasons_text import hours_words
 from coachcover.rules import Code, add_months, assess, eligible, rank
 
 SEED = 20261109
@@ -1324,7 +1325,7 @@ def report_markdown(result: dict) -> str:
     out += [
         "",
         f"Policy of the preset: offer timer {result['policy']['offer_timeout_minutes']} min, weekly limit "
-        f"{result['policy']['max_weekly_hours']} h, autonomy {result['policy']['autonomy']}.",
+        f"{hours_words(result['policy']['max_weekly_hours'])}, autonomy {result['policy']['autonomy']}.",
         "",
         "## Limits of this replay",
         "",
