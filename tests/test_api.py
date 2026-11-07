@@ -64,7 +64,7 @@ def test_closure_and_certificate_upload(api):
     client, _ = api
     made = client.post("/api/closures", json={"venue_id": "V1", "zone_id": "V1-TEACH", "reason": "weather",
                                               "starts_at": "2026-11-09T06:00:00-05:00", "ends_at": "2026-11-09T08:00:00-05:00"})
-    assert made.status_code == 201 and made.json()["families"] == 9
+    assert made.status_code == 201 and made.json()["families"] == 10
     assert client.post("/api/closures", json={"venue_id": "V1", "reason": "aliens", "starts_at": "2026-11-09T06:00:00-05:00",
                                               "ends_at": "2026-11-09T08:00:00-05:00"}).status_code == 422
     assert client.post("/api/closures", json={"venue_id": "V1", "reason": "weather", "starts_at": "2026-11-09T06:00:00",

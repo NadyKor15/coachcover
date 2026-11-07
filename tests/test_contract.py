@@ -102,11 +102,11 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
         "needs_label": "Lifeguard + WSI", "program_label": "Program LTS-3",
     }
     elig = today["eligibility"]
-    assert (elig["total"], elig["eligible"]) == (40, 6)
+    assert (elig["total"], elig["eligible"]) == (40, 5)  # Gabriela: only 9 h of rest
     assert elig["first_refusal"]["staff"] == "Anna Kim"
     assert elig["first_refusal"]["label"] == "free and willing · BLOCKED: Lifeguard certificate expired Nov 5 · 8 kids · ratio 1:4"
     assert elig["first_refusal"]["contrast_quote"] == ref["eligibility"]["first_refusal"]["contrast_quote"]
-    assert sum(r["count"] for r in elig["reasons"]) == 40 - 6
+    assert sum(r["count"] for r in elig["reasons"]) == 40 - 5
     assert {r["tone"] for r in elig["reasons"]} <= {"red", "amber", "plain"}
     assert [s["name"] for s in elig["staff"] if s["highlight"]] == ["Maria Lopez"]
     assert [(o["staff"], o["result"]) for o in today["offers"]] == [
@@ -154,7 +154,7 @@ def test_case_page_matches_the_fixture(api):
     kinds = [s["kind"] for s in page["steps"]]
     assert kinds[0] == "callout" and kinds[-1] == "covered" and {"shift", "allowed", "offers", "flagged"} <= set(kinds)
     allowed = next(s for s in page["steps"] if s["kind"] == "allowed")
-    assert (allowed["total"], allowed["allowed"], len(allowed["staff"])) == (40, 6, 40)
+    assert (allowed["total"], allowed["allowed"], len(allowed["staff"])) == (40, 5, 40)
     assert allowed["blocked"]["staff"] == "Anna Kim"
     labels = {c["model_label"] for c in page["model_calls"]}
     assert {"whisper-large-v3-turbo", "muse-glimmer-30b", "nemotron-safety"} <= labels

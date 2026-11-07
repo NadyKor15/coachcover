@@ -122,6 +122,7 @@ def test_every_place_carries_a_machine_reason():
         "level_match": True,
         "levels": [["learn_to_swim", "3"]],
         "level_tenure_days": 730,
+        "family_language": None,
         "above_next": {"factor": "week_hours", "this": 12.0, "next": 20.0, "next_staff_id": "O"},
     }
     assert ranked[1].place()["above_next"] is None

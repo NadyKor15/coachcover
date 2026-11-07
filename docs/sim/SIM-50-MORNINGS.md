@@ -10,26 +10,26 @@ The school is fictional (`coachcover/seed.py`): 3 venues, 40 staff, 204 shifts i
 | Metric | Group chat + phone tree | CoachCover |
 |---|---:|---:|
 | Shifts that needed cover | 85 | 85 |
-| Placements of a person without permission | 44 | 0 |
-|   of them: no role for the shift | 7 | 0 |
-|   of them: certificate expired, missing or unconfirmed | 16 | 0 |
-|   of them: no program or level, renewal overdue | 18 | 0 |
-|   of them: over the weekly hours limit | 3 | 0 |
+| Placements of a person without permission | 50 | 0 |
+|   of them: no role for the shift | 9 | 0 |
+|   of them: certificate expired, missing or unconfirmed | 19 | 0 |
+|   of them: no program or level, renewal overdue | 17 | 0 |
+|   of them: over the weekly hours limit | 5 | 0 |
 |   of them: group norm broken | 0 | 0 |
 | Placements with an expired certificate (any reason list) | 14 | 0 |
-| People placed (cover, merge, reserve, overtime) | 85 | 84 |
-| Median minutes from call-out to a closed shift | 13.2 | 24.4 |
-| 90th percentile, minutes | 15.7 | 43.5 |
-| Closed after the shift had started | 0 | 7 |
-| Closed without a person (no manager step), % | 0.0 | 82.4 |
-| Lessons cancelled or moved | 0 | 1 |
-| Participants left without their lesson | 0 | 7 |
+| People placed (cover, merge, reserve, overtime) | 85 | 85 |
+| Median minutes from call-out to a closed shift | 13.3 | 21.1 |
+| 90th percentile, minutes | 15.4 | 44.0 |
+| Closed after the shift had started | 1 | 5 |
+| Closed without a person (no manager step), % | 0.0 | 75.3 |
+| Lessons cancelled or moved | 0 | 0 |
+| Participants left without their lesson | 0 | 0 |
 | Shifts without groups left empty | 0 | 0 |
 | Approved overtime | 0 | 0 |
 | Manager minutes, median per morning | 6.0 | 0.0 |
 
-Outcomes, baseline: {'covered': 85}; CoachCover: {'covered': 70, 'moved': 1, 'reserve': 14}.
-Blocking codes behind the baseline violations: {'CERT_EXPIRED': 14, 'CERT_MISSING': 7, 'CERT_NEEDS_REVIEW': 2, 'HOURS_LIMIT_EXCEEDED': 3, 'LEVEL_MISSING': 20, 'PROGRAM_MISSING': 8, 'PROGRAM_RENEWAL_OVERDUE': 2, 'ROLE_MISSING': 7}.
+Outcomes, baseline: {'covered': 85}; CoachCover: {'covered': 64, 'reserve': 21}.
+Blocking codes behind the baseline violations: {'CERT_EXPIRED': 14, 'CERT_MISSING': 10, 'CERT_NEEDS_REVIEW': 3, 'CERT_REVOKED': 1, 'HOURS_LIMIT_EXCEEDED': 3, 'LEVEL_MISSING': 19, 'PROGRAM_MISSING': 10, 'PROGRAM_RENEWAL_OVERDUE': 3, 'REST_TOO_SHORT': 9, 'ROLE_MISSING': 9}.
 
 A placement is one person put on a shift (cover, the teacher of a merged group, a reserve person, approved overtime). It is a violation when `rules.eligible` returns a blocking reason for that person and shift at the moment of booking. The breakdown counts each violation once, under the first of: role, certificate, program, hours, group norm. CoachCover's approved overtime is not counted as a violation: the manager approved it with its price, as the core does.
 
@@ -42,12 +42,12 @@ A placement is one person put on a shift (cover, the teacher of a merged group, 
 
 | Metric | `baseline_manager_checks_role` | `coachcover_three_offers_at_once` |
 |---|---:|---:|
-| Placements without permission | 41 | 0 |
-|   no role / certificate / program / hours / group norm | 0 / 17 / 21 / 3 / 0 | 0 / 0 / 0 / 0 / 0 |
-| Median minutes to close | 13.3 | 10.1 |
-| 90th percentile, minutes | 15.7 | 23.5 |
-| Closed after the shift had started | 0 | 1 |
-| Closed without a person, % | 0.0 | 77.6 |
+| Placements without permission | 47 | 0 |
+|   no role / certificate / program / hours / group norm | 0 / 21 / 20 / 6 / 0 | 0 / 0 / 0 / 0 / 0 |
+| Median minutes to close | 13.4 | 10.1 |
+| 90th percentile, minutes | 15.7 | 27.0 |
+| Closed after the shift had started | 1 | 3 |
+| Closed without a person, % | 0.0 | 69.4 |
 
 - `baseline_manager_checks_role`: Baseline where the manager takes only people who hold the shift's role (job title); cards, programs, hours and the group norm are still not checked.
 - `coachcover_three_offers_at_once`: CoachCover with three offers open at once instead of one (the first eligible yes wins). Not what the core does today; shown to size that change.

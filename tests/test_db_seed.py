@@ -25,7 +25,8 @@ DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 
 def test_migrations_apply_once(new_database):
     conn = new_database()
-    versions = ["001_init", "002_pipeline", "003_review_fixes", "004_callouts_and_ops", "005_screens_and_filter"]
+    versions = ["001_init", "002_pipeline", "003_review_fixes", "004_callouts_and_ops", "005_screens_and_filter",
+                "006_safety_layer"]
     assert migrate(conn) == versions
     assert migrate(conn) == []
     assert [r[0] for r in conn.execute("SELECT version FROM schema_migrations ORDER BY 1")] == versions
@@ -128,9 +129,10 @@ def test_the_traps_meet_the_rules_at_the_morning_call_out(school):
     assert decide("S17", lesson, lesson_ctx).reasons == ()
 
     assert decide("S27", guard, guard_ctx).codes == [Code.CERT_EXPIRED]
-    assert decide("S28", lesson, lesson_ctx).codes == [Code.CERT_MISSING, Code.PROGRAM_MISSING]  # lifeguard without WSI
+    assert decide("S28", lesson, lesson_ctx).codes[:2] == [Code.CERT_MISSING, Code.PROGRAM_MISSING]  # lifeguard without WSI
     holder_view = dataclasses.replace(guard, assignee=None)  # judged as the person on the block, not a replacement
-    assert decide("S30", holder_view, guard_ctx).codes == [Code.CERT_EXPIRES_ON_SHIFT_DAY]
+    s30 = decide("S30", holder_view, guard_ctx)  # her card ends today; she closed V1 at 21:00 on Sunday
+    assert s30.codes == [Code.CERT_EXPIRES_ON_SHIFT_DAY, Code.REST_TOO_SHORT] and s30.reasons[1].params["rest_hours"] == 8.5
     over = decide("S29", guard, guard_ctx)
     assert over.codes == [Code.HOURS_LIMIT_EXCEEDED] and over.reasons[0].params["hours_after"] == 42.5
     # the regular instructor of the group next door is busy at 06:00

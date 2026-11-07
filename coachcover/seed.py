@@ -50,6 +50,7 @@ NOW = datetime(2026, 11, 9, 5, 12, tzinfo=TZ)
 WEEK_START = date(2026, 11, 8)  # Sunday: the swim preset's week starts on Sunday
 MONDAY = date(2026, 11, 9)
 GREEDY_HOURS_CAP = 32.0  # ordinary staff stay well below the 40 h limit
+MIN_REST = timedelta(hours=10)  # the preset's min_rest_hours: the greedy fill never breaks it
 HERO_SHIFT = "L-1109-G002"
 
 # id, name, lat, lon, deck zone, zones in group order
@@ -125,6 +126,9 @@ RADAR_EXPIRY = {
 }
 DISPUTED = ("S13", "wsi", date(2027, 3, 14), date(2026, 3, 14))  # staff, type, reader A expiry, reader B expiry
 OVERDUE_PROGRAM = ("S14", date(2025, 10, 1))
+# The issuer's registry is SIMULATED (training data, not a real issuer). Carlos Mendoza's lifeguard card is printed
+# valid to 2028 but the issuer revoked it on Jul 24 (cards voided after the fact, as in Iowa in 2023).
+REVOKED = {("S35", "lifeguarding"): date(2026, 7, 24)}
 DEMO_ABSENT = "S05"
 
 # Fixed weeks: (day offset from Sunday, venue, block start). Hours: Anna 4, Sofia 6, Leo 9, Maria 12,
@@ -136,7 +140,7 @@ FIXED_BLOCKS = {
     "S17": [(2, "V1", time(14, 0)), (4, "V1", time(14, 0)), (5, "V1", time(14, 0))],
     "S20": [(0, "V2", time(14, 0)), (1, "V2", time(10, 0)), (2, "V2", time(14, 0)), (3, "V2", time(18, 0))],
     "S22": [(1, "V2", time(14, 0)), (3, "V2", time(14, 0)), (5, "V2", time(10, 0)), (6, "V2", time(10, 0))],
-    "S24": [(0, "V3", time(5, 30)), (2, "V3", time(5, 30)), (4, "V3", time(5, 30)), (6, "V3", time(5, 30))],
+    "S24": [(0, "V3", time(18, 0)), (2, "V3", time(5, 30)), (4, "V3", time(5, 30)), (6, "V3", time(5, 30))],
     "S11": [
         (0, "V2", time(5, 30)), (0, "V2", time(10, 0)),
         (2, "V2", time(5, 30)), (2, "V2", time(10, 0)),
@@ -179,7 +183,7 @@ class FixedGroup:
 FIXED_GROUPS = {
     ("V1", "V1-TEACH", 0, time(6, 0)): FixedGroup(4, 6, (8, 10), "S04", ("es",), minutes=120, deck=True),
     ("V1", "V1-LAP", 0, time(6, 0)): FixedGroup(3, 8, (4, 5), DEMO_ABSENT, ("ru", "en"), minutes=120, deck=True, instructors=2),
-    ("V1", "V1-TEACH", 0, time(7, 0)): FixedGroup(1, 3, (4, 5), "S01", ("en",)),
+    ("V1", "V1-TEACH", 0, time(7, 0)): FixedGroup(1, 4, (4, 5), "S01", ("es", "en")),
     ("V1", "V1-LAP", 0, time(7, 0)): FixedGroup(3, 6, (6, 9), "S08", ("en", "es")),
     ("V2", "V2-WARM", 0, time(6, 0)): FixedGroup(2, 5, (6, 8), "S02", ("es",)),
     ("V2", "V2-MAIN", 0, time(6, 0)): FixedGroup(1, 3, (5, 6), "S15", ("en",)),
@@ -201,12 +205,24 @@ class School:
     venues: list[tuple] = field(default_factory=list)  # id, name, tz, lat, lon
     zones: list[tuple] = field(default_factory=list)  # id, venue, name
     staff: list[tuple] = field(default_factory=list)  # id, name, language, home venue
+    registry: list[dict] = field(default_factory=list)  # simulated issuer registry: type, card number, revoked_on
     staff_roles: list[tuple] = field(default_factory=list)  # staff, role code
     certs: list[dict] = field(default_factory=list)
     programs: list[dict] = field(default_factory=list)  # staff, program, renewed_at, levels {code: since}
     groups: list[dict] = field(default_factory=list)
     shifts: list[dict] = field(default_factory=list)
     demo: dict = field(default_factory=dict)
+
+
+def family_counts(languages: list[str], size: int) -> dict[str, int]:
+    """Families per language: the first language has most of them, each other one a quarter of the group."""
+    rest = {lang: size // 4 for lang in languages[1:]}
+    return {languages[0]: size - sum(rest.values()), **rest}
+
+
+def staff_languages(language: str) -> list[str]:
+    """Languages a person speaks with families: their own and English (the school's working language)."""
+    return list(dict.fromkeys((language, "en")))
 
 
 def _levels(spec: str) -> list[str]:
@@ -223,6 +239,19 @@ def _at(day: date, start: time) -> datetime:
 def _overlaps(busy: list[tuple[datetime, datetime]], start: datetime, end: datetime) -> bool:
     s, e = start.astimezone(UTC), end.astimezone(UTC)
     return any(b0.astimezone(UTC) < e and s < b1.astimezone(UTC) for b0, b1 in busy)
+
+
+def _short_rest(busy: list[tuple[datetime, datetime]], start: datetime, end: datetime) -> bool:
+    """Work on another day that ends or starts less than MIN_REST away (the rule in coachcover.rules)."""
+    s, e = start.astimezone(UTC), end.astimezone(UTC)
+    day = start.astimezone(TZ).date()
+    for b0, b1 in busy:
+        other = b0.astimezone(TZ).date()
+        if other < day and b1.astimezone(UTC) <= s and s - b1.astimezone(UTC) < MIN_REST:
+            return True
+        if other > day and b0.astimezone(UTC) >= e and b0.astimezone(UTC) - e < MIN_REST:
+            return True
+    return False
 
 
 def _off(staff_id: str, start: datetime) -> bool:
@@ -289,6 +318,11 @@ def build_school() -> School:
         school.staff_roles.extend((sid, r) for r in ROLE_CODES[roles])
         needed = list(dict.fromkeys(c for r in ROLE_CODES[roles] for c in ROLE_CERTS[r]))
         school.certs.extend(_cert(sid, n, i, ctype) for i, ctype in enumerate(needed))
+        for i, ctype in enumerate(needed):
+            card = school.certs[-len(needed) + i]
+            revoked_on = REVOKED.get((sid, ctype))
+            school.registry.append({"cert_type": ctype, "card_number": card["card_number"], "revoked_on": revoked_on,
+                                    "note": "simulated registry (training data)"})
         if levels_of[sid]:
             renewed = OVERDUE_PROGRAM[1] if sid == OVERDUE_PROGRAM[0] else date(2026, 1 + n % 9, 1 + (n * 7) % 28)
             base = date(2019 + n % 6, 1 + n % 12, 1 + n % 28)
@@ -353,6 +387,7 @@ def build_school() -> School:
                 and str(level) in levels_of[sid]
                 and not _off(sid, lesson_start)
                 and not _overlaps(busy[sid], lesson_start, lesson_end)
+                and not _short_rest(busy[sid], lesson_start, lesson_end)
             ]
             if not candidates:
                 raise RuntimeError(f"no instructor for slot {slots[k]}")
@@ -371,6 +406,7 @@ def build_school() -> School:
                 "age_min": ages[0],
                 "age_max": ages[1],
                 "family_languages": languages,
+                "family_counts": family_counts(languages, size),
                 "weekday": weekday,
                 "starts_local": start,
                 "minutes": minutes,
@@ -408,6 +444,7 @@ def build_school() -> School:
                         and not _off(s, block_start)
                         and hours[s] + length <= GREEDY_HOURS_CAP
                         and not _overlaps(busy[s], block_start, block_end)
+                        and not _short_rest(busy[s], block_start, block_end)
                     ]
                     if not candidates:
                         raise RuntimeError(f"no lifeguard for {vid} {block_start}")
@@ -465,8 +502,9 @@ def load_school(conn: psycopg.Connection, school: School | None = None) -> None:
             )
             cur.executemany("INSERT INTO zone (id, venue_id, name) VALUES (%s, %s, %s)", school.zones)
             cur.executemany(
-                "INSERT INTO staff (id, policy_id, full_name, language, home_venue_id) VALUES (%s, %s, %s, %s, %s)",
-                [(sid, POLICY_ID, name, lang, home) for sid, name, lang, home in school.staff],
+                "INSERT INTO staff (id, policy_id, full_name, language, languages, home_venue_id)"
+                " VALUES (%s, %s, %s, %s, %s, %s)",
+                [(sid, POLICY_ID, name, lang, staff_languages(lang), home) for sid, name, lang, home in school.staff],
             )
             cur.executemany(
                 "INSERT INTO staff_role (staff_id, role_id) VALUES (%s, %s)",
@@ -490,6 +528,12 @@ def load_school(conn: psycopg.Connection, school: School | None = None) -> None:
                     for c in school.certs
                 ],
             )
+            cur.executemany(
+                "INSERT INTO issuer_registry (cert_type_id, card_number, revoked, revoked_on, note, simulated)"
+                " VALUES (%s, %s, %s, %s, %s, true)",
+                [(cert_ids[r["cert_type"]], r["card_number"], r["revoked_on"] is not None, r["revoked_on"], r["note"])
+                 for r in school.registry],
+            )
         for p in school.programs:
             pid = program_ids[p["program"]]
             sp_id = conn.execute(
@@ -505,7 +549,8 @@ def load_school(conn: psycopg.Connection, school: School | None = None) -> None:
         with conn.cursor() as cur:
             cur.executemany(
                 "INSERT INTO lesson_group (id, venue_id, zone_id, level_id, name, size, age_min, age_max, family_languages,"
-                " weekday, starts_local, minutes, instructor_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                " family_counts, weekday, starts_local, minutes, instructor_id)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 [
                     (
                         g["id"],
@@ -517,6 +562,7 @@ def load_school(conn: psycopg.Connection, school: School | None = None) -> None:
                         g["age_min"],
                         g["age_max"],
                         g["family_languages"],
+                        Jsonb(g["family_counts"]),
                         g["weekday"],
                         g["starts_local"],
                         g["minutes"],

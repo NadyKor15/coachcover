@@ -15,7 +15,7 @@ from coachcover.model import MONEY_KEYS, WEEKDAYS, CertType, Level, Policy, Pres
 PRESET_DIR = Path(__file__).parent / "presets"
 
 _PRESET_KEYS = {"code", "label", "note", "venue_term", "cert_types", "roles", "programs", "policy_defaults"}
-_PRESET_OPTIONAL = {"note", "young_children", "copy", "money"}
+_PRESET_OPTIONAL = {"note", "young_children", "copy", "money", "min_rest_hours"}
 _PRICE_KEYS = {"value", "unit", "assumption", "note"}
 _DEFAULT_KEYS = {
     "max_weekly_hours",
@@ -132,6 +132,7 @@ def preset_from_dict(data: dict) -> Preset:
         young_max_per_instructor=young["max_per_instructor"] if young else None,
         copy=_copy(data),
         money=_money(data),
+        min_rest_hours=data.get("min_rest_hours"),
     )
 
 

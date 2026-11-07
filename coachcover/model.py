@@ -130,6 +130,7 @@ class Preset:
     young_max_per_instructor: int | None = None
     copy: Mapping[str, str] = field(default_factory=dict)  # screen and prompt texts of this kind of business
     money: Mapping[str, Mapping[str, object]] = field(default_factory=dict)  # prices for the money card, see MONEY_KEYS
+    min_rest_hours: float | None = None  # rest a person needs between work on different days; None: no rule
 
     def __post_init__(self) -> None:
         _require_code(self.code, "preset code")
@@ -137,6 +138,11 @@ class Preset:
             raise ValueError(f"preset {self.code}: young_age_max and young_max_per_instructor go together")
         if self.young_max_per_instructor is not None and not _positive_int(self.young_max_per_instructor):
             raise ValueError(f"preset {self.code}: young_max_per_instructor must be a positive int")
+        if self.min_rest_hours is not None and not (
+            isinstance(self.min_rest_hours, (int, float)) and not isinstance(self.min_rest_hours, bool)
+            and 0 < self.min_rest_hours <= 24
+        ):
+            raise ValueError(f"preset {self.code}: min_rest_hours must be a number in (0, 24]")
         for kind, items in (("role", self.roles), ("cert type", self.cert_types), ("program", self.programs)):
             for key, item in items.items():
                 if key != item.code:
@@ -204,6 +210,7 @@ class StaffCert:
     issued_on: date
     expires_on: date | None = None  # None: issued_on + validity months of the type
     needs_review: bool = False  # the readings disagree and no person has confirmed
+    revoked_on: date | None = None  # the issuer's registry says the card was revoked on this day
 
     def __post_init__(self) -> None:
         _require_code(self.cert_type, "certificate type")
@@ -229,6 +236,7 @@ class Staff:
     certs: tuple[StaffCert, ...] = ()
     programs: Mapping[str, StaffProgram] = field(default_factory=dict)
     home_venue: str | None = None
+    languages: frozenset[str] = frozenset()  # languages the person speaks with families (ISO 639-1)
 
     def __post_init__(self) -> None:
         _require_code(self.id, "staff id")
@@ -247,9 +255,13 @@ class GroupRef:
     level: str
     size: int
     age_min: int | None = None  # youngest participant, when known
+    families: tuple[tuple[str, int], ...] = ()  # (language, number of families speaking it), when known
 
     def __post_init__(self) -> None:
         _require_code(self.id, "group id")
+        for lang, n in self.families:
+            if not (isinstance(lang, str) and lang) or not isinstance(n, int) or n < 0:
+                raise ValueError(f"group {self.id}: families must be (language, count >= 0) pairs")
         if not isinstance(self.size, int) or self.size < 0:
             raise ValueError(f"group {self.id}: size must be a non-negative int")
         if self.age_min is not None and (not isinstance(self.age_min, int) or self.age_min < 0):

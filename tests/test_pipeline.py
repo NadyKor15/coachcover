@@ -16,7 +16,8 @@ pytestmark = pytest.mark.db
 FIXTURES = Path(__file__).parent / "fixtures"
 RU_VOICE = (FIXTURES / "audio" / "ru-callout.ogg").read_bytes()
 HERO, NEXT_DOOR = "L-1109-G002", "L-1109-G001"
-QUEUE = ["S25", "S26", "S17", "S20", "S22", "S24"]  # Sofia 6 h, Leo 9 h, Maria 12 h, then 15, 16, 18 h
+QUEUE = ["S25", "S26", "S17", "S20", "S22"]  # Sofia 6 h, Leo 9 h, Maria 12 h, then 15, 16 h
+RESTING = "S24"  # Gabriela closed Lakeview at 21:00 Sunday: only 9 h of rest before 06:00
 TRAPS = {"S07", "S10", "S13", "S14", "S27"}
 RESERVE = {"S06", "S12", "S23"}
 
@@ -91,7 +92,7 @@ def test_voice_callout_to_covered_shift_with_case_file(school):
         "candidates_ranked", "offer_sent", "offer_declined", "offer_sent", "offer_expired", "offer_sent", "shift_covered",
     ]
     ranked = school.execute("SELECT data FROM case_event WHERE case_id = %s AND kind = 'candidates_ranked'", (case,)).fetchone()[0]
-    assert (ranked["total"], ranked["eligible"], ranked["reserve"]) == (40, 6, 3)
+    assert (ranked["total"], ranked["eligible"], ranked["reserve"]) == (40, 5, 3)
     assert [g["staff_id"] for g in ranked["grid"] if g["eligible"]] == QUEUE
     assert len(ranked["grid"]) == 40
     calls = school.execute(
@@ -196,10 +197,10 @@ def test_closure_cancels_lessons_and_gives_credits(school):
     start, end = NOW.replace(hour=6, minute=0), NOW.replace(hour=8, minute=0)
     result = p.closure("V1", "V1-TEACH", "equipment", start, end, now=minutes(10), created_by="manager:test")
     assert result["cancelled_shifts"] == [NEXT_DOOR, "L-1109-G003"]
-    assert result["remedy"] == "credit" and result["families"] == 6 + 3
+    assert result["remedy"] == "credit" and result["families"] == 6 + 4
     assert set(result["languages"]) == {"es", "en"}
     remedies = school.execute("SELECT group_id, kind, families FROM remedy WHERE closure_id = %s ORDER BY 1", (result["closure_id"],)).fetchall()
-    assert remedies == [("G001", "credit", 6), ("G003", "credit", 3)]
+    assert remedies == [("G001", "credit", 6), ("G003", "credit", 4)]
     texts = school.execute("SELECT language, body FROM message WHERE closure_id = %s ORDER BY id", (result["closure_id"],)).fetchall()
     assert all("{group}" not in body and "{time}" not in body for _, body in texts)
     assert any("falla del equipo" in body for lang, body in texts if lang == "es")

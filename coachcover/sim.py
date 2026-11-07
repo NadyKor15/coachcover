@@ -69,10 +69,12 @@ CATEGORY_OF = {
     Code.CERT_EXPIRED: "certificate",
     Code.CERT_EXPIRES_DURING_SHIFT: "certificate",
     Code.CERT_NEEDS_REVIEW: "certificate",
+    Code.CERT_REVOKED: "certificate",
     Code.PROGRAM_MISSING: "program",
     Code.LEVEL_MISSING: "program",
     Code.PROGRAM_RENEWAL_OVERDUE: "program",
     Code.HOURS_LIMIT_EXCEEDED: "hours",
+    Code.REST_TOO_SHORT: "hours",
     Code.RATIO_EXCEEDED: "ratio",
     Code.OVERLAPS_COMMITMENT: "other",
     Code.IS_THE_ABSENT_PERSON: "other",
@@ -81,9 +83,9 @@ CATEGORY_OF = {
 PRIMARY_ORDER = ("role", "certificate", "program", "hours", "ratio", "other")
 CATEGORY_LABEL = {
     "role": "no role for the shift",
-    "certificate": "certificate expired, missing or unconfirmed",
+    "certificate": "certificate expired, revoked, missing or unconfirmed",
     "program": "no program or level, or renewal overdue",
-    "hours": "over the weekly hours limit",
+    "hours": "over the weekly hours limit or too little rest",
     "ratio": "group norm broken (participants per instructor)",
     "other": "other (double booking)",
 }
@@ -213,23 +215,30 @@ def load_world() -> World:
     roles: dict[str, set[str]] = defaultdict(set)
     for sid, role in school.staff_roles:
         roles[sid].add(role)
+    revoked = {(r["cert_type"], r["card_number"]): r["revoked_on"] for r in school.registry if r["revoked_on"]}
     certs: dict[str, list[StaffCert]] = defaultdict(list)
     for row in school.certs:
-        certs[row["staff_id"]].append(StaffCert(row["cert_type"], row["issued_on"], row["expires_on"], _needs_review(row)))
+        certs[row["staff_id"]].append(StaffCert(row["cert_type"], row["issued_on"], row["expires_on"], _needs_review(row),
+                                                revoked.get((row["cert_type"], row["card_number"]))))
     programs: dict[str, dict[str, StaffProgram]] = defaultdict(dict)
     for p in school.programs:
         if p["program"] != program:
             raise ValueError(f"unexpected program {p['program']!r} in the training school")
         programs[p["staff_id"]][program] = StaffProgram(program, p["renewed_at"], dict(p["levels"]))
     staff = {
-        sid: Staff(sid, name, frozenset(roles[sid]), tuple(certs[sid]), programs[sid], home)
-        for sid, name, _, home in school.staff
+        sid: Staff(sid, name, frozenset(roles[sid]), tuple(certs[sid]), programs[sid], home,
+                   frozenset(school_seed.staff_languages(lang)))
+        for sid, name, lang, home in school.staff
     }
-    groups = {g["id"]: GroupRef(g["id"], program, g["level"], g["size"]) for g in school.groups}
+    groups = {
+        g["id"]: GroupRef(g["id"], program, g["level"], g["size"], g["age_min"], tuple(sorted(g["family_counts"].items())))
+        for g in school.groups
+    }
     shifts = {
         s["id"]: Shift(
             s["id"], s["venue_id"], s["role"], s["starts_at"], s["ends_at"],
-            tuple(groups[g] for g in s["groups"]), 1, s["zone_id"], assignee=s["staff_id"],
+            tuple(groups[g] for g in s["groups"]), s["instructors"], s["zone_id"], assignee=s["staff_id"],
+            extra_certs=tuple(s["extra_certs"]),
         )
         for s in school.shifts
     }

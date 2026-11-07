@@ -19,9 +19,11 @@ from coachcover.repo import load_policy, load_shift, load_staff
 from coachcover.rules import cert_expiry, group_norm, required_certs
 
 LANGUAGE_NAMES = {"ru": "Russian", "en": "English", "es": "Spanish"}
-RED = {"CERT_EXPIRED", "CERT_EXPIRES_DURING_SHIFT", "CERT_NOT_YET_VALID", "RATIO_EXCEEDED"}
-AMBER = {"CERT_NEEDS_REVIEW", "PROGRAM_RENEWAL_OVERDUE"}
-CERT_CODES = {"CERT_EXPIRED", "CERT_EXPIRES_DURING_SHIFT", "CERT_NOT_YET_VALID", "CERT_MISSING", "CERT_NEEDS_REVIEW"}
+RED = {"CERT_EXPIRED", "CERT_EXPIRES_DURING_SHIFT", "CERT_NOT_YET_VALID", "CERT_REVOKED", "RATIO_EXCEEDED"}
+AMBER = {"CERT_NEEDS_REVIEW", "PROGRAM_RENEWAL_OVERDUE", "REST_TOO_SHORT"}
+CERT_CODES = {"CERT_EXPIRED", "CERT_EXPIRES_DURING_SHIFT", "CERT_NOT_YET_VALID", "CERT_MISSING", "CERT_NEEDS_REVIEW",
+              "CERT_REVOKED"}
+REGISTRY_NOTE = "simulated registry"  # the issuer registry in the demo is training data, never a real issuer
 
 
 def _day(value: str | date) -> str:
@@ -77,6 +79,14 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
     if code == "OVERLAPS_COMMITMENT":
         teaching = conn.execute("SELECT EXISTS (SELECT 1 FROM shift_group WHERE shift_id = %s)", (params["ref"],)).fetchone()[0]
         return f"{'Teaching' if teaching else 'On deck'} at {_short_clock(params['start'], tz)}"
+    if code == "CERT_REVOKED":
+        until = date.fromisoformat(params["expires_on"])
+        return f"Valid until {until:%b %Y} — REVOKED by issuer on {_day(params['revoked_on'])} ({REGISTRY_NOTE})"
+    if code == "REST_TOO_SHORT":
+        hours = f"{params['rest_hours']:g}"
+        if params.get("side") == "after":
+            return f"Only {hours} h rest before {_short_clock(params['until'], tz)}"
+        return f"Only {hours} h rest since {_short_clock(params['since'], tz)}"
     if code == "RATIO_EXCEEDED":
         return f"Over the 1:{params['max_per_instructor']} norm"
     if code == "IS_THE_ABSENT_PERSON":

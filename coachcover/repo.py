@@ -46,13 +46,17 @@ def load_staff(conn: psycopg.Connection, policy_id: str) -> list[Staff]:
     ):
         roles[sid].add(role)
     certs: dict[str, list[StaffCert]] = defaultdict(list)
-    for sid, ctype, issued, expires, review in conn.execute(
-        "SELECT sc.staff_id, c.code, sc.issued_on, sc.expires_on, sc.needs_review FROM staff_cert sc"
+    # the issuer's registry (simulated in the demo) is matched by card type and number, ignoring spaces and dashes
+    for sid, ctype, issued, expires, review, revoked_on in conn.execute(
+        "SELECT sc.staff_id, c.code, sc.issued_on, sc.expires_on, sc.needs_review, r.revoked_on FROM staff_cert sc"
         " JOIN cert_type c ON c.id = sc.cert_type_id JOIN staff s ON s.id = sc.staff_id"
+        " LEFT JOIN issuer_registry r ON r.cert_type_id = sc.cert_type_id AND r.revoked"
+        "  AND upper(regexp_replace(r.card_number, '[^A-Za-z0-9]', '', 'g'))"
+        "    = upper(regexp_replace(sc.card_number, '[^A-Za-z0-9]', '', 'g'))"
         " WHERE s.policy_id = %s ORDER BY sc.staff_id, sc.id",
         (policy_id,),
     ):
-        certs[sid].append(StaffCert(ctype, issued, expires, review))
+        certs[sid].append(StaffCert(ctype, issued, expires, review, revoked_on))
     levels: dict[int, dict[str, object]] = defaultdict(dict)
     for sp_id, lv, since in conn.execute(
         "SELECT spl.staff_program_id, l.code, spl.since FROM staff_program_level spl"
@@ -69,9 +73,10 @@ def load_staff(conn: psycopg.Connection, policy_id: str) -> list[Staff]:
     ):
         programs[sid][prog] = StaffProgram(prog, renewed, levels[sp_id])
     return [
-        Staff(sid, name, frozenset(roles[sid]), tuple(certs[sid]), programs[sid], home)
-        for sid, name, home in conn.execute(
-            "SELECT id, full_name, home_venue_id FROM staff WHERE policy_id = %s AND active ORDER BY id", (policy_id,)
+        Staff(sid, name, frozenset(roles[sid]), tuple(certs[sid]), programs[sid], home, frozenset({language, *languages}))
+        for sid, name, home, language, languages in conn.execute(
+            "SELECT id, full_name, home_venue_id, language, languages FROM staff WHERE policy_id = %s AND active ORDER BY id",
+            (policy_id,),
         )
     ]
 
@@ -89,9 +94,10 @@ def load_shift(conn: psycopg.Connection, shift_id: str) -> Shift:
         raise ValueError(f"unknown shift {shift_id!r}")
     venue, role, start, end, instructors, zone, extra_certs, assignee = row
     groups = tuple(
-        GroupRef(gid, prog, lv, size, age_min)
-        for gid, prog, lv, size, age_min in conn.execute(
-            "SELECT g.id, p.code, l.code, g.size, g.age_min FROM shift_group sg JOIN lesson_group g ON g.id = sg.group_id"
+        GroupRef(gid, prog, lv, size, age_min, tuple(sorted((k, int(v)) for k, v in families.items())))
+        for gid, prog, lv, size, age_min, families in conn.execute(
+            "SELECT g.id, p.code, l.code, g.size, g.age_min, g.family_counts FROM shift_group sg"
+            " JOIN lesson_group g ON g.id = sg.group_id"
             " JOIN program_level l ON l.id = g.level_id JOIN program p ON p.id = l.program_id"
             " WHERE sg.shift_id = %s ORDER BY g.id",
             (shift_id,),
