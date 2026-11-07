@@ -29,7 +29,7 @@ NESTED = {
     "model_log": {"label", "calls", "usd"},
 }
 EXTENSIONS = {"today": {"flagged", "night_check", "ratio_alert", "judge"}, "callout": {"asr_label"},
-              "outcome": {"covered_via"}, "money": {"source"},
+              "outcome": {"covered_via"}, "money": {"source", "case_cost_label"},
               "offer": {"state", "staff", "needs_label", "why_first"}}
 RATIO_KEYS = {"case_id", "status", "tone", "label", "action_label"}
 OFFER_KEYS = {"offer_id", "shift_day", "shift_start", "shift_end", "venue", "shift_detail", "why", "expires_in_s", "window_s", "manager"}
@@ -276,3 +276,13 @@ def test_loan_answers_and_the_judges_scene():
     assert load(f"cases/{run['case_id']}.network_loan.json")["case_id"] == run["case_id"]
     members = load("network.json")["members"]
     assert {mm["manager"] for mm in members} >= {loan["borrower"]["manager"], loan["lender"]["manager"]}
+
+
+def test_standby_answers():
+    w, sb = load("week.json"), load("week_mocks.json")["standby"]
+    pick = w["fixes"]["standby"][0]
+    assert re.fullmatch(r"SB-\d+", sb["created"]["id"]) and sb["created"]["status"] == "proposed"
+    assert (sb["created"]["shift_id"], sb["created"]["staff_id"]) == (pick["shift_id"], pick["staff_id"])
+    assert "already proposed" in sb["repeat"]["error"]
+    assert "not cleared" in sb["holder"]["error"] and "not cleared" in sb["not_cleared"]["error"]
+    assert sb["unknown"]["error"]
