@@ -26,7 +26,7 @@ body {
   font-family: "Figtree", system-ui, sans-serif; color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }
-.screen { width: 430px; height: 583.3px; display: flex; flex-direction: column; overflow: hidden; }
+.screen { width: 430px; min-height: 583.3px; display: flex; flex-direction: column; }
 body[data-state="loading"] .card, body[data-state="loading"] .actions { visibility: hidden; }
 
 /* header */
@@ -36,7 +36,7 @@ body[data-state="loading"] .card, body[data-state="loading"] .actions { visibili
 .brand-word { margin: 10.35px 0 0 4.2px; font: 700 20px/20px "Figtree", sans-serif; letter-spacing: .1px; color: var(--brand-ink); white-space: nowrap; }
 
 /* offer card */
-.card { flex: none; width: 403.6px; height: 437.6px; margin: 0 0 0 13px; background: var(--card); border: 1px solid var(--card-line); border-radius: 13px; display: flex; flex-direction: column; }
+.card { flex: none; width: 403.6px; min-height: 437.6px; padding-bottom: 12px; margin: 0 0 0 13px; background: var(--card); border: 1px solid var(--card-line); border-radius: 13px; display: flex; flex-direction: column; }
 .offer-head { display: flex; align-items: flex-start; padding-top: 18.8px; height: 90.2px; flex: none; }
 .badge { display: block; width: 52.7px; height: 52.7px; margin: 4.75px 0 0 11.95px; flex: none; overflow: visible; }
 .ask { margin-left: 11.95px; font: 800 34px/36.4px "Figtree", sans-serif; letter-spacing: -.57px; }
@@ -45,7 +45,7 @@ body[data-state="loading"] .card, body[data-state="loading"] .actions { visibili
 .ask .dash { margin: 0 1.2px 0 .9px; }
 .ask .line { display: block; white-space: nowrap; height: 36.4px; }
 
-.where { display: flex; align-items: flex-start; margin-top: 10.2px; height: 38.4px; flex: none; }
+.where { display: flex; align-items: flex-start; margin-top: 10.2px; min-height: 38.4px; flex: none; }
 .pin { display: block; width: 13.18px; height: 16.77px; margin: 1.4px 0 0 21.5px; flex: none; }
 .where-text { width: 300px; margin-left: 15.5px; font: 500 16.6px/19.2px "Figtree", sans-serif; letter-spacing: -.15px; }
 

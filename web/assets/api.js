@@ -4,6 +4,7 @@
  * Fixture mode (?fixture=1): answers come from web/fixtures/*.json, nothing leaves the browser.
  *   &mock=plan_changed   POST /api/plans/{id}/approve answers 409 {"reason":"plan changed", ...}
  *   &mock=not_eligible   POST /api/offers/{id}/accept answers 409 {"reason": ...}
+ *   &mock=ratio_open | ratio_covered   GET /api/today with the children-per-instructor banner open or covered
  * Every call resolves to {status, body}; network and parse failures resolve to status 0 with body.error,
  * so a screen always has something to show instead of failing silently.
  */
@@ -60,7 +61,9 @@
     const p = url.pathname;
     if (p === '/api/today') {
       const M = await mocks();
-      const file = (fx.scenario && M.today_by_scenario && M.today_by_scenario[fx.scenario]) || 'today.json';
+      let file = 'today.json';
+      MOCKS.forEach(k => { if (M.today_by_mock && M.today_by_mock[k]) file = M.today_by_mock[k]; });
+      if (fx.scenario && M.today_by_scenario && M.today_by_scenario[fx.scenario]) file = M.today_by_scenario[fx.scenario];
       const r = await fixtureFile(file);
       if (r.status === 200 && r.body.plan_b && fx.approved[r.body.plan_b.id]) {
         r.body.plan_b.state = 'approved';

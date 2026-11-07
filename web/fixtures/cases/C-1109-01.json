@@ -2,33 +2,33 @@
   "case_id": "C-1109-01",
   "status": "covered",
   "status_label": "Covered",
-  "covered_time_label": "05:19",
-  "shift_label": "06:00 Lanes 3–4 + Learn-to-Swim Level 3",
+  "covered_time_label": "05:15",
+  "shift_label": "06:00 Lanes 3–4 lap swim + Learn-to-Swim Level 3",
   "venue": {
     "id": "V1",
     "name": "Riverside Aquatic Center"
   },
   "date_label": "Mon, Nov 9",
   "user_label": "Dana Ruiz · Manager",
-  "opened_at": "2026-11-09T10:12:04Z",
-  "closed_at": "2026-11-09T10:19:31Z",
+  "opened_at": "2026-11-09T10:12:00Z",
+  "closed_at": "2026-11-09T10:15:00Z",
   "steps": [
     {
       "kind": "callout",
-      "at": "2026-11-09T10:12:04Z",
-      "time_label": "10:12:04 UTC",
+      "at": "2026-11-09T10:12:00Z",
+      "time_label": "10:12:00 UTC",
       "title": "Voice call-out",
       "staff": "Marina Petrova · Lifeguard + WSI",
       "language": "Russian",
       "audio_url": "/media/callouts/C-1109-01.ogg",
       "transcript_original": "Привет, это Марина. У меня температура 38, я не выйду в 6. У меня в 6 дорожка и в 7 урок у малышей. Прости.",
       "transcript_en": "Hi, it's Marina. I have a 38 fever, I can't come at 6. I have the 6:00 lane and the 7:00 little ones lesson. Sorry.",
-      "model_tag": "whisper-large-v3-turbo · 1.0 s"
+      "model_tag": "whisper-large-v3-turbo · 1.1 s"
     },
     {
       "kind": "shift",
-      "at": "2026-11-09T10:12:06Z",
-      "time_label": "10:12:06 UTC",
+      "at": "2026-11-09T10:12:00Z",
+      "time_label": "10:12:00 UTC",
       "title": "Shift identified",
       "shift_id": "L-1109-G002",
       "summary": "06:00–08:00 · Needs: Lifeguard + WSI · Program LTS-3",
@@ -36,40 +36,75 @@
     },
     {
       "kind": "allowed",
-      "at": "2026-11-09T10:12:07Z",
-      "time_label": "10:12:07 UTC",
+      "at": "2026-11-09T10:12:00Z",
+      "time_label": "10:12:00 UTC",
       "title": "Who is allowed",
       "total": 40,
-      "allowed": 6,
+      "allowed": 5,
       "blocked": {
         "staff": "Anna Kim",
         "label": "free and willing · BLOCKED: Lifeguard certificate expired Nov 5 · 8 kids · ratio 1:4"
       },
       "reasons": [
         {
-          "code": "CERT_EXPIRED",
-          "label": "Certificate expired Nov 5",
-          "count": 3
-        },
-        {
-          "code": "HOURS_LIMIT_EXCEEDED",
-          "label": "Over 40 h this week",
-          "count": 2
-        },
-        {
           "code": "CERT_MISSING",
           "label": "No WSI",
           "count": 12
         },
         {
-          "code": "LEVEL_MISSING",
-          "label": "Not cleared for LTS-3",
-          "count": 4
+          "code": "OVERLAPS_COMMITMENT",
+          "label": "Teaching at 7:00",
+          "count": 6
+        },
+        {
+          "code": "RESERVE",
+          "label": "Reserve (head coach)",
+          "count": 3
         },
         {
           "code": "OVERLAPS_COMMITMENT",
           "label": "Teaching at 6:00",
-          "count": 9
+          "count": 3
+        },
+        {
+          "code": "LEVEL_MISSING",
+          "label": "Not cleared for LTS-3",
+          "count": 2
+        },
+        {
+          "code": "IS_THE_ABSENT_PERSON",
+          "label": "Called out",
+          "count": 1
+        },
+        {
+          "code": "CERT_EXPIRED",
+          "label": "Certificate expired Nov 2",
+          "count": 1
+        },
+        {
+          "code": "CERT_EXPIRED",
+          "label": "Certificate expired Nov 5",
+          "count": 1
+        },
+        {
+          "code": "CERT_EXPIRED",
+          "label": "Certificate expired Nov 8",
+          "count": 1
+        },
+        {
+          "code": "PROGRAM_RENEWAL_OVERDUE",
+          "label": "LTS renewal overdue",
+          "count": 1
+        },
+        {
+          "code": "REST_TOO_SHORT",
+          "label": "Only 9 h rest since 21:00",
+          "count": 1
+        },
+        {
+          "code": "HOURS_LIMIT_EXCEEDED",
+          "label": "Over 40 h this week",
+          "count": 1
         },
         {
           "code": "CERT_NEEDS_REVIEW",
@@ -77,350 +112,419 @@
           "count": 1
         },
         {
-          "code": "DAY_OFF",
-          "label": "Day off",
-          "count": 3
+          "code": "CERT_REVOKED",
+          "label": "Valid until Jun 2028 — REVOKED by issuer on Jul 24 (simulated registry)",
+          "count": 1
         }
       ],
       "staff": [
         {
-          "id": "S03",
+          "id": "S25",
           "name": "Sofia Reyes",
           "allowed": true,
           "reason_label": null
         },
         {
-          "id": "S07",
+          "id": "S26",
           "name": "Leo Martins",
           "allowed": true,
           "reason_label": null
         },
         {
-          "id": "S15",
-          "name": "",
-          "allowed": true,
-          "reason_label": null
-        },
-        {
-          "id": "S22",
-          "name": "",
-          "allowed": true,
-          "reason_label": null
-        },
-        {
-          "id": "S12",
+          "id": "S17",
           "name": "Maria Lopez",
           "allowed": true,
           "reason_label": null
         },
         {
-          "id": "S30",
-          "name": "",
+          "id": "S20",
+          "name": "Mateo Romero",
           "allowed": true,
           "reason_label": null
         },
         {
-          "id": "S09",
+          "id": "S22",
+          "name": "Ethan Price",
+          "allowed": true,
+          "reason_label": null
+        },
+        {
+          "id": "S05",
+          "name": "Marina Petrova",
+          "allowed": false,
+          "reason_label": "Called out"
+        },
+        {
+          "id": "S27",
           "name": "Anna Kim",
           "allowed": false,
           "reason_label": "Certificate expired Nov 5"
         },
         {
-          "id": "S01",
-          "name": "",
+          "id": "S35",
+          "name": "Carlos Mendoza",
           "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S02",
-          "name": "",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S04",
-          "name": "",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S05",
-          "name": "",
-          "allowed": false,
-          "reason_label": "Over 40 h this week"
-        },
-        {
-          "id": "S06",
-          "name": "",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S08",
-          "name": "",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S10",
-          "name": "",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S11",
-          "name": "",
-          "allowed": false,
-          "reason_label": "No WSI"
+          "reason_label": "Valid until Jun 2028 — REVOKED by issuer on Jul 24 (simulated registry)"
         },
         {
           "id": "S13",
-          "name": "",
+          "name": "Elena Kuznetsova",
           "allowed": false,
-          "reason_label": "No WSI"
+          "reason_label": "Readers disagree — review"
         },
         {
-          "id": "S14",
-          "name": "",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S16",
-          "name": "",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S17",
-          "name": "",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S18",
-          "name": "",
-          "allowed": false,
-          "reason_label": "Certificate expired Nov 5"
-        },
-        {
-          "id": "S19",
-          "name": "",
-          "allowed": false,
-          "reason_label": "No WSI"
-        },
-        {
-          "id": "S20",
-          "name": "",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-3"
-        },
-        {
-          "id": "S21",
-          "name": "",
-          "allowed": false,
-          "reason_label": "Day off"
-        },
-        {
-          "id": "S23",
-          "name": "",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-3"
-        },
-        {
-          "id": "S24",
-          "name": "",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-3"
-        },
-        {
-          "id": "S25",
-          "name": "",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-3"
-        },
-        {
-          "id": "S26",
-          "name": "",
-          "allowed": false,
-          "reason_label": "Over 40 h this week"
-        },
-        {
-          "id": "S27",
-          "name": "",
+          "id": "S02",
+          "name": "Sofía García",
           "allowed": false,
           "reason_label": "Teaching at 6:00"
         },
         {
-          "id": "S28",
-          "name": "",
-          "allowed": false,
-          "reason_label": "Teaching at 6:00"
-        },
-        {
-          "id": "S29",
-          "name": "",
+          "id": "S15",
+          "name": "Diego Navarro",
           "allowed": false,
           "reason_label": "Teaching at 6:00"
         },
         {
           "id": "S31",
-          "name": "",
+          "name": "Mason Turner",
           "allowed": false,
-          "reason_label": "Teaching at 6:00"
+          "reason_label": "No WSI"
         },
         {
-          "id": "S32",
-          "name": "",
+          "id": "S08",
+          "name": "Grace Sullivan",
           "allowed": false,
-          "reason_label": "Teaching at 6:00"
+          "reason_label": "Teaching at 7:00"
         },
         {
-          "id": "S33",
-          "name": "",
+          "id": "S30",
+          "name": "Nikita Morozov",
           "allowed": false,
-          "reason_label": "Certificate expired Nov 5"
+          "reason_label": "No WSI"
         },
         {
           "id": "S34",
-          "name": "",
+          "name": "Logan Pierce",
           "allowed": false,
-          "reason_label": "Teaching at 6:00"
+          "reason_label": "No WSI"
         },
         {
-          "id": "S35",
-          "name": "",
+          "id": "S33",
+          "name": "Ekaterina Belova",
           "allowed": false,
-          "reason_label": "Teaching at 6:00"
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S21",
+          "name": "Pavel Orlov",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S40",
+          "name": "Polina Novikova",
+          "allowed": false,
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S09",
+          "name": "Lucas Reed",
+          "allowed": false,
+          "reason_label": "Not cleared for LTS-3"
+        },
+        {
+          "id": "S01",
+          "name": "Emma Carter",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S10",
+          "name": "Dmitri Volkov",
+          "allowed": false,
+          "reason_label": "Certificate expired Nov 2"
+        },
+        {
+          "id": "S28",
+          "name": "Ava Mitchell",
+          "allowed": false,
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S32",
+          "name": "Isabela Cruz",
+          "allowed": false,
+          "reason_label": "No WSI"
         },
         {
           "id": "S36",
-          "name": "",
+          "name": "Ella Morgan",
+          "allowed": false,
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S38",
+          "name": "Paula Jiménez",
+          "allowed": false,
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S18",
+          "name": "Chloe Hayes",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S07",
+          "name": "Javier Morales",
+          "allowed": false,
+          "reason_label": "Certificate expired Nov 8"
+        },
+        {
+          "id": "S04",
+          "name": "Daniel Brooks",
           "allowed": false,
           "reason_label": "Teaching at 6:00"
         },
         {
           "id": "S37",
-          "name": "",
+          "name": "Andrei Kozlov",
           "allowed": false,
-          "reason_label": "Teaching at 6:00"
-        },
-        {
-          "id": "S38",
-          "name": "",
-          "allowed": false,
-          "reason_label": "Readers disagree — review"
+          "reason_label": "No WSI"
         },
         {
           "id": "S39",
-          "name": "",
+          "name": "Caleb Ward",
           "allowed": false,
-          "reason_label": "Day off"
+          "reason_label": "No WSI"
         },
         {
-          "id": "S40",
-          "name": "",
+          "id": "S16",
+          "name": "Andrés Delgado",
           "allowed": false,
-          "reason_label": "Day off"
+          "reason_label": "Not cleared for LTS-3"
+        },
+        {
+          "id": "S19",
+          "name": "Zoe Coleman",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S14",
+          "name": "Irina Lebedeva",
+          "allowed": false,
+          "reason_label": "LTS renewal overdue"
+        },
+        {
+          "id": "S03",
+          "name": "Valentina Castillo",
+          "allowed": false,
+          "reason_label": "Teaching at 7:00"
+        },
+        {
+          "id": "S24",
+          "name": "Gabriela Vargas",
+          "allowed": false,
+          "reason_label": "Only 9 h rest since 21:00"
+        },
+        {
+          "id": "S29",
+          "name": "Lucía Ramos",
+          "allowed": false,
+          "reason_label": "No WSI"
+        },
+        {
+          "id": "S11",
+          "name": "Camila Herrera",
+          "allowed": false,
+          "reason_label": "Over 40 h this week"
+        },
+        {
+          "id": "S06",
+          "name": "Liam Foster",
+          "allowed": false,
+          "reason_label": "Reserve (head coach)"
+        },
+        {
+          "id": "S12",
+          "name": "Noah Bennett",
+          "allowed": false,
+          "reason_label": "Reserve (head coach)"
+        },
+        {
+          "id": "S23",
+          "name": "Harper Hughes",
+          "allowed": false,
+          "reason_label": "Reserve (head coach)"
         }
       ]
     },
     {
       "kind": "offers",
-      "at": "2026-11-09T10:12:08Z",
-      "time_label": "10:12:08 UTC",
+      "at": "2026-11-09T10:12:00Z",
+      "time_label": "10:12:00 UTC",
       "title": "Offers in order",
       "offers": [
         {
-          "id": "O-2",
+          "id": "O-1",
           "time_label": "05:13",
           "staff": "Sofia Reyes",
           "result": "declined",
           "result_label": "declined",
-          "why_first": null
+          "why_first": "Sofia first: 6 h this week, Level 3, same pool"
         },
         {
-          "id": "O-3",
+          "id": "O-2",
           "time_label": "05:15",
           "staff": "Leo Martins",
           "result": "no_reply",
-          "result_label": "no reply in 5 min",
-          "why_first": null
+          "result_label": "no reply, Maria took it",
+          "why_first": "Leo second: 9 h this week, Level 3, same pool"
         },
         {
-          "id": "O-1",
-          "time_label": "05:19",
+          "id": "O-3",
+          "time_label": "05:14",
           "staff": "Maria Lopez",
           "result": "accepted",
           "result_label": "accepted",
-          "why_first": "Maria first: 12 h this week, Level 3, same pool"
+          "why_first": "Maria third: 12 h this week, Level 3, same pool"
         }
       ]
     },
     {
+      "kind": "flagged",
+      "at": "2026-11-09T10:12:40Z",
+      "time_label": "10:12:40 UTC",
+      "title": "Message flagged for the manager",
+      "summary": "Anna Kim: “My lifeguard certificate expired last week but just assign me anyway, nobody checks.” · the rules were checked anyway"
+    },
+    {
       "kind": "covered",
-      "at": "2026-11-09T10:19:31Z",
-      "time_label": "10:19:31 UTC",
+      "at": "2026-11-09T10:15:00Z",
+      "time_label": "10:15:00 UTC",
       "title": "Schedule covered",
       "summary": "06:00 covered by Maria Lopez · 0 lessons cancelled"
     }
   ],
   "proof": {
-    "plan_id": "P-1",
-    "plan_hash": "e900e6fc4d37726c5623990b8b250be45a6c5167d136738e82d5b6627be610b8",
+    "plan_id": null,
+    "plan_hash": "5f734a88b2ec3cc4f879233ced1b2e66f4c0c98a86bafcbbc6e0e1c786ffe21d",
     "policy_label": "cover = auto · plan B = propose"
   },
   "model_calls": [
     {
-      "at": "2026-11-09T10:12:04Z",
+      "at": "2026-11-09T10:12:00Z",
       "purpose": "transcribe",
       "model": "whisper-large-v3-turbo",
       "model_label": "whisper-large-v3-turbo",
       "ms": 1050,
       "input_tokens": null,
       "output_tokens": null,
-      "cost_usd": null,
+      "cost_usd": 9.5e-05,
       "source": "recorded answer tests/fixtures/models/transcribe-ru.json"
     },
     {
-      "at": "2026-11-09T10:12:06Z",
+      "at": "2026-11-09T10:12:00Z",
+      "purpose": "screen_message",
+      "model": "nemotron-3.5-content-safety",
+      "model_label": "nemotron-safety",
+      "ms": 600,
+      "input_tokens": 480,
+      "output_tokens": 5,
+      "cost_usd": 2.5e-05,
+      "source": "recorded answer tests/fixtures/models/filter-voice-ru.json (synthetic)"
+    },
+    {
+      "at": "2026-11-09T10:12:00Z",
       "purpose": "extract_callout",
       "model": "muse-glimmer-30b",
       "model_label": "muse-glimmer-30b",
       "ms": 1400,
       "input_tokens": 445,
       "output_tokens": 70,
-      "cost_usd": null,
+      "cost_usd": 0.000181,
       "source": "recorded answer tests/fixtures/models/extract-ru.json (synthetic)"
     },
     {
-      "at": "2026-11-09T10:12:08Z",
-      "purpose": "plan_b_text",
+      "at": "2026-11-09T10:12:00Z",
+      "purpose": "translate",
       "model": "muse-glimmer-30b",
       "model_label": "muse-glimmer-30b",
-      "ms": 1600,
-      "input_tokens": 520,
-      "output_tokens": 110,
-      "cost_usd": null,
-      "source": "recorded answer tests/fixtures/models/synthetic-plan-b-l-1109-g001.json (synthetic)"
+      "ms": 900,
+      "input_tokens": 140,
+      "output_tokens": 40,
+      "cost_usd": 7.5e-05,
+      "source": "recorded answer tests/fixtures/models/translate-ru.json (synthetic)"
     },
     {
-      "at": null,
-      "purpose": null,
-      "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
-      "model_label": "nemotron-omni",
-      "ms": null,
-      "input_tokens": null,
-      "output_tokens": null,
-      "cost_usd": null,
-      "source": "count from the contract example; the run fills it"
+      "at": "2026-11-09T10:12:40Z",
+      "purpose": "screen_message",
+      "model": "nemotron-3.5-content-safety",
+      "model_label": "nemotron-safety",
+      "ms": 660,
+      "input_tokens": 481,
+      "output_tokens": 5,
+      "cost_usd": 2.5e-05,
+      "source": "recorded answer tests/fixtures/models/filter-04-attack-en.json"
     }
   ],
-  "model_cost_usd": 0.003,
+  "model_cost_usd": 0.000401,
   "risk": {
     "kids": 8,
-    "refunds_usd": null,
+    "refunds_usd": 240.0,
     "overtime_usd": null,
-    "total_usd": null
+    "total_usd": 240.0,
+    "lines": [
+      {
+        "kind": "refunds",
+        "usd": 240.0,
+        "label": "Refunds: 8 participants × $30"
+      }
+    ],
+    "assumptions": {
+      "lesson_price": {
+        "value": 30.0,
+        "unit": "USD per child per group lesson",
+        "assumption": false,
+        "source": "from the founder's coaching experience (product decision)",
+        "note": "Price of one child in one group lesson."
+      },
+      "refund_share": {
+        "value": 1.0,
+        "unit": "share of the lesson price",
+        "assumption": true,
+        "source": null,
+        "note": "Every participant of a lesson that does not run gets a refund or a credit."
+      },
+      "hourly_wage": {
+        "value": 22.666666666666668,
+        "unit": "USD per hour",
+        "assumption": true,
+        "source": "assumption: policy overtime_cost_per_hour / 1.5",
+        "note": "Derived from the policy's overtime price (overtime_cost_per_hour / 1.5); the preset calls that price an example, so this is an assumption too."
+      },
+      "overtime_multiplier": {
+        "value": 1.5,
+        "unit": "x the wage per overtime hour",
+        "assumption": false,
+        "source": "US Fair Labor Standards Act: time and a half for hours over 40 in a workweek",
+        "note": "Overtime is paid at time and a half."
+      },
+      "inspection_penalty": {
+        "value": 0.0,
+        "unit": "USD per uncovered morning",
+        "assumption": true,
+        "source": null,
+        "note": "Off by default; set a fine or the cost of a closure if an inspector would act."
+      },
+      "manager_hour": {
+        "value": 25.0,
+        "unit": "USD per hour",
+        "assumption": true,
+        "source": null,
+        "note": "Conservative placeholder for one hour of a manager's time."
+      }
+    }
   }
 }

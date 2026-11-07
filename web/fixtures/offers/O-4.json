@@ -1,0 +1,24 @@
+{
+  "offer_id": "O-4",
+  "state": "pending",
+  "staff": "Marina Petrova",
+  "shift_day": "today",
+  "shift_start": "07:00",
+  "shift_end": "07:30",
+  "venue": "Riverside Aquatic Center",
+  "shift_detail": "Teaching pool + Learn-to-Swim Level 1 (beginner) (6 kids)",
+  "needs_label": "Instructor",
+  "why": [
+    "WSI — valid to Feb 2028",
+    "CPR/AED — valid to Sep 2027",
+    "LTS-1 program — current",
+    "0 h this week"
+  ],
+  "why_first": "Marina first: 0 h this week, Level 1 (beginner), same pool",
+  "expires_in_s": 299,
+  "window_s": 300,
+  "manager": {
+    "name": "Dana Ruiz",
+    "role": "Manager"
+  }
+}

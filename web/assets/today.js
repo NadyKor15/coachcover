@@ -66,22 +66,6 @@
     if (s === 'amber' || s === 'gold' || s === 'review') return 'review';
     return 'plain';
   }
-  const MONTH = '(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)';
-  // Two lines per chip: label | detail + count. Optional r.detail wins; otherwise split before a trailing
-  // date or a trailing qualifier ("this week", "for LTS-3", "at 6:00"). Review chips: first word | rest | count.
-  function chipLines(r, tone) {
-    const label = String(r.label || '');
-    if (r.detail) return [label, String(r.detail)];
-    if (tone === 'review') {
-      const i = label.indexOf(' ');
-      return i > 0 ? [label.slice(0, i), label.slice(i + 1)] : [label, ''];
-    }
-    let m = label.match(new RegExp('^(.*\\S)\\s+(' + MONTH + '\\s+\\d{1,2})$'));
-    if (m) return [m[1], m[2]];
-    m = label.match(/^(.*\S)\s+((?:this|for|at|on|since|until|before|after)\s.*)$/);
-    if (m) return [m[1], m[2]];
-    return [label, ''];
-  }
   function fmtCents(c) {
     if (c < 0.1) return c.toFixed(2) + '¢';
     if (c < 10) return c.toFixed(1) + '¢';
@@ -152,7 +136,7 @@
       box.appendChild(m);
       if (kind === 'end' || !item.label) return;
       const label = String(item.label);
-      const name = names.find(nm => label.startsWith(nm + ' '));
+      const name = names.find(nm => label.startsWith(nm + ' ') || label.startsWith(nm + ':'));
       const c = el('div', 'tl-chip');
       c.dataset.slot = 'tl-label';
       c.style.left = x + 'px';
@@ -162,7 +146,7 @@
         const b = el(kind === 'accepted' ? 'b' : 'span', null, name);
         c.appendChild(b);
         c.appendChild(document.createElement('br'));
-        c.appendChild(document.createTextNode(label.slice(name.length + 1)));
+        c.appendChild(document.createTextNode(label.slice(name.length).replace(/^[:\s]+/, '')));
       } else {
         c.classList.add('one');
         c.style.top = '107px';
@@ -194,6 +178,60 @@
     play.dataset.src = c.audio_url || '';
   }
 
+  /* reason chips: chips with the same code and a common first words are one chip ("Certificate expired" ×3);
+     the exact labels stay in the chip's tooltip and on the case page */
+  const TRAILING_WORD = /\s+(at|on|for|since|until|before|after|in|by|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/;
+  function mergeReasons(reasons) {
+    const byCode = new Map();
+    reasons.forEach(r => { const k = r.code || r.label; if (!byCode.has(k)) byCode.set(k, []); byCode.get(k).push(r); });
+    const out = [];
+    byCode.forEach(list => {
+      if (list.length === 1) { out.push({ label: list[0].label, count: list[0].count, tone: toneOf(list[0].tone), code: list[0].code, labels: [list[0].label] }); return; }
+      const words = list.map(r => String(r.label).split(' '));
+      let n = 0;
+      while (words.every(w => w[n] !== undefined && w[n] === words[0][n])) n++;
+      let common = words[0].slice(0, n).join(' ').replace(TRAILING_WORD, '');
+      if (n < 1 || !common) { list.forEach(r => out.push({ label: r.label, count: r.count, tone: toneOf(r.tone), code: r.code, labels: [r.label] })); return; }
+      out.push({ label: common, count: list.reduce((a, r) => a + r.count, 0), tone: toneOf(list[0].tone), code: list[0].code,
+                 labels: list.map(r => r.label + ' ×' + r.count) });
+    });
+    return out;
+  }
+  function chipEl(g) {
+    const c = el('div', 'chip ' + g.tone);
+    c.dataset.slot = 'reason-chip';
+    c.dataset.code = g.code || '';
+    c.title = g.labels.join('\n');
+    c.appendChild(el('span', 'l', g.label + ' '));
+    const count = el('span', null, '×' + g.count);
+    count.dataset.slot = 'reason-count';
+    c.appendChild(count);
+    return c;
+  }
+  function rowsOf(box) { return new Set([...box.children].map(c => c.offsetTop)).size; }
+  function buildChips(box, groups, size, maxRows) {
+    box.textContent = '';
+    box.style.setProperty('--cfs', size + 'px');
+    groups.forEach(g => box.appendChild(chipEl(g)));
+    const rows = rowsOf(box);
+    if (rows === 1) {  // one row spans the card, as in the approved layout
+      const spare = 725 - box.scrollWidth;
+      const list = [...box.children];
+      if (spare > 0) list.forEach(c => { c.style.width = (c.getBoundingClientRect().width + spare / list.length).toFixed(2) + 'px'; });
+    }
+    return { fits: rows <= maxRows, rows };
+  }
+  function foldChips(box, groups, size, maxRows) {
+    for (let keep = groups.length - 1; keep > 0; keep--) {
+      const rest = groups.slice(keep);
+      const more = { label: '+' + rest.length + ' more', count: rest.reduce((a, g) => a + g.count, 0), tone: 'plain', code: 'MORE',
+                     labels: rest.map(g => g.labels.join('\n')) };
+      const r = buildChips(box, groups.slice(0, keep).concat([more]), size, maxRows);
+      if (r.fits) return r;
+    }
+    return buildChips(box, groups, size, maxRows);
+  }
+
   function renderStaff(d) {
     const e = d.eligibility || {};
     const staff = e.staff || [];
@@ -222,40 +260,14 @@
     } else tip.hidden = true;
 
     const chips = $('#chips');
-    chips.textContent = '';
-    (e.reasons || []).forEach(r => {
-      const tone = toneOf(r.tone);
-      const [l1, l2] = chipLines(r, tone);
-      const c = el('div', 'chip ' + tone);
-      c.dataset.slot = 'reason-chip';
-      c.dataset.code = r.code || '';
-      const count = el('span', null, '×' + r.count);
-      count.dataset.slot = 'reason-count';
-      c.appendChild(el('div', 'l', l1));
-      if (tone === 'review') {
-        if (l2) c.appendChild(el('div', 'l', l2));
-        const l3 = el('div', 'l'); l3.appendChild(count); c.appendChild(l3);
-      } else {
-        const line2 = el('div', 'l l2', l2 ? l2 + (tone === 'expired' ? '  ' : ' ') : '');
-        line2.appendChild(count);
-        c.appendChild(line2);
-      }
-      chips.appendChild(c);
-    });
-    // the chip row spans the card as in the approved layout: spare width goes evenly to the chips;
-    // a longer row (more or longer reasons) is scaled down to stay inside the card
-    chips.style.transform = '';
-    const room = 725;
-    const list = [...chips.children];
-    const spare = room - chips.scrollWidth;
-    if (spare > 0 && list.length) {
-      const add = spare / list.length;
-      list.forEach(c => { c.style.width = (c.getBoundingClientRect().width + add).toFixed(2) + 'px'; });
-    } else if (spare < 0) {
-      chips.style.transformOrigin = '0 0';
-      chips.style.transform = 'scale(' + (room / chips.scrollWidth).toFixed(3) + ')';
+    const groups = mergeReasons(e.reasons || []);
+    let layout = null;
+    for (const size of [14, 13.5, 13]) {
+      layout = buildChips(chips, groups, size, size >= 14 ? 2 : 3);
+      if (layout.fits) break;
     }
-
+    if (!layout.fits) layout = foldChips(chips, groups, 13, 3);
+    const chipsBottom = 216 + chips.offsetHeight;
     const fr = e.first_refusal;
     const line = $('#refusal'), quote = $('#refusalQuote');
     if (fr && (fr.staff || fr.label)) {
@@ -271,8 +283,10 @@
         t.appendChild(document.createTextNode(label.slice(k + 8)));
       } else t.appendChild(document.createTextNode(label));
       line.hidden = false;
+      line.style.top = (chipsBottom + 7) + 'px';
       quote.textContent = fr.contrast_quote || '';
       quote.hidden = !fr.contrast_quote;
+      quote.style.top = (chipsBottom + 7 + line.offsetHeight + 3) + 'px';
     } else { line.hidden = true; quote.hidden = true; }
   }
 
@@ -298,8 +312,9 @@
       const k = kindOf(o.result);
       const ico = OFF_ICON[k] != null ? k : 'other';
       // result words: the timeline label for the same person and time, else the result code in words
-      const tl = timeline.find(t => t.time_label === o.time_label && String(t.label || '').startsWith(o.staff + ' '));
-      const words = tl ? String(tl.label).slice(o.staff.length + 1) : humanResult(o.result);
+      const tl = timeline.find(t => t.time_label === o.time_label &&
+        (String(t.label || '').startsWith(o.staff + ' ') || String(t.label || '').startsWith(o.staff + ':')));
+      const words = tl ? String(tl.label).slice(o.staff.length).replace(/^[:\s]+/, '') : humanResult(o.result);
       const li = el('li', 'off-row ' + ico);
       li.dataset.slot = 'offer-row';
       li.dataset.offerId = o.id || '';
@@ -325,6 +340,7 @@
     const why = $('#whyFirst');
     if (accepted) {
       setText('why-first', accepted.why_first);
+      setText('why-name', 'why ' + String(accepted.staff || '').split(' ')[0]);
       const row = list.querySelector('[data-offer-id="' + CSS.escape(accepted.id || '') + '"]') || list.lastElementChild;
       why.style.top = (row.offsetTop + row.offsetHeight - 2) + 'px';
       why.hidden = false;
@@ -380,7 +396,8 @@
       const approved = st === 'approved' || st === 'done' || st === 'executed';
       box.classList.toggle('open', !approved);
       ico.innerHTML = approved ? CHECK_BANNER : BANG_BANNER;
-      add(null, (o.covered_time || '') + ' not covered yet');
+      const start = o.covered_time || (d.shift && String(d.shift.time_label || '').split('–')[0]) || '';
+      add(null, (start ? start + ' ' : '') + 'not covered yet');
       add('sep', ' · ');
       add(null, approved ? 'plan B approved' : p ? 'plan B needs your approval' : 'offers running');
     }
@@ -398,6 +415,7 @@
     else if (p.state === 'approved' || p.state === 'done' || p.state === 'executed') box.classList.add('approved');
     $('#planbHead').textContent = head;
     $('#planbBody').textContent = p.text || '';
+    fitPlanText();
     const canApprove = p.state === 'proposed' || p.state === 'pending';
     btn.className = 'btn' + (canApprove ? ' live' : (p.state === 'approved' || p.state === 'done' || p.state === 'executed') ? ' done' : '');
     btn.disabled = !canApprove || ui.busy;
@@ -406,19 +424,75 @@
     btn.dataset.hash = p.hash || '';
   }
 
+  // "If nobody had accepted: $240 (Refunds: 8 participants × $30)" → head, amount, detail
+  const UNCOVERED = /^(.*?):\s*(\$[\d,]+(?:\.\d+)?)\s*(?:\((.*)\))?\s*$/;
+  const stripRef = s => String(s || '').replace(/\s*\(TG \d+\)\s*$/, '');
+  function fitPlanText() {
+    const t = slot('planb-text');
+    t.style.fontSize = ''; t.style.lineHeight = '';
+    for (let size = 21; size >= 15; size -= 0.5) {
+      t.style.fontSize = size + 'px';
+      t.style.lineHeight = Math.round(size * 1.29) + 'px';
+      if (t.scrollHeight - parseFloat(getComputedStyle(t).paddingTop) <= Math.round(size * 1.29) * 2 + 2) return;
+    }
+  }
+
   function renderMoney(d) {
     const m = d.money || {};
     const box = $('#money');
     const hasCase = present(m.case_cost_cents);
-    const hasHour = present(m.manager_hour_usd);
-    const hasUnc = presentLabel(m.uncovered_morning_label) || present(m.uncovered_morning_usd);
-    box.hidden = !(hasCase || hasHour || hasUnc);
-    $('#moneyCase').hidden = !hasCase;
-    $('#moneyHour').hidden = !hasHour;
-    $('#moneyUncovered').hidden = !hasUnc;
+    const hasUnc = present(m.uncovered_morning_usd) || presentLabel(m.uncovered_morning_label);
+    box.hidden = !(hasCase || hasUnc);
+    $('#moneyCase').hidden = !(hasCase && hasUnc);
     setText('money-case', hasCase ? fmtCents(m.case_cost_cents) : '');
-    setText('money-manager-hour', hasHour ? fmtUsd(m.manager_hour_usd) : '');
-    setText('money-uncovered', hasUnc ? (presentLabel(m.uncovered_morning_label) ? m.uncovered_morning_label : fmtUsd(m.uncovered_morning_usd)) : '');
+    let head = '', big = '', detail = '';
+    if (hasUnc) {
+      const parts = presentLabel(m.uncovered_morning_label) ? String(m.uncovered_morning_label).match(UNCOVERED) : null;
+      head = parts ? parts[1] : 'If nobody had accepted';
+      big = parts ? parts[2] : fmtUsd(m.uncovered_morning_usd);
+      detail = parts ? (parts[3] || '') : (presentLabel(m.uncovered_morning_label) ? m.uncovered_morning_label : '');
+    } else if (hasCase) {
+      head = 'Cost of this cover';
+      big = fmtCents(m.case_cost_cents);
+      detail = 'in model calls';
+    }
+    setText('money-head', head);
+    setText('money-big', big);
+    setText('money-detail', detail);
+    slot('money-detail').hidden = !detail;
+    // where the price comes from: money.source_label, else the lesson price source of the case's own money card
+    const source = hasUnc ? (m.source_label || ui.priceSource || '') : '';
+    setText('money-source', stripRef(source));
+    slot('money-source').hidden = !source;
+    if (hasUnc && !m.source_label) loadPriceSource(d.callout && d.callout.case_id);
+  }
+
+  async function loadPriceSource(caseId) {
+    if (!caseId || ui.priceSourceFor === caseId) return;
+    ui.priceSourceFor = caseId;
+    const r = await CC.get('/api/cases/' + encodeURIComponent(caseId));
+    const a = r.status === 200 && r.body && r.body.risk && r.body.risk.assumptions;
+    const src = a && a.lesson_price && a.lesson_price.source;
+    ui.priceSource = src || '';
+    if (ui.data) renderMoney(ui.data);
+  }
+
+  function renderAlert(d) {
+    const box = $('#alert');
+    const r = d.ratio_alert, n = d.night_check;
+    const a = r ? { tone: r.tone || 'red', text: [r.label, r.action_label].filter(Boolean).join(' · '), caseId: r.case_id }
+      : n ? { tone: 'amber', text: n.label, caseId: n.case_id } : null;
+    box.hidden = !a || !a.text;
+    if (box.hidden) return;
+    box.className = 'alert ' + (['red', 'green', 'amber'].includes(a.tone) ? a.tone : 'amber');
+    setText('alert-text', a.text);
+    $('#alertMark').setAttribute('d', a.tone === 'green' ? 'M6.5 11.3l3.1 3 5.9-6.3' : 'M11 5.5v7M11 16.2v.3');
+    box.href = a.caseId ? 'case.html?id=' + encodeURIComponent(a.caseId) + (CC.FIXTURE ? '&fixture=1' : '') : '#';
+    // keep the banner clear of the title
+    const range = document.createRange();
+    range.selectNodeContents(document.querySelector('h1'));
+    const room = 1631 - range.getBoundingClientRect().width - 30;
+    box.style.maxWidth = Math.min(1000, room) + 'px';
   }
 
   function render(d) {
@@ -433,6 +507,7 @@
     renderOutcome(d);
     renderPlan(d);
     renderMoney(d);
+    renderAlert(d);
     setText('model-log', d.model_log && d.model_log.label);
   }
 
@@ -532,6 +607,8 @@
   document.querySelectorAll('.jbtn').forEach(b => b.addEventListener('click', () => runScenario(b.dataset.scenario)));
   $('#approve').addEventListener('click', approve);
   $('#play').addEventListener('click', togglePlay);
+  // chip rows and the plan B text are measured: lay out again once the web font is in
+  document.fonts.ready.then(() => { if (ui.data) render(ui.data); });
   ['#covered', '.band'].forEach(sel => {
     const box = $(sel);
     const go = () => { if (ui.caseHref) location.href = ui.caseHref; };
