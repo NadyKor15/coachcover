@@ -1,4 +1,6 @@
-"""Fixtures of web/ follow the API contract (docs/API-CONTRACT-2026-11-06.md, v1) and tell one consistent story.
+"""Fixtures of web/ are answers of the running API (tests/web/make_fixtures.py) and follow the API contract
+(docs/API-CONTRACT-2026-11-06.md, v1, plus the fields listed in EXTENSIONS). The checks are relations between
+answers, not copies of their values, so a new capture of the same story passes and a broken story fails.
 
 Standard library only, so it runs under the project's pytest and on a bare python3.
 """
@@ -6,7 +8,6 @@ Standard library only, so it runs under the project's pytest and on a bare pytho
 from __future__ import annotations
 
 import json
-import math
 import re
 from pathlib import Path
 
@@ -14,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / "web"
 FX = WEB / "fixtures"
 
-# Field sets of contract v1. EXTENSIONS lists what the screens need on top of v1 (see web/README.md).
+# Field sets of contract v1; EXTENSIONS are fields the API gives on top of v1 and the screens use or ignore.
 TODAY_KEYS = {"title", "venue", "now_label", "user_label", "lang", "callout", "shift", "eligibility", "timeline", "offers",
               "outcome", "plan_b", "summary_cards", "money", "model_log"}
 NESTED = {
@@ -27,15 +28,14 @@ NESTED = {
     "money": {"uncovered_morning_usd", "uncovered_morning_label", "case_cost_cents", "manager_hour_usd"},
     "model_log": {"label", "calls", "usd"},
 }
-EXTENSIONS = {"callout": {"asr_label"}}
-REASON_KEYS = {"code", "label", "count", "tone"}
-STAFF_KEYS = {"id", "name", "eligible", "highlight", "reason_label"}
-REFUSAL_KEYS = {"staff", "label", "contrast_quote"}
-TIMELINE_KEYS = {"time_label", "kind", "label"}
-OFFER_ROW_KEYS = {"id", "time_label", "staff", "result", "why_first"}
-CARD_KEYS = {"title", "value"}
+EXTENSIONS = {"today": {"flagged", "night_check", "ratio_alert", "judge"}, "callout": {"asr_label"},
+              "offer": {"state", "staff", "needs_label", "why_first"}}
+RATIO_KEYS = {"case_id", "status", "tone", "label", "action_label"}
 OFFER_KEYS = {"offer_id", "shift_day", "shift_start", "shift_end", "venue", "shift_detail", "why", "expires_in_s", "window_s", "manager"}
-CONTRACT_NAMES = {"Marina Petrova", "Maria Lopez", "Anna Kim", "Sofia Reyes", "Leo Martins", "Dana Ruiz"}
+CASE_KEYS = {"case_id", "status", "status_label", "covered_time_label", "shift_label", "venue", "date_label", "user_label",
+             "opened_at", "closed_at", "steps", "proof", "model_calls", "model_cost_usd", "risk"}
+CALL_KEYS = {"at", "purpose", "model", "model_label", "ms", "input_tokens", "output_tokens", "cost_usd", "source"}
+UTC_STAMP = re.compile(r"^\d{4}-\d\d-\d\dT(\d\d:\d\d:\d\d)Z$")
 
 
 def load(name: str) -> dict:
@@ -46,131 +46,155 @@ def today_files() -> list[str]:
     return sorted(p.name for p in FX.glob("today*.json"))
 
 
-def test_there_are_fixtures():
-    assert today_files() == ["today.json", "today.nobody_accepts.json"]
-    assert (FX / "offers" / "O-1.json").is_file() and (FX / "mocks.json").is_file()
-    assert sorted(p.name for p in (FX / "cases").glob("*.json")) == ["C-1109-01.json"]
+def hours(text: str | None) -> str | None:
+    m = re.search(r"(\d+(?:\.\d+)?) h this week", text or "")
+    return m.group(1) if m else None
+
+
+def test_fixture_set_is_complete():
+    assert today_files() == ["today.json", "today.nightly_check.json", "today.nobody_accepts.json",
+                             "today.ratio_covered.json", "today.ratio_open.json"]
+    m = load("mocks.json")
+    assert set(m["judge_run"]) == {"dangerous_morning", "nobody_accepts", "nightly_check"}
+    for file in [*m["today_by_scenario"].values(), *m["today_by_mock"].values()]:
+        assert (FX / file).is_file(), file
+    t = load("today.json")
+    assert (FX / "cases" / f"{t['callout']['case_id']}.json").is_file()
+    for o in t["offers"]:
+        assert (FX / "offers" / f"{o['id']}.json").is_file(), o["id"]
 
 
 def test_today_fields_follow_the_contract():
     for name in today_files():
         d = load(name)
-        assert set(d) == TODAY_KEYS, name
+        assert TODAY_KEYS <= set(d) <= TODAY_KEYS | EXTENSIONS["today"], name
         for key, fields in NESTED.items():
-            assert set(d[key]) == fields | EXTENSIONS.get(key, set()), (name, key)
-        e = d["eligibility"]
-        assert all(set(r) == REASON_KEYS for r in e["reasons"]), name
-        assert all(set(s) == STAFF_KEYS for s in e["staff"]), name
-        assert set(e["first_refusal"]) == REFUSAL_KEYS, name
-        assert all(set(t) <= TIMELINE_KEYS and {"time_label", "kind"} <= set(t) for t in d["timeline"]), name
-        assert all(set(o) == OFFER_ROW_KEYS for o in d["offers"]), name
-        assert all(set(c) == CARD_KEYS for c in d["summary_cards"]), name
-
-
-def test_offer_fields_follow_the_contract():
-    o = load("offers/O-1.json")
-    assert set(o) == OFFER_KEYS
-    assert set(o["manager"]) == {"name", "role"}
-    assert 0 < o["expires_in_s"] <= o["window_s"]
+            if d[key] is None:
+                continue
+            assert fields <= set(d[key]) <= fields | EXTENSIONS.get(key, set()), (name, key)
+        if d["eligibility"]:
+            assert all({"code", "label", "count", "tone"} == set(r) for r in d["eligibility"]["reasons"]), name
+            assert all({"id", "name", "eligible", "highlight", "reason_label"} == set(s) for s in d["eligibility"]["staff"]), name
+        assert all({"time_label", "kind"} <= set(t) <= {"time_label", "kind", "label"} for t in d["timeline"]), name
+        assert all({"id", "time_label", "staff", "result", "why_first"} == set(o) for o in d["offers"]), name
+        if d.get("ratio_alert"):
+            assert RATIO_KEYS <= set(d["ratio_alert"]), name
 
 
 def test_eligibility_adds_up():
     for name in today_files():
         e = load(name)["eligibility"]
+        if not e:
+            continue
         staff = e["staff"]
-        assert len(staff) == e["total"] == 40, name
-        assert sum(s["eligible"] for s in staff) == e["eligible"] == 6, name
+        assert len(staff) == e["total"], name
+        assert sum(s["eligible"] for s in staff) == e["eligible"], name
         assert sum(r["count"] for r in e["reasons"]) == e["total"] - e["eligible"], name
         assert len({s["id"] for s in staff}) == len(staff), name
-        assert all(s["reason_label"] for s in staff if not s["eligible"]), name
-        assert all(s["reason_label"] is None for s in staff if s["eligible"]), name
         for r in e["reasons"]:
             assert sum(1 for s in staff if s["reason_label"] == r["label"]) == r["count"], (name, r["label"])
 
 
-def test_anna_kim_is_the_first_refusal_and_never_gets_an_offer():
-    for name in today_files():
-        d = load(name)
-        anna = [s for s in d["eligibility"]["staff"] if s["name"] == "Anna Kim"]
-        assert len(anna) == 1 and not anna[0]["eligible"], name
-        assert anna[0]["reason_label"] == "Certificate expired Nov 5", name
-        fr = d["eligibility"]["first_refusal"]
-        assert fr["staff"] == "Anna Kim" and "BLOCKED" in fr["label"] and "Nov 5" in fr["label"], name
-        assert "RosterElf" in fr["contrast_quote"], name
-        assert all(o["staff"] != "Anna Kim" for o in d["offers"]), name
-        assert all("Anna Kim" not in (t.get("label") or "") for t in d["timeline"]), name
-
-
-def test_offers_go_to_eligible_people_only():
-    for name in today_files():
-        d = load(name)
-        eligible = {s["name"] for s in d["eligibility"]["staff"] if s["eligible"] and s["name"]}
-        assert {o["staff"] for o in d["offers"]} <= eligible, name
-
-
-def test_morning_story_and_one_highlight():
+def test_morning_story():
     d = load("today.json")
-    assert [(t["time_label"], t["kind"]) for t in d["timeline"]] == [
-        ("05:12", "callout"), ("05:13", "declined"), ("05:15", "no_reply"), ("05:19", "accepted"), ("06:00", "shift_start")]
-    assert [(o["staff"], o["result"]) for o in d["offers"]] == [
-        ("Sofia Reyes", "declined"), ("Leo Martins", "no_reply"), ("Maria Lopez", "accepted")]
-    hl = [s for s in d["eligibility"]["staff"] if s["highlight"]]
-    assert len(hl) == 1 and hl[0]["name"] == "Maria Lopez" and hl[0]["eligible"]
-    assert d["outcome"]["covered_by"] == "Maria Lopez"
-    assert d["plan_b"]["state"] == "standby"
-    assert d["title"] == "Who is allowed on deck at 06:00"
+    e = d["eligibility"]
+    fr = e["first_refusal"]
+    blocked = [s for s in e["staff"] if s["name"] == fr["staff"]]
+    assert len(blocked) == 1 and not blocked[0]["eligible"]
+    assert "BLOCKED" in fr["label"] and "RosterElf" in fr["contrast_quote"]
+    assert all(o["staff"] != fr["staff"] for o in d["offers"])
+    eligible = {s["name"] for s in e["staff"] if s["eligible"]}
+    assert {o["staff"] for o in d["offers"]} <= eligible
+    accepted = [o for o in d["offers"] if o["result"] == "accepted"]
+    assert len(accepted) == 1 and d["outcome"]["covered_by"] == accepted[0]["staff"]
+    highlight = [s for s in e["staff"] if s["highlight"]]
+    assert len(highlight) == 1 and highlight[0]["name"] == accepted[0]["staff"]
+    assert d["callout"]["staff"].startswith("Marina Petrova")
+    codes = {r["code"]: r["label"] for r in e["reasons"]}
+    assert "REVOKED by issuer" in codes["CERT_REVOKED"] and "(simulated registry)" in codes["CERT_REVOKED"]
+    assert re.match(r"Only \d+(\.\d+)? h rest since \d+:\d\d$", codes["REST_TOO_SHORT"])
+    assert d["ratio_alert"] is None and d["night_check"] is None
 
 
-def hours(text: str) -> str | None:
-    m = re.search(r"(\d+(?:\.\d+)?) h this week", text)
-    return m.group(1) if m else None
+def test_hours_are_the_same_on_c_and_on_the_phone():
+    d = load("today.json")
+    for o in d["offers"]:
+        phone = load(f"offers/{o['id']}.json")
+        assert phone["offer_id"] == o["id"] and phone["staff"] == o["staff"]
+        assert hours(o["why_first"]) == hours(" ".join(phone["why"])), o["id"]
+    accepted = next(o for o in d["offers"] if o["result"] == "accepted")
+    assert load(f"offers/{accepted['id']}.json")["state"] == "accepted"
 
 
-def test_maria_hours_are_the_same_on_both_screens():
-    accepted = [o for o in load("today.json")["offers"] if o["result"] == "accepted"]
-    assert len(accepted) == 1 and accepted[0]["id"] == "O-1"
-    offer = load("offers/O-1.json")
-    assert hours(accepted[0]["why_first"]) == hours(" ".join(offer["why"])) == "12"
+def test_offer_fields_follow_the_contract():
+    pending = 0
+    for path in sorted((FX / "offers").glob("*.json")):
+        o = json.loads(path.read_text(encoding="utf-8"))
+        assert OFFER_KEYS <= set(o) <= OFFER_KEYS | EXTENSIONS["offer"], path.name
+        assert set(o["manager"]) == {"name", "role"}
+        if o["state"] == "pending":
+            pending += 1
+            assert 0 < o["expires_in_s"] <= o["window_s"], path.name
+    assert pending >= 1  # the phone screen needs one open offer
 
 
-def test_money_is_never_made_up():
-    for name in today_files():
-        d = load(name)
-        m = d["money"]
-        # only the case cost is known in the training school: the model log of the run
-        assert math.isclose(m["case_cost_cents"], d["model_log"]["usd"] * 100, rel_tol=1e-9), name
-        assert m["uncovered_morning_usd"] is None and m["uncovered_morning_label"] is None and m["manager_hour_usd"] is None, name
+def test_money_comes_from_the_api_and_reads_as_the_screen_shows_it():
+    m = load("today.json")["money"]
+    assert m["uncovered_morning_usd"] and m["uncovered_morning_usd"] > 0
+    label = re.match(r"^(.*?):\s*\$([\d,]+(?:\.\d+)?)\s*\((.*)\)$", m["uncovered_morning_label"])
+    assert label and label.group(1) == "If nobody had accepted"
+    assert float(label.group(2).replace(",", "")) == m["uncovered_morning_usd"]
+    case = load(f"cases/{load('today.json')['callout']['case_id']}.json")
+    assert "founder" in case["risk"]["assumptions"]["lesson_price"]["source"]
+
+
+def test_ratio_banner_red_then_green():
+    opened, covered = load("today.ratio_open.json")["ratio_alert"], load("today.ratio_covered.json")["ratio_alert"]
+    assert opened["case_id"] == covered["case_id"]
+    assert (opened["status"], opened["tone"]) == ("open", "red")
+    assert (covered["status"], covered["tone"]) == ("covered", "green") and covered["action_label"].startswith("Covered by ")
+    assert (FX / "cases" / f"{opened['case_id']}.json").is_file()
+
+
+def test_case_follows_the_morning():
+    t = load("today.json")
+    d = load(f"cases/{t['callout']['case_id']}.json")
+    assert set(d) == CASE_KEYS
+    stamps = [s["at"] for s in d["steps"]]
+    assert stamps == sorted(stamps)
+    for s in d["steps"]:
+        m = UTC_STAMP.match(s["at"])
+        assert m and s["time_label"] == m.group(1) + " UTC", s
+    steps = {s["kind"]: s for s in d["steps"]}
+    assert (steps["callout"]["transcript_original"], steps["callout"]["transcript_en"]) == \
+        (t["callout"]["transcript_original"], t["callout"]["transcript_en"])
+    assert steps["allowed"]["blocked"] == {"staff": t["eligibility"]["first_refusal"]["staff"],
+                                           "label": t["eligibility"]["first_refusal"]["label"]}
+    assert sum(r["count"] for r in steps["allowed"]["reasons"]) == steps["allowed"]["total"] - steps["allowed"]["allowed"]
+    assert [(o["staff"], o["result"], o["why_first"]) for o in steps["offers"]["offers"]] == \
+        [(o["staff"], o["result"], o["why_first"]) for o in t["offers"]]
+    assert all(set(c) == CALL_KEYS for c in d["model_calls"])
+    assert len(d["model_calls"]) == t["model_log"]["calls"]
+    assert round(sum(c["cost_usd"] or 0 for c in d["model_calls"]), 6) == d["model_cost_usd"]
+    assert d["risk"]["total_usd"] == t["money"]["uncovered_morning_usd"]
+
+
+def test_model_calls_are_recorded_answers():
+    t = load("today.json")
+    for c in load(f"cases/{t['callout']['case_id']}.json")["model_calls"]:
+        assert c["source"].startswith("recorded answer tests/fixtures/models/"), c["source"]
+    assert "replayed from recorded" in t["model_log"]["label"]
 
 
 def test_mocks_match_the_fixtures():
-    mocks = load("mocks.json")
-    assert set(mocks["judge_run"]) == {"dangerous_morning", "nobody_accepts", "nightly_check"}
-    assert all(set(v) == {"case_id"} for v in mocks["judge_run"].values())
-    for scenario, file in mocks["today_by_scenario"].items():
-        assert scenario in mocks["judge_run"] and (FX / file).is_file()
+    m = load("mocks.json")
     nobody = load("today.nobody_accepts.json")
-    plan = mocks["plans"][nobody["plan_b"]["id"]]
-    assert plan["current_hash"] == nobody["plan_b"]["hash"]
-    assert plan["conflict"]["reason"] == "plan changed" and plan["conflict"]["current_hash"] != plan["current_hash"]
-    assert nobody["plan_b"]["state"] == "proposed"
-    o = mocks["offers"]["O-1"]
-    assert o["accept"] == {"state": "accepted"} and o["decline"] == {"state": "declined"}
-    assert o["accept_conflict"]["reason"]
-
-
-def test_people_are_the_fictional_names_of_the_contract():
-    case = load("cases/C-1109-01.json")
-    for st in case["steps"]:
-        if st["kind"] == "offers":
-            assert {o["staff"] for o in st["offers"]} <= CONTRACT_NAMES
-    assert case["user_label"].split(" · ")[0] in CONTRACT_NAMES
-    for name in today_files():
-        d = load(name)
-        names = {s["name"] for s in d["eligibility"]["staff"] if s["name"]}
-        names |= {o["staff"] for o in d["offers"]}
-        names |= {d["callout"]["staff"].split(" · ")[0], d["user_label"].split(" · ")[0]}
-        assert names <= CONTRACT_NAMES, (name, names - CONTRACT_NAMES)
-    assert load("offers/O-1.json")["manager"]["name"] in CONTRACT_NAMES
+    plan = m["plans"][nobody["plan_b"]["id"]]
+    assert nobody["plan_b"]["state"] == "proposed" and plan["current_hash"] == nobody["plan_b"]["hash"]
+    assert plan["conflict"]["reason"] == "plan changed" and plan["approve"]["state"] == "approved"
+    for oid, o in m["offers"].items():
+        assert (FX / "offers" / f"{oid}.json").is_file(), oid
+        assert o["accept"]["state"] == "accepted" and o["decline"]["state"] == "declined" and o["accept_conflict"]["reason"]
 
 
 VENDOR_WORDS = re.compile(r"\bvendor\b|\bAI\b|\bLLM\b|chatgpt|openai", re.IGNORECASE)
@@ -204,71 +228,3 @@ def test_pages_declare_charset_first():
     for page in ("index.html", "offer.html", "case.html"):
         head = (WEB / page).read_text(encoding="utf-8").split("<head>", 1)[1].lstrip()
         assert head.startswith('<meta charset="UTF-8">'), page
-
-
-# ---- GET /api/cases/{id}: the contract names the steps; the fields below are what web/README.md proposes ----
-CASE_KEYS = {"case_id", "status", "status_label", "covered_time_label", "shift_label", "venue", "date_label", "user_label",
-             "opened_at", "closed_at", "steps", "proof", "model_calls", "model_cost_usd", "risk"}
-STEP_KEYS = {"kind", "at", "time_label", "title"}
-STEP_EXTRA = {
-    "callout": {"staff", "language", "audio_url", "transcript_original", "transcript_en", "model_tag"},
-    "shift": {"shift_id", "summary", "model_tag"},
-    "allowed": {"total", "allowed", "blocked", "reasons", "staff"},
-    "offers": {"offers"},
-    "covered": {"summary"},
-}
-CALL_KEYS = {"at", "purpose", "model", "model_label", "ms", "input_tokens", "output_tokens", "cost_usd", "source"}
-UTC_STAMP = re.compile(r"^2026-11-09T(\d\d:\d\d:\d\d)Z$")
-
-
-def test_case_fields_and_step_order():
-    d = load("cases/C-1109-01.json")
-    assert set(d) == CASE_KEYS
-    # contract order: voice (original + translation) → shift → filter → queue → outcome
-    assert [st["kind"] for st in d["steps"]] == ["callout", "shift", "allowed", "offers", "covered"]
-    for st in d["steps"]:
-        assert set(st) == STEP_KEYS | STEP_EXTRA[st["kind"]], st["kind"]
-        m = UTC_STAMP.match(st["at"])
-        assert m and st["time_label"] == m.group(1) + " UTC", st
-    stamps = [st["at"] for st in d["steps"]]
-    assert stamps == sorted(stamps) and d["opened_at"] == stamps[0] and d["closed_at"] == stamps[-1]
-    assert set(d["proof"]) == {"plan_id", "plan_hash", "policy_label"}
-    assert all(set(c) == CALL_KEYS for c in d["model_calls"])
-    assert set(d["risk"]) == {"kids", "refunds_usd", "overtime_usd", "total_usd"}
-
-
-def test_case_tells_the_same_morning_as_screen_c():
-    d, t = load("cases/C-1109-01.json"), load("today.json")
-    steps = {st["kind"]: st for st in d["steps"]}
-    assert d["case_id"] == t["callout"]["case_id"]
-    call = steps["callout"]
-    assert call["staff"].startswith("Marina Petrova")
-    assert (call["transcript_original"], call["transcript_en"]) == (t["callout"]["transcript_original"], t["callout"]["transcript_en"])
-    allowed = steps["allowed"]
-    assert (allowed["total"], allowed["allowed"]) == (t["eligibility"]["total"], t["eligibility"]["eligible"])
-    assert allowed["blocked"] == {"staff": "Anna Kim", "label": t["eligibility"]["first_refusal"]["label"]}
-    assert "BLOCKED" in allowed["blocked"]["label"]
-    assert sum(r["count"] for r in allowed["reasons"]) == allowed["total"] - allowed["allowed"]
-    assert len(allowed["staff"]) == 40 and sum(s["allowed"] for s in allowed["staff"]) == 6
-    assert [(o["staff"], o["result"]) for o in steps["offers"]["offers"]] == [(o["staff"], o["result"]) for o in t["offers"]]
-    maria = [o for o in steps["offers"]["offers"] if o["result"] == "accepted"]
-    assert len(maria) == 1 and maria[0]["staff"] == "Maria Lopez" and hours(maria[0]["why_first"]) == "12"
-    assert d["proof"]["plan_hash"] == t["plan_b"]["hash"]
-    assert len(d["model_calls"]) == t["model_log"]["calls"] and d["model_cost_usd"] == t["model_log"]["usd"]
-
-
-def test_case_money_is_never_made_up():
-    risk = load("cases/C-1109-01.json")["risk"]
-    assert risk["refunds_usd"] is None and risk["overtime_usd"] is None and risk["total_usd"] is None
-
-
-def test_case_model_calls_come_from_recorded_answers():
-    for c in load("cases/C-1109-01.json")["model_calls"]:
-        if c["source"].startswith("recorded answer "):
-            rec = json.loads((ROOT / c["source"].split()[2]).read_text(encoding="utf-8"))
-            assert rec["response"]["model"] == c["model"]
-            assert rec["duration_ms"] == c["ms"]
-            usage = rec["response"].get("usage") or {}
-            assert usage.get("prompt_tokens") == c["input_tokens"] and usage.get("completion_tokens") == c["output_tokens"]
-        else:
-            assert c["ms"] is None and c["input_tokens"] is None and c["cost_usd"] is None

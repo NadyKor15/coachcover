@@ -69,8 +69,8 @@
         body.appendChild(row);
       });
     },
-    covered(s, body) { if (s.summary) body.appendChild(line('first', s.summary, 'covered-summary')); },
-    plan_b(s, body) { if (s.summary) body.appendChild(line('first', s.summary, 'plan-summary')); }
+    covered(s, body) { if (s.summary) body.appendChild(line('first wrap', s.summary, 'covered-summary')); },
+    plan_b(s, body) { if (s.summary) body.appendChild(line('first wrap', s.summary, 'plan-summary')); }
   };
 
   function renderSteps(steps) {
@@ -138,6 +138,20 @@
     setText('risk-refunds', present(r.refunds_usd) ? fmtUsd(r.refunds_usd) : '');
     setText('risk-overtime', present(r.overtime_usd) ? fmtUsd(r.overtime_usd) : '');
     setText('risk-total', present(r.total_usd) ? fmtUsd(r.total_usd) : '');
+    // what the sums rest on: the cost lines and where the lesson price comes from (internal message refs dropped)
+    const lines = (r.lines || []).map(l => l.label).filter(Boolean);
+    const lp = r.assumptions && r.assumptions.lesson_price;
+    const src = lp && lp.source ? String(lp.source).replace(/\s*\(TG \d+\)\s*$/, '') : '';
+    const note = lines.concat(src ? [src] : []).join(' · ');
+    setText('risk-source', note);
+    document.querySelector('[data-slot="risk-source"]').hidden = !note;
+  }
+
+  // a long shift name: the title steps down in size (to 26 px) before it would be cut
+  function fitTitle() {
+    const t = $('.case-title');
+    t.style.fontSize = '';
+    for (let size = 34; size >= 26 && t.scrollWidth > t.clientWidth + 1; size -= 1) t.style.fontSize = size + 'px';
   }
 
   function render(d) {
@@ -152,6 +166,7 @@
     $('#pillSep').hidden = !d.covered_time_label;
     $('#pill').classList.toggle('open', d.status !== 'covered');
     renderSteps(d.steps || []);
+    fitTitle();
     renderProof(d);
     renderRisk(d);
     const dl = $('#download');
@@ -183,6 +198,7 @@
     }
   }
 
+  document.fonts.ready.then(() => { if (document.body.dataset.state === 'ready') fitTitle(); });
   document.querySelectorAll('.nav li[data-href]').forEach(li => li.addEventListener('click', () => {
     location.href = li.dataset.href + (CC.FIXTURE ? '?fixture=1' : '');
   }));

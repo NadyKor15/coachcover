@@ -58,6 +58,10 @@
 
 <main class="main">
   <h1 data-slot="title"></h1>
+  <a class="alert" id="alert" data-slot="alert" hidden>
+    <svg class="alert-ico" width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="10.5" fill="currentColor"/><path id="alertMark" d="M11 5.5v7M11 16.2v.3" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
+    <span data-slot="alert-text"></span>
+  </a>
 
   <section class="band" aria-label="Call-out timeline">
     <img class="band-photo" src="assets/pool-band.png" alt="">
@@ -72,18 +76,17 @@
         <div class="co-title">Call-out · <span data-slot="callout-time"></span></div>
         <div class="lang-pill" data-slot="callout-language"></div>
       </div>
-      <div class="co-sub"><span data-slot="callout-staff"></span>
-        <span class="asr" id="asr" hidden>
-          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="#5f6164" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="6" y="1.5" width="6" height="10" rx="3"/><path d="M3 8.5a6 6 0 0 0 12 0M9 14.5v2.5"/></svg>
-          <span data-slot="callout-asr"></span>
-        </span>
-      </div>
+      <div class="co-sub" data-slot="callout-staff"></div>
       <div class="voice">
         <button class="play" id="play" type="button" aria-label="Play voice message">
           <svg width="20" height="22" viewBox="0 0 20 22" fill="#fff"><path d="M3 2.2v17.6c0 .9 1 1.5 1.8 1L18 12c.8-.5.8-1.6 0-2.1L4.8 1.2C4 .7 3 1.3 3 2.2z"/></svg>
         </button>
         <svg class="wave" width="365" height="48" viewBox="0 0 365 48" aria-hidden="true"><rect x="5.4" y="19.6" width="3" height="8.9" rx="1.5"/><rect x="13.2" y="12.8" width="3" height="22.4" rx="1.5"/><rect x="20.5" y="17.9" width="3" height="12.3" rx="1.5"/><rect x="27.7" y="16.8" width="3" height="14.5" rx="1.5"/><rect x="35.6" y="12.8" width="3" height="22.4" rx="1.5"/><rect x="43.4" y="3.9" width="3" height="40.3" rx="1.5"/><rect x="50.7" y="9.4" width="3" height="29.1" rx="1.5"/><rect x="57.9" y="13.9" width="3" height="20.1" rx="1.5"/><rect x="65.8" y="18.9" width="3" height="10.1" rx="1.5"/><rect x="73.6" y="16.8" width="3" height="14.5" rx="1.5"/><rect x="81.4" y="16.1" width="3" height="15.7" rx="1.5"/><rect x="89.2" y="17.3" width="3" height="13.4" rx="1.5"/><rect x="96.0" y="11.2" width="3" height="25.7" rx="1.5"/><rect x="103.8" y="10.6" width="3" height="26.8" rx="1.5"/><rect x="111.6" y="1.1" width="3" height="45.8" rx="1.5"/><rect x="119.4" y="7.8" width="3" height="32.4" rx="1.5"/><rect x="127.3" y="11.2" width="3" height="25.7" rx="1.5"/><rect x="135.1" y="6.6" width="3" height="34.7" rx="1.5"/><rect x="142.4" y="12.8" width="3" height="22.4" rx="1.5"/><rect x="150.2" y="16.8" width="3" height="14.5" rx="1.5"/><rect x="157.5" y="18.9" width="3" height="10.1" rx="1.5"/><rect x="166.4" y="17.9" width="3" height="12.3" rx="1.5"/><rect x="174.2" y="17.9" width="3" height="12.3" rx="1.5"/><rect x="182.1" y="12.2" width="3" height="23.5" rx="1.5"/><rect x="189.9" y="8.9" width="3" height="30.2" rx="1.5"/><rect x="197.2" y="3.9" width="3" height="40.3" rx="1.5"/><rect x="204.4" y="10.0" width="3" height="28.0" rx="1.5"/><rect x="212.2" y="15.6" width="3" height="16.8" rx="1.5"/><rect x="220.1" y="17.3" width="3" height="13.4" rx="1.5"/><rect x="227.3" y="19.6" width="3" height="8.9" rx="1.5"/><rect x="234.6" y="17.9" width="3" height="12.3" rx="1.5" opacity="0.80"/><rect x="242.4" y="15.1" width="3" height="17.9" rx="1.5" opacity="0.78"/><rect x="250.8" y="15.1" width="3" height="17.9" rx="1.5" opacity="0.66"/><rect x="258.1" y="7.2" width="3" height="33.5" rx="1.5" opacity="0.66"/><rect x="265.9" y="9.4" width="3" height="29.1" rx="1.5" opacity="0.62"/><rect x="273.8" y="13.9" width="3" height="20.1" rx="1.5" opacity="0.55"/><rect x="281.6" y="10.6" width="3" height="26.8" rx="1.5" opacity="0.50"/><rect x="288.8" y="16.1" width="3" height="15.7" rx="1.5" opacity="0.56"/><rect x="295.6" y="18.9" width="3" height="10.1" rx="1.5" opacity="0.45"/><rect x="302.8" y="19.6" width="3" height="8.9" rx="1.5" opacity="0.46"/><rect x="310.1" y="16.1" width="3" height="15.7" rx="1.5" opacity="0.44"/><rect x="317.4" y="16.8" width="3" height="14.5" rx="1.5" opacity="0.48"/><rect x="324.1" y="11.2" width="3" height="25.7" rx="1.5" opacity="0.42"/><rect x="332.5" y="14.5" width="3" height="19.0" rx="1.5" opacity="0.40"/><rect x="339.7" y="18.9" width="3" height="10.1" rx="1.5" opacity="0.38"/><rect x="346.4" y="21.2" width="3" height="5.6" rx="1.5" opacity="0.33"/><rect x="351.5" y="21.8" width="3" height="4.5" rx="1.5" opacity="0.25"/><rect x="358.7" y="21.2" width="3" height="5.6" rx="1.5" opacity="0.30"/></svg>
         <span class="dur" data-slot="callout-duration"></span>
+      </div>
+      <div class="asr" id="asr" hidden>
+        <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="#5f6164" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="6" y="1.5" width="6" height="10" rx="3"/><path d="M3 8.5a6 6 0 0 0 12 0M9 14.5v2.5"/></svg>
+        <span data-slot="callout-asr"></span>
       </div>
       <div class="tx">
         <div class="tx-col">
@@ -131,7 +134,7 @@
     <section class="card offers">
       <div class="off-rail" id="offRail"></div>
       <ol class="off-list" id="offers"></ol>
-      <div class="why-first" id="whyFirst" hidden><span class="k">why first</span><span data-slot="why-first"></span></div>
+      <div class="why-first" id="whyFirst" hidden><span class="k" data-slot="why-name">why first</span><span data-slot="why-first"></span></div>
     </section>
 
     <!-- right column -->
@@ -153,10 +156,11 @@
   </div>
 
   <section class="card money" id="money" data-slot="money" hidden>
-    <div class="mh">Cost of this cover</div>
-    <div class="mv" id="moneyCase" hidden><span class="big" data-slot="money-case"></span><span class="unit">in model calls</span></div>
-    <div class="ml" id="moneyHour" hidden>vs <b data-slot="money-manager-hour"></b> for one manager hour</div>
-    <div class="ml" id="moneyUncovered" hidden>Uncovered morning: <b data-slot="money-uncovered"></b></div>
+    <div class="mh" data-slot="money-head"></div>
+    <div class="big" data-slot="money-big"></div>
+    <div class="ml" data-slot="money-detail"></div>
+    <div class="ms" data-slot="money-source"></div>
+    <div class="ml" id="moneyCase">This cover: <b data-slot="money-case"></b> in model calls</div>
   </section>
 </main>
 

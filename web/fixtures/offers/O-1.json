@@ -1,17 +1,22 @@
 {
   "offer_id": "O-1",
+  "state": "declined",
+  "staff": "Sofia Reyes",
   "shift_day": "today",
   "shift_start": "06:00",
   "shift_end": "08:00",
   "venue": "Riverside Aquatic Center",
-  "shift_detail": "Lanes 3–4 + Learn-to-Swim Level 3 (8 kids)",
+  "shift_detail": "Lanes 3–4 lap swim + Learn-to-Swim Level 3 (8 kids)",
+  "needs_label": "Lifeguard + WSI",
   "why": [
-    "Lifeguard — valid to Mar 2027",
-    "WSI — valid",
+    "Lifeguard — valid to Jun 2028",
+    "WSI — valid to Feb 2028",
+    "CPR/AED — valid to Sep 2027",
     "LTS-3 program — current",
-    "12 h this week"
+    "6 h this week"
   ],
-  "expires_in_s": 252,
+  "why_first": "Sofia first: 6 h this week, Level 3, same pool",
+  "expires_in_s": 0,
   "window_s": 300,
   "manager": {
     "name": "Dana Ruiz",
