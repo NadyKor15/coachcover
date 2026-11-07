@@ -332,3 +332,15 @@ def test_the_case_page_shows_the_schools_local_time(morning):
     assert ranked["top"][3:] == ["Mateo fourth: 15 h this week, Preschool, 21.7 km away",
                                  "Ethan fifth: 16 h this week, Preschool, 21.7 km away"]
     assert queue == [] or queue[0] == "Sofia first: 6 h this week, Preschool, same pool"
+
+
+def test_a_yes_too_close_to_the_start_goes_to_the_manager_not_the_family(morning):
+    conn, p, cases = morning
+    case = cases[PRIVATE]
+    conn.execute("UPDATE offer SET expires_at = %s WHERE case_id = %s", (at("16:30"), case))
+    p.respond(offers(conn, case)["S18"], True, at("16:05"))  # under an hour before 17:00: no time to ask
+    assert asks(conn, case) == [] and statuses(conn, case)[0] == ("S18", "withdrawn")
+    assert "family_too_late" in kinds(conn, case)
+    plan = conn.execute("SELECT snapshot FROM plan_b WHERE case_id = %s AND status = 'proposed'", (case,)).fetchone()[0]
+    assert [o["kind"] for o in plan["options"]] == ["reschedule_own", "credit"]
+    assert conn.execute("SELECT staff_id, status FROM shift WHERE id = %s", (PRIVATE,)).fetchone() == (None, "open")

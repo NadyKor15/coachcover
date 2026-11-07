@@ -15,7 +15,12 @@ Order of calls (each judge run resets the training school):
   2. judge nobody_accepts → today.nobody_accepts.json; approve the plan with a wrong hash (real 409), then with its own
      hash (real 200).
   3. judge nightly_check → today.nightly_check.json.
-  4. judge dangerous_morning again, so the stack is left on the main story.
+  4. private lessons (--setup-cmd): Marina's 17:00 private lesson with Lily, Chloe said yes, the family is asked →
+     clients/Q-1.asked.json; the family's real answers: yes → clients/Q-1.yes.json; no → clients/Q-1.no.json and the
+     second question clients/Q-2.asked.json; yes to it → clients/Q-2.moved.json; no to it → clients/Q-2.credit.json; an
+     answer to a closed question → the real 409 (clients/mocks.json). Judge private_lesson and private_declined →
+     today.private_*.json, cases/C-1109-02.private_*.json, the coach's offer page.
+  5. judge dangerous_morning again, so the stack is left on the main story.
 Standard library only.
 """
 
@@ -95,6 +100,55 @@ for i, (day, begin, finish) in enumerate((("2026-11-15", "06:00", "14:00"), ("20
                  " %s::timestamp AT TIME ZONE 'America/New_York', 'N01')",
                  (f"N-EXTRA-{i}", role, f"{day} {begin}", f"{day} {finish}"))
 """
+
+
+# a private lesson: Marina's call-out, Chloe says yes to Lily's 17:00 lesson, the family is asked (judge private_* until
+# the family's answer); the clock stops just after, so the question is still open
+PRIVATE_ASKED = """
+import os
+from datetime import timedelta
+import psycopg
+from coachcover import demo
+from coachcover.models import DbLedger, ModelClient
+from coachcover.pipeline import Pipeline
+from coachcover.seed import NOW, POLICY_ID
+conn = psycopg.connect(os.environ["DATABASE_URL"], autocommit=True)
+demo.reset_school(conn)
+p = Pipeline(conn, ModelClient(DbLedger(conn), mode="replay"), POLICY_ID)
+demo._private_morning(p, conn)
+demo.set_clock(conn, NOW + timedelta(minutes=5), speed=0.01)  # nearly stopped: the question stays open
+"""
+
+
+def private_fixtures(base: str, setup_cmd: list[str], save, mocks: dict) -> None:
+    client = {"_note": "Answers of the family's page, captured by make_fixtures.py: real 200 and 409 answers."}
+    run_setup(setup_cmd, PRIVATE_ASKED)
+    save("clients/Q-1.asked.json", ok(base, "GET", "/api/client/Q-1"))
+    client["yes"] = ok(base, "POST", "/api/client/Q-1/respond", {"accept": True})
+    save("clients/Q-1.yes.json", client["yes"])
+    client["closed"] = ok(base, "POST", "/api/client/Q-1/respond", {"accept": False}, expect=409)
+    run_setup(setup_cmd, PRIVATE_ASKED)
+    client["no"] = ok(base, "POST", "/api/client/Q-1/respond", {"accept": False})
+    save("clients/Q-1.no.json", client["no"])
+    if client["no"].get("current") != "Q-2":
+        raise SystemExit(f"after no: expected the second question Q-2, got {client['no'].get('current')}")
+    save("clients/Q-2.asked.json", ok(base, "GET", "/api/client/Q-2"))
+    client["moved"] = ok(base, "POST", "/api/client/Q-2/respond", {"accept": True})
+    save("clients/Q-2.moved.json", client["moved"])
+    run_setup(setup_cmd, PRIVATE_ASKED)
+    ok(base, "POST", "/api/client/Q-1/respond", {"accept": False})
+    client["credit"] = ok(base, "POST", "/api/client/Q-2/respond", {"accept": False})
+    save("clients/Q-2.credit.json", client["credit"])
+    save("clients/mocks.json", client)
+    for scenario in ("private_lesson", "private_declined"):
+        mocks["judge_run"][scenario] = run = ok(base, "POST", "/api/judge/run", {"scenario": scenario})
+        today = ok(base, "GET", "/api/today")
+        save(f"today.{scenario}.json", today)
+        mocks["today_by_scenario"][scenario] = f"today.{scenario}.json"
+        save(f"cases/{run['case_id']}.{scenario}.json", ok(base, "GET", f"/api/cases/{run['case_id']}"))
+        if scenario == "private_lesson":
+            chloe = next(o["id"] for o in today["offers"] if o["result"] == "accepted")
+            save(f"offers/{chloe}.json", ok(base, "GET", f"/api/offers/{chloe}"))
 
 
 def run_setup(setup_cmd: list[str], code: str) -> None:
@@ -285,7 +339,12 @@ def main() -> None:
     save("today.nightly_check.json", ok(base, "GET", "/api/today"))
     mocks["today_by_scenario"]["nightly_check"] = "today.nightly_check.json"
 
-    # 4. leave the stack on the main story
+    # 4. private lessons: the family's page and the two judge scenarios
+    if setup_cmd is None:
+        raise SystemExit("--part core needs --setup-cmd for the private lesson's open question")
+    private_fixtures(base, setup_cmd, save, mocks)
+
+    # 5. leave the stack on the main story
     ok(base, "POST", "/api/judge/run", {"scenario": "dangerous_morning"})
     mocks["_captured_at"] = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     save("mocks.json", mocks)

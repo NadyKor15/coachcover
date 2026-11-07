@@ -934,6 +934,7 @@ class Pipeline:
             self._event(case_id, now, "agent", "family_too_late", {"staff_id": staff_id, "name": coach,
                                                                     "answer_by": answer_by})
             self._release(case_id, offer_id, staff_id, info, now, M.RELEASED_SILENT)
+            self.propose_plan_b(case_id, now)
             return {"offer_id": offer_id, "staff_id": staff_id, "asked": None}
         facts = {"kind": "cover", "language": family["language"], "child": family["child"],
                  "absent": absent[0].split()[0] if absent else "Your coach", "coach": coach.split()[0],
@@ -1058,8 +1059,8 @@ class Pipeline:
         return coach, slot, tried
 
     def _offer_own_coach(self, case_id: int, now: datetime) -> dict:
-        """After "no" to another coach: ask the family about their own coach at the nearest free time; with none,
-        or too late to ask, a credit."""
+        """After "no" to another coach: ask the family about their own coach at the nearest free time; with none, a
+        credit; too late to ask again: plan B for the manager (move or credit)."""
         policy = self._policy()
         with self.conn.transaction():
             shift_id, absent, status = self.conn.execute(
@@ -1077,7 +1078,13 @@ class Pipeline:
                 return self._credit_private(case_id, now, why="no_time")
             answer_by = self._answer_by(info, now, policy)
             if answer_by <= now:
-                return self._credit_private(case_id, now, why="too_late")
+                self._event(case_id, now, "agent", "family_too_late", {"staff_id": absent, "answer_by": answer_by})
+                too_late = True
+            else:
+                too_late = False
+        if too_late:  # no time left to ask the family about a new time: the manager decides (move or credit)
+            return self.propose_plan_b(case_id, now)
+        with self.conn.transaction():
             family = self._family_of(info)
             local = slot.start.astimezone(ZoneInfo(info["tz"]))
             when = f"{local:%a, %b} {local.day} at {local:%H:%M}"
