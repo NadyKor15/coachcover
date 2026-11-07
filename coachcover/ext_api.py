@@ -34,7 +34,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
-from coachcover import a2a, ext_db, mcp_server, notify
+from coachcover import a2a, ext_db, forecast, mcp_server, notify
 from coachcover.demo import clock_now
 from coachcover.seed import POLICY_ID
 
@@ -144,6 +144,13 @@ def get_loan(ref: str, request: Request, conn: psycopg.Connection = Depends(get_
 @router.post("/api/network/loans/{ref}/approve")
 def approve_loan(ref: str, body: LoanApprove, request: Request, conn: psycopg.Connection = Depends(get_conn)):
     return _call(a2a.approve, conn, ref, body.manager, body.venue, clock_now(conn), base_url(request))
+
+
+# --- fragile shifts of the week (idea 5) -------------------------------------------------------
+
+@router.get("/api/week")
+def week(venue: str | None = None, start: date | None = None, conn: psycopg.Connection = Depends(get_conn)):
+    return _call(forecast.week, conn, policy_id(), clock_now(conn), venue, start)
 
 
 # --- team chat posts (idea 10) -------------------------------------------------------------

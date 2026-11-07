@@ -2,7 +2,9 @@
 
 One definition for the whole product (coordinator, 07.11.2026):
   backups = people other than the holder whom the core rules clear for the shift (reserve roles not counted,
-            as in the offer queue);
+            as in the offer queue) and who belong to the shift's venue (`forecast.backups_from`: "venue",
+            the default; "policy" counts every venue of the school). The other venues' cleared people are
+            shown as a separate number and do not change the level;
   at_risk = 0 backups · fragile = 1..threshold backups · safe = more than threshold.
 "N fragile shifts" = at_risk + fragile. The threshold is the preset's `forecast.fragile_max_backups` (default 1).
 The screen's legend comes from the same thresholds (`legend`), so the screen cannot disagree with the count.
@@ -30,6 +32,7 @@ from coachcover.repo import load_context, load_policy, load_shift, load_staff
 from coachcover.rules import Code, assess, eligible, rank, week_start_date
 
 DEFAULT_THRESHOLD = 1
+DEFAULT_SCOPE = "venue"
 DEFAULT_COURSE_PEOPLE = 2
 PLACEHOLDER_COURSE_USD = 300.0
 
@@ -48,8 +51,11 @@ def settings(conn: psycopg.Connection, policy_id: str) -> dict:
     if not isinstance(threshold, int) or isinstance(threshold, bool) or threshold < 0:
         raise ValueError("forecast.fragile_max_backups must be an int >= 0")
     costs = block.get("training_cost_usd") or {}
+    scope = block.get("backups_from", DEFAULT_SCOPE)
+    if scope not in ("venue", "policy"):
+        raise ValueError("forecast.backups_from must be 'venue' or 'policy'")
     return {"threshold": threshold, "course_people": int(block.get("course_people", DEFAULT_COURSE_PEOPLE)),
-            "training_cost_usd": costs, "from_preset": bool(block)}
+            "training_cost_usd": costs, "backups_from": scope, "from_preset": bool(block)}
 
 
 def legend(threshold: int) -> list[dict]:
@@ -193,20 +199,23 @@ def week(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str 
             "uncovered": status[0] == "open", "past": past,
         }
         if past:
-            cell.update({"backups": None, "level": "past", "backup_names": [], "standby": None})
+            cell.update({"backups": None, "level": "past", "backup_names": [], "other_venues_cleared": None,
+                         "standby": None})
             cells.append(cell)
             continue
-        ok_people, reasons_by_person = [], {}
+        ok_people, elsewhere, reasons_by_person = [], [], {}
         for person in regular:
+            counted = conf["backups_from"] == "policy" or person.home_venue == shift.venue
             decision = eligible(person, shift, now, policy, context)
             if decision.ok:
-                ok_people.append(person.id)
-            else:
+                (ok_people if counted else elsewhere).append(person.id)
+            elif counted:
                 reasons_by_person[person.id] = [r for r in decision.reasons if r.blocking]
         blocked[shift_id] = reasons_by_person
         backups = len(ok_people)
         cell.update({"backups": backups, "level": level_of(backups, threshold),
-                     "backup_names": [names[sid] for sid in ok_people[:3]], "standby": None})
+                     "backup_names": [names[sid] for sid in ok_people[:3]], "other_venues_cleared": len(elsewhere),
+                     "standby": None})
         if cell["level"] != "safe":
             cell["standby"] = _standby(shift, now, policy, context, reserve, regular, ok_people, names)
         cells.append(cell)
@@ -227,6 +236,7 @@ def week(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str 
                  "label": f"{first:%b} {first.day} – {(first + timedelta(days=6)):%b} {(first + timedelta(days=6)).day}"},
         "now": now.isoformat(),
         "threshold": threshold,
+        "backups_from": conf["backups_from"],
         "legend": legend(threshold),
         "past_legend": {"level": "past", "label": "Started or over", "tone": "grey"},
         "counts": {"shifts": len(cells), "upcoming": len(upcoming), "at_risk": counts["at_risk"],
@@ -250,6 +260,8 @@ def week(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str 
         "assumptions": [
             {"name": "fragile_max_backups", "value": threshold,
              "source": "preset forecast block" if conf["from_preset"] else "default (preset has no forecast block)"},
+            {"name": "backups_from", "value": conf["backups_from"],
+             "source": "preset" if conf["from_preset"] else "default: people of the shift's own venue"},
             {"name": "course_people", "value": conf["course_people"], "source": "preset" if conf["from_preset"] else "default"},
             {"name": "course price per person", "value": PLACEHOLDER_COURSE_USD,
              "source": "placeholder unless the preset sets forecast.training_cost_usd"},
@@ -281,7 +293,8 @@ def fragile_summary(report: dict) -> dict:
     """A short form for assistants (MCP): the fragile shifts and the best fixes."""
     cells = {c["shift_id"]: c for d in report["days"] for c in d["cells"]}
     return {
-        "week": report["week"], "threshold": report["threshold"], "legend": report["legend"],
+        "week": report["week"], "threshold": report["threshold"], "backups_from": report["backups_from"],
+        "legend": report["legend"],
         "headline": report["headline"], "counts": report["counts"],
         "fragile": [{"shift_id": sid, "label": cells[sid]["label"], "venue": cells[sid]["venue_name"],
                      "backups": cells[sid]["backups"], "level": cells[sid]["level"],
