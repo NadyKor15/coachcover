@@ -55,7 +55,7 @@ def test_four_to_six_children_at_one_to_four_opens_a_case_and_the_queue_runs(api
                          " WHERE o.status = 'pending'").fetchone()
     assert offer is not None
     offer_id, staff_id, line, name = offer
-    assert (staff_id, line) == ("S02", "Sofía first: 5 h this week, Level 1 (beginner), 21.7 km away,"
+    assert (staff_id, line) == ("S02", "Sofía first: 6.25 h this week, Level 1 (beginner), 21.7 km away,"
                                 " speaks Spanish like 5 of 6 families")
     assert client.post(f"/api/offers/O-{offer_id}/accept").status_code == 200
     closed = client.get("/api/today").json()["ratio_alert"]

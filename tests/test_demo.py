@@ -17,7 +17,7 @@ def test_each_scenario_runs_on_recordings_and_repeats(new_database):
     reset_school(conn)
     conn.execute("INSERT INTO ops.judge_run (client) VALUES ('203.0.113.7')")
     results = {}
-    for scenario in SCENARIOS:
+    for scenario in (s for s in SCENARIOS if s != "network_loan"):  # that one needs the agents' HTTP: test_network_loan_scenario.py
         first = _run(conn, scenario)
         failed = conn.execute("SELECT purpose, error FROM model_call WHERE NOT ok").fetchall()
         assert failed == [], (scenario, failed)  # every model step had a recorded answer

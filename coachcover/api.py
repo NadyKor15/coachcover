@@ -274,7 +274,8 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
                 return JSONResponse(status_code=429, headers={"Retry-After": str(int(retry or 60))},
                                     content={"error": f"limit of {runs_per_hour} judge runs per hour reached"})
             conn.execute("INSERT INTO ops.judge_run (client) VALUES (%s)", (client,))
-        result = run_scenario(conn, ModelClient(DbLedger(conn)), scenario)
+        result = run_scenario(conn, ModelClient(DbLedger(conn)), scenario,
+                              base_url=os.environ.get("COACHCOVER_SELF_URL") or str(request.base_url))
         return {**result, "runs_left_this_hour": runs_per_hour - used - 1}
 
     # the extensions (network loans over A2A, MCP, week, what-if, binder, team posts) come before the static

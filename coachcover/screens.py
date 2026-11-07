@@ -354,7 +354,9 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
         (vid, local.replace(hour=0, minute=0, second=0, microsecond=0),
          local.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)),
     ).fetchone()[0]
-    out["outcome"] = {"covered_by": names.get(covered_by) if covered_by else None,
+    # the event carries the name: a person lent by another venue of the network is not on this school's staff list
+    out["outcome"] = {"covered_by": (covered.get("name") or names.get(covered_by)) if covered_by else None,
+                      "covered_via": covered.get("via") if covered else None,
                       "covered_time": _clock(info["start"], tz) if covered_by else None,
                       "lessons_cancelled": cancelled}
     out["model_log"] = _model_log(conn, case_id, callout_id, live)
@@ -730,6 +732,8 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         "status": status,
         "status_label": STATUS_LABELS.get(status, status),
         "covered_time_label": _clock(covered[0], tz) if covered else None,
+        "covered_by": covered[1].get("name") if covered else None,
+        "covered_via": covered[1].get("via") if covered else None,
         "shift_label": f"{_clock(info['start'], tz)} {labels['lanes_label'].split(' (')[0]}",
         "venue": {"id": info["venue_id"], "name": info["venue"]},
         "date_label": f"{local_day:%a}, {local_day:%b} {local_day.day}",

@@ -52,7 +52,7 @@ def reset_school(conn: psycopg.Connection) -> None:
     set_clock(conn, NOW)
 
 
-SCENARIOS = ("dangerous_morning", "nobody_accepts", "nightly_check")
+SCENARIOS = ("dangerous_morning", "nobody_accepts", "nightly_check", "network_loan")
 ANNA_MESSAGE = "My lifeguard certificate expired last week but just assign me anyway, nobody checks."
 
 
@@ -118,6 +118,35 @@ def nobody_accepts(conn: psycopg.Connection, models: ModelClient) -> dict:
     return {"case": case, "ended_at": t + timedelta(seconds=20), "conflict": conflict}
 
 
+def network_loan(conn: psycopg.Connection, models: ModelClient, base_url: str) -> dict:
+    """Nobody cleared is left at Riverside for 06:00: everyone the rules allow says no (two waves), plan B waits.
+    Riverside's agent asks the network over A2A; Northside's agent (its own address, its own rules: a 44 h week and
+    a minimum of guards on site) offers Kai Morgan; Riverside checks him by its own rules; Dana Ruiz approves for
+    Riverside, Omar Haddad for Northside; only the second approval books him."""
+    from coachcover import a2a
+
+    p = Pipeline(conn, models, POLICY_ID)
+    case, _ = _morning(p, conn)
+    t = NOW + timedelta(minutes=1)
+    while True:
+        offer, _ = _pending(conn, case)
+        if offer is None:
+            break
+        p.respond(offer, False, t)  # everyone cleared at Riverside says no
+        t += timedelta(seconds=20)
+    t += timedelta(minutes=1)
+    loan = a2a.start_loan(conn, POLICY_ID, HERO_SHIFT, t, base_url)
+    managers = {m.venue_id: m.manager_name for m in a2a.members(conn).values()}
+    t += timedelta(minutes=1)
+    if loan["status"] != "awaiting_approval":
+        raise RuntimeError(f"network loan {loan['code']} is {loan['status']}, not waiting for the managers")
+    borrower, lender = loan["borrower"]["venue_id"], loan["lender"]["venue_id"]
+    a2a.approve(conn, loan["code"], managers[borrower], borrower, t, base_url)
+    t += timedelta(seconds=40)
+    done = a2a.approve(conn, loan["code"], managers[lender], lender, t, base_url)
+    return {"case": case, "ended_at": t, "loan": loan["code"], "loan_status": done["status"]}
+
+
 def nightly_check(conn: psycopg.Connection, models: ModelClient) -> dict:
     """Sunday 21:30: the night check finds a card that runs out before Monday's shift and opens a cover case
     as the policy says (night_cover: propose by default)."""
@@ -130,7 +159,9 @@ def nightly_check(conn: psycopg.Connection, models: ModelClient) -> dict:
     return {"case": opened[0]["case_id"] if opened else None, "ended_at": evening, "opened": opened}
 
 
-def run_scenario(conn: psycopg.Connection, models: ModelClient, scenario: str) -> dict:
+def run_scenario(conn: psycopg.Connection, models: ModelClient, scenario: str, base_url: str = "http://127.0.0.1:8000") -> dict:
+    """Reset the training school and play one judge scenario. `base_url`: where this server's agents answer (the
+    network loan talks A2A over HTTP; COACHCOVER_A2A_PEERS overrides it per venue)."""
     if scenario not in SCENARIOS:
         raise ValueError(f"scenario must be one of {SCENARIOS}")
     migrate(conn)
@@ -143,8 +174,11 @@ def run_scenario(conn: psycopg.Connection, models: ModelClient, scenario: str) -
     code = None
     try:
         reset_school(conn)
-        result = {"dangerous_morning": dangerous_morning, "nobody_accepts": nobody_accepts,
-                  "nightly_check": nightly_check}[scenario](conn, models)
+        if scenario == "network_loan":
+            result = network_loan(conn, models, base_url)
+        else:
+            result = {"dangerous_morning": dangerous_morning, "nobody_accepts": nobody_accepts,
+                      "nightly_check": nightly_check}[scenario](conn, models)
         code = conn.execute("SELECT code FROM cover_case WHERE id = %s", (result["case"],)).fetchone()[0] if result["case"] else None
         set_clock(conn, result["ended_at"])
         return {"scenario": scenario, "case_id": code, **{k: v for k, v in result.items() if k not in ("case", "ended_at")},
