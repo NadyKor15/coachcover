@@ -291,7 +291,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
             if voice.get("duration_ms") else None,
         }
     ranked = first_event.get("candidates_ranked", (None, {}))[1]
-    covered = first_event.get("shift_covered", (None, None))[1]
+    covered_at, covered = first_event.get("shift_covered", (None, None))
     covered_by = covered.get("staff_id") if covered else None
     grid = ranked.get("grid", [])
     if ranked:
@@ -360,7 +360,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
     # the event carries the name: a person lent by another venue of the network is not on this school's staff list
     out["outcome"] = {"covered_by": (covered.get("name") or names.get(covered_by)) if covered_by else None,
                       "covered_via": covered.get("via") if covered else None,
-                      "covered_time": _clock(info["start"], tz) if covered_by else None,
+                      "covered_time": _clock(covered_at, tz) if covered_by else None,  # when it was closed
                       "lessons_cancelled": cancelled}
     out["model_log"] = _model_log(conn, case_id, callout_id, live)
     out["money"] = today_money_block(conn, policy_id, now)

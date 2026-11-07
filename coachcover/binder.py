@@ -106,7 +106,17 @@ def build(conn: psycopg.Connection, policy_id: str, venue_id: str | None, first:
     ).fetchall()
     context = load_context(conn, policy_id, Shift(id="binder", venue=vid, role=next(iter(policy.preset.roles)),
                                                    start=start, end=end))
-    shifts, violations, uncovered = [], 0, 0
+    # shifts the night check caught before they started and a replacement then covered
+    caught_by_night: dict[str, tuple[str, str | None]] = {}
+    for case_id, shift_id, data in conn.execute(
+        "SELECT c.id, c.shift_id, e.data FROM cover_case c JOIN shift s ON s.id = c.shift_id"
+        " JOIN case_event e ON e.case_id = c.id AND e.kind = 'shift_covered'"
+        " WHERE s.venue_id = %s AND c.source = 'night_check' AND c.status IN ('covered', 'plan_b')"
+        " AND s.starts_at >= %s AND s.starts_at < %s ORDER BY c.closed_at, c.id",
+        (vid, start, end),
+    ).fetchall():
+        caught_by_night[shift_id] = (notify.case_ref(conn, case_id), data.get("name"))
+    shifts, violations, uncovered, caught = [], 0, 0, 0
     for shift_id, status, holder in rows:
         shift = load_shift(conn, shift_id)
         local = shift.start.astimezone(tz)
@@ -132,6 +142,10 @@ def build(conn: psycopg.Connection, policy_id: str, venue_id: str | None, first:
                     "warnings": warnings,
                     "result": ("VIOLATION: " + "; ".join(blocking)) if blocking
                     else "ok" + (f" (note: {'; '.join(warnings)})" if warnings else "")})
+        if shift_id in caught_by_night and not blocking:
+            ref, name = caught_by_night[shift_id]
+            caught += 1
+            row.update({"caught": True, "result": f"caught by the nightly check · case {ref} · covered by {name}"})
         shifts.append(row)
     cases = []
     for case_id, status, shift_id, absent, opened, closed in conn.execute(
@@ -167,9 +181,10 @@ def build(conn: psycopg.Connection, policy_id: str, venue_id: str | None, first:
         "venue": {"id": vid, "name": vname, "tz": tzname},
         "period": {"from": first.isoformat(), "to": last.isoformat(), "label": period},
         "generated_at": now.astimezone(UTC).isoformat(),
-        "summary": {"shifts": len(shifts), "violations": violations, "uncovered": uncovered,
+        "summary": {"shifts": len(shifts), "violations": violations, "uncovered": uncovered, "caught": caught,
                     "cases": len(cases), "incidents": len(incidents),
-                    "headline": f"{_n(len(shifts), 'shift')} · {_n(violations, 'violation')}"},
+                    "headline": f"{_n(len(shifts), 'shift')} · {_n(violations, 'violation')}"
+                                + (f" · {caught} caught before the shift" if caught else "")},
         "shifts": shifts, "cases": cases, "incidents": incidents,
         "checks": "Each person is checked again at the start of the shift: certificates valid on that date, "
                   "programs and levels, weekly hours, overlaps, participant norm.",

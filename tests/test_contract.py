@@ -115,11 +115,11 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert maria["why_first"] == "Maria third: 12 h this week, Level 3, same pool" and maria["time_label"] == "05:14"
     assert [(t["time_label"], t["kind"]) for t in today["timeline"]] == [
         ("05:12", "callout"), ("05:13", "declined"), ("05:14", "accepted"), ("05:15", "no_reply"), ("06:00", "shift_start")]
-    assert today["outcome"] == {"covered_by": "Maria Lopez", "covered_via": None, "covered_time": "06:00", "lessons_cancelled": 0}
+    assert today["outcome"] == {"covered_by": "Maria Lopez", "covered_via": None, "covered_time": "05:15", "lessons_cancelled": 0}  # closed at 05:15
     assert today["plan_b"]["state"] == "standby" and today["plan_b"]["autonomy"] == "propose"
     assert "merge refused" in today["plan_b"]["text"]  # the kids' norm refuses the merge, live
     money = today["money"]  # from coachcover.money with the preset's prices
-    assert money["uncovered_morning_usd"] == 240.0  # 8 children x $30, the founder's price (product decision)
+    assert money["uncovered_morning_usd"] == 240.0  # 8 children x $30, the founder's price
     assert money["uncovered_morning_label"] == "If nobody had accepted: $240 (Refunds: 8 participants × $30)"
     assert money["manager_hour_usd"] == 25.0 and 0 < money["case_cost_cents"] < 1
     assert today["model_log"]["calls"] >= 4 and today["model_log"]["usd"] > 0
@@ -163,7 +163,7 @@ def test_case_page_matches_the_fixture(api):
     assert page["model_cost_usd"] == pytest.approx(sum(c["cost_usd"] or 0 for c in page["model_calls"]))
     risk = page["risk"]
     assert (risk["kids"], risk["refunds_usd"], risk["overtime_usd"], risk["total_usd"]) == (8, 240.0, None, 240.0)
-    assert risk["assumptions"]["lesson_price"]["assumption"] is False  # a product decision
+    assert risk["assumptions"]["lesson_price"]["assumption"] is False  # the founder's price
     assert risk["assumptions"]["manager_hour"]["assumption"] is True
     assert page["proof"]["policy_label"] == "cover = auto · plan B = propose"
     download = client.get("/api/cases/C-1109-01?download=true")

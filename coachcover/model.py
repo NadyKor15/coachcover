@@ -131,7 +131,7 @@ class Preset:
     copy: Mapping[str, str] = field(default_factory=dict)  # screen and prompt texts of this kind of business
     money: Mapping[str, Mapping[str, object]] = field(default_factory=dict)  # prices for the money card, see MONEY_KEYS
     min_rest_hours: float | None = None  # rest a person needs between work on different days; None: no rule
-    offer_wave_size: int = 1  # offers sent at once, in queue order (product decision)
+    offer_wave_size: int = 1  # offers sent at once, in queue order (product decision: 3)
     offer_collect_seconds: int = 0  # after the first "yes" of a wave, wait this long for a "yes" from higher up
     plan_b_minutes_before_start: int | None = None  # plan B goes to the manager this long before the start
 

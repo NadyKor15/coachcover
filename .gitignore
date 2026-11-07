@@ -11,4 +11,3 @@ dist/
 *.pem
 credentials*.json
 service-account*.json
-.local/settings.json

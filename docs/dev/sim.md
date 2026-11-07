@@ -66,7 +66,7 @@ Prices live in the preset's `money` block (strict loader in `coachcover/presets.
 
 | Parameter | Default | Source |
 |---|---|---|
-| `lesson_price` | $30 per child per group lesson | not an assumption: from the founder's coaching experience (product decision) |
+| `lesson_price` | $30 per child per group lesson | not an assumption: from the founder's coaching experience |
 | `refund_share` | 1.0 | assumption: every participant of a lesson that does not run gets a refund or a credit |
 | `hourly_wage` | policy `overtime_cost_per_hour` / 1.5 ($22.67 with the preset's $34) | assumption: the preset calls $34 an example; keeping it means the money card and the plan B overtime card use the same rate |
 | `overtime_multiplier` | 1.5 | US Fair Labor Standards Act, time and a half over 40 h a week. Every hour of an uncovered shift counts as overtime, which is an upper bound; set 1.0 if the person covering stays under 40 h |

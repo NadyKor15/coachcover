@@ -91,7 +91,7 @@ def test_both_presets_set_ten_hours():
     assert SWIM.preset.min_rest_hours == 10 and default_policy("fitness_club").preset.min_rest_hours == 10
 
 
-# --- idea 4: the families' language, the last key after the a product decision order ------------------
+# --- idea 4: the families' language, the last key after the product queue order ----------------
 
 
 def _spanish_group(es=6, en=2):
@@ -108,7 +108,7 @@ def test_majority_language_needs_more_than_half_of_the_families():
     assert family_language([GroupRef("G2", "learn_to_swim", "3", 5)]) == (None, 0, 0)
 
 
-def test_language_breaks_a_full_tie_and_never_beats_the_tg5928_order():
+def test_language_breaks_a_full_tie_and_never_beats_the_product_queue_order():
     shift = lesson(groups=(_spanish_group(),))
     a, b = _speaker("S1", {"en"}), _speaker("S2", {"es", "en"})
     tied = rank([assess(a, shift, AT, SWIM, ctx()), assess(b, shift, AT, SWIM, ctx())])
@@ -117,7 +117,7 @@ def test_language_breaks_a_full_tie_and_never_beats_the_tg5928_order():
     line = describe_place(tied[0], "Maria", "en", SWIM.preset)
     assert line == "Maria first: 0 h this week, Level 3, same pool, speaks Spanish like 6 of 8 families"
     assert "speaks" not in describe_place(tied[1], "Ann", "en", SWIM.preset)
-    # one more hour of work this week puts the speaker behind: hours come first (product decision)
+    # one more hour of work this week puts the speaker behind: hours come first (product queue order)
     busy = ctx(S2=[booked("X", local(2026, 11, 8, 10, 0), 60)])
     ordered = rank([assess(a, shift, AT, SWIM, busy), assess(b, shift, AT, SWIM, busy)])
     assert [r.candidate.staff_id for r in ordered] == ["S1", "S2"]

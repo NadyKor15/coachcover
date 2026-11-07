@@ -150,7 +150,7 @@ def test_what_if_rows(result):
 
 
 def test_before_after_waves_keep_zero_violations_and_close_sooner(result):
-    """a product decision: the same 50 mornings, one offer at a time (before) against waves + plan B by the deadline (after)."""
+    """Product decision: the same 50 mornings, one offer at a time (before) against waves + plan B by the deadline (after)."""
     table = {title: (b, a) for title, b, a in result["before_after"]["rows"]}
     assert table["Placements that break a rule"] == (0, 0)
     before_median, after_median = table["Minutes from call-out to closed, median"]

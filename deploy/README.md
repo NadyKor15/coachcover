@@ -25,18 +25,18 @@ Fill `.env` (it stays on the VM, never in git):
 - `COACHCOVER_MODEL_MODE=live` for real model calls, `replay` for the recorded answers;
 - `COACHCOVER_JUDGE_RUNS_PER_HOUR=6`.
 
-`VULTR_INFERENCE_API_KEY` is never written to `.env`. It comes from Infisical into the environment of the
-command that starts the stack.
+`VULTR_INFERENCE_API_KEY` is never written to `.env`. It comes from your secret store into the environment of
+the command that starts the stack.
 
 ## 3. Start
 
-With the key from Infisical (project your-project, path `/your-path`, secret `VULTR_INFERENCE_API_KEY`):
+Put the key in the environment from your secret store, for example with Infisical:
 
 ```bash
-infisical run --env=prod --path=/your-path -- docker compose --profile edge up -d --build
+infisical run -- docker compose --profile edge up -d --build
 ```
 
-Without Infisical on the VM, start with the key typed into the shell for this one command (it is not stored):
+Without a secret store on the VM, start with the key typed into the shell for this one command (it is not stored):
 
 ```bash
 read -rs VULTR_INFERENCE_API_KEY && export VULTR_INFERENCE_API_KEY
@@ -60,7 +60,7 @@ for the case page.
 Live smoke test of the models (one call each, the answer must name the model asked for; a fraction of a cent):
 
 ```bash
-infisical run --env=prod --path=/your-path -- scripts/smoke_live.sh
+infisical run -- scripts/smoke_live.sh
 ```
 
 ## 5. Everyday
