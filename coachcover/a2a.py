@@ -821,7 +821,7 @@ def start_loan(conn: psycopg.Connection, policy_id: str, shift_id: str, at: date
                 )
                 step(conn, loan_id, borrower.venue_id, "agent", "awaiting_approval",
                      {"staff_id": person["id"], "name": person["name"],
-                      "managers": {borrower.venue_id: borrower.manager_name, lender.venue_id: lender.manager_name}}, at)
+                      "managers": [[borrower.venue_id, borrower.manager_name], [lender.venue_id, lender.manager_name]]}, at)
                 _case_event(conn, case_id, at, "agent", "network_loan_offered",
                             {"loan": code, "staff_id": person["id"], "name": person["name"], "from": lender.venue_name})
                 return loan_view(conn, code, base_url)
@@ -991,7 +991,7 @@ def _step_text(kind: str, data: dict, venue: str, names: dict[str, str]) -> tupl
         verdict = "cleared" if data.get("ok") else "blocked"
         return f"{venue} agent re-checked {data.get('name')} by {venue} rules: {verdict}", data.get("why", "")
     if kind == "awaiting_approval":
-        return "Waiting for both managers", ", ".join(f"{names.get(v, v)}: {mgr}" for v, mgr in (data.get("managers") or {}).items())
+        return "Waiting for both managers", ", ".join(f"{names.get(v, v)}: {mgr}" for v, mgr in data.get("managers") or [])
     if kind == "borrower_accepted":
         return f"{venue} agent: offer stands, nothing moves before both managers approve", ""
     if kind == "offer_withdrawn":

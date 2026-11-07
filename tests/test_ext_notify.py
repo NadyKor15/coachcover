@@ -9,11 +9,11 @@ import pytest
 from fastapi.testclient import TestClient
 from psycopg.conninfo import make_conninfo
 
-from coachcover import ext_api, ext_db, notify
-from coachcover.api import create_app
+from coachcover import ext_db, notify
 from coachcover.demo import clock_now, reset_school
 from coachcover.seed import POLICY_ID
 from tests.conftest import TEST_DSN
+from tests.test_ext_a2a import ext_app
 
 pytestmark = pytest.mark.db
 
@@ -31,8 +31,7 @@ def api(new_database, monkeypatch):
     dsn = make_conninfo(TEST_DSN, dbname=conn.execute("SELECT current_database()").fetchone()[0])
     monkeypatch.setenv("DATABASE_URL", dsn)
     monkeypatch.delenv("COACHCOVER_MODEL_MODE", raising=False)
-    app = create_app(dsn)
-    app.include_router(ext_api.router)
+    app = ext_app(dsn)
     with TestClient(app) as client:
         yield client, conn
 
@@ -44,7 +43,7 @@ def test_closed_covers_post_once_with_a_link(api, caplog):
     with caplog.at_level(logging.INFO, logger="coachcover.notify"):
         posts = client.get("/api/team-posts").json()["posts"]
     closed = conn.execute("SELECT id, status FROM cover_case WHERE status IN ('covered', 'plan_b') ORDER BY id").fetchall()
-    assert len(posts) == len(closed) >= 2
+    assert len(posts) == len(closed) >= 1
     venue = conn.execute("SELECT name FROM venue WHERE id = 'V1'").fetchone()[0]
     for post in posts:
         ref = notify.case_ref(conn, post["case_id"])

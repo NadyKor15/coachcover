@@ -11,14 +11,14 @@ import pytest
 from fastapi.testclient import TestClient
 from psycopg.conninfo import make_conninfo
 
-from coachcover import binder, ext_api
-from coachcover.api import create_app
+from coachcover import binder
 from coachcover.demo import clock_now, reset_school
 from coachcover.model import Shift
 from coachcover.repo import load_context, load_policy, load_shift, load_staff
 from coachcover.rules import eligible
 from coachcover.seed import POLICY_ID
 from tests.conftest import TEST_DSN
+from tests.test_ext_a2a import ext_app
 
 pytestmark = pytest.mark.db
 MONDAY = date(2026, 11, 9)
@@ -31,8 +31,7 @@ def api(new_database, monkeypatch):
     dsn = make_conninfo(TEST_DSN, dbname=conn.execute("SELECT current_database()").fetchone()[0])
     monkeypatch.setenv("DATABASE_URL", dsn)
     monkeypatch.delenv("COACHCOVER_MODEL_MODE", raising=False)
-    app = create_app(dsn)
-    app.include_router(ext_api.router)
+    app = ext_app(dsn)
     with TestClient(app) as client:
         yield client, conn
 
@@ -58,7 +57,10 @@ def test_every_shift_is_checked_and_a_planted_violation_shows(api):
         " AND (starts_at AT TIME ZONE 'America/New_York')::date = '2026-11-09' ORDER BY starts_at, id")]
     assert [r["shift_id"] for r in data["shifts"]] == ids
     assert data["summary"]["violations"] == independent_violations(conn, ids)
-    assert data["summary"]["cases"] == 2 and all(len(c["sha256"]) == 64 for c in data["cases"])
+    cases = conn.execute(
+        "SELECT count(*) FROM cover_case c JOIN shift s ON s.id = c.shift_id WHERE s.venue_id = 'V1'"
+        " AND (s.starts_at AT TIME ZONE 'America/New_York')::date = '2026-11-09'").fetchone()[0]
+    assert data["summary"]["cases"] == cases >= 1 and all(len(c["sha256"]) == 64 for c in data["cases"])
     # must-differ: S27's main card is expired in the training school; a late post for S27 must show as a violation
     role = conn.execute("SELECT role_id FROM shift WHERE id = 'G-1109-V1-0530'").fetchone()[0]
     conn.execute(

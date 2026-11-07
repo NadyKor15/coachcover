@@ -13,11 +13,9 @@ import pytest
 import uvicorn
 from psycopg.conninfo import make_conninfo
 
-from coachcover import ext_api
-from coachcover.api import create_app
 from coachcover.demo import reset_school
 from tests.conftest import TEST_DSN
-from tests.test_ext_a2a import exhaust
+from tests.test_ext_a2a import ext_app, exhaust
 
 pytestmark = pytest.mark.db
 
@@ -30,8 +28,7 @@ def free_port() -> int:
 
 class Server:
     def __init__(self, dsn: str, port: int):
-        app = create_app(dsn)
-        app.include_router(ext_api.router)
+        app = ext_app(dsn)
         self.port = port
         self.server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning", lifespan="on"))
         self.thread = threading.Thread(target=self.server.run, daemon=True)

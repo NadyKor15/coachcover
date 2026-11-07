@@ -9,13 +9,13 @@ from fastapi.testclient import TestClient
 from psycopg.conninfo import make_conninfo
 from psycopg.types.json import Jsonb
 
-from coachcover import ext_api, forecast
-from coachcover.api import create_app
+from coachcover import forecast
 from coachcover.demo import clock_now, reset_school
 from coachcover.repo import load_context, load_policy, load_shift, load_staff
 from coachcover.rules import eligible
 from coachcover.seed import NOW, POLICY_ID
 from tests.conftest import TEST_DSN
+from tests.test_ext_a2a import ext_app
 
 WEEK = date(2026, 11, 8)
 
@@ -153,8 +153,7 @@ def test_week_endpoint(school_db, monkeypatch):
     conn = school_db
     dsn = make_conninfo(TEST_DSN, dbname=conn.execute("SELECT current_database()").fetchone()[0])
     monkeypatch.setenv("DATABASE_URL", dsn)
-    app = create_app(dsn)
-    app.include_router(ext_api.router)
+    app = ext_app(dsn)
     with TestClient(app) as client:
         body = client.get("/api/week", params={"venue": "V1", "start": "2026-11-10"}).json()
         assert body["week"]["start"] == "2026-11-08" and body["venue"]["id"] == "V1"

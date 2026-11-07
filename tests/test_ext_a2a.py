@@ -28,6 +28,22 @@ BORROWER_MANAGER = "Dana Ruiz"
 LENDER_MANAGER = "Hannah Cole"
 
 
+def ext_app(dsn: str):
+    """The core app with the lane's router: added here unless the core app already includes it, and always ahead
+    of a catch-all static mount (a mount at "/" would answer every later route)."""
+    from starlette.routing import Mount
+
+    app = create_app(dsn)
+    routes = app.router.routes
+    if not any(getattr(r, "original_router", None) is ext_api.router or getattr(r, "path", None) == "/api/network"
+               for r in routes):
+        app.include_router(ext_api.router)
+    for mount in [r for r in routes if isinstance(r, Mount) and r.path in ("", "/")]:
+        routes.remove(mount)
+        routes.append(mount)
+    return app
+
+
 @pytest.fixture
 def net(new_database, monkeypatch):
     conn = new_database()
@@ -36,8 +52,7 @@ def net(new_database, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", dsn)
     monkeypatch.delenv("COACHCOVER_MODEL_MODE", raising=False)
     monkeypatch.delenv("COACHCOVER_A2A_PEERS", raising=False)
-    app = create_app(dsn)
-    app.include_router(ext_api.router)
+    app = ext_app(dsn)
     with TestClient(app) as client:
         monkeypatch.setattr(a2a, "HTTP_CLIENT", lambda: contextlib.nullcontext(client))
         yield client, conn
@@ -151,12 +166,14 @@ def test_borrower_rejects_the_offered_person_by_its_own_rules(net):
     a2a.ensure_network(conn)
     role = conn.execute("SELECT role_id FROM shift WHERE id = 'N-1110-1000'").fetchone()[0]
     # Kai: 8 h booked + 32 h = 40 h this week. Northside allows 44 h, the borrower's rules 40 h.
-    for i, day in enumerate(("2026-11-08", "2026-11-11", "2026-11-13", "2026-11-14")):
+    # The extra blocks keep well clear of Monday morning (rest rules, if any, stay out of it).
+    for i, (day, begin, finish) in enumerate((("2026-11-08", "06:00", "14:00"), ("2026-11-11", "13:00", "21:00"),
+                                           ("2026-11-13", "06:00", "14:00"), ("2026-11-14", "06:00", "14:00"))):
         conn.execute(
             "INSERT INTO shift (id, venue_id, zone_id, role_id, starts_at, ends_at, staff_id)"
             " VALUES (%s, 'N1', 'N1-MAIN', %s, %s::timestamp AT TIME ZONE 'America/New_York',"
             " %s::timestamp AT TIME ZONE 'America/New_York', 'N01')",
-            (f"N-EXTRA-{i}", role, f"{day} 13:00", f"{day} 21:00"),
+            (f"N-EXTRA-{i}", role, f"{day} {begin}", f"{day} {finish}"),
         )
     before = snapshot(conn, shift_id, case_id)
     loan = start(client, shift_id)

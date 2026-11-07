@@ -10,10 +10,10 @@ from fastapi.testclient import TestClient
 from psycopg import sql
 from psycopg.conninfo import make_conninfo
 
-from coachcover import ext_api, ext_db, whatif
-from coachcover.api import create_app
+from coachcover import ext_db, whatif
 from coachcover.demo import reset_school
 from tests.conftest import TEST_DSN
+from tests.test_ext_a2a import ext_app
 
 FIXTURES = Path(__file__).parent / "fixtures"
 RU_QUESTION = "А если завтра и Мария заболеет?"
@@ -38,8 +38,7 @@ def api(new_database, monkeypatch):
     dsn = make_conninfo(TEST_DSN, dbname=conn.execute("SELECT current_database()").fetchone()[0])
     monkeypatch.setenv("DATABASE_URL", dsn)
     monkeypatch.delenv("COACHCOVER_MODEL_MODE", raising=False)
-    app = create_app(dsn)
-    app.include_router(ext_api.router)
+    app = ext_app(dsn)
     with TestClient(app) as client:
         yield client, conn
 
