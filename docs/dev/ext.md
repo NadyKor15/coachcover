@@ -220,8 +220,11 @@ Rows: every scheduled or open shift of the venue in the period, the person, card
 `VIOLATION: …`). Then replacements (case, absent, outcome, events, sha256 of the canonical JSON of
 `[seq, at UTC, actor, kind, data]`), incidents (closures, sha256 of the record), and the total. The digest
 (`sha256`, header `X-Binder-SHA256`) covers the records but not the print time. Up to 62 days. Helvetica,
-Latin-1: a Cyrillic name would print as `?` (all training names are Latin). On the main seed the week at V1
-shows 21 violations: the training roster keeps the trap people (expired cards) on later shifts.
+Latin-1: a Cyrillic name would print as `?` (all training names are Latin). A shift the night check caught
+and a replacement then covered is not a violation but the line "caught by the nightly check · case C-… ·
+covered by …", and the headline adds "· N caught before the shift". On the training week the only holder trap
+is S07's Monday 16:00 lesson: 1 violation at V1 without the night check, "0 violations · 1 caught before the
+shift" once the night check's case is covered.
 
 ## (10) Team chat posts: `GET /api/team-posts`
 
@@ -230,35 +233,19 @@ After each closed cover (`covered` or `plan_b`): `"06:00 covered by Maria, case 
 `would post to #riverside-staff: …`. Once per case. `GET` runs the sweep; the worker can call
 `notify.sweep(conn, policy_id, now)` each tick. A loan posts on both venues' channels.
 
-## Checked on the core's code (core-branch 7271b1a and main adaac69, 2026-11-07)
+## How to run the extension tests
 
-The lane's files were laid over an export of `core-branch` (committed state) and of `main` at adaac69 (the core
-merged), with the router ahead of the static mount: 310 of 311 and 318 of 319 tests pass. `pyproject.toml` and
-`uv.lock` of main did not change since 32f4efe, so the lock merges as is. The one failure is expected until the core allows the preset
-key `forecast` (below). On that data: the loan for `L-1109-G002` goes through (Kai Morgan, both approvals,
-case `C-1109-01` covered, posts on `#riverside-staff` and `#northside-staff`); the week shows 22 fragile shifts
-across the three venues (5 at risk), 2 at V1; the binder for Monday at V1 shows 10 shifts, 1 violation, 1
-uncovered (the hero shift in the `nobody_accepts` run); the week at V1 shows 19 violations.
+```bash
+scripts/test-db-up.sh                          # local Postgres for the tests
+uv run pytest tests/test_ext_*.py              # the extension lane's tests
+uv run pytest tests/test_ext_in_core.py        # every extension route answers through the core app
+uv run pytest tests/test_network_loan_scenario.py   # the judge scenario network_loan, agents over HTTP in-process
+```
 
-## What the core needs to do
+`tests/test_ext_a2a_http.py` starts two real HTTP servers (one per venue) and runs a loan between them. In
+`compose.yaml` the two agents are the `api` service (Riverside) and the `agent-north` service (Northside), wired
+with `COACHCOVER_A2A_PEERS`.
 
-1. `app.include_router(ext_api.router)` inside `create_app`, **before** `app.mount("/", StaticFiles(...))`:
-   a mount at "/" answers every route added after it (POST gives 405).
-2. Preset loader: allow the optional top-level key `forecast` (`presets._PRESET_OPTIONAL`), e.g.
-   `"forecast": {"fragile_max_backups": 1, "backups_from": "venue", "course_people": 2,
-   "training_cost_usd": {"cert:wsi": 0, "level:learn_to_swim:1": 0}}`. Without the key the defaults apply and
-   course prices are marked as placeholders.
-3. Screens: a case covered by a network loan has a `shift_covered` event with `via: "network_loan"`, `name`,
-   `lender_venue_name`, `loan_code`. Today's outcome and the case page look the person up among the school's
-   own staff, so they show `covered_by: null` for Kai Morgan; use the event's `name` when the id is not one of
-   the school's people.
-4. A2A demo data: `nobody_accepts` closes the teaching pool, which frees Emma Carter and Daniel Brooks, who
-   are cleared and were never asked, so a loan is refused (409, correctly). For the A2A scene, a scenario that
-   leaves the hero shift open with nobody cleared left (`nobody_accepts` without the closure, or the pipeline
-   offering the freed people first). The Northside people live in `coachcover/presets/network/demo_network.json`
-   (installed by `a2a.ensure_network`), so the seed does not need them.
-5. Training data: the binder reports what is on the roster. The trap people (expired cards) hold shifts later
-   in the week on both seeds, so a week's binder at V1 shows 19-21 violations; Monday at V1 shows 1 on both
-   seeds (main: Ivan Smirnov at 10:00; core: the night-check trap). Clean those rows in the seed if the demo should say "0 violations" for a whole week.
-6. Optional: the worker can call `notify.sweep(conn, policy_id, now)` each tick; otherwise `GET /api/team-posts`
-   sweeps when it is read.
+The core includes the router before its static mount (a mount at "/" answers every route added after it), allows
+the preset key `forecast`, shows the covering person from the `shift_covered` event (a lent person is not on the
+school's staff list), has the judge scenario `network_loan`, and the worker posts closed covers on every tick.

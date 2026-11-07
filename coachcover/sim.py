@@ -133,7 +133,7 @@ class SimParams:
     rota_swaps: tuple[int, int] = (0, 3)
     p_renewal_overdue: float = 0.4
     # variants for the "what if" rows; the main table uses the defaults (the core as built, the literal baseline)
-    # "waves": the core as built (the preset's waves, collection window and plan B deadline, a product decision);
+    # "waves": the core as built (the preset's waves, collection window and plan B deadline; a product decision);
     # "one": one offer at a time, plan B only when the queue is empty (the core before 2026-11-07)
     offers: str = "waves"
     baseline_checks_role: bool = False

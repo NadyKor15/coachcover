@@ -500,7 +500,7 @@ def eligible(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: 
 
 # --- ranking ----------------------------------------------------------------
 #
-# Queue order (product decision, a product decision): 1) eligible only on top; 2) fewer
+# Queue order (product decision): 1) eligible only on top; 2) fewer
 # hours this week; 3) closer venue, the same venue before any other; 4) program
 # and level match the group; 5) longer tenure at the level; then (idea 4, after
 # that order) speaks the language most of the group's families speak. Staff id

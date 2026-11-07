@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Live smoke test on Vultr Serverless Inference: one call to each allowed model, and the answer's "model"
 # field must be the model asked for. Costs a fraction of a cent. Run only on purpose, after the coupon:
-#   infisical run --env=prod --path=/your-path -- scripts/smoke_live.sh
+#   infisical run -- scripts/smoke_live.sh   (the key comes from your secret store)
 # The key is read from VULTR_INFERENCE_API_KEY in the environment and never printed or written.
 set -euo pipefail
 
