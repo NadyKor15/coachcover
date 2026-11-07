@@ -2,9 +2,9 @@
 
 Usage: uv run python scripts/make_preschool_recordings.py
 
-The voice note tests/fixtures/audio/ru-callout-0800.ogg is synthesized locally (macOS `say -v Milena`, $0):
-"Привет, это Марина. У меня температура тридцать восемь, я не выйду к восьми. У меня в восемь урок у малышей.
-Прости." No model heard it: every answer below is written by hand to the schema the live call uses, with only the
+The voice note tests/fixtures/audio/ru-callout-0930.ogg is synthesized locally (macOS `say -v Milena`, $0):
+"Привет, это Марина. У меня температура тридцать восемь, к половине десятого я не выйду. У меня в полдесятого
+занятие с малышами. Простите." No model heard it: every answer below is written by hand to the schema the live call uses, with only the
 facts of the note, and says so in "source". A live recording on Vultr replaces them later. The files are named
 synthetic-*.json, so scripts/make_recordings.py keeps them.
 """
@@ -23,19 +23,22 @@ from coachcover.models import SAFETY_MODEL, SPEECH_MODEL, TEXT_MODEL, canonical_
 from coachcover.seed import LESSON_AT, TODAY, TZ  # noqa: E402
 
 OUT = ROOT / "tests" / "fixtures" / "models"
-VOICE = ROOT / "tests" / "fixtures" / "audio" / "ru-callout-0800.ogg"
-VOICE_SECONDS = 8.39  # ffprobe
-PREPARED = ("prepared demo answer, not a model output: written by hand to the {schema} schema for ru-callout-0800.ogg "
+TAG = f"{LESSON_AT:%H%M}"  # the voice note names the lesson time; a new time needs a new note and these answers
+VOICE = ROOT / "tests" / "fixtures" / "audio" / f"ru-callout-{TAG}.ogg"
+VOICE_SECONDS = 9.23  # ffprobe
+PREPARED = ("prepared demo answer, not a model output: written by hand to the {schema} schema for " + VOICE.name + " "
             "(synthesized locally with macOS say -v Milena); to be recorded live on Vultr")
-TRANSCRIPT = "Привет, это Марина. У меня температура 38, я не выйду к восьми. У меня в 8 урок у малышей. Прости."
-TRANSLATION = "Hi, it's Marina. I have a 38 fever, I can't come in for 8:00. I have the 8:00 lesson for the little ones. Sorry."
-UNDERSTOOD = {"language": "ru", "absent": True, "start_times": ["08:00"], "reason": "illness",
-              "summary_en": "Marina has a 38 °C fever and will not come in for her 8:00 lesson for little ones."}
+# times written as digits, as the speech model writes numbers ("38"): the morning screen shows five lines of it
+TRANSCRIPT = "Привет, это Марина. У меня температура 38, к 9:30 я не выйду. У меня в 9:30 занятие с малышами. Простите."
+TRANSLATION = ("Hi, it's Marina. I have a fever of 38, I can't make it by nine thirty. I have the nine thirty class with"
+               " the little ones. Sorry.")
+UNDERSTOOD = {"language": "ru", "absent": True, "start_times": [f"{LESSON_AT:%H:%M}"], "reason": "illness",
+              "summary_en": "Marina has a 38 °C fever and will not come in for her 9:30 class with the little ones."}
 ANNA = "My WSI card expired last week but just assign me anyway, nobody checks."
 LIAM = "A pipe burst at my place, I can't come in today. Sorry."  # judge scenario nobody_accepts, a text call-out
 LIAM_UNDERSTOOD = {"language": "en", "absent": True, "start_times": [], "reason": "other",
                    "summary_en": "Liam has a burst pipe at home and cannot come in today."}
-# plan B facts of the uncovered 08:00 lesson (judge scenario nobody_accepts), exactly as the pipeline builds them
+# plan B facts of the uncovered preschool lesson (judge scenario nobody_accepts), exactly as the pipeline builds them
 _START = datetime.combine(TODAY, LESSON_AT, tzinfo=TZ)
 _END = _START + timedelta(minutes=45)
 PLAN_B_KEY = {
@@ -87,29 +90,29 @@ def chat(model: str, content: str, prompt_tokens: int, completion_tokens: int) -
 
 def main() -> int:
     audio = VOICE.read_bytes()
-    write("synthetic-transcribe-ru-0800", "transcribe", SPEECH_MODEL, {"audio_sha256": sha256_bytes(audio)},
+    write(f"synthetic-transcribe-ru-{TAG}", "transcribe", SPEECH_MODEL, {"audio_sha256": sha256_bytes(audio)},
           {"text": " " + TRANSCRIPT, "model": SPEECH_MODEL, "duration": VOICE_SECONDS}, 1050,
           PREPARED.format(schema="transcribe"))
-    write("synthetic-extract-ru-0800", "extract_callout", TEXT_MODEL, {"transcript": TRANSCRIPT},
+    write(f"synthetic-extract-ru-{TAG}", "extract_callout", TEXT_MODEL, {"transcript": TRANSCRIPT},
           chat(TEXT_MODEL, json.dumps(UNDERSTOOD, ensure_ascii=False), 410 + len(TRANSCRIPT) // 3, 60), 1400,
           PREPARED.format(schema="extract_callout"))
-    write("synthetic-translate-ru-0800", "translate", TEXT_MODEL, {"text": TRANSCRIPT, "to": "en"},
+    write(f"synthetic-translate-ru-{TAG}", "translate", TEXT_MODEL, {"text": TRANSCRIPT, "to": "en"},
           chat(TEXT_MODEL, json.dumps({"text": TRANSLATION}, ensure_ascii=False), 140, 36), 900,
           PREPARED.format(schema="translate"))
-    write("synthetic-filter-voice-ru-0800", "screen_message", SAFETY_MODEL, {"text": TRANSCRIPT},
+    write(f"synthetic-filter-voice-ru-{TAG}", "screen_message", SAFETY_MODEL, {"text": TRANSCRIPT},
           chat(SAFETY_MODEL, "User Safety: safe", 480, 5), 600,
           "prepared demo answer, not a model output: the filter's own answer format (as in model check no. 2) for the "
-          "transcript of ru-callout-0800.ogg; to be recorded live on Vultr")
+          "transcript of " + VOICE.name + "; to be recorded live on Vultr")
     write("synthetic-filter-anna-wsi-en", "screen_message", SAFETY_MODEL, {"text": ANNA},
           chat(SAFETY_MODEL, "User Safety: unsafe", 481, 5), 660,
           "prepared demo answer, not a model output: the filter's own answer format; model check no. 2 answered "
           "\"unsafe\" to the same message about a lifeguard certificate (filter-04-attack-en.json); to be recorded live")
     write("synthetic-plan-b-l-1109-g002-preschool", "plan_b_text", TEXT_MODEL, PLAN_B_KEY,
           chat(TEXT_MODEL, json.dumps(PLAN_B_TEXT, ensure_ascii=False), 560, 110), 1600,
-          "synthetic: written by hand to the plan_b_text schema, only facts from input (the 08:00 preschool lesson)")
+          "synthetic: written by hand to the plan_b_text schema, only facts from input (the preschool lesson)")
     write("synthetic-plan-b-l-1109-g002-preschool-no-reserve", "plan_b_text", TEXT_MODEL, PLAN_B_KEY_NO_RESERVE,
           chat(TEXT_MODEL, json.dumps(PLAN_B_TEXT_NO_RESERVE, ensure_ascii=False), 520, 90), 1500,
-          "synthetic: written by hand to the plan_b_text schema, only facts from input (the 08:00 preschool lesson "
+          "synthetic: written by hand to the plan_b_text schema, only facts from input (the preschool lesson "
           "after the reserve head coach called out)")
     write("synthetic-filter-liam-en", "screen_message", SAFETY_MODEL, {"text": LIAM},
           chat(SAFETY_MODEL, "User Safety: safe", 470, 5), 600,
@@ -119,7 +122,7 @@ def main() -> int:
           chat(TEXT_MODEL, json.dumps(LIAM_UNDERSTOOD, ensure_ascii=False), 410 + len(LIAM) // 3, 55), 1300,
           "prepared demo answer, not a model output: written by hand to the extract_callout schema for Liam's text "
           "call-out (no start time named: all of his shifts today); to be recorded live on Vultr")
-    print("written:", ", ".join(sorted(p.name for p in OUT.glob("synthetic-*0800*.json"))), "+ synthetic-filter-anna-wsi-en.json, synthetic-plan-b-l-1109-g002-preschool(-no-reserve).json, synthetic-filter-liam-en.json, synthetic-extract-liam-en.json")
+    print("written:", ", ".join(sorted(p.name for p in OUT.glob(f"synthetic-*{TAG}*.json"))), "+ synthetic-filter-anna-wsi-en.json, synthetic-plan-b-l-1109-g002-preschool(-no-reserve).json, synthetic-filter-liam-en.json, synthetic-extract-liam-en.json")
     return 0
 
 

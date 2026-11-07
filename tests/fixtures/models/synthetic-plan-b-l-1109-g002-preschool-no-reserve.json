@@ -4,11 +4,11 @@
  "input": {
   "shift": {
    "id": "L-1109-G002",
-   "label": "Mon 08:00-08:45 · Swim instructor · Preschool · Riverside Aquatic Center",
+   "label": "Mon 09:30-10:15 · Swim instructor · Preschool · Riverside Aquatic Center",
    "venue": "Riverside Aquatic Center",
    "zone_id": "V1-TEACH",
-   "start": "2026-11-09T13:00:00+00:00",
-   "end": "2026-11-09T13:45:00+00:00",
+   "start": "2026-11-09T14:30:00+00:00",
+   "end": "2026-11-09T15:15:00+00:00",
    "role": "instructor"
   },
   "options": [
@@ -43,9 +43,9 @@
    }
   ]
  },
- "input_sha256": "ee536e673485b44c6d4065a54580ce3cfe884b17e1c70e8c316ea452aec253a6",
+ "input_sha256": "30220883b770a313e11923b5e8a6b0a0aaca122e279204ed4d4920828851f93c",
  "synthetic": true,
- "source": "synthetic: written by hand to the plan_b_text schema, only facts from input (the 08:00 preschool lesson after the reserve head coach called out)",
+ "source": "synthetic: written by hand to the plan_b_text schema, only facts from input (the preschool lesson after the reserve head coach called out)",
  "duration_ms": 1500,
  "response": {
   "model": "muse-glimmer-30b",
@@ -57,7 +57,7 @@
    {
     "message": {
      "role": "assistant",
-     "content": "{\"headline\": \"Nobody took Monday 08:00 Preschool swim at Riverside Aquatic Center: 8 families are waiting\", \"lines\": [\"Camila Herrera covers it on overtime: 0.25 h over the week, about $8.50.\", \"Move the lesson: the 8 families book a makeup by December 9.\", \"Cancel the lesson: the 8 families get a lesson credit.\"]}"
+     "content": "{\"headline\": \"Nobody took Monday 09:30 Preschool swim at Riverside Aquatic Center: 8 families are waiting\", \"lines\": [\"Camila Herrera covers it on overtime: 0.25 h over the week, about $8.50.\", \"Move the lesson: the 8 families book a makeup by December 9.\", \"Cancel the lesson: the 8 families get a lesson credit.\"]}"
     }
    }
   ]

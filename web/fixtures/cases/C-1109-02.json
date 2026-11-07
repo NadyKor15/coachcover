@@ -5,36 +5,36 @@
   "covered_time_label": null,
   "covered_by": null,
   "covered_via": null,
-  "shift_label": "09:00 Teaching pool + Learn-to-Swim Level 1",
+  "shift_label": "10:30 Teaching pool + Learn-to-Swim Level 1",
   "venue": {
     "id": "V1",
     "name": "Riverside Aquatic Center"
   },
   "date_label": "Mon, Nov 9",
   "user_label": "Natalie Brooks · Manager",
-  "opened_at": "2026-11-09T12:15:00Z",
+  "opened_at": "2026-11-09T13:45:00Z",
   "closed_at": null,
   "steps": [
     {
       "kind": "ratio",
-      "at": "2026-11-09T12:15:00Z",
-      "time_label": "12:15:00 UTC",
-      "title": "Norm broken: Level 1, Mon 09:00 — now 6 kids, ratio 1:4",
+      "at": "2026-11-09T13:45:00Z",
+      "time_label": "13:45:00 UTC",
+      "title": "Norm broken: Level 1, Mon 10:30 — now 6 kids, ratio 1:4",
       "summary": "2 added by front desk; instructors needed: 1 → 2"
     },
     {
       "kind": "shift",
-      "at": "2026-11-09T12:15:00Z",
-      "time_label": "12:15:00 UTC",
+      "at": "2026-11-09T13:45:00Z",
+      "time_label": "13:45:00 UTC",
       "title": "Shift identified",
       "shift_id": "L-1109-G003-I2",
-      "summary": "09:00–09:30 · Needs: Instructor · Program LTS-1",
+      "summary": "10:30–11:00 · Needs: Instructor · Program LTS-1",
       "model_tag": null
     },
     {
       "kind": "allowed",
-      "at": "2026-11-09T12:15:00Z",
-      "time_label": "12:15:00 UTC",
+      "at": "2026-11-09T13:45:00Z",
+      "time_label": "13:45:00 UTC",
       "title": "Who is allowed",
       "total": 40,
       "allowed": 6,
@@ -90,7 +90,7 @@
         },
         {
           "code": "OVERLAPS_COMMITMENT",
-          "label": "Teaching at 9:00",
+          "label": "Teaching at 10:30",
           "count": 1,
           "tone": "risk"
         },
@@ -169,22 +169,16 @@
           "reason_label": "Not cleared for LTS-1"
         },
         {
-          "id": "S30",
-          "name": "Nikita Morozov",
-          "allowed": false,
-          "reason_label": "Role: not an instructor"
-        },
-        {
-          "id": "S32",
-          "name": "Isabela Cruz",
-          "allowed": false,
-          "reason_label": "Role: not an instructor"
-        },
-        {
           "id": "S13",
           "name": "Elena Kuznetsova",
           "allowed": false,
           "reason_label": "Readers disagree — review"
+        },
+        {
+          "id": "S30",
+          "name": "Nikita Morozov",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
         },
         {
           "id": "S33",
@@ -219,6 +213,12 @@
         {
           "id": "S28",
           "name": "Ava Mitchell",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
+          "id": "S32",
+          "name": "Isabela Cruz",
           "allowed": false,
           "reason_label": "Role: not an instructor"
         },
@@ -262,7 +262,7 @@
           "id": "S01",
           "name": "Emma Carter",
           "allowed": false,
-          "reason_label": "Teaching at 9:00"
+          "reason_label": "Teaching at 10:30"
         },
         {
           "id": "S36",
@@ -346,13 +346,13 @@
     },
     {
       "kind": "offers",
-      "at": "2026-11-09T12:15:00Z",
-      "time_label": "12:15:00 UTC",
+      "at": "2026-11-09T13:45:00Z",
+      "time_label": "13:45:00 UTC",
       "title": "Offers in order",
       "offers": [
         {
           "id": "O-4",
-          "time_label": "07:15",
+          "time_label": "08:45",
           "staff": "Grace Sullivan",
           "result": "pending",
           "result_label": "asked, waiting",
@@ -360,7 +360,7 @@
         },
         {
           "id": "O-5",
-          "time_label": "07:15",
+          "time_label": "08:45",
           "staff": "Diego Navarro",
           "result": "pending",
           "result_label": "asked, waiting",
@@ -368,7 +368,7 @@
         },
         {
           "id": "O-6",
-          "time_label": "07:15",
+          "time_label": "08:45",
           "staff": "Sofía García",
           "result": "pending",
           "result_label": "asked, waiting",
@@ -379,7 +379,7 @@
   ],
   "proof": {
     "plan_id": null,
-    "plan_hash": "fab9eebd6caa4b63e2e886c20b68b0dc5ff93bc77e73f8a1ebc6721e389b3c93",
+    "plan_hash": "8d5ad2b871da0e99ecb1bb42455628f8832a10d93dde58ef38d9575648bb4f5a",
     "policy_label": "cover = auto · plan B = propose"
   },
   "model_calls": [],

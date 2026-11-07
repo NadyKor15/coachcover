@@ -9,7 +9,7 @@ The loan states other than the judge's network scene need Python inside the stac
 
 Order of calls (each judge run resets the training school):
   1. judge dangerous_morning → today.json, every offer of the case, the case page;
-     enrol 2 children into G003 (Mon 09:00) → today.ratio_open.json and the ratio case; the first offer of that case is the pending
+     enrol 2 children into G003 (Mon 10:30) → today.ratio_open.json and the ratio case; the first offer of that case is the pending
      phone screen; decline the second and accept the first (real 200 answers) → today.ratio_covered.json;
      accept Leo's stood-down offer → the real 409 answer.
   2. judge nobody_accepts → today.nobody_accepts.json; approve the plan with a wrong hash (real 409), then with its own

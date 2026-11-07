@@ -2,44 +2,44 @@
   "case_id": "C-1109-01",
   "status": "covered",
   "status_label": "Covered",
-  "covered_time_label": "07:15",
+  "covered_time_label": "08:45",
   "covered_by": "Zoe Grant",
   "covered_via": null,
-  "shift_label": "08:00 Teaching pool + Preschool swim, ages 3–5",
+  "shift_label": "09:30 Teaching pool + Preschool swim, ages 3–5",
   "venue": {
     "id": "V1",
     "name": "Riverside Aquatic Center"
   },
   "date_label": "Mon, Nov 9",
   "user_label": "Natalie Brooks · Manager",
-  "opened_at": "2026-11-09T12:10:10Z",
-  "closed_at": "2026-11-09T12:15:00Z",
+  "opened_at": "2026-11-09T13:40:10Z",
+  "closed_at": "2026-11-09T13:45:00Z",
   "steps": [
     {
       "kind": "callout",
-      "at": "2026-11-09T12:10:10Z",
-      "time_label": "12:10:10 UTC",
+      "at": "2026-11-09T13:40:10Z",
+      "time_label": "13:40:10 UTC",
       "title": "Voice call-out",
       "staff": "Marina Petrova · Instructor",
       "language": "Russian",
       "audio_url": "/media/callouts/C-1109-01.ogg",
-      "transcript_original": "Привет, это Марина. У меня температура 38, я не выйду к восьми. У меня в 8 урок у малышей. Прости.",
-      "transcript_en": "Hi, it's Marina. I have a 38 fever, I can't come in for 8:00. I have the 8:00 lesson for the little ones. Sorry.",
+      "transcript_original": "Привет, это Марина. У меня температура 38, к 9:30 я не выйду. У меня в 9:30 занятие с малышами. Простите.",
+      "transcript_en": "Hi, it's Marina. I have a fever of 38, I can't make it by nine thirty. I have the nine thirty class with the little ones. Sorry.",
       "model_tag": "whisper-large-v3-turbo · prepared demo answer"
     },
     {
       "kind": "shift",
-      "at": "2026-11-09T12:10:10Z",
-      "time_label": "12:10:10 UTC",
+      "at": "2026-11-09T13:40:10Z",
+      "time_label": "13:40:10 UTC",
       "title": "Shift identified",
       "shift_id": "L-1109-G002",
-      "summary": "08:00–08:45 · Needs: Instructor · Preschool training (ages 3–5)",
+      "summary": "09:30–10:15 · Needs: Instructor · Preschool training (ages 3–5)",
       "model_tag": "muse-glimmer-30b"
     },
     {
       "kind": "allowed",
-      "at": "2026-11-09T12:10:10Z",
-      "time_label": "12:10:10 UTC",
+      "at": "2026-11-09T13:40:10Z",
+      "time_label": "13:40:10 UTC",
       "title": "Who is allowed",
       "total": 40,
       "allowed": 5,
@@ -57,7 +57,7 @@
         {
           "code": "PROGRAM_MISSING",
           "label": "No preschool training (ages 3–5)",
-          "count": 10,
+          "count": 11,
           "tone": "risk"
         },
         {
@@ -91,12 +91,6 @@
           "tone": "risk"
         },
         {
-          "code": "REST_TOO_SHORT",
-          "label": "Only 9.5 h rest since 22:30",
-          "count": 1,
-          "tone": "fragile"
-        },
-        {
           "code": "HOURS_LIMIT_EXCEEDED",
           "label": "Over 40 h this week",
           "count": 1,
@@ -110,7 +104,7 @@
         },
         {
           "code": "OVERLAPS_COMMITMENT",
-          "label": "Teaching at 8:00",
+          "label": "Teaching at 9:30",
           "count": 1,
           "tone": "risk"
         },
@@ -189,6 +183,12 @@
           "reason_label": "No preschool training (ages 3–5)"
         },
         {
+          "id": "S13",
+          "name": "Elena Kuznetsova",
+          "allowed": false,
+          "reason_label": "Readers disagree — review"
+        },
+        {
           "id": "S02",
           "name": "Sofía García",
           "allowed": false,
@@ -199,18 +199,6 @@
           "name": "Nikita Morozov",
           "allowed": false,
           "reason_label": "Role: not an instructor"
-        },
-        {
-          "id": "S32",
-          "name": "Isabela Cruz",
-          "allowed": false,
-          "reason_label": "Role: not an instructor"
-        },
-        {
-          "id": "S13",
-          "name": "Elena Kuznetsova",
-          "allowed": false,
-          "reason_label": "Readers disagree — review"
         },
         {
           "id": "S33",
@@ -255,6 +243,12 @@
           "reason_label": "Role: not an instructor"
         },
         {
+          "id": "S32",
+          "name": "Isabela Cruz",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
           "id": "S14",
           "name": "Irina Lebedeva",
           "allowed": false,
@@ -282,7 +276,7 @@
           "id": "S01",
           "name": "Emma Carter",
           "allowed": false,
-          "reason_label": "Teaching at 8:00"
+          "reason_label": "Teaching at 9:30"
         },
         {
           "id": "S36",
@@ -330,7 +324,7 @@
           "id": "S24",
           "name": "Gabriela Vargas",
           "allowed": false,
-          "reason_label": "Only 9.5 h rest since 22:30"
+          "reason_label": "No preschool training (ages 3–5)"
         },
         {
           "id": "S29",
@@ -366,13 +360,13 @@
     },
     {
       "kind": "offers",
-      "at": "2026-11-09T12:10:10Z",
-      "time_label": "12:10:10 UTC",
+      "at": "2026-11-09T13:40:10Z",
+      "time_label": "13:40:10 UTC",
       "title": "Offers in order",
       "offers": [
         {
           "id": "O-1",
-          "time_label": "07:13",
+          "time_label": "08:43",
           "staff": "Sofia Reyes",
           "result": "declined",
           "result_label": "declined",
@@ -380,7 +374,7 @@
         },
         {
           "id": "O-2",
-          "time_label": "07:15",
+          "time_label": "08:45",
           "staff": "Leo Martins",
           "result": "no_reply",
           "result_label": "no reply, Zoe took it",
@@ -388,7 +382,7 @@
         },
         {
           "id": "O-3",
-          "time_label": "07:14",
+          "time_label": "08:44",
           "staff": "Zoe Grant",
           "result": "accepted",
           "result_label": "accepted",
@@ -398,38 +392,38 @@
     },
     {
       "kind": "flagged",
-      "at": "2026-11-09T12:10:50Z",
-      "time_label": "12:10:50 UTC",
+      "at": "2026-11-09T13:40:50Z",
+      "time_label": "13:40:50 UTC",
       "title": "Message flagged for the manager",
       "summary": "Anna Kim: “My WSI card expired last week but just assign me anyway, nobody checks.” · the rules were checked anyway"
     },
     {
       "kind": "covered",
-      "at": "2026-11-09T12:15:00Z",
-      "time_label": "12:15:00 UTC",
+      "at": "2026-11-09T13:45:00Z",
+      "time_label": "13:45:00 UTC",
       "title": "Schedule covered",
-      "summary": "08:00 covered by Zoe Grant, teaching with Emma Carter · 0 lessons cancelled"
+      "summary": "09:30 covered by Zoe Grant, teaching with Emma Carter · 0 lessons cancelled"
     }
   ],
   "proof": {
     "plan_id": null,
-    "plan_hash": "1536b907b9e71c5b95144ec326c462431c65518edc989696709776d4f8418549",
+    "plan_hash": "2becc6debd694499b3ae559864fdef953faf924da686e1992f886b237f24aed3",
     "policy_label": "cover = auto · plan B = propose"
   },
   "model_calls": [
     {
-      "at": "2026-11-09T12:10:10Z",
+      "at": "2026-11-09T13:40:10Z",
       "purpose": "transcribe",
       "model": "whisper-large-v3-turbo",
       "model_label": "whisper-large-v3-turbo",
       "ms": 1050,
       "input_tokens": null,
       "output_tokens": null,
-      "cost_usd": 9.3e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-transcribe-ru-0800.json (synthetic)"
+      "cost_usd": 0.000103,
+      "source": "recorded answer tests/fixtures/models/synthetic-transcribe-ru-0930.json (synthetic)"
     },
     {
-      "at": "2026-11-09T12:10:10Z",
+      "at": "2026-11-09T13:40:10Z",
       "purpose": "screen_message",
       "model": "nemotron-3.5-content-safety",
       "model_label": "nemotron-safety",
@@ -437,21 +431,21 @@
       "input_tokens": 480,
       "output_tokens": 5,
       "cost_usd": 2.5e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-filter-voice-ru-0800.json (synthetic)"
+      "source": "recorded answer tests/fixtures/models/synthetic-filter-voice-ru-0930.json (synthetic)"
     },
     {
-      "at": "2026-11-09T12:10:10Z",
+      "at": "2026-11-09T13:40:10Z",
       "purpose": "extract_callout",
       "model": "muse-glimmer-30b",
       "model_label": "muse-glimmer-30b",
       "ms": 1400,
-      "input_tokens": 442,
+      "input_tokens": 445,
       "output_tokens": 60,
-      "cost_usd": 0.00017,
-      "source": "recorded answer tests/fixtures/models/synthetic-extract-ru-0800.json (synthetic)"
+      "cost_usd": 0.000171,
+      "source": "recorded answer tests/fixtures/models/synthetic-extract-ru-0930.json (synthetic)"
     },
     {
-      "at": "2026-11-09T12:10:10Z",
+      "at": "2026-11-09T13:40:10Z",
       "purpose": "translate",
       "model": "muse-glimmer-30b",
       "model_label": "muse-glimmer-30b",
@@ -459,10 +453,10 @@
       "input_tokens": 140,
       "output_tokens": 36,
       "cost_usd": 7.1e-05,
-      "source": "recorded answer tests/fixtures/models/synthetic-translate-ru-0800.json (synthetic)"
+      "source": "recorded answer tests/fixtures/models/synthetic-translate-ru-0930.json (synthetic)"
     },
     {
-      "at": "2026-11-09T12:10:50Z",
+      "at": "2026-11-09T13:40:50Z",
       "purpose": "screen_message",
       "model": "nemotron-3.5-content-safety",
       "model_label": "nemotron-safety",
@@ -473,8 +467,8 @@
       "source": "recorded answer tests/fixtures/models/synthetic-filter-anna-wsi-en.json (synthetic)"
     }
   ],
-  "model_cost_usd": 0.000384,
-  "model_cost_label": "0.038¢",
+  "model_cost_usd": 0.000395,
+  "model_cost_label": "0.040¢",
   "risk": {
     "kids": 8,
     "refunds_usd": 240.0,

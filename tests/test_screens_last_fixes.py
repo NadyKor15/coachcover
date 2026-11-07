@@ -53,8 +53,9 @@ def test_case_reasons_say_risk_or_fragile_and_money_has_a_case_cost_label(api):
     tones = {r["code"]: r["tone"] for r in reasons}
     assert set(tones.values()) <= {"risk", "fragile"}
     assert tones["CERT_EXPIRED"] == tones["CERT_REVOKED"] == tones["HOURS_LIMIT_EXCEEDED"] == tones["PROGRAM_MISSING"] == "risk"
-    assert tones["CERT_NEEDS_REVIEW"] == tones["REST_TOO_SHORT"] == "fragile"
-    assert case_tone("PROGRAM_RENEWAL_OVERDUE") == "fragile"  # not first for anyone on the 08:00 morning
+    assert tones["CERT_NEEDS_REVIEW"] == "fragile"
+    # not first for anyone on the 09:30 morning; the same lists decide them
+    assert case_tone("PROGRAM_RENEWAL_OVERDUE") == case_tone("REST_TOO_SHORT") == "fragile"
     money = client.get("/api/today").json()["money"]
     assert money["case_cost_label"] == cost_label(money["case_cost_cents"] / 100) and money["case_cost_label"].endswith("¢")
 

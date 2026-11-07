@@ -4,7 +4,7 @@ Static files, no build step. Three pages:
 
 | Page | Screen | Data |
 |---|---|---|
-| `index.html` | C: manager's morning, "Who is allowed on deck at 08:00" (1920 × 1080) | `GET /api/today` |
+| `index.html` | C: manager's morning, "Who is allowed on deck at 09:30" (1920 × 1080) | `GET /api/today` |
 | `offer.html?id=O-1` | P2: shift offer on the coach's phone (430 wide) | `GET /api/offers/{id}` |
 | `case.html?id=C-1109-01` | case page (proof record, variant B), 1920 wide, height follows the data | `GET /api/cases/{id}` |
 | `week.html[?venue=V1&start=2026-11-08]` | Week ahead (W_B): backups per shift, fragile shifts, plan ahead | `GET /api/week`, `GET /api/today` |
@@ -56,7 +56,7 @@ docker compose -p ccweb-fx down -v --rmi local
 |---|---|
 | `fixtures/today.json` | `GET /api/today` after the judge runs the call-out (default) |
 | `fixtures/today.nobody_accepts.json`, `today.nightly_check.json` | `GET /api/today` after the other two judge runs |
-| `fixtures/today.ratio_open.json`, `today.ratio_covered.json` | `GET /api/today` after 2 children are enrolled into G003 (Mon 09:00): ratio banner red, then green |
+| `fixtures/today.ratio_open.json`, `today.ratio_covered.json` | `GET /api/today` after 2 children are enrolled into G003 (Mon 10:30): ratio banner red, then green |
 | `fixtures/offers/O-*.json` | `GET /api/offers/{id}`: every offer of the morning, plus one open offer for the phone screen |
 | `fixtures/cases/C-*.json` | `GET /api/cases/{id}`: the morning's case and the ratio case |
 | `fixtures/mocks.json` | the real answers of the POST calls, captured in the same run |

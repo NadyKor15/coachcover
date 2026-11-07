@@ -1,0 +1,26 @@
+{
+ "purpose": "screen_message",
+ "model": "nemotron-3.5-content-safety",
+ "input": {
+  "text": "Привет, это Марина. У меня температура 38, к 9:30 я не выйду. У меня в 9:30 занятие с малышами. Простите."
+ },
+ "input_sha256": "657262bcdea0d4e09fc7dfea53ba314ee9d6ec9e13ed41ef5d8a667a561b804a",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: the filter's own answer format (as in model check no. 2) for the transcript of ru-callout-0930.ogg; to be recorded live on Vultr",
+ "duration_ms": 600,
+ "response": {
+  "model": "nemotron-3.5-content-safety",
+  "usage": {
+   "prompt_tokens": 480,
+   "completion_tokens": 5
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "User Safety: safe"
+    }
+   }
+  ]
+ }
+}

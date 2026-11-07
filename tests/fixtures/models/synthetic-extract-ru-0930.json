@@ -1,0 +1,26 @@
+{
+ "purpose": "extract_callout",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "transcript": "Привет, это Марина. У меня температура 38, к 9:30 я не выйду. У меня в 9:30 занятие с малышами. Простите."
+ },
+ "input_sha256": "2594e342d49fd786de36b3a3f3369283c31b48daafb4a8fa2708325963ab0e12",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: written by hand to the extract_callout schema for ru-callout-0930.ogg (synthesized locally with macOS say -v Milena); to be recorded live on Vultr",
+ "duration_ms": 1400,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 445,
+   "completion_tokens": 60
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"language\": \"ru\", \"absent\": true, \"start_times\": [\"09:30\"], \"reason\": \"illness\", \"summary_en\": \"Marina has a 38 °C fever and will not come in for her 9:30 class with the little ones.\"}"
+    }
+   }
+  ]
+ }
+}
