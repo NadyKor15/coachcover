@@ -173,3 +173,25 @@ def test_a_staff_message_is_translated_into_natural_english():
     prepared = json.loads((Path(__file__).parent / "fixtures/models/synthetic-translate-ru-0930.json").read_text())
     text = json.loads(prepared["response"]["choices"][0]["message"]["content"])["text"]
     assert "can't make it by nine thirty" in text and "won't be out" not in text
+
+
+def test_the_translation_prompt_keeps_the_fever_with_its_number_and_unit():
+    """Live, 2026-11-07: "I have a temperature 38" was word for word. The prompt the model gets now carries the
+    example; checked on what the model is really sent (fake transport)."""
+    from coachcover.models import MemoryLedger
+
+    sent = []
+
+    def transport(path, request):
+        sent.append(request["json"])
+        return {"model": TEXT_MODEL, "usage": {"prompt_tokens": 120, "completion_tokens": 30},
+                "choices": [{"message": {"content": json.dumps({"text": "Hi, it's Marina. I've got a fever of 38 °C, "
+                                                                "so I can't come in for nine thirty."})}}]}, 700
+
+    p = Pipeline(None, ModelClient(MemoryLedger(), mode="live", api_key="test-only", transport=transport), "x")
+    text, how = p._translate("Привет, это Марина. У меня температура 38, к половине десятого я не выйду.", "ru",
+                             seed.NOW, {"callout_id": "test"})
+    system = sent[0]["messages"][0]["content"]
+    assert "I've got a fever of 38 °C" in system and "not \"I have a temperature 38\"" in system
+    assert "Keep every number with its unit" in system
+    assert how == "model" and text.startswith("Hi, it's Marina. I've got a fever of 38 °C")

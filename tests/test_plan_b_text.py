@@ -138,3 +138,20 @@ def test_the_morning_strip_says_the_plan_in_a_few_words():
     assert lines[1:5] == ["Liam Foster (reserve) steps in", "Camila Herrera: 15 min overtime ($8.50)",
                           "Move it: makeup for 8 families by Dec 9", "Cancel: credit for 8 families"]
     assert not any(M.PLAN_IDS.search(x) or M.PLAN_CODES.search(x) or M.DECIMAL_HOURS.search(x) for x in lines)
+
+
+def test_a_line_without_a_verb_is_not_shown():
+    """Live, 2026-11-07: "Camila Herrera 15 minutes of overtime ($8.50)" named the person and the money but said
+    nothing happens; the template goes out instead."""
+    options = [o for o in EVERY_KIND if o["kind"] in ("overtime", "close")]
+    view = M.plan_b_view(facts(options))
+    bare = {"headline": "Nobody has taken the 09:30 lesson yet",
+            "lines": ["Camila Herrera 15 minutes of overtime ($8.50)", "Cancel it: 8 families get a credit."]}
+    assert M.plan_text_problems(view, bare) == ["line 1: does not say what happens (overtime)"]
+    for ok in ("Camila Herrera works 15 minutes of overtime ($8.50).", "Camila Herrera: 15 min overtime ($8.50)",
+               "Camila Herrera covers it with 15 minutes of overtime ($8.50)."):
+        assert M.plan_text_problems(view, {**bare, "lines": [ok, bare["lines"][1]]}) == [], ok
+    p, _, _ = live_pipeline(bare)
+    text, source = p._plan_text(facts(options), datetime(2026, 11, 9, 8, 47, tzinfo=NY), 1)
+    assert source == "template" and text["lines"][0] == "Camila Herrera works 15 minutes of overtime ($8.50)."
+    assert text["model_text_rejected"] == ["line 1: does not say what happens (overtime)"]
