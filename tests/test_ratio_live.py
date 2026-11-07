@@ -43,6 +43,9 @@ def test_four_to_six_children_at_one_to_four_opens_a_case_and_the_queue_runs(api
     assert conn.execute("SELECT source FROM cover_case WHERE code = %s", (case["case_id"],)).fetchone() == ("ratio",)
     assert conn.execute("SELECT family_counts FROM lesson_group WHERE id = %s", (GROUP,)).fetchone()[0] == {"es": 5, "en": 1}
 
+    page = client.get(f"/api/cases/{case['case_id']}")
+    assert page.status_code == 200, page.text  # the case file of a ratio case opens like any other
+    assert page.json()["steps"][0]["kind"] == "ratio"
     banner = client.get("/api/today").json()["ratio_alert"]
     assert banner["label"] == "Level 1, Mon 07:00 — now 6 kids, ratio 1:4 broken"
     assert (banner["status"], banner["tone"], banner["case_id"]) == ("open", "red", case["case_id"])

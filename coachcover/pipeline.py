@@ -840,8 +840,11 @@ class Pipeline:
         partner_ids = [r[0] for r in self.conn.execute(
             "SELECT s.id FROM shift s WHERE s.venue_id = %s AND s.role_id = (SELECT role_id FROM shift WHERE id = %s)"
             " AND s.starts_at = %s AND s.ends_at = %s AND s.status = 'scheduled' AND s.id <> %s"
-            " AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = s.id) ORDER BY s.id",
-            (shift.venue, shift_id, shift.start, shift.end, shift_id),
+            " AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = s.id)"
+            # a shift teaching the same groups (an instructor seat of a broken norm) is not a group next door
+            " AND NOT EXISTS (SELECT 1 FROM shift_group a JOIN shift_group b ON b.group_id = a.group_id"
+            "  WHERE a.shift_id = s.id AND b.shift_id = %s) ORDER BY s.id",
+            (shift.venue, shift_id, shift.start, shift.end, shift_id, shift_id),
         )]
         asked = {r[0] for r in self.conn.execute("SELECT staff_id FROM offer WHERE case_id = %s", (case_id,))}
         options, rejected = plan_b_options(

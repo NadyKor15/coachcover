@@ -618,6 +618,14 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         at, data = first["night_check_found"]
         steps.append({"kind": "night_check", "at": _utc(at), "time_label": _utc_label(at), "title": "Night check",
                       "summary": f"{data['name']}: " + "; ".join(r["text"] for r in data.get("reasons", []))})
+    if "ratio_broken" in first:
+        at, data = first["ratio_broken"]
+        word = preset.copy.get("participants", "participants")
+        steps.append({"kind": "ratio", "at": _utc(at), "time_label": _utc_label(at),
+                      "title": f"Norm broken: {data['group_name']} — now {data['participants']} {word}, "
+                               f"ratio 1:{data['max_per_instructor']}",
+                      "summary": f"{data['added']} added by {data['by']}; instructors needed: "
+                                 f"{data['instructors_before']} → {data['instructors_needed']}"})
     for _, at, kind, data in events:
         if kind == "flagged_for_manager":
             steps.append({"kind": "flagged", "at": _utc(at), "time_label": _utc_label(at),
