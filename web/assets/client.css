@@ -1,0 +1,41 @@
+/* The family's page of a private lesson: the twin of the coach's offer (offer.css gives the header, card, buttons and
+   result strip; this file only adds what the family sees on top). Brand teal / gold from offer.css, statuses from
+   status.css. */
+.screen { min-height: 583.3px; }
+
+/* header: the brand left, who the page is for right */
+.top { justify-content: space-between; }
+.signed { margin: 13.35px 17.8px 0 0; font: 600 14.5px/17px "Figtree", sans-serif; letter-spacing: -.1px; color: var(--brand-ink); white-space: nowrap; }
+
+/* "Got it ... see the new time below": above the card it points to */
+.notice { margin: 0 13px 10px; }
+.result span { text-wrap: balance; }
+
+/* card */
+.card { min-height: 0; padding-bottom: 8px; }
+.offer-head { height: auto; padding-right: 14px; }
+.ask { flex: 1 1 auto; min-width: 0; font: 800 30px/33px "Figtree", sans-serif; letter-spacing: -.6px; text-wrap: balance; }
+
+.facts { list-style: none; margin-top: 13.5px; flex: none; }
+.fact { display: flex; align-items: flex-start; min-height: 25px; }
+.fact[hidden] { display: none; }
+.fact svg { display: block; width: 16px; height: 16px; margin: 3px 0 0 20px; flex: none; }
+.fact-text { margin-left: 13px; padding-right: 16px; font: 500 16px/22px "Figtree", sans-serif; letter-spacing: -.15px; }
+.when { white-space: nowrap; }
+
+.rule-1 { margin-top: 12px; }
+
+/* the thread with the school: school on the left, the family's answers on the right, oldest first */
+.thread { list-style: none; margin-top: 6px; padding: 0 14px 4px; display: flex; flex-direction: column; gap: 9px; }
+.msg { display: flex; flex-direction: column; align-items: flex-start; }
+.msg.family { align-items: flex-end; }
+.bubble { max-width: 312px; padding: 9px 13px 10px; border-radius: 15px 15px 15px 5px; background: var(--gold-soft); color: var(--ink);
+  font: 500 15.5px/20.5px "Figtree", sans-serif; letter-spacing: -.15px; overflow-wrap: anywhere; }
+.msg.family .bubble { min-width: 58px; text-align: center; border-radius: 15px 15px 5px 15px; background: var(--teal); color: #fff; font-weight: 700; }
+.msg-time { margin: 3px 5px 0; font: 500 12.1px/14px "Figtree", sans-serif; color: var(--ink); white-space: nowrap; }
+
+/* action bar: grows with what it holds (the offer's is a fixed 85 px) */
+.actions { height: auto; padding-bottom: 12px; }
+.answer-by { margin: 0 0 9px; text-align: center; font: 600 15px/18px "Figtree", sans-serif; letter-spacing: -.1px; }
+.answer-by[hidden] { display: none; }
+.answer-by span { font-weight: 800; }

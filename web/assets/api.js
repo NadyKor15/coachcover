@@ -5,6 +5,8 @@
  *   &mock=plan_changed   POST /api/plans/{id}/approve answers 409 {"reason":"plan changed", ...}
  *   &mock=not_eligible   POST /api/offers/{id}/accept answers 409 {"reason": ...}
  *   &mock=ratio_open | ratio_covered   GET /api/today with the children-per-instructor banner open or covered
+ *   &mock=client_declined | client_credit   GET /api/client/{id}: the family's case after its last answer (moved / credit)
+ *   &mock=client_closed  POST /api/client/{id}/respond answers 409 (the family already answered by text)
  * Every call resolves to {status, body}; network and parse failures resolve to status 0 with body.error,
  * so a screen always has something to show instead of failing silently.
  */
@@ -83,6 +85,18 @@
     return { status: 200, body: state === 'candidate' ? N.approve.first : N.approve.second };
   }
 
+  // the family's page of a private lesson: an answer moves the case on as the API does (fixtures/clients/mocks.json)
+  async function clientMocks() {
+    if (!fx.clients) {
+      const r = await fixtureFile('clients/mocks.json');
+      if (r.status !== 200) throw new Error('fixtures/clients/mocks.json: ' + r.status);
+      fx.clients = r.body;
+      fx.asks = Object.assign({}, ...Object.keys(r.body.opened_by_mock).filter(k => MOCKS.has(k)).map(k => r.body.opened_by_mock[k]));
+    }
+    return fx.clients;
+  }
+  const askFile = id => 'clients/' + encodeURIComponent(id) + (fx.asks[id] ? '.' + fx.asks[id] : '') + '.json';
+
   async function fixtureGet(path) {
     const url = new URL(path, global.location.origin);
     const p = url.pathname;
@@ -104,6 +118,8 @@
     if (m) return fixtureFile((await netMocks()).loan_files[fx.loan || initialLoan()]);
     m = p.match(/^\/api\/offers\/([^/]+)$/);
     if (m) return fixtureFile('offers/' + encodeURIComponent(decodeURIComponent(m[1])) + '.json');
+    m = p.match(/^\/api\/client\/([^/]+)$/);
+    if (m) { await clientMocks(); return fixtureFile(askFile(decodeURIComponent(m[1]))); }
     m = p.match(/^\/api\/cases\/([^/]+)$/);
     if (m) return fixtureFile('cases/' + encodeURIComponent(decodeURIComponent(m[1])) + (MOCKS.has('network_loan') ? '.network_loan' : '') + '.json');
     return { status: 404, body: { error: 'no fixture for GET ' + p } };
@@ -142,6 +158,16 @@
       if (!o) return { status: 404, body: { error: 'no such offer' } };
       if (m[2] === 'accept' && MOCKS.has('not_eligible')) return { status: 409, body: o.accept_conflict };
       return { status: 200, body: o[m[2]] };
+    }
+    m = p.match(/^\/api\/client\/([^/]+)\/respond$/);
+    if (m) {
+      const C = await clientMocks();
+      const id = decodeURIComponent(m[1]);
+      if (!C.answers[id]) return { status: 404, body: { error: 'unknown question ' + id } };
+      if (fx.asks[id]) return { status: 409, body: C.closed.body };  // answered already
+      if (MOCKS.has('client_closed')) { Object.assign(fx.asks, C.closed.then); return { status: 409, body: C.closed.body }; }
+      Object.assign(fx.asks, C.answers[id][body && body.accept ? 'yes' : 'no']);
+      return fixtureFile(askFile(id));
     }
     m = p.match(/^\/api\/plans\/([^/]+)\/approve$/);
     if (m) {

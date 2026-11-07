@@ -81,6 +81,8 @@
           if (c.dataset.level === 'risk' || c.dataset.level === 'fragile') {
             const tg = el('span', 'tag', c.dataset.level === 'risk' ? 'at risk' : 'fragile'); tg.dataset.slot = 'level-tag'; c.appendChild(tg);
           }
+          // a private lesson (one child, one coach): another coach only after the family says yes
+          if (weakest.private) { const one = el('span', 'one', '1:1'); one.dataset.slot = 'private-tag'; one.title = 'Private lesson'; c.appendChild(one); }
         } else if (cells.length) {
           c.dataset.level = 'past';
           c.title = cells.map(x => x.label + ' · started').join('\n');
