@@ -162,7 +162,14 @@
 
   function renderCallout(d) {
     const c = d.callout || {};
-    setText('callout-time', c.time_label);
+    // no voice note this time (e.g. the night check opened the case): say so instead of an empty card
+    const none = !d.callout;
+    document.querySelector('.card.callout').classList.toggle('none', none);
+    const n = d.night_check;
+    setText('callout-empty', none ? (n ? 'No voice note this time. The night check opened this case: ' + String(n.label).replace(/^Night check \d{1,2}:\d{2}:\s*/, '') + '.' : 'No call-out yet this morning.') : '');
+    slot('callout-empty').hidden = !none;
+    setText('callout-kind', none && n ? 'Night check' : 'Call-out');
+    setText('callout-time', none && n ? (String(n.label).match(/\d{1,2}:\d{2}/) || [''])[0] : c.time_label);
     setText('callout-language', c.language);
     setText('callout-language-h', c.language || 'Original');
     setText('callout-staff', c.staff);
@@ -305,6 +312,12 @@
     list.textContent = '';
     const all = d.offers || [];
     const rows = all.slice(-3);
+    // no offers yet: say why instead of an empty card
+    const policy = (d.plan_b && d.plan_b.autonomy) || '';
+    setText('offers-empty', all.length ? '' : (d.night_check && !d.callout
+      ? 'No offers sent yet: the night check proposes a replacement to the manager first' + (policy ? ' (policy: ' + policy + ')' : '') + '.'
+      : 'No offers yet.'));
+    slot('offers-empty').hidden = !!all.length;
     const names = staffNames(d);
     const timeline = d.timeline || [];
     const accepted = rows.find(o => kindOf(o.result) === 'accepted' && o.why_first);
@@ -489,6 +502,10 @@
     range.selectNodeContents(document.querySelector('h1'));
     const room = 1631 - range.getBoundingClientRect().width - 30;
     box.style.maxWidth = Math.min(1000, room) + 'px';
+    // a long banner first gets a smaller font (down to 14 px), then wraps to two lines; never cut off
+    box.classList.remove('wrap'); box.style.fontSize = '';
+    for (let fs = 17; fs >= 14 && box.scrollWidth > box.clientWidth + 1; fs -= 0.5) box.style.fontSize = fs + 'px';
+    if (box.scrollWidth > box.clientWidth + 1) box.classList.add('wrap');
   }
 
   function render(d) {

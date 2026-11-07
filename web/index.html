@@ -76,10 +76,11 @@
     <!-- call-out -->
     <section class="card callout">
       <div class="co-head">
-        <div class="co-title">Call-out · <span data-slot="callout-time"></span></div>
+        <div class="co-title"><span data-slot="callout-kind">Call-out</span> · <span data-slot="callout-time"></span></div>
         <div class="lang-pill" data-slot="callout-language"></div>
       </div>
       <div class="co-sub" data-slot="callout-staff"></div>
+      <p class="co-empty" data-slot="callout-empty" hidden></p>
       <div class="voice">
         <button class="play" id="play" type="button" aria-label="Play voice message">
           <svg width="20" height="22" viewBox="0 0 20 22" fill="#fff"><path d="M3 2.2v17.6c0 .9 1 1.5 1.8 1L18 12c.8-.5.8-1.6 0-2.1L4.8 1.2C4 .7 3 1.3 3 2.2z"/></svg>
@@ -137,6 +138,7 @@
     <section class="card offers">
       <div class="off-rail" id="offRail"></div>
       <ol class="off-list" id="offers"></ol>
+      <p class="off-empty" data-slot="offers-empty" hidden></p>
       <div class="why-first" id="whyFirst" hidden><span class="k" data-slot="why-name">why first</span><span data-slot="why-first"></span></div>
     </section>
 

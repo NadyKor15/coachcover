@@ -225,6 +225,12 @@ h1{height:79px;padding:16.9px 0 0 0;font-size:36px;line-height:44px;font-weight:
 .alert{position:absolute;right:0;top:14px;max-width:1000px;height:50px;border-radius:12px;display:flex;align-items:center;gap:10px;padding:0 18px 0 14px;
   font-size:17px;line-height:22px;font-weight:600;letter-spacing:-0.2px;white-space:nowrap;overflow:hidden;text-decoration:none;cursor:pointer}
 .alert[hidden]{display:none}
+.alert.wrap{height:auto;min-height:50px;padding-top:5px;padding-bottom:5px;white-space:normal;overflow:visible}
+.callout.none .voice,.callout.none .tx,.callout.none .lang-pill,.callout.none #asr{display:none}
+.co-empty{margin:16px 0 0;padding:0 19px;font-size:19px;line-height:28px;color:#4f5257}
+.off-empty{margin:0;padding:22px 24px;font-size:19px;line-height:28px;color:#4f5257}
+.off-empty[hidden]{display:none}
+.co-empty[hidden]{display:none}
 .alert svg{flex:none}
 .alert.red{background:var(--st-risk-bg);border:1.5px solid var(--st-risk-line);color:var(--st-risk-ink)}
 .alert.green{background:var(--st-safe-bg);border:1.5px solid var(--st-safe-line);color:var(--st-safe-ink)}
