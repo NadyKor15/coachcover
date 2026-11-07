@@ -51,26 +51,20 @@
         "tone": "plain"
       },
       {
+        "code": "OVERLAPS_COMMITMENT",
+        "label": "On deck at 14:00",
+        "count": 2,
+        "tone": "plain"
+      },
+      {
         "code": "IS_THE_ABSENT_PERSON",
         "label": "Called out",
         "count": 1,
         "tone": "plain"
       },
       {
-        "code": "OVERLAPS_COMMITMENT",
-        "label": "On deck at 14:00",
-        "count": 1,
-        "tone": "plain"
-      },
-      {
         "code": "HOURS_LIMIT_EXCEEDED",
         "label": "Over 40 h this week",
-        "count": 1,
-        "tone": "plain"
-      },
-      {
-        "code": "OVERLAPS_COMMITMENT",
-        "label": "Teaching at 16:00",
         "count": 1,
         "tone": "plain"
       }
@@ -91,6 +85,13 @@
         "reason_label": null
       },
       {
+        "id": "S15",
+        "name": "Diego Navarro",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
         "id": "S18",
         "name": "Chloe Hayes",
         "eligible": true,
@@ -105,22 +106,8 @@
         "reason_label": null
       },
       {
-        "id": "S08",
-        "name": "Grace Sullivan",
-        "eligible": true,
-        "highlight": false,
-        "reason_label": null
-      },
-      {
-        "id": "S15",
-        "name": "Diego Navarro",
-        "eligible": true,
-        "highlight": false,
-        "reason_label": null
-      },
-      {
-        "id": "S19",
-        "name": "Zoe Coleman",
+        "id": "S02",
+        "name": "Sofía García",
         "eligible": true,
         "highlight": false,
         "reason_label": null
@@ -133,6 +120,13 @@
         "reason_label": null
       },
       {
+        "id": "S01",
+        "name": "Emma Carter",
+        "eligible": true,
+        "highlight": false,
+        "reason_label": null
+      },
+      {
         "id": "S21",
         "name": "Pavel Orlov",
         "eligible": true,
@@ -140,8 +134,8 @@
         "reason_label": null
       },
       {
-        "id": "S01",
-        "name": "Emma Carter",
+        "id": "S19",
+        "name": "Zoe Coleman",
         "eligible": true,
         "highlight": false,
         "reason_label": null
@@ -168,25 +162,11 @@
         "reason_label": "Role: not an instructor"
       },
       {
-        "id": "S13",
-        "name": "Elena Kuznetsova",
+        "id": "S08",
+        "name": "Grace Sullivan",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Readers disagree — review"
-      },
-      {
-        "id": "S02",
-        "name": "Sofía García",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Teaching at 16:00"
-      },
-      {
-        "id": "S33",
-        "name": "Ekaterina Belova",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Role: not an instructor"
+        "reason_label": "On deck at 14:00"
       },
       {
         "id": "S30",
@@ -203,22 +183,22 @@
         "reason_label": "Role: not an instructor"
       },
       {
-        "id": "S10",
-        "name": "Dmitri Volkov",
+        "id": "S13",
+        "name": "Elena Kuznetsova",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Certificate expired Nov 2"
+        "reason_label": "Readers disagree — review"
       },
       {
-        "id": "S34",
-        "name": "Logan Pierce",
+        "id": "S33",
+        "name": "Ekaterina Belova",
         "eligible": false,
         "highlight": false,
         "reason_label": "Role: not an instructor"
       },
       {
-        "id": "S38",
-        "name": "Paula Jiménez",
+        "id": "S34",
+        "name": "Logan Pierce",
         "eligible": false,
         "highlight": false,
         "reason_label": "Role: not an instructor"
@@ -231,13 +211,6 @@
         "reason_label": "Role: not an instructor"
       },
       {
-        "id": "S26",
-        "name": "Leo Martins",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
-      },
-      {
         "id": "S31",
         "name": "Mason Turner",
         "eligible": false,
@@ -245,8 +218,8 @@
         "reason_label": "Role: not an instructor"
       },
       {
-        "id": "S16",
-        "name": "Andrés Delgado",
+        "id": "S14",
+        "name": "Irina Lebedeva",
         "eligible": false,
         "highlight": false,
         "reason_label": "Not cleared for LTS-2"
@@ -259,8 +232,8 @@
         "reason_label": "Not cleared for LTS-2"
       },
       {
-        "id": "S04",
-        "name": "Daniel Brooks",
+        "id": "S26",
+        "name": "Leo Martins",
         "eligible": false,
         "highlight": false,
         "reason_label": "Not cleared for LTS-2"
@@ -273,8 +246,29 @@
         "reason_label": "Role: not an instructor"
       },
       {
+        "id": "S39",
+        "name": "Caleb Ward",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
         "id": "S36",
         "name": "Ella Morgan",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S04",
+        "name": "Daniel Brooks",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Not cleared for LTS-2"
+      },
+      {
+        "id": "S38",
+        "name": "Paula Jiménez",
         "eligible": false,
         "highlight": false,
         "reason_label": "Role: not an instructor"
@@ -287,15 +281,22 @@
         "reason_label": "Role: not an instructor"
       },
       {
-        "id": "S39",
-        "name": "Caleb Ward",
+        "id": "S16",
+        "name": "Andrés Delgado",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Role: not an instructor"
+        "reason_label": "Not cleared for LTS-2"
       },
       {
-        "id": "S14",
-        "name": "Irina Lebedeva",
+        "id": "S10",
+        "name": "Dmitri Volkov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 2"
+      },
+      {
+        "id": "S24",
+        "name": "Gabriela Vargas",
         "eligible": false,
         "highlight": false,
         "reason_label": "Not cleared for LTS-2"
@@ -313,13 +314,6 @@
         "eligible": false,
         "highlight": false,
         "reason_label": "On deck at 14:00"
-      },
-      {
-        "id": "S24",
-        "name": "Gabriela Vargas",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
       },
       {
         "id": "S29",
@@ -380,8 +374,8 @@
   "plan_b": {
     "id": "P-standby",
     "state": "standby",
-    "text": "Liam Foster (reserve) steps in · Camila Herrera on overtime: 0.25 h, $8.50 · move the lesson: makeup for 5 families · cancel: credit for 5 families",
-    "hash": "fa7b484fa6777c90bda34bb0bcb08a2507e443a2802aa757ccc305339c9e19df",
+    "text": "Noah Bennett (reserve) steps in · Camila Herrera on overtime: 0.25 h, $8.50 · move the lesson: makeup for 5 families · cancel: credit for 5 families",
+    "hash": "1cd370defe0b5d09fa451b3bfabbaaec0dadfb43277f712007c1f94e4eadf339",
     "autonomy": "propose"
   },
   "summary_cards": [
@@ -403,6 +397,7 @@
     "uncovered_morning_label": "If nobody had accepted: $150 (Refunds: 5 participants × $30)",
     "case_cost_cents": 0.0,
     "manager_hour_usd": 25.0,
+    "case_cost_label": "0.0000¢",
     "source": "from the founder's coaching experience"
   },
   "model_log": {

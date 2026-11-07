@@ -10,11 +10,11 @@
     }
   ],
   "week": {
-    "start": "2026-11-08",
-    "end": "2026-11-14",
-    "label": "Nov 8 – Nov 14"
+    "start": "2026-11-09",
+    "end": "2026-11-15",
+    "label": "Nov 9 – Nov 15"
   },
-  "now": "2026-11-09T10:15:00.028704+00:00",
+  "now": "2026-11-09T10:15:00.026817+00:00",
   "threshold": 1,
   "backups_from": "venue",
   "legend": [
@@ -47,121 +47,23 @@
   },
   "counts": {
     "shifts": 68,
-    "upcoming": 64,
+    "upcoming": 68,
     "at_risk": 2,
     "fragile": 4,
-    "safe": 58,
-    "past": 4,
+    "safe": 62,
+    "past": 0,
     "fragile_total": 6
   },
   "headline": "6 fragile shifts this week",
   "fragile": [
     "L-1109-G003",
-    "L-1110-G025",
+    "L-1111-G009",
     "L-1112-G033",
     "L-1112-G034",
     "L-1113-G019",
     "L-1113-G037"
   ],
   "days": [
-    {
-      "date": "2026-11-08",
-      "label": "Sun 8",
-      "cells": [
-        {
-          "shift_id": "G-1108-V1-0530",
-          "venue_id": "V1",
-          "venue_name": "Riverside Aquatic Center",
-          "day": "2026-11-08",
-          "start": "2026-11-08T10:30:00+00:00",
-          "end": "2026-11-08T15:00:00+00:00",
-          "time_label": "05:30–10:00",
-          "role": "lifeguard",
-          "role_label": "Lifeguard",
-          "label": "Sun 05:30–10:00 · Lifeguard",
-          "holder": {
-            "staff_id": "S29",
-            "name": "Lucía Ramos"
-          },
-          "uncovered": false,
-          "past": true,
-          "backups": null,
-          "level": "past",
-          "backup_names": [],
-          "other_venues_cleared": null,
-          "standby": null
-        },
-        {
-          "shift_id": "G-1108-V1-1000",
-          "venue_id": "V1",
-          "venue_name": "Riverside Aquatic Center",
-          "day": "2026-11-08",
-          "start": "2026-11-08T15:00:00+00:00",
-          "end": "2026-11-08T19:00:00+00:00",
-          "time_label": "10:00–14:00",
-          "role": "lifeguard",
-          "role_label": "Lifeguard",
-          "label": "Sun 10:00–14:00 · Lifeguard",
-          "holder": {
-            "staff_id": "S29",
-            "name": "Lucía Ramos"
-          },
-          "uncovered": false,
-          "past": true,
-          "backups": null,
-          "level": "past",
-          "backup_names": [],
-          "other_venues_cleared": null,
-          "standby": null
-        },
-        {
-          "shift_id": "G-1108-V1-1400",
-          "venue_id": "V1",
-          "venue_name": "Riverside Aquatic Center",
-          "day": "2026-11-08",
-          "start": "2026-11-08T19:00:00+00:00",
-          "end": "2026-11-08T23:00:00+00:00",
-          "time_label": "14:00–18:00",
-          "role": "lifeguard",
-          "role_label": "Lifeguard",
-          "label": "Sun 14:00–18:00 · Lifeguard",
-          "holder": {
-            "staff_id": "S10",
-            "name": "Dmitri Volkov"
-          },
-          "uncovered": false,
-          "past": true,
-          "backups": null,
-          "level": "past",
-          "backup_names": [],
-          "other_venues_cleared": null,
-          "standby": null
-        },
-        {
-          "shift_id": "G-1108-V1-1800",
-          "venue_id": "V1",
-          "venue_name": "Riverside Aquatic Center",
-          "day": "2026-11-08",
-          "start": "2026-11-08T23:00:00+00:00",
-          "end": "2026-11-09T02:00:00+00:00",
-          "time_label": "18:00–21:00",
-          "role": "lifeguard",
-          "role_label": "Lifeguard",
-          "label": "Sun 18:00–21:00 · Lifeguard",
-          "holder": {
-            "staff_id": "S28",
-            "name": "Ava Mitchell"
-          },
-          "uncovered": false,
-          "past": true,
-          "backups": null,
-          "level": "past",
-          "backup_names": [],
-          "other_venues_cleared": null,
-          "standby": null
-        }
-      ]
-    },
     {
       "date": "2026-11-09",
       "label": "Mon 9",
@@ -178,19 +80,19 @@
           "role_label": "Lifeguard",
           "label": "Mon 05:30–10:00 · Lifeguard",
           "holder": {
-            "staff_id": "S30",
-            "name": "Nikita Morozov"
+            "staff_id": "S28",
+            "name": "Ava Mitchell"
           },
           "uncovered": false,
           "past": false,
-          "backups": 3,
+          "backups": 4,
           "level": "safe",
           "backup_names": [
             "Dmitri Volkov",
             "Sofia Reyes",
             "Leo Martins"
           ],
-          "other_venues_cleared": 10,
+          "other_venues_cleared": 11,
           "standby": null
         },
         {
@@ -270,7 +172,7 @@
             "staff_id": "S06",
             "name": "Liam Foster",
             "from_reserve": true,
-            "line": "Liam first: 6.25 h this week, Level 1 (beginner), 21.7 km away"
+            "line": "Liam first: 6.75 h this week, Level 1 (beginner), 21.7 km away"
           }
         },
         {
@@ -312,8 +214,8 @@
           "role_label": "Lifeguard",
           "label": "Mon 10:00–14:00 · Lifeguard",
           "holder": {
-            "staff_id": "S08",
-            "name": "Grace Sullivan"
+            "staff_id": "S30",
+            "name": "Nikita Morozov"
           },
           "uncovered": false,
           "past": false,
@@ -322,7 +224,7 @@
           "backup_names": [
             "Emma Carter",
             "Daniel Brooks",
-            "Dmitri Volkov"
+            "Grace Sullivan"
           ],
           "other_venues_cleared": 20,
           "standby": null
@@ -339,19 +241,19 @@
           "role_label": "Lifeguard",
           "label": "Mon 14:00–18:00 · Lifeguard",
           "holder": {
-            "staff_id": "S28",
-            "name": "Ava Mitchell"
+            "staff_id": "S08",
+            "name": "Grace Sullivan"
           },
           "uncovered": false,
           "past": false,
-          "backups": 7,
+          "backups": 8,
           "level": "safe",
           "backup_names": [
             "Emma Carter",
             "Daniel Brooks",
             "Dmitri Volkov"
           ],
-          "other_venues_cleared": 16,
+          "other_venues_cleared": 20,
           "standby": null
         },
         {
@@ -371,14 +273,14 @@
           },
           "uncovered": false,
           "past": false,
-          "backups": 5,
+          "backups": 4,
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Grace Sullivan",
-            "Maria Lopez"
+            "Maria Lopez",
+            "Sofia Reyes"
           ],
-          "other_venues_cleared": 5,
+          "other_venues_cleared": 6,
           "standby": null
         },
         {
@@ -393,8 +295,8 @@
           "role_label": "Swim instructor",
           "label": "Mon 16:45–17:30 · Swim instructor · Level 1 (beginner)",
           "holder": {
-            "staff_id": "S08",
-            "name": "Grace Sullivan"
+            "staff_id": "S12",
+            "name": "Noah Bennett"
           },
           "uncovered": false,
           "past": false,
@@ -431,7 +333,7 @@
             "Maria Lopez",
             "Sofia Reyes"
           ],
-          "other_venues_cleared": 7,
+          "other_venues_cleared": 8,
           "standby": null
         },
         {
@@ -451,12 +353,12 @@
           },
           "uncovered": false,
           "past": false,
-          "backups": 7,
+          "backups": 6,
           "level": "safe",
           "backup_names": [
-            "Emma Carter",
             "Daniel Brooks",
-            "Dmitri Volkov"
+            "Dmitri Volkov",
+            "Maria Lopez"
           ],
           "other_venues_cleared": 15,
           "standby": null
@@ -485,7 +387,7 @@
             "Daniel Brooks",
             "Maria Lopez"
           ],
-          "other_venues_cleared": 7,
+          "other_venues_cleared": 9,
           "standby": null
         }
       ]
@@ -518,7 +420,7 @@
             "Dmitri Volkov",
             "Maria Lopez"
           ],
-          "other_venues_cleared": 14,
+          "other_venues_cleared": 12,
           "standby": null
         },
         {
@@ -533,8 +435,8 @@
           "role_label": "Swim instructor",
           "label": "Tue 06:00–06:30 · Swim instructor · Level 4",
           "holder": {
-            "staff_id": "S12",
-            "name": "Noah Bennett"
+            "staff_id": "S27",
+            "name": "Anna Kim"
           },
           "uncovered": false,
           "past": false,
@@ -545,7 +447,7 @@
             "Marina Petrova",
             "Maria Lopez"
           ],
-          "other_venues_cleared": 6,
+          "other_venues_cleared": 5,
           "standby": null
         },
         {
@@ -560,19 +462,19 @@
           "role_label": "Swim instructor",
           "label": "Tue 06:00–06:30 · Swim instructor · Level 2",
           "holder": {
-            "staff_id": "S27",
-            "name": "Anna Kim"
+            "staff_id": "S01",
+            "name": "Emma Carter"
           },
           "uncovered": false,
           "past": false,
-          "backups": 4,
+          "backups": 3,
           "level": "safe",
           "backup_names": [
-            "Emma Carter",
             "Marina Petrova",
-            "Maria Lopez"
+            "Maria Lopez",
+            "Sofia Reyes"
           ],
-          "other_venues_cleared": 5,
+          "other_venues_cleared": 4,
           "standby": null
         },
         {
@@ -598,7 +500,7 @@
             "Maria Lopez",
             "Leo Martins"
           ],
-          "other_venues_cleared": 6,
+          "other_venues_cleared": 4,
           "standby": null
         },
         {
@@ -613,19 +515,19 @@
           "role_label": "Swim instructor",
           "label": "Tue 07:00–07:30 · Swim instructor · Level 3",
           "holder": {
-            "staff_id": "S01",
-            "name": "Emma Carter"
+            "staff_id": "S27",
+            "name": "Anna Kim"
           },
           "uncovered": false,
           "past": false,
           "backups": 5,
           "level": "safe",
           "backup_names": [
+            "Emma Carter",
             "Marina Petrova",
-            "Maria Lopez",
-            "Sofia Reyes"
+            "Maria Lopez"
           ],
-          "other_venues_cleared": 5,
+          "other_venues_cleared": 4,
           "standby": null
         },
         {
@@ -652,7 +554,7 @@
             "Daniel Brooks",
             "Marina Petrova"
           ],
-          "other_venues_cleared": 22,
+          "other_venues_cleared": 21,
           "standby": null
         },
         {
@@ -672,14 +574,14 @@
           },
           "uncovered": false,
           "past": false,
-          "backups": 5,
+          "backups": 7,
           "level": "safe",
           "backup_names": [
-            "Marina Petrova",
-            "Dmitri Volkov",
-            "Sofia Reyes"
+            "Emma Carter",
+            "Daniel Brooks",
+            "Marina Petrova"
           ],
-          "other_venues_cleared": 15,
+          "other_venues_cleared": 17,
           "standby": null
         },
         {
@@ -694,23 +596,19 @@
           "role_label": "Swim instructor",
           "label": "Tue 16:00–16:45 · Swim instructor · Level 1 (beginner)",
           "holder": {
-            "staff_id": "S01",
-            "name": "Emma Carter"
+            "staff_id": "S12",
+            "name": "Noah Bennett"
           },
           "uncovered": false,
           "past": false,
-          "backups": 1,
-          "level": "fragile",
+          "backups": 2,
+          "level": "safe",
           "backup_names": [
+            "Emma Carter",
             "Marina Petrova"
           ],
           "other_venues_cleared": 4,
-          "standby": {
-            "staff_id": "S06",
-            "name": "Liam Foster",
-            "from_reserve": true,
-            "line": "Liam first: 6.25 h this week, Level 1 (beginner), 21.7 km away"
-          }
+          "standby": null
         },
         {
           "shift_id": "L-1110-G026",
@@ -724,19 +622,19 @@
           "role_label": "Swim instructor",
           "label": "Tue 16:45–17:30 · Swim instructor · Level 2",
           "holder": {
-            "staff_id": "S27",
-            "name": "Anna Kim"
+            "staff_id": "S12",
+            "name": "Noah Bennett"
           },
           "uncovered": false,
           "past": false,
-          "backups": 3,
+          "backups": 4,
           "level": "safe",
           "backup_names": [
             "Emma Carter",
             "Marina Petrova",
             "Sofia Reyes"
           ],
-          "other_venues_cleared": 5,
+          "other_venues_cleared": 7,
           "standby": null
         },
         {
@@ -751,19 +649,19 @@
           "role_label": "Swim instructor",
           "label": "Tue 17:30–18:15 · Swim instructor · Level 3",
           "holder": {
-            "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "staff_id": "S12",
+            "name": "Noah Bennett"
           },
           "uncovered": false,
           "past": false,
-          "backups": 4,
+          "backups": 5,
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Marina Petrova",
-            "Leo Martins"
+            "Daniel Brooks",
+            "Marina Petrova"
           ],
-          "other_venues_cleared": 8,
+          "other_venues_cleared": 7,
           "standby": null
         },
         {
@@ -790,7 +688,7 @@
             "Dmitri Volkov",
             "Maria Lopez"
           ],
-          "other_venues_cleared": 13,
+          "other_venues_cleared": 14,
           "standby": null
         },
         {
@@ -850,7 +748,7 @@
             "Dmitri Volkov",
             "Maria Lopez"
           ],
-          "other_venues_cleared": 13,
+          "other_venues_cleared": 12,
           "standby": null
         },
         {
@@ -865,19 +763,23 @@
           "role_label": "Swim instructor",
           "label": "Wed 06:00–06:30 · Swim instructor · Level 6",
           "holder": {
-            "staff_id": "S12",
-            "name": "Noah Bennett"
+            "staff_id": "S04",
+            "name": "Daniel Brooks"
           },
           "uncovered": false,
           "past": false,
-          "backups": 2,
-          "level": "safe",
+          "backups": 1,
+          "level": "fragile",
           "backup_names": [
-            "Daniel Brooks",
             "Maria Lopez"
           ],
           "other_venues_cleared": 4,
-          "standby": null
+          "standby": {
+            "staff_id": "S06",
+            "name": "Liam Foster",
+            "from_reserve": true,
+            "line": "Liam first: 6.75 h this week, Level 6, 21.7 km away"
+          }
         },
         {
           "shift_id": "L-1111-G010",
@@ -902,7 +804,7 @@
             "Marina Petrova",
             "Maria Lopez"
           ],
-          "other_venues_cleared": 3,
+          "other_venues_cleared": 1,
           "standby": null
         },
         {
@@ -922,14 +824,14 @@
           },
           "uncovered": false,
           "past": false,
-          "backups": 3,
+          "backups": 4,
           "level": "safe",
           "backup_names": [
+            "Daniel Brooks",
             "Marina Petrova",
-            "Maria Lopez",
-            "Sofia Reyes"
+            "Maria Lopez"
           ],
-          "other_venues_cleared": 7,
+          "other_venues_cleared": 5,
           "standby": null
         },
         {
@@ -944,19 +846,19 @@
           "role_label": "Swim instructor",
           "label": "Wed 07:00–07:30 · Swim instructor · Level 3",
           "holder": {
-            "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "staff_id": "S01",
+            "name": "Emma Carter"
           },
           "uncovered": false,
           "past": false,
           "backups": 4,
           "level": "safe",
           "backup_names": [
-            "Emma Carter",
+            "Daniel Brooks",
             "Marina Petrova",
             "Maria Lopez"
           ],
-          "other_venues_cleared": 7,
+          "other_venues_cleared": 6,
           "standby": null
         },
         {
@@ -1025,17 +927,17 @@
           "role_label": "Swim instructor",
           "label": "Wed 16:00–16:45 · Swim instructor · Level 4",
           "holder": {
-            "staff_id": "S27",
-            "name": "Anna Kim"
+            "staff_id": "S04",
+            "name": "Daniel Brooks"
           },
           "uncovered": false,
           "past": false,
           "backups": 5,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
             "Marina Petrova",
-            "Maria Lopez"
+            "Maria Lopez",
+            "Sofia Reyes"
           ],
           "other_venues_cleared": 7,
           "standby": null
@@ -1064,7 +966,7 @@
             "Maria Lopez",
             "Sofia Reyes"
           ],
-          "other_venues_cleared": 3,
+          "other_venues_cleared": 5,
           "standby": null
         },
         {
@@ -1079,18 +981,19 @@
           "role_label": "Swim instructor",
           "label": "Wed 17:30–18:15 · Swim instructor · Level 5",
           "holder": {
-            "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "staff_id": "S12",
+            "name": "Noah Bennett"
           },
           "uncovered": false,
           "past": false,
-          "backups": 2,
+          "backups": 3,
           "level": "safe",
           "backup_names": [
+            "Daniel Brooks",
             "Maria Lopez",
             "Leo Martins"
           ],
-          "other_venues_cleared": 4,
+          "other_venues_cleared": 3,
           "standby": null
         },
         {
@@ -1113,7 +1016,7 @@
           "backups": 5,
           "level": "safe",
           "backup_names": [
-            "Emma Carter",
+            "Daniel Brooks",
             "Marina Petrova",
             "Maria Lopez"
           ],
@@ -1132,19 +1035,19 @@
           "role_label": "Swim instructor",
           "label": "Wed 18:15–19:00 · Swim instructor · Level 3",
           "holder": {
-            "staff_id": "S12",
-            "name": "Noah Bennett"
+            "staff_id": "S27",
+            "name": "Anna Kim"
           },
           "uncovered": false,
           "past": false,
-          "backups": 6,
+          "backups": 5,
           "level": "safe",
           "backup_names": [
             "Emma Carter",
             "Daniel Brooks",
             "Marina Petrova"
           ],
-          "other_venues_cleared": 6,
+          "other_venues_cleared": 5,
           "standby": null
         }
       ]
@@ -1177,7 +1080,7 @@
             "Maria Lopez",
             "Leo Martins"
           ],
-          "other_venues_cleared": 11,
+          "other_venues_cleared": 12,
           "standby": null
         },
         {
@@ -1192,19 +1095,18 @@
           "role_label": "Swim instructor",
           "label": "Thu 06:00–06:30 · Swim instructor · Level 1 (beginner)",
           "holder": {
-            "staff_id": "S12",
-            "name": "Noah Bennett"
+            "staff_id": "S01",
+            "name": "Emma Carter"
           },
           "uncovered": false,
           "past": false,
-          "backups": 3,
+          "backups": 2,
           "level": "safe",
           "backup_names": [
-            "Emma Carter",
             "Marina Petrova",
             "Maria Lopez"
           ],
-          "other_venues_cleared": 2,
+          "other_venues_cleared": 1,
           "standby": null
         },
         {
@@ -1224,45 +1126,18 @@
           },
           "uncovered": false,
           "past": false,
-          "backups": 4,
-          "level": "safe",
-          "backup_names": [
-            "Emma Carter",
-            "Marina Petrova",
-            "Camila Herrera"
-          ],
-          "other_venues_cleared": 4,
-          "standby": null
-        },
-        {
-          "shift_id": "L-1112-G015",
-          "venue_id": "V1",
-          "venue_name": "Riverside Aquatic Center",
-          "day": "2026-11-12",
-          "start": "2026-11-12T12:00:00+00:00",
-          "end": "2026-11-12T12:30:00+00:00",
-          "time_label": "07:00–07:30",
-          "role": "instructor",
-          "role_label": "Swim instructor",
-          "label": "Thu 07:00–07:30 · Swim instructor · Level 3",
-          "holder": {
-            "staff_id": "S01",
-            "name": "Emma Carter"
-          },
-          "uncovered": false,
-          "past": false,
-          "backups": 6,
+          "backups": 3,
           "level": "safe",
           "backup_names": [
             "Marina Petrova",
             "Camila Herrera",
             "Maria Lopez"
           ],
-          "other_venues_cleared": 6,
+          "other_venues_cleared": 3,
           "standby": null
         },
         {
-          "shift_id": "L-1112-G016",
+          "shift_id": "L-1112-G015",
           "venue_id": "V1",
           "venue_name": "Riverside Aquatic Center",
           "day": "2026-11-12",
@@ -1281,11 +1156,38 @@
           "backups": 6,
           "level": "safe",
           "backup_names": [
+            "Emma Carter",
             "Marina Petrova",
-            "Camila Herrera",
-            "Maria Lopez"
+            "Camila Herrera"
           ],
-          "other_venues_cleared": 6,
+          "other_venues_cleared": 4,
+          "standby": null
+        },
+        {
+          "shift_id": "L-1112-G016",
+          "venue_id": "V1",
+          "venue_name": "Riverside Aquatic Center",
+          "day": "2026-11-12",
+          "start": "2026-11-12T12:00:00+00:00",
+          "end": "2026-11-12T12:30:00+00:00",
+          "time_label": "07:00–07:30",
+          "role": "instructor",
+          "role_label": "Swim instructor",
+          "label": "Thu 07:00–07:30 · Swim instructor · Level 3",
+          "holder": {
+            "staff_id": "S27",
+            "name": "Anna Kim"
+          },
+          "uncovered": false,
+          "past": false,
+          "backups": 6,
+          "level": "safe",
+          "backup_names": [
+            "Emma Carter",
+            "Marina Petrova",
+            "Camila Herrera"
+          ],
+          "other_venues_cleared": 4,
           "standby": null
         },
         {
@@ -1339,7 +1241,7 @@
             "Dmitri Volkov",
             "Sofia Reyes"
           ],
-          "other_venues_cleared": 17,
+          "other_venues_cleared": 16,
           "standby": null
         },
         {
@@ -1364,10 +1266,10 @@
           "backup_names": [],
           "other_venues_cleared": 4,
           "standby": {
-            "staff_id": "S06",
-            "name": "Liam Foster",
+            "staff_id": "S23",
+            "name": "Harper Hughes",
             "from_reserve": true,
-            "line": "Liam first: 6.25 h this week, Level 6, 21.7 km away"
+            "line": "Harper first: 9.25 h this week, Level 6, 28.2 km away"
           }
         },
         {
@@ -1392,12 +1294,12 @@
           "backup_names": [
             "Marina Petrova"
           ],
-          "other_venues_cleared": 4,
+          "other_venues_cleared": 2,
           "standby": {
             "staff_id": "S06",
             "name": "Liam Foster",
             "from_reserve": true,
-            "line": "Liam first: 6.25 h this week, Level 1 (beginner), 21.7 km away"
+            "line": "Liam first: 6.75 h this week, Level 1 (beginner), 21.7 km away"
           }
         },
         {
@@ -1412,12 +1314,12 @@
           "role_label": "Swim instructor",
           "label": "Thu 17:30–18:15 · Swim instructor · Level 4",
           "holder": {
-            "staff_id": "S27",
-            "name": "Anna Kim"
+            "staff_id": "S12",
+            "name": "Noah Bennett"
           },
           "uncovered": false,
           "past": false,
-          "backups": 4,
+          "backups": 5,
           "level": "safe",
           "backup_names": [
             "Daniel Brooks",
@@ -1444,14 +1346,14 @@
           },
           "uncovered": false,
           "past": false,
-          "backups": 7,
+          "backups": 5,
           "level": "safe",
           "backup_names": [
-            "Emma Carter",
-            "Daniel Brooks",
-            "Marina Petrova"
+            "Marina Petrova",
+            "Dmitri Volkov",
+            "Maria Lopez"
           ],
-          "other_venues_cleared": 15,
+          "other_venues_cleared": 12,
           "standby": null
         },
         {
@@ -1466,19 +1368,19 @@
           "role_label": "Swim instructor",
           "label": "Thu 18:15–19:00 · Swim instructor · Level 3",
           "holder": {
-            "staff_id": "S12",
-            "name": "Noah Bennett"
+            "staff_id": "S27",
+            "name": "Anna Kim"
           },
           "uncovered": false,
           "past": false,
-          "backups": 7,
+          "backups": 6,
           "level": "safe",
           "backup_names": [
             "Emma Carter",
             "Daniel Brooks",
             "Marina Petrova"
           ],
-          "other_venues_cleared": 7,
+          "other_venues_cleared": 8,
           "standby": null
         }
       ]
@@ -1526,19 +1428,19 @@
           "role_label": "Swim instructor",
           "label": "Fri 06:00–06:30 · Swim instructor · Level 4",
           "holder": {
-            "staff_id": "S12",
-            "name": "Noah Bennett"
+            "staff_id": "S04",
+            "name": "Daniel Brooks"
           },
           "uncovered": false,
           "past": false,
           "backups": 5,
           "level": "safe",
           "backup_names": [
-            "Daniel Brooks",
             "Marina Petrova",
-            "Camila Herrera"
+            "Camila Herrera",
+            "Maria Lopez"
           ],
-          "other_venues_cleared": 5,
+          "other_venues_cleared": 6,
           "standby": null
         },
         {
@@ -1553,19 +1455,19 @@
           "role_label": "Swim instructor",
           "label": "Fri 06:00–06:30 · Swim instructor · Level 2",
           "holder": {
-            "staff_id": "S27",
-            "name": "Anna Kim"
+            "staff_id": "S01",
+            "name": "Emma Carter"
           },
           "uncovered": false,
           "past": false,
           "backups": 5,
           "level": "safe",
           "backup_names": [
-            "Emma Carter",
             "Marina Petrova",
-            "Camila Herrera"
+            "Camila Herrera",
+            "Maria Lopez"
           ],
-          "other_venues_cleared": 5,
+          "other_venues_cleared": 4,
           "standby": null
         },
         {
@@ -1595,7 +1497,7 @@
             "staff_id": "S06",
             "name": "Liam Foster",
             "from_reserve": true,
-            "line": "Liam first: 6.25 h this week, Level 5, 21.7 km away"
+            "line": "Liam first: 6.75 h this week, Level 5, 21.7 km away"
           }
         },
         {
@@ -1610,17 +1512,17 @@
           "role_label": "Swim instructor",
           "label": "Fri 07:00–07:30 · Swim instructor · Level 3",
           "holder": {
-            "staff_id": "S01",
-            "name": "Emma Carter"
+            "staff_id": "S27",
+            "name": "Anna Kim"
           },
           "uncovered": false,
           "past": false,
           "backups": 5,
           "level": "safe",
           "backup_names": [
+            "Emma Carter",
             "Marina Petrova",
-            "Camila Herrera",
-            "Maria Lopez"
+            "Camila Herrera"
           ],
           "other_venues_cleared": 5,
           "standby": null
@@ -1637,17 +1539,17 @@
           "role_label": "Lifeguard",
           "label": "Fri 10:00–14:00 · Lifeguard",
           "holder": {
-            "staff_id": "S01",
-            "name": "Emma Carter"
+            "staff_id": "S10",
+            "name": "Dmitri Volkov"
           },
           "uncovered": false,
           "past": false,
           "backups": 7,
           "level": "safe",
           "backup_names": [
+            "Emma Carter",
             "Daniel Brooks",
-            "Marina Petrova",
-            "Dmitri Volkov"
+            "Marina Petrova"
           ],
           "other_venues_cleared": 20,
           "standby": null
@@ -1676,7 +1578,7 @@
             "Dmitri Volkov",
             "Sofia Reyes"
           ],
-          "other_venues_cleared": 15,
+          "other_venues_cleared": 16,
           "standby": null
         },
         {
@@ -1703,10 +1605,10 @@
           ],
           "other_venues_cleared": 4,
           "standby": {
-            "staff_id": "S06",
-            "name": "Liam Foster",
+            "staff_id": "S12",
+            "name": "Noah Bennett",
             "from_reserve": true,
-            "line": "Liam first: 6.25 h this week, Level 1 (beginner), 21.7 km away"
+            "line": "Noah first: 9.75 h this week, Level 1 (beginner), same pool"
           }
         },
         {
@@ -1721,12 +1623,12 @@
           "role_label": "Swim instructor",
           "label": "Fri 16:45–17:30 · Swim instructor · Level 2",
           "holder": {
-            "staff_id": "S27",
-            "name": "Anna Kim"
+            "staff_id": "S12",
+            "name": "Noah Bennett"
           },
           "uncovered": false,
           "past": false,
-          "backups": 3,
+          "backups": 4,
           "level": "safe",
           "backup_names": [
             "Emma Carter",
@@ -1760,7 +1662,7 @@
             "Marina Petrova",
             "Sofia Reyes"
           ],
-          "other_venues_cleared": 9,
+          "other_venues_cleared": 7,
           "standby": null
         },
         {
@@ -1780,14 +1682,14 @@
           },
           "uncovered": false,
           "past": false,
-          "backups": 7,
+          "backups": 6,
           "level": "safe",
           "backup_names": [
             "Emma Carter",
             "Marina Petrova",
             "Dmitri Volkov"
           ],
-          "other_venues_cleared": 16,
+          "other_venues_cleared": 15,
           "standby": null
         },
         {
@@ -1802,19 +1704,19 @@
           "role_label": "Swim instructor",
           "label": "Fri 18:15–19:00 · Swim instructor · Level 3",
           "holder": {
-            "staff_id": "S12",
-            "name": "Noah Bennett"
+            "staff_id": "S27",
+            "name": "Anna Kim"
           },
           "uncovered": false,
           "past": false,
-          "backups": 7,
+          "backups": 6,
           "level": "safe",
           "backup_names": [
             "Emma Carter",
             "Daniel Brooks",
             "Marina Petrova"
           ],
-          "other_venues_cleared": 7,
+          "other_venues_cleared": 6,
           "standby": null
         }
       ]
@@ -1835,12 +1737,12 @@
           "role_label": "Lifeguard",
           "label": "Sat 05:30–10:00 · Lifeguard",
           "holder": {
-            "staff_id": "S12",
-            "name": "Noah Bennett"
+            "staff_id": "S28",
+            "name": "Ava Mitchell"
           },
           "uncovered": false,
           "past": false,
-          "backups": 8,
+          "backups": 7,
           "level": "safe",
           "backup_names": [
             "Emma Carter",
@@ -1862,15 +1764,15 @@
           "role_label": "Lifeguard",
           "label": "Sat 10:00–14:00 · Lifeguard",
           "holder": {
-            "staff_id": "S04",
-            "name": "Daniel Brooks"
+            "staff_id": "S01",
+            "name": "Emma Carter"
           },
           "uncovered": false,
           "past": false,
           "backups": 7,
           "level": "safe",
           "backup_names": [
-            "Emma Carter",
+            "Daniel Brooks",
             "Marina Petrova",
             "Dmitri Volkov"
           ],
@@ -1889,8 +1791,8 @@
           "role_label": "Lifeguard",
           "label": "Sat 14:00–18:00 · Lifeguard",
           "holder": {
-            "staff_id": "S28",
-            "name": "Ava Mitchell"
+            "staff_id": "S04",
+            "name": "Daniel Brooks"
           },
           "uncovered": false,
           "past": false,
@@ -1898,10 +1800,10 @@
           "level": "safe",
           "backup_names": [
             "Emma Carter",
-            "Daniel Brooks",
-            "Marina Petrova"
+            "Marina Petrova",
+            "Dmitri Volkov"
           ],
-          "other_venues_cleared": 21,
+          "other_venues_cleared": 20,
           "standby": null
         },
         {
@@ -1915,6 +1817,120 @@
           "role": "lifeguard",
           "role_label": "Lifeguard",
           "label": "Sat 18:00–21:00 · Lifeguard",
+          "holder": {
+            "staff_id": "S12",
+            "name": "Noah Bennett"
+          },
+          "uncovered": false,
+          "past": false,
+          "backups": 8,
+          "level": "safe",
+          "backup_names": [
+            "Emma Carter",
+            "Daniel Brooks",
+            "Marina Petrova"
+          ],
+          "other_venues_cleared": 19,
+          "standby": null
+        }
+      ]
+    },
+    {
+      "date": "2026-11-15",
+      "label": "Sun 15",
+      "cells": [
+        {
+          "shift_id": "G-1115-V1-0530",
+          "venue_id": "V1",
+          "venue_name": "Riverside Aquatic Center",
+          "day": "2026-11-15",
+          "start": "2026-11-15T10:30:00+00:00",
+          "end": "2026-11-15T15:00:00+00:00",
+          "time_label": "05:30–10:00",
+          "role": "lifeguard",
+          "role_label": "Lifeguard",
+          "label": "Sun 05:30–10:00 · Lifeguard",
+          "holder": {
+            "staff_id": "S29",
+            "name": "Lucía Ramos"
+          },
+          "uncovered": false,
+          "past": false,
+          "backups": 8,
+          "level": "safe",
+          "backup_names": [
+            "Emma Carter",
+            "Daniel Brooks",
+            "Marina Petrova"
+          ],
+          "other_venues_cleared": 19,
+          "standby": null
+        },
+        {
+          "shift_id": "G-1115-V1-1000",
+          "venue_id": "V1",
+          "venue_name": "Riverside Aquatic Center",
+          "day": "2026-11-15",
+          "start": "2026-11-15T15:00:00+00:00",
+          "end": "2026-11-15T19:00:00+00:00",
+          "time_label": "10:00–14:00",
+          "role": "lifeguard",
+          "role_label": "Lifeguard",
+          "label": "Sun 10:00–14:00 · Lifeguard",
+          "holder": {
+            "staff_id": "S29",
+            "name": "Lucía Ramos"
+          },
+          "uncovered": false,
+          "past": false,
+          "backups": 8,
+          "level": "safe",
+          "backup_names": [
+            "Emma Carter",
+            "Daniel Brooks",
+            "Marina Petrova"
+          ],
+          "other_venues_cleared": 21,
+          "standby": null
+        },
+        {
+          "shift_id": "G-1115-V1-1400",
+          "venue_id": "V1",
+          "venue_name": "Riverside Aquatic Center",
+          "day": "2026-11-15",
+          "start": "2026-11-15T19:00:00+00:00",
+          "end": "2026-11-15T23:00:00+00:00",
+          "time_label": "14:00–18:00",
+          "role": "lifeguard",
+          "role_label": "Lifeguard",
+          "label": "Sun 14:00–18:00 · Lifeguard",
+          "holder": {
+            "staff_id": "S10",
+            "name": "Dmitri Volkov"
+          },
+          "uncovered": false,
+          "past": false,
+          "backups": 7,
+          "level": "safe",
+          "backup_names": [
+            "Emma Carter",
+            "Daniel Brooks",
+            "Marina Petrova"
+          ],
+          "other_venues_cleared": 20,
+          "standby": null
+        },
+        {
+          "shift_id": "G-1115-V1-1800",
+          "venue_id": "V1",
+          "venue_name": "Riverside Aquatic Center",
+          "day": "2026-11-15",
+          "start": "2026-11-15T23:00:00+00:00",
+          "end": "2026-11-16T02:00:00+00:00",
+          "time_label": "18:00–21:00",
+          "role": "lifeguard",
+          "role_label": "Lifeguard",
+          "label": "Sun 18:00–21:00 · Lifeguard",
           "holder": {
             "staff_id": "S29",
             "name": "Lucía Ramos"
@@ -1943,28 +1959,28 @@
         "staff_id": "S06",
         "name": "Liam Foster",
         "from_reserve": true,
-        "line": "Liam first: 6.25 h this week, Level 1 (beginner), 21.7 km away",
+        "line": "Liam first: 6.75 h this week, Level 1 (beginner), 21.7 km away",
         "text": "Put Liam Foster on standby for Mon 07:00–07:30 · Swim instructor · Level 1 (beginner)"
       },
       {
-        "shift_id": "L-1110-G025",
-        "label": "Tue 16:00–16:45 · Swim instructor · Level 1 (beginner)",
+        "shift_id": "L-1111-G009",
+        "label": "Wed 06:00–06:30 · Swim instructor · Level 6",
         "level": "fragile",
         "staff_id": "S06",
         "name": "Liam Foster",
         "from_reserve": true,
-        "line": "Liam first: 6.25 h this week, Level 1 (beginner), 21.7 km away",
-        "text": "Put Liam Foster on standby for Tue 16:00–16:45 · Swim instructor · Level 1 (beginner)"
+        "line": "Liam first: 6.75 h this week, Level 6, 21.7 km away",
+        "text": "Put Liam Foster on standby for Wed 06:00–06:30 · Swim instructor · Level 6"
       },
       {
         "shift_id": "L-1112-G033",
         "label": "Thu 16:00–16:45 · Swim instructor · Level 6",
         "level": "at_risk",
-        "staff_id": "S06",
-        "name": "Liam Foster",
+        "staff_id": "S23",
+        "name": "Harper Hughes",
         "from_reserve": true,
-        "line": "Liam first: 6.25 h this week, Level 6, 21.7 km away",
-        "text": "Put Liam Foster on standby for Thu 16:00–16:45 · Swim instructor · Level 6"
+        "line": "Harper first: 9.25 h this week, Level 6, 28.2 km away",
+        "text": "Put Harper Hughes on standby for Thu 16:00–16:45 · Swim instructor · Level 6"
       },
       {
         "shift_id": "L-1112-G034",
@@ -1973,7 +1989,7 @@
         "staff_id": "S06",
         "name": "Liam Foster",
         "from_reserve": true,
-        "line": "Liam first: 6.25 h this week, Level 1 (beginner), 21.7 km away",
+        "line": "Liam first: 6.75 h this week, Level 1 (beginner), 21.7 km away",
         "text": "Put Liam Foster on standby for Thu 16:45–17:30 · Swim instructor · Level 1 (beginner)"
       },
       {
@@ -1983,18 +1999,18 @@
         "staff_id": "S06",
         "name": "Liam Foster",
         "from_reserve": true,
-        "line": "Liam first: 6.25 h this week, Level 5, 21.7 km away",
+        "line": "Liam first: 6.75 h this week, Level 5, 21.7 km away",
         "text": "Put Liam Foster on standby for Fri 07:00–07:30 · Swim instructor · Level 5"
       },
       {
         "shift_id": "L-1113-G037",
         "label": "Fri 16:00–16:45 · Swim instructor · Level 1 (beginner)",
         "level": "fragile",
-        "staff_id": "S06",
-        "name": "Liam Foster",
+        "staff_id": "S12",
+        "name": "Noah Bennett",
         "from_reserve": true,
-        "line": "Liam first: 6.25 h this week, Level 1 (beginner), 21.7 km away",
-        "text": "Put Liam Foster on standby for Fri 16:00–16:45 · Swim instructor · Level 1 (beginner)"
+        "line": "Noah first: 9.75 h this week, Level 1 (beginner), same pool",
+        "text": "Put Noah Bennett on standby for Fri 16:00–16:45 · Swim instructor · Level 1 (beginner)"
       }
     ],
     "training": {
@@ -2007,18 +2023,17 @@
           "S11"
         ],
         "count": 2,
-        "makes_safe": 4,
+        "makes_safe": 3,
         "of": 6,
         "shift_ids": [
           "L-1109-G003",
-          "L-1110-G025",
           "L-1112-G034",
           "L-1113-G037"
         ],
         "course_usd_per_person": 300.0,
         "cost_usd": 600.0,
         "cost_source": "assumption: placeholder, no course price list in the preset",
-        "text": "Train 2 more in Learn-to-Swim Level 1 (beginner) → 4 of 6 fragile shifts become safe · about $600 (assumed course price)"
+        "text": "Train 2 more in Learn-to-Swim Level 1 (beginner) → 3 of 6 fragile shifts become safe · about $600"
       },
       "options": [
         {
@@ -2030,11 +2045,10 @@
             "S11"
           ],
           "count": 2,
-          "makes_safe": 4,
+          "makes_safe": 3,
           "of": 6,
           "shift_ids": [
             "L-1109-G003",
-            "L-1110-G025",
             "L-1112-G034",
             "L-1113-G037"
           ],
@@ -2050,15 +2064,33 @@
             "S08"
           ],
           "count": 1,
-          "makes_safe": 3,
+          "makes_safe": 2,
           "of": 6,
           "shift_ids": [
-            "L-1110-G025",
             "L-1112-G034",
             "L-1113-G037"
           ],
           "course_usd_per_person": 300.0,
           "cost_usd": 300.0,
+          "cost_source": "assumption: placeholder, no course price list in the preset"
+        },
+        {
+          "key": "level:learn_to_swim:6",
+          "kind": "level",
+          "label": "Learn-to-Swim Level 6",
+          "people": [
+            "S05",
+            "S01"
+          ],
+          "count": 2,
+          "makes_safe": 2,
+          "of": 6,
+          "shift_ids": [
+            "L-1111-G009",
+            "L-1112-G033"
+          ],
+          "course_usd_per_person": 300.0,
+          "cost_usd": 600.0,
           "cost_source": "assumption: placeholder, no course price list in the preset"
         },
         {
@@ -2083,24 +2115,6 @@
           "kind": "level",
           "label": "Learn-to-Swim Level 5",
           "people": [
-            "S05",
-            "S11"
-          ],
-          "count": 2,
-          "makes_safe": 1,
-          "of": 6,
-          "shift_ids": [
-            "L-1113-G019"
-          ],
-          "course_usd_per_person": 300.0,
-          "cost_usd": 600.0,
-          "cost_source": "assumption: placeholder, no course price list in the preset"
-        },
-        {
-          "key": "level:learn_to_swim:6",
-          "kind": "level",
-          "label": "Learn-to-Swim Level 6",
-          "people": [
             "S01",
             "S05"
           ],
@@ -2108,7 +2122,7 @@
           "makes_safe": 1,
           "of": 6,
           "shift_ids": [
-            "L-1112-G033"
+            "L-1113-G019"
           ],
           "course_usd_per_person": 300.0,
           "cost_usd": 600.0,

@@ -2,7 +2,7 @@
   "networks": [
     {
       "id": "demo-network",
-      "name": "Demo aquatics network (fictional)"
+      "name": "Bay Swim Network"
     }
   ],
   "members": [

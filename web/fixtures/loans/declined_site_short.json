@@ -31,18 +31,18 @@
   "candidate": null,
   "approvals": 0,
   "approvals_needed": 2,
-  "created_at": "2026-11-09T10:15:30.069Z",
-  "closed_at": "2026-11-09T10:15:30.069Z",
+  "created_at": "2026-11-09T10:15:30.066Z",
+  "closed_at": "2026-11-09T10:15:32.066Z",
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "4c40996e-a2ca-4fe8-a5ff-e848e97deec5",
-    "task_id": "685f232d-bf95-4bb8-941a-1032f39fa81c",
+    "context_id": "6823d9ad-6fdc-4d31-9439-d335ebbe619e",
+    "task_id": "f1fe5edf-3e29-4bf6-8352-62e6bdda3df4",
     "task_state": "TASK_STATE_REJECTED"
   },
   "steps": [
     {
       "seq": 1,
-      "at": "2026-11-09T10:15:30.069Z",
+      "at": "2026-11-09T10:15:30.066Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -63,7 +63,7 @@
     },
     {
       "seq": 2,
-      "at": "2026-11-09T10:15:30.069Z",
+      "at": "2026-11-09T10:15:30.066Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -81,8 +81,8 @@
     },
     {
       "seq": 3,
-      "at": "2026-11-09T10:15:30.090Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:31.066Z",
+      "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -121,8 +121,8 @@
     },
     {
       "seq": 4,
-      "at": "2026-11-09T10:15:30.090Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:31.066Z",
+      "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -152,8 +152,8 @@
     },
     {
       "seq": 5,
-      "at": "2026-11-09T10:15:30.069Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:32.066Z",
+      "at_label": "10:15:32 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -170,8 +170,8 @@
     },
     {
       "seq": 6,
-      "at": "2026-11-09T10:15:30.069Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:32.066Z",
+      "at_label": "10:15:32 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",

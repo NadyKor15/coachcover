@@ -21,7 +21,7 @@
     "agent_url": "http://api:8000/a2a/V1",
     "approved": {
       "by": "Dana Ruiz",
-      "at": "2026-11-09T10:15:30.188Z",
+      "at": "2026-11-09T10:15:30.178Z",
       "at_label": "10:15:30 UTC"
     }
   },
@@ -41,18 +41,18 @@
   },
   "approvals": 1,
   "approvals_needed": 2,
-  "created_at": "2026-11-09T10:15:30.128Z",
+  "created_at": "2026-11-09T10:15:30.121Z",
   "closed_at": null,
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "5859f83c-1897-46bd-aa6f-93cd76ebec09",
-    "task_id": "e0d82a85-3c7d-4036-bb39-e104da200ae1",
+    "context_id": "8f1ba6c7-7c8b-4c09-b3e0-b63a4f574386",
+    "task_id": "d36666ec-503f-4072-af38-649def0cc3a0",
     "task_state": "TASK_STATE_INPUT_REQUIRED"
   },
   "steps": [
     {
       "seq": 1,
-      "at": "2026-11-09T10:15:30.128Z",
+      "at": "2026-11-09T10:15:30.121Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -73,7 +73,7 @@
     },
     {
       "seq": 2,
-      "at": "2026-11-09T10:15:30.128Z",
+      "at": "2026-11-09T10:15:30.121Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -91,8 +91,8 @@
     },
     {
       "seq": 3,
-      "at": "2026-11-09T10:15:30.149Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:31.121Z",
+      "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -131,8 +131,8 @@
     },
     {
       "seq": 4,
-      "at": "2026-11-09T10:15:30.149Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:31.121Z",
+      "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -165,15 +165,15 @@
     },
     {
       "seq": 5,
-      "at": "2026-11-09T10:15:30.128Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:32.121Z",
+      "at_label": "10:15:32 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
       "actor": "agent",
       "kind": "checked_offer",
-      "title": "Riverside agent re-checked Kai Morgan by Riverside rules: cleared",
-      "detail": "cleared by these rules",
+      "title": "Riverside agent re-checked Kai Morgan",
+      "detail": "cleared by Riverside rules",
       "data": {
         "ok": true,
         "why": "cleared by these rules",
@@ -186,8 +186,8 @@
     },
     {
       "seq": 6,
-      "at": "2026-11-09T10:15:30.166Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:33.121Z",
+      "at_label": "10:15:33 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -201,8 +201,8 @@
     },
     {
       "seq": 7,
-      "at": "2026-11-09T10:15:30.128Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:34.121Z",
+      "at_label": "10:15:34 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -227,7 +227,7 @@
     },
     {
       "seq": 8,
-      "at": "2026-11-09T10:15:30.188Z",
+      "at": "2026-11-09T10:15:30.178Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",

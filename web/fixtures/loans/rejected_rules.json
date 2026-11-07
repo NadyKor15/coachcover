@@ -31,18 +31,18 @@
   "candidate": null,
   "approvals": 0,
   "approvals_needed": 2,
-  "created_at": "2026-11-09T10:15:30.066Z",
-  "closed_at": "2026-11-09T10:15:30.066Z",
+  "created_at": "2026-11-09T10:15:30.067Z",
+  "closed_at": "2026-11-09T10:15:36.067Z",
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "23f6fc7e-1073-4957-b672-bb73a866339a",
-    "task_id": "9a6268b4-d3c5-403f-94b6-da07aa19c0ac",
+    "context_id": "217d89c0-93c6-4620-990c-43a8e79656f4",
+    "task_id": "aa4df42d-caa0-48eb-82e0-6db568a8c59c",
     "task_state": "TASK_STATE_REJECTED"
   },
   "steps": [
     {
       "seq": 1,
-      "at": "2026-11-09T10:15:30.066Z",
+      "at": "2026-11-09T10:15:30.067Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -63,7 +63,7 @@
     },
     {
       "seq": 2,
-      "at": "2026-11-09T10:15:30.066Z",
+      "at": "2026-11-09T10:15:30.067Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -81,8 +81,8 @@
     },
     {
       "seq": 3,
-      "at": "2026-11-09T10:15:30.086Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:31.067Z",
+      "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -121,17 +121,17 @@
     },
     {
       "seq": 4,
-      "at": "2026-11-09T10:15:30.086Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:31.067Z",
+      "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
       "actor": "agent",
       "kind": "offered",
       "title": "Northside agent offers Kai Morgan",
-      "detail": "Kai first: 40 h this week, Level 3, 8.6 km away · Northside keeps 3 on site or free 06:00–08:00 after the loan (minimum 3; now 4)",
+      "detail": "Kai first: 32 h this week, Level 3, 8.6 km away · Northside keeps 3 on site or free 06:00–08:00 after the loan (minimum 3; now 4)",
       "data": {
-        "line": "Kai first: 40 h this week, Level 3, 8.6 km away",
+        "line": "Kai first: 32 h this week, Level 3, 8.6 km away",
         "name": "Kai Morgan",
         "guards": {
           "ok": true,
@@ -150,23 +150,23 @@
         },
         "cleared": 1,
         "staff_id": "N01",
-        "week_hours": 40.0
+        "week_hours": 32.0
       }
     },
     {
       "seq": 5,
-      "at": "2026-11-09T10:15:30.066Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:32.067Z",
+      "at_label": "10:15:32 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
       "actor": "agent",
       "kind": "checked_offer",
-      "title": "Riverside agent re-checked Kai Morgan by Riverside rules: blocked",
-      "detail": "would have 42 h in the week of 2026-11-08 (limit 40 h)",
+      "title": "Riverside agent re-checked Kai Morgan",
+      "detail": "blocked by Riverside rules: would have 42 h in the week of 2026-11-09 (limit 40 h)",
       "data": {
         "ok": false,
-        "why": "would have 42 h in the week of 2026-11-08 (limit 40 h)",
+        "why": "would have 42 h in the week of 2026-11-09 (limit 40 h)",
         "name": "Kai Morgan",
         "codes": [
           "HOURS_LIMIT_EXCEEDED"
@@ -178,17 +178,17 @@
     },
     {
       "seq": 6,
-      "at": "2026-11-09T10:15:30.104Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:33.067Z",
+      "at_label": "10:15:33 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
       "actor": "agent",
       "kind": "offer_withdrawn",
       "title": "Northside agent withdrew the offer",
-      "detail": "would have 42 h in the week of 2026-11-08 (limit 40 h)",
+      "detail": "would have 42 h in the week of 2026-11-09 (limit 40 h)",
       "data": {
-        "why": "would have 42 h in the week of 2026-11-08 (limit 40 h)",
+        "why": "would have 42 h in the week of 2026-11-09 (limit 40 h)",
         "codes": [
           "HOURS_LIMIT_EXCEEDED"
         ]
@@ -196,8 +196,8 @@
     },
     {
       "seq": 7,
-      "at": "2026-11-09T10:15:30.066Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:34.067Z",
+      "at_label": "10:15:34 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -216,8 +216,8 @@
     },
     {
       "seq": 8,
-      "at": "2026-11-09T10:15:30.114Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:35.067Z",
+      "at_label": "10:15:35 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -258,8 +258,8 @@
     },
     {
       "seq": 9,
-      "at": "2026-11-09T10:15:30.114Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:35.067Z",
+      "at_label": "10:15:35 UTC",
       "venue_id": "N1",
       "venue": "Northside",
       "side": "lender",
@@ -289,8 +289,8 @@
     },
     {
       "seq": 10,
-      "at": "2026-11-09T10:15:30.066Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:36.067Z",
+      "at_label": "10:15:36 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
@@ -307,8 +307,8 @@
     },
     {
       "seq": 11,
-      "at": "2026-11-09T10:15:30.066Z",
-      "at_label": "10:15:30 UTC",
+      "at": "2026-11-09T10:15:36.067Z",
+      "at_label": "10:15:36 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
       "side": "borrower",
