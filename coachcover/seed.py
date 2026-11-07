@@ -134,7 +134,6 @@ DEMO_ABSENT = "S05"
 # Fixed weeks: (day offset from Sunday, venue, block start). Hours: Anna 4, Sofia 6, Leo 9, Maria 12,
 # S20 15, S22 16, S24 18, and the two people near the limit, S11 39.5 and S29 38. Nobody here works Monday morning.
 FIXED_BLOCKS = {
-    "S27": [(6, "V1", time(10, 0))],
     "S25": [(2, "V1", time(18, 0)), (3, "V1", time(18, 0))],
     "S26": [(3, "V1", time(5, 30)), (5, "V1", time(5, 30))],
     "S17": [(2, "V1", time(14, 0)), (4, "V1", time(14, 0)), (5, "V1", time(14, 0))],
@@ -254,6 +253,19 @@ def _short_rest(busy: list[tuple[datetime, datetime]], start: datetime, end: dat
     return False
 
 
+def _cleared(staff_id: str, roles: tuple[str, ...], extra: tuple[str, ...], day: date, lesson: bool,
+             certs: dict[tuple[str, str], dict]) -> bool:
+    """The data design keeps the week clean: the greedy fill never books a person whose card is expired, revoked or
+    disputed on that day, or whose program renewal is overdue for a lesson. The traps live only where the rules
+    must catch them: the hero morning's candidates, S07's Monday 16:00 lesson (the night check) and the import file."""
+    for role in roles:
+        for ctype in (*ROLE_CERTS[role], *extra):
+            row = certs.get((staff_id, ctype))
+            if row is None or row["expires_on"] < day or (staff_id, ctype) in REVOKED or (staff_id, ctype) == DISPUTED[:2]:
+                return False
+    return not (lesson and staff_id == OVERDUE_PROGRAM[0])
+
+
 def _off(staff_id: str, start: datetime) -> bool:
     """Kept free by the data design: never picked by the greedy fill at this time."""
     if staff_id in FIXED_ONLY:
@@ -335,6 +347,7 @@ def build_school() -> School:
                 }
             )
 
+    certs_by = {(c["staff_id"], c["cert_type"]): c for c in school.certs}
     busy: dict[str, list[tuple[datetime, datetime]]] = {sid: [] for sid in roles_of}
     hours: dict[str, float] = {sid: 0.0 for sid in roles_of}
     lesson_count: dict[str, int] = {sid: 0 for sid in roles_of}
@@ -386,6 +399,7 @@ def build_school() -> School:
                 if "instructor" in roles
                 and str(level) in levels_of[sid]
                 and not _off(sid, lesson_start)
+                and _cleared(sid, ("instructor",), (), lesson_start.date(), True, certs_by)
                 and not _overlaps(busy[sid], lesson_start, lesson_end)
                 and not _short_rest(busy[sid], lesson_start, lesson_end)
             ]
@@ -442,6 +456,7 @@ def build_school() -> School:
                         for s, roles in roles_of.items()
                         if "lifeguard" in roles
                         and not _off(s, block_start)
+                        and _cleared(s, ("lifeguard",), (), block_start.date(), False, certs_by)
                         and hours[s] + length <= GREEDY_HOURS_CAP
                         and not _overlaps(busy[s], block_start, block_end)
                         and not _short_rest(busy[s], block_start, block_end)

@@ -17,6 +17,7 @@ LANGUAGES = ("en", "ru")
 TEMPLATES: dict[str, dict[str, str]] = {
     "en": {
         Code.IS_THE_ABSENT_PERSON: "is the person who cannot come",
+        Code.CALLED_OUT: "called out sick for {from_day}",
         Code.ROLE_MISSING: "does not hold the {role} role",
         Code.CERT_MISSING: "has no {cert_type} certificate",
         Code.CERT_NOT_YET_VALID: "{cert_type} is valid only from {valid_from}",
@@ -37,6 +38,7 @@ TEMPLATES: dict[str, dict[str, str]] = {
     },
     "ru": {
         Code.IS_THE_ABSENT_PERSON: "это тот, кто не выходит",
+        Code.CALLED_OUT: "сообщил(а) о болезни на {from_day}",
         Code.ROLE_MISSING: "нет роли «{role}»",
         Code.CERT_MISSING: "нет сертификата {cert_type}",
         Code.CERT_NOT_YET_VALID: "{cert_type} действует только с {valid_from}",
@@ -80,6 +82,8 @@ def describe(reason: Reason, lang: str = "en", preset: Preset | None = None) -> 
     key: str = reason.code
     if reason.code == Code.CERT_EXPIRES_ON_SHIFT_DAY and params.get("today"):
         key = "CERT_EXPIRES_TODAY"
+    if reason.code == Code.CALLED_OUT:
+        params["from_day"] = _date_text(params["from"][:10], lang)
     if reason.code == Code.REST_TOO_SHORT and params.get("side") == "after":
         key = "REST_TOO_SHORT_AFTER"
     if preset is not None:

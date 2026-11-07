@@ -93,6 +93,7 @@ def test_broken_preset_is_rejected(break_it, message):
 
 SAMPLE_PARAMS = {
     Code.IS_THE_ABSENT_PERSON: {},
+    Code.CALLED_OUT: {"from": "2026-11-09T00:00:00-05:00", "to": "2026-11-10T00:00:00-05:00"},
     Code.ROLE_MISSING: {"role": "instructor"},
     Code.CERT_MISSING: {"cert_type": "wsi"},
     Code.CERT_NOT_YET_VALID: {"cert_type": "wsi", "valid_from": "2026-11-10"},

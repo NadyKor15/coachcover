@@ -9,6 +9,9 @@ x-app-env: &app-env
   COACHCOVER_MODEL_MODE: ${COACHCOVER_MODEL_MODE:-replay}
   VULTR_INFERENCE_API_KEY: ${VULTR_INFERENCE_API_KEY:-}
   COACHCOVER_JUDGE_RUNS_PER_HOUR: ${COACHCOVER_JUDGE_RUNS_PER_HOUR:-6}
+  # two agents on two addresses: Riverside (V1) on the api service, Northside (N1) on agent-north (A2A 1.0)
+  COACHCOVER_A2A_PEERS: '{"V1": "http://api:8000/a2a/V1", "N1": "http://agent-north:8000/a2a/N1"}'
+  COACHCOVER_SELF_URL: http://api:8000
 
 services:
   db:
@@ -36,6 +39,21 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:${API_PORT:-8088}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  # Northside's agent: the same image on its own address, answering A2A for the lending venue
+  agent-north:
+    build: .
+    environment:
+      <<: *app-env
+    depends_on:
+      api:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
       interval: 5s

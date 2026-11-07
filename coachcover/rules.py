@@ -40,6 +40,7 @@ from coachcover.model import (
 
 class Code(StrEnum):
     IS_THE_ABSENT_PERSON = "IS_THE_ABSENT_PERSON"
+    CALLED_OUT = "CALLED_OUT"
     ROLE_MISSING = "ROLE_MISSING"
     CERT_MISSING = "CERT_MISSING"
     CERT_NOT_YET_VALID = "CERT_NOT_YET_VALID"
@@ -218,6 +219,15 @@ def _week_bounds(week_start: date, tz: ZoneInfo) -> tuple[datetime, datetime]:
 def _check_assignee(staff: Staff, shift: Shift) -> list[Reason]:
     if shift.assignee is not None and staff.id == shift.assignee:
         return [Reason(Code.IS_THE_ABSENT_PERSON, {})]
+    return []
+
+
+def _check_absence(staff: Staff, shift: Shift, context: Context, tz: ZoneInfo) -> list[Reason]:
+    """A person who called out is not offered any shift in their absence window (WEB review, 2026-11-07)."""
+    start, end = _utc(shift.start), _utc(shift.end)
+    for a, b in context.absences.get(staff.id, ()):
+        if _utc(a) < end and start < _utc(b):
+            return [Reason(Code.CALLED_OUT, {"from": a.astimezone(tz).isoformat(), "to": b.astimezone(tz).isoformat()})]
     return []
 
 
@@ -474,6 +484,7 @@ def eligible(staff: Staff, shift: Shift, at: datetime, policy: Policy, context: 
     own = _own_commitments(staff, shift, context)
     reasons = [
         *_check_assignee(staff, shift),
+        *_check_absence(staff, shift, context, tz),
         *_check_role(staff, shift),
         *_check_certs(staff, role, shift, at, tz, preset),
         *_check_programs(staff, shift, tz, preset),

@@ -58,7 +58,7 @@ def test_every_price_says_whether_it_is_an_assumption():
     assert set(info) == {"lesson_price", "refund_share", "hourly_wage", "overtime_multiplier", "inspection_penalty",
                          "manager_hour"}
     assert all({"value", "unit", "assumption", "source", "note"} <= set(v) for v in info.values())
-    assert not info["lesson_price"]["assumption"] and info["lesson_price"]["source"].endswith("(product decision)")
+    assert not info["lesson_price"]["assumption"] and info["lesson_price"]["source"] == "from the founder's coaching experience"
     assert info["manager_hour"]["assumption"] and info["hourly_wage"]["assumption"]
     assert info["inspection_penalty"]["value"] == 0  # off unless a school sets it
     assert info["overtime_multiplier"]["assumption"] is False and "Fair Labor Standards" in info["overtime_multiplier"]["source"]

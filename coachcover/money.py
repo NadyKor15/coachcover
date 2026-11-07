@@ -106,6 +106,11 @@ def cents_label(cents: float) -> str:
     return f"{cents:.3f}¢" if cents >= 0.001 else f"{cents:.4f}¢"
 
 
+def cost_label(usd: float) -> str:
+    """Model cost for every screen: dollars from one cent up, otherwise cents, so a small cost never prints as $0.000."""
+    return f"${usd:,.2f}" if usd >= 0.01 else cents_label(usd * 100)
+
+
 # --- the cost of an uncovered morning --------------------------------------------
 
 

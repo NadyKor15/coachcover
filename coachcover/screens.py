@@ -67,7 +67,8 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
         return "Readers disagree — review"
     if code == "ROLE_MISSING":
         role = preset.roles.get(params["role"])
-        return f"Not a {(role.short or role.label) if role else params['role']}"
+        word = ((role.short or role.label) if role else params["role"]).lower()
+        return f"Role: not {'an' if word[:1] in 'aeiou' else 'a'} {word}"
     if code == "PROGRAM_MISSING":
         return f"No {_program_short(preset, params['program'])} program"
     if code == "LEVEL_MISSING":
@@ -91,6 +92,8 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
         return f"Over the 1:{params['max_per_instructor']} norm"
     if code == "IS_THE_ABSENT_PERSON":
         return "Called out"
+    if code == "CALLED_OUT":
+        return "Called out sick today"
     if code == "RESERVE":
         reserve = [r for r in preset.roles.values() if r.reserve]
         return f"Reserve ({(reserve[0].short or reserve[0].label).lower()})" if reserve else "Reserve"
@@ -160,6 +163,13 @@ def _plan_option_text(option: dict, preset: Preset) -> str:
         return f"move the lesson: makeup for {option['families']} families"
     if kind == "close":
         return f"cancel: {option['remedy']} for {option['families']} families"
+    if kind == "split":
+        return (f"{option['staff_name']} takes {option['children']} {participants} at the same time "
+                f"({option['participants_after']} of {option['capacity']}, norm ok)")
+    if kind == "move":
+        return f"move the {option['children']} newest {participants} to the nearest lesson of their level with room"
+    if kind == "cancel_lesson":
+        return f"cancel the whole lesson: {option['remedy']} for {option['families']} families"
     return kind
 
 
@@ -180,7 +190,7 @@ def _model_log(conn, case_id: int, callout_id, live: bool) -> dict:
     names = list(dict.fromkeys(SHORT_NAMES.get(m or req, m or req) for m, req, _, _ in rows))
     usd = round(sum(float(c) for _, _, c, _ in rows), 4)
     where = "running on Vultr" if live else "replayed from recorded Vultr answers"
-    label = f"Models: {' · '.join(names)} — {len(rows)} calls · ${usd:.3f} · {where}" if rows else None
+    label = f"Models: {' · '.join(names)} — {len(rows)} calls · {money_model.cost_label(usd)} · {where}" if rows else None
     return {"label": label, "calls": len(rows), "usd": usd}
 
 
@@ -347,7 +357,9 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
         (vid, local.replace(hour=0, minute=0, second=0, microsecond=0),
          local.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)),
     ).fetchone()[0]
-    out["outcome"] = {"covered_by": names.get(covered_by) if covered_by else None,
+    # the event carries the name: a person lent by another venue of the network is not on this school's staff list
+    out["outcome"] = {"covered_by": (covered.get("name") or names.get(covered_by)) if covered_by else None,
+                      "covered_via": covered.get("via") if covered else None,
                       "covered_time": _clock(info["start"], tz) if covered_by else None,
                       "lessons_cancelled": cancelled}
     out["model_log"] = _model_log(conn, case_id, callout_id, live)
@@ -371,7 +383,10 @@ def _manager_minutes() -> tuple[float | None, str | None]:
 
 def today_money_block(conn: psycopg.Connection, policy_id: str, now: datetime) -> dict:
     minutes, source = _manager_minutes()
-    return money_model.today_money(conn, policy_id, now, manager_minutes=minutes, manager_minutes_source=source)["money"]
+    money = money_model.today_money(conn, policy_id, now, manager_minutes=minutes, manager_minutes_source=source)["money"]
+    price = load_policy(conn, policy_id).preset.money.get("lesson_price", {})
+    money["source"] = "assumption" if price.get("assumption", True) else price.get("source")
+    return money
 
 
 def case_risk(shift, policy) -> dict:
@@ -723,6 +738,8 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         "status": status,
         "status_label": STATUS_LABELS.get(status, status),
         "covered_time_label": _clock(covered[0], tz) if covered else None,
+        "covered_by": covered[1].get("name") if covered else None,
+        "covered_via": covered[1].get("via") if covered else None,
         "shift_label": f"{_clock(info['start'], tz)} {labels['lanes_label'].split(' (')[0]}",
         "venue": {"id": info["venue_id"], "name": info["venue"]},
         "date_label": f"{local_day:%a}, {local_day:%b} {local_day.day}",
@@ -733,5 +750,6 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         "proof": proof,
         "model_calls": calls,
         "model_cost_usd": round(sum(c["cost_usd"] or 0 for c in calls), 6),
+        "model_cost_label": money_model.cost_label(sum(c["cost_usd"] or 0 for c in calls)),
         "risk": case_risk(shift, policy),
     })

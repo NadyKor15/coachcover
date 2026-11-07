@@ -329,3 +329,5 @@ class Commitment:
 class Context:
     venues: Mapping[str, Venue]
     commitments: Mapping[str, tuple[Commitment, ...]] = field(default_factory=dict)  # by staff id
+    # people who called out: (from, to) windows in which they are offered nothing (at least their whole day)
+    absences: Mapping[str, tuple[tuple[datetime, datetime], ...]] = field(default_factory=dict)

@@ -1,0 +1,45 @@
+{
+  "note": "Fictional training network for the staff-loan demo (A2A). Every name is invented. Riverside is the training school's venue V1; Northside is a second training venue with its own rules (a 44 h week instead of 40) and its own manager. Both run on one machine.",
+  "network": {"id": "demo-network", "name": "Demo aquatics network (fictional)"},
+  "guard_role": "lifeguard",
+  "members": [
+    {
+      "venue_id": "V1",
+      "policy_id": "demo-school",
+      "manager_name": "Dana Ruiz",
+      "min_guards": 2
+    },
+    {
+      "venue_id": "N1",
+      "policy_id": "northside",
+      "manager_name": "Omar Haddad",
+      "min_guards": 3,
+      "policy": {"preset": "swim_school", "name": "Northside Aquatic Center (fictional)", "overrides": {"max_weekly_hours": 44}},
+      "venue": {"name": "Northside Aquatic Center", "tz": "America/New_York", "lat": 34.02, "lon": -84.36,
+                "zones": [["N1-MAIN", "Main pool"]]},
+      "staff": [
+        {"id": "N01", "name": "Kai Morgan", "language": "en", "roles": ["lifeguard", "instructor"],
+         "certs": [["lifeguarding", "2025-06-01", "2027-06-01"], ["cpr_aed", "2025-06-01", "2027-06-01"], ["wsi", "2025-03-15", "2027-03-15"]],
+         "program": {"code": "learn_to_swim", "renewed_at": "2026-05-01",
+                     "levels": {"1": "2022-02-01", "2": "2022-02-01", "3": "2022-09-01", "4": "2023-03-01", "5": "2024-01-15", "6": "2024-06-01"}}},
+        {"id": "N02", "name": "Rosa Lindqvist", "language": "en", "roles": ["lifeguard"],
+         "certs": [["lifeguarding", "2025-09-10", "2027-09-10"], ["cpr_aed", "2025-09-10", "2027-09-10"]]},
+        {"id": "N03", "name": "Owen Park", "language": "en", "roles": ["lifeguard"],
+         "certs": [["lifeguarding", "2026-02-20", "2028-02-20"], ["cpr_aed", "2026-02-20", "2028-02-20"]]},
+        {"id": "N04", "name": "Mei Tanaka", "language": "en", "roles": ["lifeguard", "instructor"],
+         "certs": [["lifeguarding", "2025-04-01", "2027-04-01"], ["cpr_aed", "2024-11-01", "2026-11-01"], ["wsi", "2025-04-01", "2027-04-01"]],
+         "program": {"code": "learn_to_swim", "renewed_at": "2026-03-01", "levels": {"1": "2023-05-01", "2": "2023-05-01", "3": "2024-02-01"}}},
+        {"id": "N05", "name": "Theo Brandt", "language": "en", "roles": ["lifeguard"],
+         "certs": [["lifeguarding", "2025-12-01", "2027-12-01"], ["cpr_aed", "2025-12-01", "2027-12-01"]]}
+      ],
+      "shifts": [
+        {"id": "N-1108-0800", "role": "lifeguard", "zone": "N1-MAIN", "start": "2026-11-08T08:00", "end": "2026-11-08T12:00", "staff_id": "N03"},
+        {"id": "N-1109-0530", "role": "lifeguard", "zone": "N1-MAIN", "start": "2026-11-09T05:30", "end": "2026-11-09T10:00", "staff_id": "N02"},
+        {"id": "N-1109-1000", "role": "lifeguard", "zone": "N1-MAIN", "start": "2026-11-09T10:00", "end": "2026-11-09T14:00", "staff_id": "N05"},
+        {"id": "N-1109-1400", "role": "lifeguard", "zone": "N1-MAIN", "start": "2026-11-09T14:00", "end": "2026-11-09T18:00", "staff_id": "N03"},
+        {"id": "N-1110-1000", "role": "lifeguard", "zone": "N1-MAIN", "start": "2026-11-10T10:00", "end": "2026-11-10T14:00", "staff_id": "N01"},
+        {"id": "N-1112-1000", "role": "lifeguard", "zone": "N1-MAIN", "start": "2026-11-12T10:00", "end": "2026-11-12T14:00", "staff_id": "N01"}
+      ]
+    }
+  ]
+}

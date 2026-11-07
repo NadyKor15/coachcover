@@ -78,6 +78,7 @@ CATEGORY_OF = {
     Code.RATIO_EXCEEDED: "ratio",
     Code.OVERLAPS_COMMITMENT: "other",
     Code.IS_THE_ABSENT_PERSON: "other",
+    Code.CALLED_OUT: "other",
 }
 # a placement is counted once, under the first category in this order
 PRIMARY_ORDER = ("role", "certificate", "program", "hours", "ratio", "other")
@@ -486,7 +487,13 @@ class State:
         self.booked = _bookings(self.shifts, morning.extra, skip=morning.open_ids)
 
     def context(self) -> Context:
-        return Context(self.world.venues, {sid: tuple(items) for sid, items in self.booked.items()})
+        # a person who called out is offered nothing that day (as in the core: repo.load_absences)
+        tz = ZoneInfo(self.world.tz) if isinstance(self.world.tz, str) else self.world.tz
+        absences: dict[str, tuple] = {}
+        for c in self.morning.callouts:
+            first = datetime.combine(c.at.astimezone(tz).date(), time(0), tzinfo=tz)
+            absences[c.staff_id] = ((first, first + timedelta(days=1)),)
+        return Context(self.world.venues, {sid: tuple(items) for sid, items in self.booked.items()}, absences)
 
     def busy(self, staff_id: str, shift: Shift) -> bool:
         return any(c.ref != shift.id and _overlap(c.start, c.end, shift.start, shift.end) for c in self.booked.get(staff_id, ()))
@@ -1168,7 +1175,7 @@ def report_markdown(result: dict) -> str:
         f"({p['manager_notice_minutes']} min to see the card, {p['decide_minutes']} min to decide). If an overtime offer is not "
         "taken, the manager goes to the next option.",
         "",
-        "## Before / after: offer waves (product decision)",
+        "## Before / after: offer waves",
         "",
         "CoachCover on the same 50 mornings, before (one offer at a time) and after (waves + plan B by the deadline). "
         "The baseline does not change.",
