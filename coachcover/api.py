@@ -20,13 +20,14 @@ from typing import Iterator
 
 import psycopg
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from coachcover import a2a, ext_api, screens, views
 from coachcover.db import migrate
-from coachcover.demo import SCENARIOS, clock_now, reset_school, run_scenario
+from coachcover.demo import RESET_LOCK, SCENARIOS, clock_now, reset_school, run_scenario
 from coachcover.models import DbLedger, ModelClient, ModelError
 from coachcover.pipeline import Conflict, NotFound, Pipeline
 from coachcover.schedule_import import MAX_IMPORT_BYTES, import_schedule
@@ -120,6 +121,40 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
 
     def pipeline(conn: psycopg.Connection) -> Pipeline:
         return Pipeline(conn, ModelClient(DbLedger(conn)), policy_id)
+
+    def resetting() -> bool:
+        """True while a judge run rebuilds the training school (it holds RESET_LOCK, as the worker knows)."""
+        try:
+            with connect() as conn:
+                free = conn.execute("SELECT pg_try_advisory_lock_shared(%s)", (RESET_LOCK,)).fetchone()[0]
+                if free:
+                    conn.execute("SELECT pg_advisory_unlock_shared(%s)", (RESET_LOCK,))
+                return not free
+        except psycopg.Error:
+            return False
+
+    def busy() -> JSONResponse:
+        return JSONResponse(status_code=503, headers={"Retry-After": "2"},
+                            content={"resetting": True, "error": "Resetting the training school…"})
+
+    @app.middleware("http")
+    async def _during_a_reset(request: Request, call_next):
+        """While the school is rebuilt every /api/ answer is 503 {"resetting": true}, not a half-built school's 422 or
+        500. The judge run itself goes through: it is the one rebuilding."""
+        path = request.url.path
+        if not path.startswith("/api/") or path == "/api/judge/run":
+            return await call_next(request)
+        if await run_in_threadpool(resetting):
+            return busy()
+        try:
+            response = await call_next(request)
+        except Exception:
+            if await run_in_threadpool(resetting):  # the rebuild started while this request ran
+                return busy()
+            raise
+        if response.status_code in (422, 500) and await run_in_threadpool(resetting):
+            return busy()
+        return response
 
     @app.exception_handler(NotFound)
     async def _not_found(_: Request, exc: NotFound):

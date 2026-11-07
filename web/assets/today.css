@@ -245,4 +245,5 @@ h1{height:79px;padding:16.9px 0 0 0;font-size:36px;line-height:44px;font-weight:
 /* load / error state */
 .load-err{position:absolute;left:270px;top:8px;z-index:5;max-width:900px;padding:10px 16px;border-radius:10px;background:#fbe9e6;border:1px solid #e7b9b1;color:#8f2a20;font-size:17px;white-space:normal}
 .load-err[hidden]{display:none}
+.load-err.calm{background:#f3eee6;border-color:#e2d9cd;color:#1c252a}  /* a judge run resets the school: not an error */
 body[data-state="loading"] .main,body[data-state="loading"] .foot,body[data-state="loading"] .tagline{visibility:hidden}

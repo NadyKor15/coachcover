@@ -227,6 +227,25 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await p.goto(base + 'index.html');
     await p.waitForFunction(() => document.body.dataset.state === 'error');
     check('C: load error shown', (await text(p, '#loadErr')).includes('HTTP 500'));
+    check('C: a load error is red', !(await p.$eval('#loadErr', e => e.classList.contains('calm'))));
+    await p.close();
+
+    /* a judge run rebuilds the school: the API answers 503 {"resetting": true}; a calm note, then the morning */
+    p = await newPage(browser, 1920, 1080);
+    let resetting = true;
+    await p.route('**/api/today*', r => resetting
+      ? r.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ resetting: true, error: 'Resetting the training school…' }) })
+      : r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(today) }));
+    await p.goto(base + 'index.html');
+    await p.waitForFunction(() => !document.querySelector('#loadErr').hidden);
+    check('C: during a reset a calm note, not an error', await text(p, '#loadErr') === 'Resetting the training school…' &&
+      await p.$eval('#loadErr', e => e.classList.contains('calm') && getComputedStyle(e).backgroundColor === 'rgb(243, 238, 230)') &&
+      !(await text(p, '#loadErr')).includes('HTTP'), await text(p, '#loadErr'));
+    check('C: during a reset the page is not in its error state', await p.evaluate(() => document.body.dataset.state) !== 'error');
+    resetting = false;
+    await p.reload();
+    await p.waitForFunction(() => document.body.dataset.state === 'ready');
+    check('C: after the reset the morning, no note', await p.$eval('#loadErr', e => e.hidden));
     await p.close();
 
     /* ---------- screen P2 ---------- */

@@ -556,8 +556,15 @@
         render(r.body);
         err.hidden = true;
         document.body.dataset.state = 'ready';
+      } else if (r.status === 503 && r.body && r.body.resetting) {
+        // a judge run is rebuilding the training school: a calm note, not an error; the next poll shows the new morning
+        err.textContent = 'Resetting the training school…';
+        err.classList.add('calm');
+        err.hidden = false;
+        document.body.dataset.state = ui.data ? 'ready' : 'loading';
       } else {
         err.textContent = 'Could not load /api/today — ' + CC.errorText(r);
+        err.classList.remove('calm');
         err.hidden = false;
         document.body.dataset.state = ui.data ? 'ready' : 'error';
       }

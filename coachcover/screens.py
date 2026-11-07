@@ -839,14 +839,23 @@ def _local_label(value: datetime, tz: ZoneInfo) -> str:
 
 
 def model_calls(conn: psycopg.Connection, case_id: int, callout_id) -> list[dict]:
+    """The case's model calls, each priced as money.case_cost prices it: the case's own calls in full, the call-out's
+    calls (made once for the whole message) at an equal share between the cases that message opened. So the case page,
+    Today and the downloaded case show one cost, and the cases of a call-out add up to the ledger."""
     rows = conn.execute(
         "SELECT at, purpose, model_requested, model_returned, duration_ms, input_tokens, output_tokens, cost_usd, source,"
-        " ref->>'recording', coalesce((ref->>'synthetic')::boolean, false), ok, error FROM model_call"
-        " WHERE case_id = %s OR (%s::uuid IS NOT NULL AND ref->>'callout_id' = %s::text) ORDER BY at, id",
+        " ref->>'recording', coalesce((ref->>'synthetic')::boolean, false), ok, error, case_id FROM model_call"
+        " WHERE case_id = %s OR (%s::uuid IS NOT NULL AND case_id IS NULL AND ref->>'callout_id' = %s::text) ORDER BY at, id",
         (case_id, callout_id, callout_id),
     ).fetchall()
+    shared_by = conn.execute("SELECT count(*) FROM cover_case WHERE callout_id = %s", (callout_id,)).fetchone()[0] \
+        if callout_id is not None else 0
+    prices = money_model.load_prices()
     out = []
-    for at, purpose, requested, returned, ms, tin, tout, cost, source, recording, synthetic, ok, error in rows:
+    for at, purpose, requested, returned, ms, tin, tout, cost, source, recording, synthetic, ok, error, own in rows:
+        price, _ = money_model.call_price({"model_returned": returned, "model_requested": requested, "input_tokens": tin,
+                                           "output_tokens": tout, "cost_usd": cost}, prices)
+        share = 1.0 if own is not None or not shared_by else 1 / shared_by
         if source == "live":
             where = "live call on Vultr"
         else:
@@ -856,8 +865,9 @@ def model_calls(conn: psycopg.Connection, case_id: int, callout_id) -> list[dict
             "at": _utc(at), "purpose": purpose, "model": returned or requested,
             "model_label": MODEL_LABELS.get(returned or requested, returned or requested),
             "ms": ms, "input_tokens": tin, "output_tokens": tout,
-            "cost_usd": float(cost) if cost is not None else None,
-            "source": where if ok else f"{where} · failed: {error}",
+            "cost_usd": round(price * share, 10) if price is not None else None,
+            "source": (where if ok else f"{where} · failed: {error}")
+            + (f" · the call-out's call, shared by {shared_by} cases" if share < 1 else ""),
         })
     return out
 
@@ -1012,6 +1022,7 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
     proof["policy_label"] = f"cover = {policy.autonomy['assign_cover']} · plan B = {policy.autonomy['plan_b']}"
     steps.sort(key=lambda s: s["at"])
     calls = model_calls(conn, case_id, callout_id)
+    bill = money_model.case_cost(conn, case_id)
     local_day = info["start"].astimezone(tz)
     private_end = next((k for _, _, k, _ in reversed(events) if k in ("private_moved", "private_credit")), None)
     return plain({
@@ -1031,7 +1042,8 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         "steps": steps,
         "proof": proof,
         "model_calls": calls,
-        "model_cost_usd": round(sum(c["cost_usd"] or 0 for c in calls), 6),
-        "model_cost_label": money_model.cost_label(sum(c["cost_usd"] or 0 for c in calls)),
+        # one cost of this cover on every screen: money.case_cost (its own calls + its share of the call-out's)
+        "model_cost_usd": round(bill["usd"], 6),
+        "model_cost_label": money_model.cost_label(bill["usd"]),
         "risk": case_risk(shift, policy),
     })
