@@ -105,7 +105,7 @@ def _option_label(policy: Policy, option: tuple) -> str:
     if option[0] == "cert":
         return preset.cert_types[option[1]].label
     program = preset.programs[option[1]]
-    return f"{program.label} {program.levels[option[2]].label}"
+    return program.title(option[2])
 
 
 def training_options(policy: Policy, cells: list[dict], blocked: dict[str, dict[str, list]], threshold: int,

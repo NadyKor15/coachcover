@@ -1,0 +1,71 @@
+{
+ "purpose": "plan_b_text",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "shift": {
+   "id": "L-1109-G002",
+   "label": "Mon 08:00-08:45 · Swim instructor · Preschool · Riverside Aquatic Center",
+   "venue": "Riverside Aquatic Center",
+   "zone_id": "V1-TEACH",
+   "start": "2026-11-09T13:00:00+00:00",
+   "end": "2026-11-09T13:45:00+00:00",
+   "role": "instructor"
+  },
+  "options": [
+   {
+    "kind": "lead",
+    "mode": "propose",
+    "staff_id": "S06",
+    "staff_name": "Liam Foster"
+   },
+   {
+    "kind": "overtime",
+    "mode": "propose",
+    "staff_id": "S11",
+    "staff_name": "Camila Herrera",
+    "hours_over": 0.25,
+    "cost_usd": 8.5
+   },
+   {
+    "kind": "reschedule",
+    "mode": "propose",
+    "groups": [
+     "G002"
+    ],
+    "families": 8,
+    "remedy": "makeup",
+    "valid_until": "2026-12-09"
+   },
+   {
+    "kind": "close",
+    "mode": "propose",
+    "zone_id": "V1-TEACH",
+    "groups": [
+     "G002"
+    ],
+    "families": 8,
+    "remedy": "credit",
+    "valid_until": null
+   }
+  ]
+ },
+ "input_sha256": "4db995a2bdd78e71c5eb1fe3353572969f569d168863719603b792eea5c90014",
+ "synthetic": true,
+ "source": "synthetic: written by hand to the plan_b_text schema, only facts from input (the 08:00 preschool lesson)",
+ "duration_ms": 1600,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 560,
+   "completion_tokens": 110
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"headline\": \"Nobody took Monday 08:00 Preschool swim at Riverside Aquatic Center: 8 families are waiting\", \"lines\": [\"Liam Foster, the head coach in reserve, takes the lesson.\", \"Camila Herrera covers it on overtime: 0.25 h over the week, about $8.50.\", \"Move the lesson: the 8 families book a makeup by December 9.\", \"Cancel the lesson: the 8 families get a lesson credit.\"]}"
+    }
+   }
+  ]
+ }
+}

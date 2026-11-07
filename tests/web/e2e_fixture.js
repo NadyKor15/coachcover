@@ -143,7 +143,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await shot(p, 'C-fixture-night-check.png');
     await p.click('[data-scenario="dangerous_morning"]');
     await p.waitForFunction(t => document.querySelector('h1').textContent === t && document.getElementById('alert').hidden, today.title);
-    check('C judge: 5 a.m. call-out → back to the covered morning', (await text(p, '[data-slot="covered"]')).includes('covered by ' + today.outcome.covered_by));
+    check('C judge: the call-out → back to the covered morning', (await text(p, '[data-slot="covered"]')).includes('covered by ' + today.outcome.covered_by));
     check('C judge: no console errors', p._errors.length === 0, p._errors);
     await p.close();
 
@@ -276,10 +276,10 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await p.waitForSelector('#loadErr:not([hidden])');
     check('P2 live: 500 shown and buttons stay', acceptCalls === 1 && (await text(p, '#loadErr')).includes('HTTP 500') && !(await p.$eval('[data-action="accept"]', b => b.disabled)));
     await p.unroute('**/api/offers/' + pendingId + '/accept');
-    await p.route('**/api/offers/' + pendingId + '/accept', r => r.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ reason: 'Lifeguard certificate expired Nov 5' }) }));
+    await p.route('**/api/offers/' + pendingId + '/accept', r => r.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ reason: 'WSI certificate expired Nov 5' }) }));
     await p.click('[data-action="accept"]');
     await p.waitForSelector('#result:not([hidden])');
-    check('P2 live: 409 reason from the server', await text(p, '#result') === 'You are no longer eligible for this shift: Lifeguard certificate expired Nov 5');
+    check('P2 live: 409 reason from the server', await text(p, '#result') === 'You are no longer eligible for this shift: WSI certificate expired Nov 5');
     await p.close();
 
     /* ---------- case page ---------- */

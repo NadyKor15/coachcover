@@ -87,24 +87,28 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     ref = load("today.json")
     assert shape_gaps(today, ref) == []
     # names and the story, from the data
-    assert today["title"] == "Who is allowed on deck at 06:00"
+    assert today["title"] == "Who is allowed on deck at 08:00"
     assert today["venue"] == {"id": "V1", "name": "Riverside Aquatic Center", "term": "pool"}
-    assert today["user_label"] == "Natalie Brooks · Manager" and today["now_label"] == "Mon, Nov 9 · 05:15"
+    assert today["user_label"] == "Natalie Brooks · Manager" and today["now_label"] == "Mon, Nov 9 · 07:15"
     callout = today["callout"]
-    assert callout["staff"] == "Marina Petrova · Lifeguard + WSI" and callout["case_id"] == "C-1109-01"
+    assert callout["staff"] == "Marina Petrova · Instructor · with Emma Carter" and callout["case_id"] == "C-1109-01"
     assert callout["transcript_original"] == ref["callout"]["transcript_original"]
     assert callout["transcript_en"] == ref["callout"]["transcript_en"]
-    assert callout["language"] == "Russian" and callout["duration_label"] == "0:09"
-    assert callout["asr_label"].startswith("whisper on Vultr · 1.")
+    assert callout["language"] == "Russian" and callout["duration_label"] == "0:08"
+    assert callout["transcript_original"].startswith("Привет, это Марина. У меня температура 38, я не выйду к восьми.")
+    assert callout["asr_label"] == "whisper · prepared demo answer"  # the note is synthesized locally, not a model run
     assert today["shift"] == {
-        "id": "L-1109-G002", "time_label": "06:00–08:00",
-        "lanes_label": "Lanes 3–4 lap swim + Learn-to-Swim Level 3 (8 kids)",
-        "needs_label": "Lifeguard + WSI", "program_label": "Program LTS-3",
+        "id": "L-1109-G002", "time_label": "08:00–08:45",
+        "lanes_label": "Teaching pool + Preschool swim, ages 3–5 (8 kids)",  # two lines; Emma is on the call-out line
+        "needs_label": "Instructor", "program_label": "Preschool training (ages 3–5)",
     }
     elig = today["eligibility"]
-    assert (elig["total"], elig["eligible"]) == (40, 5)  # Gabriela: only 9 h of rest
+    assert (elig["total"], elig["eligible"]) == (40, 5)
+    chips = {r["label"]: r["count"] for r in elig["reasons"]}
+    assert chips["No preschool training (ages 3–5)"] == 10 and chips["Role: not an instructor"] == 13
+    assert chips["Only 9.5 h rest since 22:30"] == 1  # Gabriela, cleared for preschool, closed late on Sunday
     assert elig["first_refusal"]["staff"] == "Anna Kim"
-    assert elig["first_refusal"]["label"] == "free and willing · BLOCKED: Lifeguard certificate expired Nov 5 · 8 kids · ratio 1:4"
+    assert elig["first_refusal"]["label"] == "free and willing · BLOCKED: WSI certificate expired Nov 5 · 8 kids · ratio 1:4"
     assert elig["first_refusal"]["contrast_quote"] == ref["eligibility"]["first_refusal"]["contrast_quote"]
     assert sum(r["count"] for r in elig["reasons"]) == 40 - 5
     assert {r["tone"] for r in elig["reasons"]} <= {"red", "amber", "plain"}
@@ -112,10 +116,10 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert [(o["staff"], o["result"]) for o in today["offers"]] == [
         ("Sofia Reyes", "declined"), ("Leo Martins", "no_reply"), ("Zoe Grant", "accepted")]
     zoe = today["offers"][-1]
-    assert zoe["why_first"] == "Zoe third: 12 h this week, Level 3, same pool" and zoe["time_label"] == "05:14"
+    assert zoe["why_first"] == "Zoe third: 12 h this week, Preschool, same pool" and zoe["time_label"] == "07:14"
     assert [(t["time_label"], t["kind"]) for t in today["timeline"]] == [
-        ("05:12", "callout"), ("05:13", "declined"), ("05:14", "accepted"), ("05:15", "no_reply"), ("06:00", "shift_start")]
-    assert today["outcome"] == {"covered_by": "Zoe Grant", "covered_via": None, "covered_time": "05:15", "lessons_cancelled": 0}  # closed at 05:15
+        ("07:10", "callout"), ("07:13", "declined"), ("07:14", "accepted"), ("07:15", "no_reply"), ("08:00", "shift_start")]
+    assert today["outcome"] == {"covered_by": "Zoe Grant", "covered_via": None, "covered_time": "07:15", "lessons_cancelled": 0}  # closed at 07:15
     assert today["plan_b"]["state"] == "standby" and today["plan_b"]["autonomy"] == "propose"
     assert "merge refused" in today["plan_b"]["text"]  # the kids' norm refuses the merge, live
     money = today["money"]  # from coachcover.money with the preset's prices
@@ -137,11 +141,12 @@ def test_offer_phone_matches_the_fixture(api):
     offer_id = conn.execute("SELECT id FROM offer WHERE staff_id = 'S17'").fetchone()[0]
     phone = client.get(f"/api/offers/O-{offer_id}").json()
     assert shape_gaps(phone, load("offers/O-1.json")) == []
-    assert (phone["shift_day"], phone["shift_start"], phone["shift_end"]) == ("today", "06:00", "08:00")
+    assert (phone["shift_day"], phone["shift_start"], phone["shift_end"]) == ("today", "08:00", "08:45")
     assert phone["venue"] == "Riverside Aquatic Center" and phone["manager"] == {"name": "Natalie Brooks", "role": "Manager"}
-    assert [w.split(" — ")[0] for w in phone["why"][:3]] == ["Lifeguard", "WSI", "CPR/AED"]
-    assert all(" — valid to " in w for w in phone["why"][:3])
-    assert phone["why"][3:] == ["LTS-3 program — current", "12 h this week"]
+    assert phone["shift_detail"] == "Teaching pool + Preschool swim, ages 3–5 (8 kids) · with Emma Carter"
+    assert [w.split(" — ")[0] for w in phone["why"][:2]] == ["WSI", "CPR/AED"]
+    assert all(" — valid to " in w for w in phone["why"][:2])
+    assert phone["why"][2:] == ["Preschool training (ages 3–5) — current", "12 h this week"]
     assert phone["window_s"] == 300
 
 
@@ -150,16 +155,20 @@ def test_case_page_matches_the_fixture(api):
     client.post("/api/judge/run", json={"scenario": "dangerous_morning"})
     page = client.get("/api/cases/C-1109-01").json()
     assert shape_gaps(page, load("cases/C-1109-01.json")) == []
-    assert (page["status"], page["status_label"], page["covered_time_label"]) == ("covered", "Covered", "05:15")
+    assert (page["status"], page["status_label"], page["covered_time_label"]) == ("covered", "Covered", "07:15")
     kinds = [s["kind"] for s in page["steps"]]
     assert kinds[0] == "callout" and kinds[-1] == "covered" and {"shift", "allowed", "offers", "flagged"} <= set(kinds)
     allowed = next(s for s in page["steps"] if s["kind"] == "allowed")
     assert (allowed["total"], allowed["allowed"], len(allowed["staff"])) == (40, 5, 40)
+    shift = next(s for s in page["steps"] if s["kind"] == "shift")
+    assert shift["summary"] == "08:00–08:45 · Needs: Instructor · Preschool training (ages 3–5)"
+    covered = next(s for s in page["steps"] if s["kind"] == "covered")
+    assert covered["summary"] == "08:00 covered by Zoe Grant, teaching with Emma Carter · 0 lessons cancelled"
     assert allowed["blocked"]["staff"] == "Anna Kim"
     labels = {c["model_label"] for c in page["model_calls"]}
     assert {"whisper-large-v3-turbo", "muse-glimmer-30b", "nemotron-safety"} <= labels
     whisper = next(c for c in page["model_calls"] if c["purpose"] == "transcribe")
-    assert whisper["ms"] == 1050 and whisper["cost_usd"] > 0 and "transcribe-ru.json" in whisper["source"]
+    assert whisper["ms"] == 1050 and whisper["cost_usd"] > 0 and "synthetic-transcribe-ru-0800.json (synthetic)" in whisper["source"]
     assert page["model_cost_usd"] == pytest.approx(sum(c["cost_usd"] or 0 for c in page["model_calls"]))
     risk = page["risk"]
     assert (risk["kids"], risk["refunds_usd"], risk["overtime_usd"], risk["total_usd"]) == (8, 240.0, None, 240.0)
@@ -222,7 +231,7 @@ def test_voice_note_is_served_back(api):
     client.post("/api/judge/run", json={"scenario": "dangerous_morning"})
     audio = client.get("/media/callouts/C-1109-01.ogg")
     assert audio.status_code == 200 and audio.headers["content-type"] == "audio/ogg"
-    assert audio.content == (FIXTURES / "audio" / "ru-callout.ogg").read_bytes()
+    assert audio.content == (FIXTURES / "audio" / "ru-callout-0800.ogg").read_bytes()
     assert client.get("/media/callouts/C-0000-01.ogg").status_code == 404
 
 
@@ -234,7 +243,7 @@ def test_stats_in_the_contract_shape(api):
     assert stats["runs"] == 1 and stats["eligibility_violations"] == 0
     assert stats["sim"]["synthetic"] is True and stats["sim"]["coachcover_violations"] == 0
     assert stats["sim"]["mornings"] == 50 and stats["sim"]["baseline_violations"] > 0
-    assert stats["closed_without_human_pct"] == 100.0 and stats["median_minutes_to_cover"] == 3.0
+    assert stats["closed_without_human_pct"] == 100.0 and round(stats["median_minutes_to_cover"], 2) == 4.83  # 07:10:10 -> 07:15:00
 
 
 def test_static_screens_are_served(new_database, tmp_path):

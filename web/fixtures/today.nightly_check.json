@@ -18,11 +18,23 @@
   },
   "eligibility": {
     "total": 40,
-    "eligible": 11,
+    "eligible": 10,
     "reasons": [
       {
         "code": "CERT_EXPIRED",
         "label": "Certificate expired Nov 2",
+        "count": 1,
+        "tone": "red"
+      },
+      {
+        "code": "CERT_EXPIRED",
+        "label": "Certificate expired Nov 5",
+        "count": 1,
+        "tone": "red"
+      },
+      {
+        "code": "CERT_REVOKED",
+        "label": "Valid until Jul 2027 — REVOKED by issuer on Oct 12 (simulated registry)",
         "count": 1,
         "tone": "red"
       },
@@ -41,7 +53,7 @@
       {
         "code": "LEVEL_MISSING",
         "label": "Not cleared for LTS-2",
-        "count": 7,
+        "count": 6,
         "tone": "plain"
       },
       {
@@ -78,8 +90,8 @@
         "reason_label": null
       },
       {
-        "id": "S27",
-        "name": "Anna Kim",
+        "id": "S18",
+        "name": "Chloe Hayes",
         "eligible": true,
         "highlight": false,
         "reason_label": null
@@ -87,13 +99,6 @@
       {
         "id": "S15",
         "name": "Diego Navarro",
-        "eligible": true,
-        "highlight": false,
-        "reason_label": null
-      },
-      {
-        "id": "S18",
-        "name": "Chloe Hayes",
         "eligible": true,
         "highlight": false,
         "reason_label": null
@@ -211,6 +216,27 @@
         "reason_label": "Role: not an instructor"
       },
       {
+        "id": "S27",
+        "name": "Anna Kim",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 5"
+      },
+      {
+        "id": "S10",
+        "name": "Dmitri Volkov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Certificate expired Nov 2"
+      },
+      {
+        "id": "S28",
+        "name": "Ava Mitchell",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
         "id": "S31",
         "name": "Mason Turner",
         "eligible": false,
@@ -222,7 +248,7 @@
         "name": "Irina Lebedeva",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
+        "reason_label": "Valid until Jul 2027 — REVOKED by issuer on Oct 12 (simulated registry)"
       },
       {
         "id": "S09",
@@ -239,13 +265,6 @@
         "reason_label": "Not cleared for LTS-2"
       },
       {
-        "id": "S28",
-        "name": "Ava Mitchell",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Role: not an instructor"
-      },
-      {
         "id": "S39",
         "name": "Caleb Ward",
         "eligible": false,
@@ -258,13 +277,6 @@
         "eligible": false,
         "highlight": false,
         "reason_label": "Role: not an instructor"
-      },
-      {
-        "id": "S04",
-        "name": "Daniel Shaw",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Not cleared for LTS-2"
       },
       {
         "id": "S38",
@@ -288,11 +300,11 @@
         "reason_label": "Not cleared for LTS-2"
       },
       {
-        "id": "S10",
-        "name": "Dmitri Volkov",
+        "id": "S04",
+        "name": "Daniel Shaw",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Certificate expired Nov 2"
+        "reason_label": "Not cleared for LTS-2"
       },
       {
         "id": "S24",
@@ -351,7 +363,11 @@
         "reason_label": "Reserve (head coach)"
       }
     ],
-    "first_refusal": null
+    "first_refusal": {
+      "staff": "Anna Kim",
+      "label": "free · BLOCKED: WSI certificate expired Nov 5 · 5 kids · ratio 1:8",
+      "contrast_quote": "“An expired certificate does not block rostering.” — RosterElf, page for recreation centres"
+    }
   },
   "timeline": [
     {
@@ -381,7 +397,7 @@
   "summary_cards": [
     {
       "title": "Tomorrow",
-      "value": "35 of 36 shifts covered"
+      "value": "37 of 38 shifts covered"
     },
     {
       "title": "Expiring in 30 days",

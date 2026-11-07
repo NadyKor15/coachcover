@@ -28,7 +28,7 @@ TOOLS = {"who_is_allowed", "shifts_on_day", "fragile_shifts", "get_case", "reque
 @pytest.fixture
 def server(new_database, monkeypatch):
     conn = new_database()
-    reset_school(conn)
+    reset_school(conn, "deck")  # exhaust() empties the queue of Marina's 06:00 deck shift (the deck story)
     dsn = make_conninfo(TEST_DSN, dbname=conn.execute("SELECT current_database()").fetchone()[0])
     monkeypatch.setenv("DATABASE_URL", dsn)
     monkeypatch.delenv("COACHCOVER_MODEL_MODE", raising=False)

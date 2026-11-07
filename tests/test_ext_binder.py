@@ -61,11 +61,11 @@ def test_every_shift_is_checked_and_a_planted_violation_shows(api):
         "SELECT count(*) FROM cover_case c JOIN shift s ON s.id = c.shift_id WHERE s.venue_id = 'V1'"
         " AND (s.starts_at AT TIME ZONE 'America/New_York')::date = '2026-11-09'").fetchone()[0]
     assert data["summary"]["cases"] == cases >= 1 and all(len(c["sha256"]) == 64 for c in data["cases"])
-    # must-differ: S27's main card is expired in the training school; a late post for S27 must show as a violation
-    role = conn.execute("SELECT role_id FROM shift WHERE id = 'G-1109-V1-0530'").fetchone()[0]
+    # must-differ: S27's WSI is expired in the training school; a late instructor post for S27 must show as a violation
+    role = conn.execute("SELECT role_id FROM shift WHERE id = 'L-1109-G021'").fetchone()[0]
     conn.execute(
         "INSERT INTO shift (id, venue_id, zone_id, role_id, starts_at, ends_at, staff_id) VALUES ('X-PLANTED', 'V1',"
-        " (SELECT zone_id FROM shift WHERE id = 'G-1109-V1-0530'), %s,"
+        " (SELECT zone_id FROM shift WHERE id = 'L-1109-G021'), %s,"
         " '2026-11-09 22:00'::timestamp AT TIME ZONE 'America/New_York',"
         " '2026-11-09 23:00'::timestamp AT TIME ZONE 'America/New_York', 'S27')", (role,))
     again = client.get("/api/binder.json", params={"venue": "V1", "from": "2026-11-09", "to": "2026-11-09"}).json()

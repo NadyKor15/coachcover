@@ -54,7 +54,7 @@ class Server:
 @pytest.fixture
 def two_servers(new_database, monkeypatch):
     conn = new_database()
-    reset_school(conn)
+    reset_school(conn, "deck")  # the network loan plays the deck story
     dsn = make_conninfo(TEST_DSN, dbname=conn.execute("SELECT current_database()").fetchone()[0])
     borrower_port, lender_port = free_port(), free_port()
     monkeypatch.setenv("DATABASE_URL", dsn)

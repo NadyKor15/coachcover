@@ -33,12 +33,12 @@ def api(new_database, monkeypatch):
 def test_a_called_out_person_gets_no_offer_or_clearance_that_day(api):
     client, conn = api
     assert client.post("/api/judge/run", json={"scenario": "dangerous_morning"}).status_code == 200
-    # the 07:00 beginners grow over their norm: a second-instructor seat opens at 07:00, after Marina's call-out
+    # the 09:00 beginners grow over their norm: a second-instructor seat opens at 09:00, after Marina's call-out
     alert = client.post("/api/groups/G003/enroll", json={"add": 2, "language": "es"}).json()["alerts"][0]
     seat = alert["cases"][0]["extra_shift_id"]
     case = client.get(f"/api/cases/{alert['cases'][0]['case_id']}").json()
     marina = next(s for s in next(x for x in case["steps"] if x["kind"] == "allowed")["staff"] if s["name"] == "Marina Petrova")
-    assert marina["allowed"] is False and marina["reason_label"] == "Called out sick today"
+    assert marina["allowed"] is False and marina["reason_label"] == "Called out today"
     asked = conn.execute("SELECT staff_id FROM offer o JOIN cover_case c ON c.id = o.case_id WHERE c.shift_id = %s", (seat,))
     assert "S05" not in {sid for (sid,) in asked}
     banner = client.get("/api/today").json()["ratio_alert"]

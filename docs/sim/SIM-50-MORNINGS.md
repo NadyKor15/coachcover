@@ -3,33 +3,33 @@
 **synthetic school, 50 mornings, seed 20261109.** Every number below comes from one run of `coachcover/sim.py`; nothing is typed by hand.
 Repeat: `uv run python -m coachcover.sim --mornings 50 --seed 20261109 --out docs/sim` (same seed, same numbers).
 
-The school is fictional (`coachcover/seed.py`): 3 venues, 40 staff, 205 shifts in the week of 2026-11-09, time zone America/New_York. Each morning is a weekday of that week with 1-3 call-outs before 06:00 and a changed staff state; both strategies run on the same morning.
+The school is fictional (`coachcover/seed.py`): 3 venues, 40 staff, 207 shifts in the week of 2026-11-09, time zone America/New_York. Each morning is a weekday of that week with 1-3 call-outs before 06:00 and a changed staff state; both strategies run on the same morning.
 
 ## Result
 
 | Metric | Group chat + phone tree | CoachCover |
 |---|---:|---:|
-| Shifts that needed cover | 90 | 90 |
-| Placements of a person without permission | 49 | 0 |
-|   of them: no role for the shift | 9 | 0 |
-|   of them: certificate expired, missing or unconfirmed | 21 | 0 |
-|   of them: no program or level, renewal overdue | 9 | 0 |
-|   of them: over the weekly hours limit | 10 | 0 |
+| Shifts that needed cover | 93 | 93 |
+| Placements of a person without permission | 44 | 0 |
+|   of them: no role for the shift | 11 | 0 |
+|   of them: certificate expired, missing or unconfirmed | 20 | 0 |
+|   of them: no program or level, renewal overdue | 8 | 0 |
+|   of them: over the weekly hours limit | 5 | 0 |
 |   of them: group norm broken | 0 | 0 |
-| Placements with an expired certificate (any reason list) | 16 | 0 |
-| People placed (cover, merge, reserve, overtime) | 90 | 90 |
-| Median minutes from call-out to a closed shift | 13.3 | 10.1 |
-| 90th percentile, minutes | 15.7 | 22.0 |
+| Placements with an expired certificate (any reason list) | 13 | 0 |
+| People placed (cover, merge, reserve, overtime) | 92 | 93 |
+| Median minutes from call-out to a closed shift | 13.4 | 9.9 |
+| 90th percentile, minutes | 16.0 | 22.0 |
 | Closed after the shift had started | 0 | 0 |
-| Closed without a person (no manager step), % | 0.0 | 62.2 |
-| Lessons cancelled or moved | 0 | 0 |
-| Participants left without their lesson | 0 | 0 |
+| Closed without a person (no manager step), % | 0.0 | 63.4 |
+| Lessons cancelled or moved | 1 | 0 |
+| Participants left without their lesson | 5 | 0 |
 | Shifts without groups left empty | 0 | 0 |
 | Approved overtime | 0 | 0 |
-| Manager minutes, median per morning | 6.0 | 1.0 |
+| Manager minutes, median per morning | 6.0 | 0.0 |
 
-Outcomes, baseline: {'covered': 90}; CoachCover: {'covered': 56, 'reserve': 34}.
-Blocking codes behind the baseline violations: {'CERT_EXPIRED': 17, 'CERT_MISSING': 9, 'CERT_NEEDS_REVIEW': 4, 'CERT_REVOKED': 3, 'HOURS_LIMIT_EXCEEDED': 3, 'LEVEL_MISSING': 13, 'PROGRAM_MISSING': 9, 'PROGRAM_RENEWAL_OVERDUE': 2, 'REST_TOO_SHORT': 14, 'ROLE_MISSING': 9}.
+Outcomes, baseline: {'cancelled': 1, 'covered': 91, 'merged': 1}; CoachCover: {'covered': 59, 'reserve': 34}.
+Blocking codes behind the baseline violations: {'CERT_EXPIRED': 13, 'CERT_MISSING': 12, 'CERT_NEEDS_REVIEW': 5, 'CERT_REVOKED': 3, 'HOURS_LIMIT_EXCEEDED': 2, 'LEVEL_MISSING': 11, 'PROGRAM_MISSING': 14, 'PROGRAM_RENEWAL_OVERDUE': 2, 'RATIO_EXCEEDED': 1, 'REST_TOO_SHORT': 11, 'ROLE_MISSING': 11}.
 
 A placement is one person put on a shift (cover, the teacher of a merged group, a reserve person, approved overtime). It is a violation when `rules.eligible` returns a blocking reason for that person and shift at the moment of booking. The breakdown counts each violation once, under the first of: role, certificate, program, hours, group norm. CoachCover's approved overtime is not counted as a violation: the manager approved it with its price, as the core does.
 
@@ -44,36 +44,36 @@ CoachCover on the same 50 mornings, before (one offer at a time) and after (wave
 
 | Metric | Before: one offer at a time, plan B when the queue is empty | After: waves of 3, highest yes in 60 s, plan B 20 min before the start |
 |---|---:|---:|
-| Shifts that needed cover | 90 | 90 |
-| People placed | 90 | 90 |
+| Shifts that needed cover | 93 | 93 |
+| People placed | 93 | 93 |
 | Placements that break a rule | 0 | 0 |
 | Placements with an expired card | 0 | 0 |
-| Minutes from call-out to closed, median | 20.4 | 10.1 |
-| Minutes from call-out to closed, p90 | 40.8 | 22.0 |
-| Minutes from call-out to closed, mean | 21.9 | 12.0 |
-| Closed after the shift started | 9 | 0 |
-| Closed without a person | 58 | 56 |
-| Closed without a person, % | 64.4 | 62.2 |
-| Shifts covered (offer or plan B) | 90 | 90 |
+| Minutes from call-out to closed, median | 21.4 | 9.9 |
+| Minutes from call-out to closed, p90 | 43.7 | 22.0 |
+| Minutes from call-out to closed, mean | 22.2 | 12.1 |
+| Closed after the shift started | 17 | 0 |
+| Closed without a person | 60 | 59 |
+| Closed without a person, % | 64.5 | 63.4 |
+| Shifts covered (offer or plan B) | 93 | 93 |
 | Lessons cancelled or moved | 0 | 0 |
 | Children without their lesson | 0 | 0 |
 | Shifts without groups left empty | 0 | 0 |
 | Approved overtime | 0 | 0 |
-| Offers sent (people asked) | 372 | 440 |
-| Manager minutes, total | 32.0 | 34.0 |
+| Offers sent (people asked) | 393 | 456 |
+| Manager minutes, total | 33.0 | 34.0 |
 
-Outcomes before: {'covered': 58, 'reserve': 32}; after: {'covered': 56, 'reserve': 34}.
+Outcomes before: {'covered': 60, 'reserve': 33}; after: {'covered': 59, 'reserve': 34}.
 
 ## What if (not the main table)
 
 | Metric | `baseline_manager_checks_role` | `coachcover_one_offer_at_a_time` |
 |---|---:|---:|
-| Placements without permission | 44 | 0 |
-|   no role / certificate / program / hours / group norm | 0 / 23 / 11 / 10 / 0 | 0 / 0 / 0 / 0 / 0 |
-| Median minutes to close | 13.4 | 20.4 |
-| 90th percentile, minutes | 15.7 | 40.8 |
-| Closed after the shift had started | 0 | 9 |
-| Closed without a person, % | 0.0 | 64.4 |
+| Placements without permission | 38 | 0 |
+|   no role / certificate / program / hours / group norm | 0 / 23 / 9 / 6 / 0 | 0 / 0 / 0 / 0 / 0 |
+| Median minutes to close | 13.5 | 21.4 |
+| 90th percentile, minutes | 16.0 | 43.7 |
+| Closed after the shift had started | 0 | 17 |
+| Closed without a person, % | 0.0 | 64.5 |
 
 - `baseline_manager_checks_role`: Baseline where the manager takes only people who hold the shift's role (job title); cards, programs, hours and the group norm are still not checked.
 - `coachcover_one_offer_at_a_time`: CoachCover before 2026-11-07: one offer at a time, plan B only when the queue is empty (the 'before' column of the before/after table).

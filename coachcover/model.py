@@ -106,6 +106,7 @@ class Program:
     renewal_months: int | None
     levels: Mapping[str, Level]
     short: str = ""  # short code for screens ("LTS")
+    clearance: str = ""  # what a person must hold, for screens ("... clearance (ages ...)"); empty: "<short> program"
 
     def __post_init__(self) -> None:
         _require_code(self.code, "program code")
@@ -116,6 +117,16 @@ class Program:
         for key, level in self.levels.items():
             if key != level.code:
                 raise ValueError(f"program {self.code}: level key {key!r} != code {level.code!r}")
+
+    def title(self, level: str) -> str:
+        """Program and level for a screen; a program with one level is named by the program alone."""
+        return self.label if len(self.levels) == 1 else f"{self.label} {self.levels[level].label}"
+
+    def needs(self, level: str) -> str:
+        """What a person must hold for this program and level, as a screen phrase starting with a capital."""
+        if self.clearance:
+            return self.clearance[:1].upper() + self.clearance[1:]
+        return f"Program {self.short or self.label}-{level}"
 
 
 @dataclass(frozen=True)

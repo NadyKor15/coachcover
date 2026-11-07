@@ -239,13 +239,14 @@ def case_cost(conn, case_id: int, prices: Mapping | None = None) -> dict:
             "shared_between_cases": shared_between}
 
 
-def _today_cases(conn, policy_id: str, now: datetime) -> list[tuple[int, str]]:
+def _today_cases(conn, policy_id: str, now: datetime, venue_id: str | None = None) -> list[tuple[int, str]]:
     tz = ZoneInfo(conn.execute("SELECT tz FROM venue WHERE policy_id = %s ORDER BY id LIMIT 1", (policy_id,)).fetchone()[0])
     day_from = now.astimezone(tz).replace(hour=0, minute=0, second=0, microsecond=0)
     return conn.execute(
         "SELECT c.id, c.shift_id FROM cover_case c JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id"
-        " WHERE v.policy_id = %s AND c.opened_at >= %s AND c.opened_at <= %s ORDER BY c.opened_at, c.id",
-        (policy_id, day_from, now),
+        " WHERE v.policy_id = %s AND (%s::text IS NULL OR v.id = %s) AND c.opened_at >= %s AND c.opened_at <= %s"
+        " ORDER BY c.opened_at, c.id",
+        (policy_id, venue_id, venue_id, day_from, now),
     ).fetchall()
 
 
@@ -302,8 +303,10 @@ def nobody_accepted_card(uncovered: dict, params: MoneyParams, *, case_bill: dic
 
 
 def today_money(conn, policy_id: str, now: datetime, params: MoneyParams | None = None, *,
-                manager_minutes: float | None = None, manager_minutes_source: str | None = None) -> dict:
-    """`money` for GET /api/today plus the "If nobody had accepted" card, for the cases opened today up to `now`.
+                manager_minutes: float | None = None, manager_minutes_source: str | None = None,
+                venue_id: str | None = None) -> dict:
+    """`money` for GET /api/today plus the "If nobody had accepted" card, for the cases opened today up to `now`
+    (at `venue_id` when given: the morning screen is one venue's).
 
     The cost is of today's call-out shifts as if nobody had taken them; the cover cost is the first case of the
     day (the one the screen shows). Without `manager_minutes` the card has no manager line.
@@ -313,7 +316,7 @@ def today_money(conn, policy_id: str, now: datetime, params: MoneyParams | None 
     if params is None:
         policy = load_policy(conn, policy_id)
         params = money_params(policy.preset.money, policy.overtime_cost_per_hour)
-    cases = _today_cases(conn, policy_id, now)
+    cases = _today_cases(conn, policy_id, now, venue_id)
     shifts = [load_shift(conn, sid) for sid in dict.fromkeys(sid for _, sid in cases)]
     uncovered = uncovered_cost(shifts, params)
     bill = case_cost(conn, cases[0][0]) if cases else None

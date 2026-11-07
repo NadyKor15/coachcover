@@ -1,0 +1,16 @@
+{
+ "purpose": "transcribe",
+ "model": "whisper-large-v3-turbo",
+ "input": {
+  "audio_sha256": "95e268e8c9fe20eda573d509f58b7786548588fad7c2c1eb758c423f50e1df0f"
+ },
+ "input_sha256": "54145a046638819cf5aec7a45d89a4edb3cf09f4d0d916b3d08f8a5c815f57e2",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: written by hand to the transcribe schema for ru-callout-0800.ogg (synthesized locally with macOS say -v Milena); to be recorded live on Vultr",
+ "duration_ms": 1050,
+ "response": {
+  "text": " Привет, это Марина. У меня температура 38, я не выйду к восьми. У меня в 8 урок у малышей. Прости.",
+  "model": "whisper-large-v3-turbo",
+  "duration": 8.39
+ }
+}

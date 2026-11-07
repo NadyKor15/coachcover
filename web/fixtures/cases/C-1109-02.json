@@ -5,47 +5,41 @@
   "covered_time_label": null,
   "covered_by": null,
   "covered_via": null,
-  "shift_label": "07:00 Teaching pool + Learn-to-Swim Level 1",
+  "shift_label": "09:00 Teaching pool + Learn-to-Swim Level 1",
   "venue": {
     "id": "V1",
     "name": "Riverside Aquatic Center"
   },
   "date_label": "Mon, Nov 9",
   "user_label": "Natalie Brooks · Manager",
-  "opened_at": "2026-11-09T10:15:00Z",
+  "opened_at": "2026-11-09T12:15:00Z",
   "closed_at": null,
   "steps": [
     {
       "kind": "ratio",
-      "at": "2026-11-09T10:15:00Z",
-      "time_label": "10:15:00 UTC",
-      "title": "Norm broken: Level 1, Mon 07:00 — now 6 kids, ratio 1:4",
+      "at": "2026-11-09T12:15:00Z",
+      "time_label": "12:15:00 UTC",
+      "title": "Norm broken: Level 1, Mon 09:00 — now 6 kids, ratio 1:4",
       "summary": "2 added by front desk; instructors needed: 1 → 2"
     },
     {
       "kind": "shift",
-      "at": "2026-11-09T10:15:00Z",
-      "time_label": "10:15:00 UTC",
+      "at": "2026-11-09T12:15:00Z",
+      "time_label": "12:15:00 UTC",
       "title": "Shift identified",
       "shift_id": "L-1109-G003-I2",
-      "summary": "07:00–07:30 · Needs: Instructor · Program LTS-1",
+      "summary": "09:00–09:30 · Needs: Instructor · Program LTS-1",
       "model_tag": null
     },
     {
       "kind": "allowed",
-      "at": "2026-11-09T10:15:00Z",
-      "time_label": "10:15:00 UTC",
+      "at": "2026-11-09T12:15:00Z",
+      "time_label": "12:15:00 UTC",
       "title": "Who is allowed",
       "total": 40,
-      "allowed": 2,
+      "allowed": 6,
       "blocked": null,
       "reasons": [
-        {
-          "code": "LEVEL_MISSING",
-          "label": "Not cleared for LTS-1",
-          "count": 13,
-          "tone": "risk"
-        },
         {
           "code": "ROLE_MISSING",
           "label": "Role: not an instructor",
@@ -53,9 +47,9 @@
           "tone": "risk"
         },
         {
-          "code": "OVERLAPS_COMMITMENT",
-          "label": "Teaching at 7:00",
-          "count": 4,
+          "code": "LEVEL_MISSING",
+          "label": "Not cleared for LTS-1",
+          "count": 11,
           "tone": "risk"
         },
         {
@@ -66,13 +60,19 @@
         },
         {
           "code": "CALLED_OUT",
-          "label": "Called out sick today",
+          "label": "Called out today",
           "count": 1,
           "tone": "risk"
         },
         {
           "code": "CERT_EXPIRED",
           "label": "Certificate expired Nov 2",
+          "count": 1,
+          "tone": "risk"
+        },
+        {
+          "code": "CERT_EXPIRED",
+          "label": "Certificate expired Nov 5",
           "count": 1,
           "tone": "risk"
         },
@@ -90,12 +90,24 @@
         },
         {
           "code": "OVERLAPS_COMMITMENT",
-          "label": "Teaching at 6:00",
+          "label": "Teaching at 9:00",
+          "count": 1,
+          "tone": "risk"
+        },
+        {
+          "code": "CERT_REVOKED",
+          "label": "Valid until Jul 2027 — REVOKED by issuer on Oct 12 (simulated registry)",
           "count": 1,
           "tone": "risk"
         }
       ],
       "staff": [
+        {
+          "id": "S08",
+          "name": "Grace Sullivan",
+          "allowed": true,
+          "reason_label": null
+        },
         {
           "id": "S15",
           "name": "Diego Navarro",
@@ -109,10 +121,28 @@
           "reason_label": null
         },
         {
+          "id": "S21",
+          "name": "Pavel Orlov",
+          "allowed": true,
+          "reason_label": null
+        },
+        {
+          "id": "S19",
+          "name": "Megan Coleman",
+          "allowed": true,
+          "reason_label": null
+        },
+        {
+          "id": "S17",
+          "name": "Zoe Grant",
+          "allowed": true,
+          "reason_label": null
+        },
+        {
           "id": "S05",
           "name": "Marina Petrova",
           "allowed": false,
-          "reason_label": "Called out sick today"
+          "reason_label": "Called out today"
         },
         {
           "id": "S35",
@@ -125,18 +155,6 @@
           "name": "Javier Morales",
           "allowed": false,
           "reason_label": "Certificate expired Nov 8"
-        },
-        {
-          "id": "S08",
-          "name": "Grace Sullivan",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S27",
-          "name": "Anna Kim",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
         },
         {
           "id": "S18",
@@ -187,6 +205,24 @@
           "reason_label": "Role: not an instructor"
         },
         {
+          "id": "S10",
+          "name": "Dmitri Volkov",
+          "allowed": false,
+          "reason_label": "Certificate expired Nov 2"
+        },
+        {
+          "id": "S27",
+          "name": "Anna Kim",
+          "allowed": false,
+          "reason_label": "Certificate expired Nov 5"
+        },
+        {
+          "id": "S28",
+          "name": "Ava Mitchell",
+          "allowed": false,
+          "reason_label": "Role: not an instructor"
+        },
+        {
           "id": "S31",
           "name": "Mason Turner",
           "allowed": false,
@@ -202,7 +238,7 @@
           "id": "S14",
           "name": "Irina Lebedeva",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Valid until Jul 2027 — REVOKED by issuer on Oct 12 (simulated registry)"
         },
         {
           "id": "S09",
@@ -217,8 +253,8 @@
           "reason_label": "Not cleared for LTS-1"
         },
         {
-          "id": "S28",
-          "name": "Ava Mitchell",
+          "id": "S39",
+          "name": "Caleb Ward",
           "allowed": false,
           "reason_label": "Role: not an instructor"
         },
@@ -226,13 +262,7 @@
           "id": "S01",
           "name": "Emma Carter",
           "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
-          "id": "S39",
-          "name": "Caleb Ward",
-          "allowed": false,
-          "reason_label": "Role: not an instructor"
+          "reason_label": "Teaching at 9:00"
         },
         {
           "id": "S36",
@@ -241,28 +271,10 @@
           "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S04",
-          "name": "Daniel Shaw",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
-        },
-        {
-          "id": "S21",
-          "name": "Pavel Orlov",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
-        },
-        {
           "id": "S38",
           "name": "Paula Jiménez",
           "allowed": false,
           "reason_label": "Role: not an instructor"
-        },
-        {
-          "id": "S19",
-          "name": "Megan Coleman",
-          "allowed": false,
-          "reason_label": "Teaching at 7:00"
         },
         {
           "id": "S37",
@@ -277,22 +289,16 @@
           "reason_label": "Not cleared for LTS-1"
         },
         {
-          "id": "S10",
-          "name": "Dmitri Volkov",
+          "id": "S04",
+          "name": "Daniel Shaw",
           "allowed": false,
-          "reason_label": "Certificate expired Nov 2"
+          "reason_label": "Not cleared for LTS-1"
         },
         {
           "id": "S24",
           "name": "Gabriela Vargas",
           "allowed": false,
           "reason_label": "Not cleared for LTS-1"
-        },
-        {
-          "id": "S17",
-          "name": "Zoe Grant",
-          "allowed": false,
-          "reason_label": "Teaching at 6:00"
         },
         {
           "id": "S20",
@@ -340,32 +346,40 @@
     },
     {
       "kind": "offers",
-      "at": "2026-11-09T10:15:00Z",
-      "time_label": "10:15:00 UTC",
+      "at": "2026-11-09T12:15:00Z",
+      "time_label": "12:15:00 UTC",
       "title": "Offers in order",
       "offers": [
         {
           "id": "O-4",
-          "time_label": "05:15",
-          "staff": "Diego Navarro",
+          "time_label": "07:15",
+          "staff": "Grace Sullivan",
           "result": "pending",
           "result_label": "asked, waiting",
-          "why_first": "Diego first: 5.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
+          "why_first": "Grace first: 5.25 h this week, Level 1 (beginner), same pool"
         },
         {
           "id": "O-5",
-          "time_label": "05:15",
+          "time_label": "07:15",
+          "staff": "Diego Navarro",
+          "result": "pending",
+          "result_label": "asked, waiting",
+          "why_first": "Diego second: 5.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
+        },
+        {
+          "id": "O-6",
+          "time_label": "07:15",
           "staff": "Sofía García",
           "result": "pending",
           "result_label": "asked, waiting",
-          "why_first": "Sofía second: 6 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
+          "why_first": "Sofía third: 6 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
         }
       ]
     }
   ],
   "proof": {
     "plan_id": null,
-    "plan_hash": "04b7015d8f1229418e999a763dfc6d55b3b556532ee67a939eddb3e90b0a72a7",
+    "plan_hash": "fab9eebd6caa4b63e2e886c20b68b0dc5ff93bc77e73f8a1ebc6721e389b3c93",
     "policy_label": "cover = auto · plan B = propose"
   },
   "model_calls": [],

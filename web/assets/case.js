@@ -99,8 +99,12 @@
       step.appendChild(body);
       box.appendChild(step);
     });
-    // the rail runs from the first dot to the last
-    const dots = box.querySelectorAll('.s-dot');
+    placeRail();
+  }
+
+  // the rail runs from the first dot to the last; placed again once the fonts are in (text can wrap differently)
+  function placeRail() {
+    const dots = $('#steps').querySelectorAll('.s-dot');
     const rail = $('#rail');
     if (dots.length > 1) {
       const centre = d => d.parentElement.offsetTop + d.offsetTop + 10;
@@ -209,7 +213,7 @@
     }
   }
 
-  document.fonts.ready.then(() => { if (document.body.dataset.state === 'ready') fitTitle(); });
+  document.fonts.ready.then(() => { if (document.body.dataset.state === 'ready') { fitTitle(); placeRail(); } });
   document.querySelectorAll('.nav li[data-href]').forEach(li => li.addEventListener('click', () => {
     location.href = li.dataset.href + (CC.FIXTURE ? '?fixture=1' : '');
   }));

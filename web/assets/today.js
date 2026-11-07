@@ -559,7 +559,7 @@
   }
 
   /* ---------- judge mode ---------- */
-  const SCENARIO_NAME = { dangerous_morning: 'Run a 5 a.m. call-out', nobody_accepts: 'Nobody accepts', nightly_check: 'Night check' };
+  const SCENARIO_NAME = { dangerous_morning: 'Run the call-out', nobody_accepts: 'Nobody accepts', nightly_check: 'Night check' };
   async function runScenario(scenario) {
     const btns = document.querySelectorAll('.jbtn');
     const status = $('#judgeStatus');

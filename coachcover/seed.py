@@ -1,26 +1,32 @@
 """The training school: a fictional, deterministic data set for demos and tests (API contract 2026-11-06).
 
-Fixed "today": Monday 2026-11-09 05:12 at the venues (America/New_York).
-Three venues, 40 staff (all lifeguards, 27 also WSI instructors), 120 weekly
-groups, and one policy week of shifts (Sun 2026-11-08 .. Sat 2026-11-14): one
-lesson per group plus lifeguard blocks at every venue every day.
+Two stories of the same Monday 2026-11-09 at the venues (America/New_York); everything else is the same week.
+Three venues, 40 staff (all lifeguards, 27 also WSI instructors), 120 weekly groups (121 in the preschool
+story), and one policy week of shifts (Mon 2026-11-09 .. Sun 2026-11-15): one lesson per group plus lifeguard
+blocks at every venue every day.
 
-The morning (matches the recorded Russian voice note "это Марина... в 6
-дорожка и в 7 урок у малышей"): S05 Marina Petrova cannot come to her
-06:00-08:00 shift L-1109-G002 at Riverside Aquatic Center: lanes 3-4 plus
-Learn-to-Swim Level 3, 8 children aged 4-5 (norm 1:4, two adults on the post),
-needs a lifeguard with WSI. Manager: Natalie Brooks.
-  - S27 Anna Kim: free and level 3, but her lifeguard card expired 2026-11-05: blocked first.
-  - Queue: S25 Sofia Reyes 6 h, S26 Leo Martins 9 h, S17 Zoe Grant 12 h (all V1),
-    then S20 15 h, S22 16 h (V2), S24 18 h (V3). Everyone else is blocked by data.
-  - Plan B: merging with G001 next door (6 children, 06:00-08:00) breaks 1:4; head coaches are in reserve;
-    S11 could do it on overtime (39.5 h + 2 h).
-  - Night check (Sunday evening): S07's CPR/AED expires 2026-11-08, before his Monday 16:00 lesson.
+"preschool" (the default; the founder's morning): the manager is in at 07:00; at 07:10 S05 Marina Petrova, a swim
+instructor, sends a Russian voice note: a 38 fever, she cannot come to her 08:00 lesson L-1109-G002 at Riverside
+Aquatic Center, teaching pool: "Preschool swim, ages 3–5", 8 children aged 3–5 (norm 1:4, two instructors). The
+second instructor, S01 Emma Carter, comes (seat L-1109-G002-I2); one replacement is needed: a swim instructor with
+WSI, CPR/AED and the school's own preschool training (ages 3–5). Manager: Natalie Brooks.
+  - 40 people -> 5 cleared: S25 Sofia Reyes 6 h, S26 Leo Martins 9 h, S17 Zoe Grant 12 h (V1), then S20 15 h,
+    S22 16 h (V2). 10 people hold everything but the preschool training; S27 Anna Kim has it, is free and
+    volunteers, but her WSI expired 2026-11-05: blocked first. S24 Gabriela Vargas has it but closed Lakeview's late
+    swim on Sunday at 22:30 (9.5 h of rest); S14 Irina Lebedeva's WSI is revoked by the issuer (simulated registry).
+  - Plan B: merging with G121 next door (Level 4, 6 children, lap lanes 08:00-08:45) breaks 1:4; S06 Liam Foster,
+    head coach in reserve, has the training; S11 Camila Herrera could do it on overtime (39.5 h + 0.75 h).
+  - Live norm: G003 (Level 1, 4 children aged 4-5, Emma Carter) is at 09:00 (07:00 in the deck story).
+"deck" (judge scenario network_loan only, "another morning"): S05 cannot come to her 06:00-08:00 deck shift
+L-1109-G002 (lanes 3-4 plus Learn-to-Swim Level 3, 8 children aged 4-5, a lifeguard with WSI) at 05:12 (the
+recorded Russian voice note "это Марина... в 6 дорожка и в 7 урок у малышей"); Anna's lifeguard card expired
+2026-11-05; Gabriela Vargas has only 9 h of rest; 40 -> 5 cleared, the same five.
+Night check (Sunday evening, both stories): S07's CPR/AED expires 2026-11-08, before his Monday 16:00 lesson.
 
 Other traps: S10 WSI expired 2026-11-02; S08 CPR/AED and S30 lifeguarding expire on Monday;
 S11 39.5 h and S29 38 h near the limit; S13's WSI readings disagree; S14's program renewal is overdue.
 
-Every name is invented. Run: python -m coachcover.seed --dsn postgresql://...
+Every name is invented. Run: python -m coachcover.seed --dsn postgresql://... [--story deck]
 """
 
 from __future__ import annotations
@@ -46,13 +52,25 @@ MANAGER = "Natalie Brooks"
 TZ_NAME = "America/New_York"
 TZ = ZoneInfo(TZ_NAME)
 TODAY = date(2026, 11, 9)
-NOW = datetime(2026, 11, 9, 5, 12, tzinfo=TZ)
+STORIES = ("preschool", "deck")
+STORY = "preschool"  # the default story; "deck" is the judge scenario network_loan's morning
+# preschool: the lesson and the moment the manager is told, one pair. Moving them also needs: a new voice note naming
+# the hour (coachcover/demo.py VOICES), scripts/make_preschool_recordings.py, and the fixtures (tests/web/make_fixtures.py)
+LESSON_AT, CALLOUT_AT = time(8, 0), time(7, 10)
+NOW = datetime.combine(TODAY, CALLOUT_AT, tzinfo=TZ)  # preschool: Marina's voice note comes at 07:10
+DECK_NOW = datetime(2026, 11, 9, 5, 12, tzinfo=TZ)  # deck: the voice note at 05:12
 WEEK_START = date(2026, 11, 9)  # Monday: the training school's week is Mon 9 - Sun 15, as on the week screen
 WEEK_DAY = "monday"  # the school's policy week (the swim preset's default is Sunday)
 MONDAY = date(2026, 11, 9)
 GREEDY_HOURS_CAP = 32.0  # ordinary staff stay well below the 40 h limit
 MIN_REST = timedelta(hours=10)  # the preset's min_rest_hours: the greedy fill never breaks it
 HERO_SHIFT = "L-1109-G002"
+HERO_SEAT = "L-1109-G002-I2"  # preschool: the lesson's second instructor, who comes
+SECOND_INSTRUCTOR = "S01"  # Emma Carter
+# preschool training (ages 3-5), the school's own rule: Marina and Emma (on the lesson), Anna (blocked by her WSI),
+# the five cleared, the reserve head coach Liam (plan B), Camila (plan B overtime) and Gabriela (too little rest).
+# Nobody else holds it.
+PRESCHOOL = ("S01", "S05", "S06", "S11", "S17", "S20", "S22", "S24", "S25", "S26", "S27")
 
 # id, name, lat, lon, deck zone, zones in group order
 VENUES = [
@@ -115,10 +133,12 @@ ROLE_CERTS = {"lifeguard": ("lifeguarding", "cpr_aed"), "instructor": ("wsi", "c
 TRAP_EXPIRY = {
     ("S07", "cpr_aed"): date(2026, 11, 8),
     ("S10", "wsi"): date(2026, 11, 2),
-    ("S27", "lifeguarding"): date(2026, 11, 5),
     ("S08", "cpr_aed"): date(2026, 11, 9),
     ("S30", "lifeguarding"): date(2026, 11, 9),
 }
+# Anna Kim's expired card: the one the hero shift needs in each story
+ANNA_EXPIRY = {"preschool": ("S27", "wsi"), "deck": ("S27", "lifeguarding")}
+ANNA_EXPIRED_ON = date(2026, 11, 5)
 # not traps: still valid on Monday, for the 30/60-day radar
 RADAR_EXPIRY = {
     ("S20", "cpr_aed"): date(2026, 11, 27),
@@ -130,6 +150,9 @@ OVERDUE_PROGRAM = ("S14", date(2025, 10, 1))
 # The issuer's registry is SIMULATED (training data, not a real issuer). Carlos Mendoza's lifeguard card is printed
 # valid to 2028 but the issuer revoked it on Jul 24 (cards voided after the fact, as in Iowa in 2023).
 REVOKED = {("S35", "lifeguarding"): date(2026, 7, 24)}
+# preschool: Irina Lebedeva's WSI is printed valid but revoked by the issuer too, so the 08:00 lesson shows the trap
+# (her lessons are already off the week: her program renewal is overdue; her lifeguard blocks need no WSI)
+PRESCHOOL_REVOKED = {**REVOKED, ("S14", "wsi"): date(2026, 10, 12)}
 DEMO_ABSENT = "S05"
 
 # Fixed weeks: (day offset from Sunday, venue, block start). Hours: Anna 4, Sofia 6, Leo 9, Zoe 12,
@@ -169,7 +192,7 @@ LANGUAGE_PATTERN = (["en"], ["en"], ["es"], ["en"], ["ru"], ["en"], ["es"], ["en
 
 @dataclass(frozen=True)
 class FixedGroup:
-    level: int
+    level: int | str
     size: int
     ages: tuple[int, int]
     teacher: str
@@ -177,6 +200,8 @@ class FixedGroup:
     minutes: int = 30
     deck: bool = False  # the post is deck and lesson: lifeguard role plus WSI
     instructors: int = 1
+    program: str = "learn_to_swim"
+    name: str | None = None  # shown instead of "Level n, Mon 06:00"
 
 
 # Monday groups with fixed teachers: (venue, zone, weekday, start) -> group
@@ -194,6 +219,17 @@ FIXED_GROUPS = {
     ("V3", "V3-LEARN", 0, time(7, 0)): FixedGroup(2, 5, (6, 8), "S19", ("ru",)),
     ("V3", "V3-COMP", 0, time(7, 0)): FixedGroup(3, 7, (7, 10), "S21", ("ru", "en")),
     ("V1", "V1-TEACH", 0, time(16, 0)): FixedGroup(2, 5, (6, 8), "S07", ("es", "en"), minutes=45),
+}
+DECK_HERO_SLOT = ("V1", "V1-LAP", 0, time(6, 0))  # deck story: G002, Marina's 06:00-08:00 deck shift
+PRESCHOOL_HERO_SLOT = ("V1", "V1-TEACH", 0, LESSON_AT)  # preschool story: G002 is this slot instead
+# preschool: at 07:15 the 07:00 lesson already runs, so the live-norm group G003 (Level 1, 4 children aged 4-5, mostly
+# Spanish-speaking families, Emma Carter) is at 09:00 instead: same group, same people, later
+PRESCHOOL_MOVES = {("V1", "V1-TEACH", 0, time(7, 0)): ("V1", "V1-TEACH", 0, time(9, 0))}
+PRESCHOOL_GROUPS = {
+    PRESCHOOL_HERO_SLOT: FixedGroup("3-5", 8, (3, 5), DEMO_ABSENT, ("ru", "en"), minutes=45, instructors=2,
+                                    program="preschool", name=f"Preschool swim, ages 3–5, Mon {LESSON_AT:%H:%M}"),
+    # the lesson next door at the same time (G121, appended): merging the two breaks 1:4
+    ("V1", "V1-LAP", 0, LESSON_AT): FixedGroup(4, 6, (8, 10), "S04", ("en",), minutes=45),
 }
 
 READER_A_MODEL = "muse-glimmer-30b"
@@ -234,6 +270,8 @@ def _levels(spec: str) -> list[str]:
 
 # The evening before the week: Gabriela closes Lakeview on Sunday Nov 8 at 21:00, 9 h before the 06:00 hero shift.
 EVE_BLOCKS = {"S24": [("V3", time(18, 0))]}
+# preschool: Gabriela (preschool-trained) closes Lakeview's late swim on Sunday 9.5 h before the lesson (22:30)
+PRESCHOOL_EVE_HOURS = {("S24", "V3", time(18, 0)): 24 - 18 + LESSON_AT.hour + LESSON_AT.minute / 60 - 9.5}
 
 
 def block_day(offset: int) -> date:
@@ -264,30 +302,30 @@ def _short_rest(busy: list[tuple[datetime, datetime]], start: datetime, end: dat
 
 
 def _cleared(staff_id: str, roles: tuple[str, ...], extra: tuple[str, ...], day: date, lesson: bool,
-             certs: dict[tuple[str, str], dict]) -> bool:
+             certs: dict[tuple[str, str], dict], revoked: dict = REVOKED) -> bool:
     """The data design keeps the week clean: the greedy fill never books a person whose card is expired, revoked or
     disputed on that day, or whose program renewal is overdue for a lesson. The traps live only where the rules
     must catch them: the hero morning's candidates, S07's Monday 16:00 lesson (the night check) and the import file."""
     for role in roles:
         for ctype in (*ROLE_CERTS[role], *extra):
             row = certs.get((staff_id, ctype))
-            if row is None or row["expires_on"] < day or (staff_id, ctype) in REVOKED or (staff_id, ctype) == DISPUTED[:2]:
+            if row is None or row["expires_on"] < day or (staff_id, ctype) in revoked or (staff_id, ctype) == DISPUTED[:2]:
                 return False
     return not (lesson and staff_id == OVERDUE_PROGRAM[0])
 
 
-def _off(staff_id: str, start: datetime) -> bool:
+def _off(staff_id: str, start: datetime, free_monday: frozenset[str] | set[str] = FREE_MONDAY) -> bool:
     """Kept free by the data design: never picked by the greedy fill at this time."""
     if staff_id in FIXED_ONLY:
         return True
-    if start.date() == MONDAY and staff_id in FREE_MONDAY:
+    if start.date() == MONDAY and staff_id in free_monday:
         return True
     # head coaches in reserve stay free before 08:00 every day: plan B's reserve for the early lessons
     return start.time() < time(8, 0) and staff_id in RESERVE_EARLY
 
 
-def _cert(staff_id: str, n: int, i: int, ctype: str) -> dict:
-    expires = TRAP_EXPIRY.get((staff_id, ctype)) or RADAR_EXPIRY.get((staff_id, ctype))
+def _cert(staff_id: str, n: int, i: int, ctype: str, traps: dict | None = None) -> dict:
+    expires = (traps or TRAP_EXPIRY).get((staff_id, ctype)) or RADAR_EXPIRY.get((staff_id, ctype))
     if expires is None:
         # Jan 2027 .. Oct 2028, so the issue date (24 months earlier) is never after today
         expires = date(2027 + (n + i) % 2, 1 + (n * 5 + i * 3) % 10, 1 + (n * 11 + i * 7) % 28)
@@ -323,8 +361,21 @@ def _cert(staff_id: str, n: int, i: int, ctype: str) -> dict:
     return row
 
 
-def build_school() -> School:
-    """The whole data set as plain Python values. Same output on every call."""
+def build_school(story: str = STORY) -> School:
+    """The whole data set as plain Python values. Same output on every call. `story`: see the module docstring."""
+    if story not in STORIES:
+        raise ValueError(f"story must be one of {STORIES}")
+    preschool = story == "preschool"
+    traps = {**TRAP_EXPIRY, ANNA_EXPIRY[story]: ANNA_EXPIRED_ON}
+    revoked = PRESCHOOL_REVOKED if preschool else REVOKED
+    # preschool: Anna is free on Monday morning (she volunteers); her WSI is expired, so she guards, never teaches
+    free_monday = FREE_MONDAY | {"S27"} if preschool else FREE_MONDAY
+    fixed_groups = dict(FIXED_GROUPS)
+    if preschool:
+        fixed_groups.pop(DECK_HERO_SLOT)
+        fixed_groups.update(PRESCHOOL_GROUPS)
+        for old, new in PRESCHOOL_MOVES.items():
+            fixed_groups[new] = fixed_groups.pop(old)
     school = School()
     deck_zone = {}
     for vid, name, lat, lon, deck, zones in VENUES:
@@ -340,10 +391,10 @@ def build_school() -> School:
         roles_of[sid], levels_of[sid], home_of[sid] = ROLE_CODES[roles], _levels(levels), home
         school.staff_roles.extend((sid, r) for r in ROLE_CODES[roles])
         needed = list(dict.fromkeys(c for r in ROLE_CODES[roles] for c in ROLE_CERTS[r]))
-        school.certs.extend(_cert(sid, n, i, ctype) for i, ctype in enumerate(needed))
+        school.certs.extend(_cert(sid, n, i, ctype, traps) for i, ctype in enumerate(needed))
         for i, ctype in enumerate(needed):
             card = school.certs[-len(needed) + i]
-            revoked_on = REVOKED.get((sid, ctype))
+            revoked_on = revoked.get((sid, ctype))
             school.registry.append({"cert_type": ctype, "card_number": card["card_number"], "revoked_on": revoked_on,
                                     "note": "simulated registry (training data)"})
         if levels_of[sid]:
@@ -357,6 +408,14 @@ def build_school() -> School:
                     "levels": {lv: base + timedelta(days=90 * i) for i, lv in enumerate(levels_of[sid])},
                 }
             )
+        if preschool and sid in PRESCHOOL:
+            school.programs.append({
+                "staff_id": sid,
+                "program": "preschool",
+                "renewed_at": date(2026, 1 + (n * 3) % 9, 1 + (n * 5) % 28),
+                "levels": {"3-5": date(2020 + n % 5, 1 + (n * 7) % 12, 1 + (n * 3) % 28)},
+            })
+    cleared_for = {(p["staff_id"], p["program"], lv) for p in school.programs for lv in p["levels"]}
 
     certs_by = {(c["staff_id"], c["cert_type"]): c for c in school.certs}
     busy: dict[str, list[tuple[datetime, datetime]]] = {sid: [] for sid in roles_of}
@@ -386,31 +445,38 @@ def build_school() -> School:
         for weekday in range(5):
             for start in AFTERNOON_TIMES:
                 slots.append((vid, zones[0][0], weekday, start))
+    if preschool:
+        # G002 is the 08:00 preschool lesson instead of the 06:00 deck post; the lesson next door is appended (G121)
+        slots[slots.index(DECK_HERO_SLOT)] = PRESCHOOL_HERO_SLOT
+        for old, new in PRESCHOOL_MOVES.items():
+            slots[slots.index(old)] = new
+        slots.extend(slot for slot in PRESCHOOL_GROUPS if slot != PRESCHOOL_HERO_SLOT)
     # fixed groups are placed before the greedy fill, so the greedy never takes their teachers' time
-    order = sorted(range(len(slots)), key=lambda k: (slots[k][:2] + slots[k][2:3] + (slots[k][3],)) not in FIXED_GROUPS)
+    order = sorted(range(len(slots)), key=lambda k: slots[k] not in fixed_groups)
     placed: dict[int, dict] = {}
     for k in order:
         vid, zid, weekday, start = slots[k]
-        fixed = FIXED_GROUPS.get((vid, zid, weekday, start))
+        fixed = fixed_groups.get((vid, zid, weekday, start))
+        program = fixed.program if fixed else "learn_to_swim"
         level = fixed.level if fixed else LEVEL_PATTERN[k % len(LEVEL_PATTERN)]
         size = fixed.size if fixed else (2 + k % 3 if level == 1 else 3 + (k * 5) % 6)
         minutes = fixed.minutes if fixed else (30 if start < time(12, 0) else 45)
         languages = list(fixed.languages) if fixed else LANGUAGE_PATTERN[k % len(LANGUAGE_PATTERN)]
-        ages = fixed.ages if fixed else (4 + level, 6 + level)
+        ages = fixed.ages if fixed else (4 + int(level), 6 + int(level))
         day = MONDAY + timedelta(days=weekday)
         lesson_start = _at(day, start)
         lesson_end = lesson_start + timedelta(minutes=minutes)
         teacher = fixed.teacher if fixed else None
-        if teacher is not None and str(level) not in levels_of[teacher]:
-            raise RuntimeError(f"seed design error: {teacher} is not cleared for level {level} ({slots[k]})")
+        if teacher is not None and (teacher, program, str(level)) not in cleared_for:
+            raise RuntimeError(f"seed design error: {teacher} is not cleared for {program} {level} ({slots[k]})")
         if teacher is None:
             candidates = [
                 sid
                 for sid, roles in roles_of.items()
                 if "instructor" in roles
                 and str(level) in levels_of[sid]
-                and not _off(sid, lesson_start)
-                and _cleared(sid, ("instructor",), (), lesson_start.date(), True, certs_by)
+                and not _off(sid, lesson_start, free_monday)
+                and _cleared(sid, ("instructor",), (), lesson_start.date(), True, certs_by, revoked)
                 and not _overlaps(busy[sid], lesson_start, lesson_end)
                 and not _short_rest(busy[sid], lesson_start, lesson_end)
             ]
@@ -425,8 +491,9 @@ def build_school() -> School:
                 "id": gid,
                 "venue_id": vid,
                 "zone_id": zid,
+                "program": program,
                 "level": str(level),
-                "name": f"Level {level}, {day:%a} {start:%H:%M}",
+                "name": (fixed.name if fixed and fixed.name else f"Level {level}, {day:%a} {start:%H:%M}"),
                 "size": size,
                 "age_min": ages[0],
                 "age_max": ages[1],
@@ -453,11 +520,18 @@ def build_school() -> School:
     for k in range(len(slots)):
         school.groups.append(placed[k]["group"])
         school.shifts.append(placed[k]["shift"])
+    if preschool:
+        # the lesson's second instructor: her own seat on the same group (the live-norm seats use the same shape)
+        hero = next(sh for sh in school.shifts if sh["id"] == HERO_SHIFT)
+        if (SECOND_INSTRUCTOR, "preschool", "3-5") not in cleared_for:
+            raise RuntimeError("seed design error: the second instructor has no preschool training")
+        book(SECOND_INSTRUCTOR, hero["starts_at"], hero["ends_at"])
+        school.shifts.append({**hero, "id": HERO_SEAT, "staff_id": SECOND_INSTRUCTOR, "extra_for": HERO_SHIFT})
 
     eve = WEEK_START - timedelta(days=1)
     for sid, blocks in EVE_BLOCKS.items():
         for vid, start in blocks:
-            length = dict(GUARD_BLOCKS)[start]
+            length = (PRESCHOOL_EVE_HOURS.get((sid, vid, start)) if preschool else None) or dict(GUARD_BLOCKS)[start]
             block_start = _at(eve, start)
             book(sid, block_start, block_start + timedelta(hours=length))
             school.shifts.append({
@@ -477,8 +551,8 @@ def build_school() -> School:
                         s
                         for s, roles in roles_of.items()
                         if "lifeguard" in roles
-                        and not _off(s, block_start)
-                        and _cleared(s, ("lifeguard",), (), block_start.date(), False, certs_by)
+                        and not _off(s, block_start, free_monday)
+                        and _cleared(s, ("lifeguard",), (), block_start.date(), False, certs_by, revoked)
                         and hours[s] + length <= GREEDY_HOURS_CAP
                         and not _overlaps(busy[s], block_start, block_end)
                         and not _short_rest(busy[s], block_start, block_end)
@@ -503,7 +577,8 @@ def build_school() -> School:
                 )
 
     school.demo = {
-        "now": NOW,
+        "story": story,
+        "now": NOW if preschool else DECK_NOW,
         "absent_staff_id": DEMO_ABSENT,
         "hero_shift_id": HERO_SHIFT,
         "absent_shift_ids": [
@@ -514,9 +589,9 @@ def build_school() -> School:
     return school
 
 
-def load_school(conn: psycopg.Connection, school: School | None = None) -> None:
+def load_school(conn: psycopg.Connection, school: School | None = None, story: str = STORY) -> None:
     """Migrate, install the preset and write the school. Fails if the demo policy already exists."""
-    school = school or build_school()
+    school = school or build_school(story)
     migrate(conn)
     install_preset(conn, PRESET)
     with conn.transaction():
@@ -593,7 +668,7 @@ def load_school(conn: psycopg.Connection, school: School | None = None) -> None:
                         g["id"],
                         g["venue_id"],
                         g["zone_id"],
-                        level_ids[("learn_to_swim", g["level"])],
+                        level_ids[(g["program"], g["level"])],
                         g["name"],
                         g["size"],
                         g["age_min"],
@@ -609,11 +684,11 @@ def load_school(conn: psycopg.Connection, school: School | None = None) -> None:
                 ],
             )
             cur.executemany(
-                "INSERT INTO shift (id, venue_id, zone_id, role_id, starts_at, ends_at, staff_id, instructors, extra_certs)"
-                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                "INSERT INTO shift (id, venue_id, zone_id, role_id, starts_at, ends_at, staff_id, instructors, extra_certs,"
+                " extra_for) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                 [
                     (s["id"], s["venue_id"], s["zone_id"], role_ids[s["role"]], s["starts_at"], s["ends_at"],
-                     s["staff_id"], s["instructors"], s["extra_certs"])
+                     s["staff_id"], s["instructors"], s["extra_certs"], s.get("extra_for"))
                     for s in school.shifts
                 ],
             )
@@ -626,11 +701,12 @@ def load_school(conn: psycopg.Connection, school: School | None = None) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Create the schema and load the fictional training school.")
     parser.add_argument("--dsn", default=os.environ.get("DATABASE_URL"), help="Postgres DSN (default: $DATABASE_URL)")
+    parser.add_argument("--story", choices=STORIES, default=STORY, help="which Monday morning (default: preschool)")
     args = parser.parse_args(argv)
     if not args.dsn:
         parser.error("give --dsn or set DATABASE_URL")
     with psycopg.connect(args.dsn, autocommit=True) as conn:
-        load_school(conn)
+        load_school(conn, story=args.story)
         counts = {
             t: conn.execute(f"SELECT count(*) FROM {t}").fetchone()[0]
             for t in ("venue", "staff", "lesson_group", "shift", "staff_cert")

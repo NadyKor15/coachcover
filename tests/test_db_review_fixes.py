@@ -9,13 +9,20 @@ from psycopg.types.json import Jsonb
 from coachcover.model import Shift
 from coachcover.repo import load_context, load_policy, load_shift, load_staff
 from coachcover.rules import Code, assess, eligible, rank
-from coachcover.seed import NOW, POLICY_ID
+from coachcover.seed import DECK_NOW as NOW  # Marina's 06:00 deck shift and the lesson next door: the deck story
+from coachcover.seed import POLICY_ID
 from tests.conftest import masked_dsn
 
 pytestmark = pytest.mark.db
 
 MARINA_0600 = "L-1109-G002"
 NEIGHBOUR_0600 = "L-1109-G001"
+
+
+@pytest.fixture
+def school(deck_school):
+    """These checks read Marina's 06:00 deck shift: the deck story of the training school."""
+    return deck_school
 
 
 def _rejected(conn, statement, params=(), error=psycopg.Error):

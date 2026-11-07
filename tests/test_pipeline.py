@@ -1,4 +1,8 @@
-"""The cover pipeline end to end on replay, on a fresh training school per test."""
+"""The cover pipeline end to end on replay, on a fresh training school per test.
+
+These run on the deck story of the school (coachcover.seed: Marina's 06:00 deck shift, the recorded voice note and
+the recorded model answers of the 2026-11-06 check); the preschool morning has its own end-to-end test in
+tests/test_preschool_morning.py."""
 
 from datetime import timedelta
 from pathlib import Path
@@ -6,10 +10,11 @@ from pathlib import Path
 import pytest
 from psycopg.types.json import Jsonb
 
-from coachcover.demo import ANNA_MESSAGE
+from coachcover.demo import ANNA_MESSAGES
 from coachcover.models import DbLedger, ModelClient
 from coachcover.pipeline import Conflict, NotFound, Pipeline
-from coachcover.seed import NOW, POLICY_ID, load_school
+from coachcover.seed import DECK_NOW as NOW
+from coachcover.seed import POLICY_ID, load_school
 
 pytestmark = pytest.mark.db
 
@@ -20,6 +25,7 @@ QUEUE = ["S25", "S26", "S17", "S20", "S22"]  # Sofia 6 h, Leo 9 h, Zoe 12 h, the
 RESTING = "S24"  # Gabriela closed Lakeview at 21:00 Sunday: only 9 h of rest before 06:00
 TRAPS = {"S07", "S10", "S13", "S14", "S27"}
 RESERVE = {"S06", "S12", "S23"}
+ANNA_MESSAGE = ANNA_MESSAGES["deck"]
 
 
 def minutes(n: float):
@@ -29,7 +35,7 @@ def minutes(n: float):
 @pytest.fixture
 def school(new_database):
     conn = new_database()
-    load_school(conn)
+    load_school(conn, story="deck")
     return conn
 
 

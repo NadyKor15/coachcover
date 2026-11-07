@@ -76,6 +76,9 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
         word = ((role.short or role.label) if role else params["role"]).lower()
         return f"Role: not {'an' if word[:1] in 'aeiou' else 'a'} {word}"
     if code == "PROGRAM_MISSING":
+        program = preset.programs.get(params["program"])
+        if program is not None and program.clearance:
+            return f"No {program.clearance}"
         return f"No {_program_short(preset, params['program'])} program"
     if code == "LEVEL_MISSING":
         return f"Not cleared for {_program_short(preset, params['program'])}-{params['level']}"
@@ -99,14 +102,24 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
     if code == "IS_THE_ABSENT_PERSON":
         return "Called out"
     if code == "CALLED_OUT":
-        return "Called out sick today"
+        return "Called out today"  # sick, a burst pipe: the message says why
     if code == "RESERVE":
         reserve = [r for r in preset.roles.values() if r.reserve]
         return f"Reserve ({(reserve[0].short or reserve[0].label).lower()})" if reserve else "Reserve"
     return code
 
 
-def _shift_labels(info: dict, shift, preset: Preset) -> dict:
+def _co_teachers(conn: psycopg.Connection, shift_id: str) -> list[str]:
+    """People on the other shifts that teach this shift's groups at the same time (the second instructor of a lesson)."""
+    return [name for name, _ in conn.execute(
+        "SELECT st.full_name, min(s.id) FROM shift s JOIN shift_group sg ON sg.shift_id = s.id JOIN staff st ON st.id = s.staff_id"
+        " WHERE sg.group_id IN (SELECT group_id FROM shift_group WHERE shift_id = %s) AND s.id <> %s AND s.status = 'scheduled'"
+        " AND s.starts_at = (SELECT starts_at FROM shift WHERE id = %s) GROUP BY st.full_name ORDER BY min(s.id)",
+        (shift_id, shift_id, shift_id),
+    )]
+
+
+def _shift_labels(info: dict, shift, preset: Preset, co_teachers: list[str] | None = None) -> dict:
     tz = ZoneInfo(info["tz"])
     role = preset.roles[shift.role]
     needs = " + ".join([role.short or role.label] + [_cert_short(preset, c) for c in shift.extra_certs])
@@ -117,8 +130,10 @@ def _shift_labels(info: dict, shift, preset: Preset) -> dict:
     if shift.groups:
         g = shift.groups[0]
         prog = preset.programs[g.program]
-        lanes += f" + {prog.label} {prog.levels[g.level].label} ({kids} {participants})"
-        program = f"Program {_program_short(preset, g.program)}-{g.level}"
+        lanes += f" + {prog.title(g.level)} ({kids} {participants})"
+        program = prog.needs(g.level)
+    if co_teachers:
+        lanes += f" · with {' and '.join(co_teachers)}"
     return {
         "id": info["id"],
         "time_label": f"{_clock(info['start'], tz)}–{_clock(info['end'], tz)}",
@@ -275,7 +290,8 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
     info = p.shift_info(shift_id)
     shift = load_shift(conn, shift_id)
     out["title"] = preset.copy.get("title", "Who can cover {time}").format(time=_clock(info["start"], tz))
-    out["shift"] = _shift_labels(info, shift, preset)
+    co_teachers = _co_teachers(conn, shift_id)
+    out["shift"] = _shift_labels(info, shift, preset)  # two lines on the morning screen: the other teacher goes below
     events = conn.execute("SELECT seq, at, kind, data FROM case_event WHERE case_id = %s ORDER BY seq", (case_id,)).fetchall()
     first_event = {kind: (at, data) for _, at, kind, data in reversed(events)}
     received = first_event.get("callout_received")
@@ -287,13 +303,16 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
         out["callout"] = {
             "case_id": code,
             "time_label": _clock(at, tz),
-            "staff": f"{info_absent_name(conn, case_id)} · {out['shift']['needs_label']}",
+            "staff": f"{info_absent_name(conn, case_id)} · {out['shift']['needs_label']}"
+                     + (f" · with {' and '.join(co_teachers)}" if co_teachers else ""),
             "audio_url": f"/media/callouts/{code}.ogg" if audio else None,
             "duration_label": f"{int(round(seconds)) // 60}:{int(round(seconds)) % 60:02d}" if seconds is not None else None,
             "language": LANGUAGE_NAMES.get(data.get("language")),
             "transcript_original": data.get("text"),
             "transcript_en": data.get("text_en"),
-            "asr_label": (f"whisper on Vultr · {voice['duration_ms'] / 1000:.1f} s" + ("" if live else " · recorded"))
+            # a prepared answer (synthetic) was never a model run: no "on Vultr", no timing
+            "asr_label": "whisper · prepared demo answer" if voice.get("synthetic")
+            else (f"whisper on Vultr · {voice['duration_ms'] / 1000:.1f} s" + ("" if live else " · recorded"))
             if voice.get("duration_ms") else None,
         }
     ranked = first_event.get("candidates_ranked", (None, {}))[1]
@@ -336,6 +355,18 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
                      "why_first": line})
         if result not in ("pending", "held"):
             timeline.append({"time_label": _clock(when, tz), "kind": result, "label": label, "_at": when})
+    # a plan shown and then replaced because the facts changed: when it was shown, and what changed (stable sort:
+    # these come before the current plan's line at the same minute)
+    for (created,) in conn.execute("SELECT created_at FROM plan_b WHERE case_id = %s AND status = 'superseded'"
+                                   " ORDER BY id", (case_id,)).fetchall():
+        timeline.append({"time_label": _clock(created, tz), "kind": "plan_b", "label": "Plan B ready", "_at": created,
+                         "_replaced": True})
+    for _, at, kind, data in events:  # who changed the facts, at the moment they did (the full line is in the case)
+        if kind == "approval_refused" and data.get("why_name") and data.get("why_at"):
+            when = datetime.fromisoformat(data["why_at"])
+            timeline.append({"time_label": _clock(when, tz), "kind": "callout", "label": f"{data['why_name']} called out",
+                             "_at": when})
+    replaced = any(e.pop("_replaced", False) for e in timeline)
     plans = conn.execute(
         "SELECT id, snapshot, snapshot_hash, status, created_at, decided_at FROM plan_b WHERE case_id = %s"
         " AND status IN ('proposed', 'approved') ORDER BY id DESC LIMIT 1",
@@ -348,7 +379,8 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
         out["plan_b"] = {"id": f"P-{pid}", "state": pstatus, "text": text, "hash": digest, "autonomy": autonomy}
         when = decided if pstatus == "approved" and decided else created
         timeline.append({"time_label": _clock(when, tz), "kind": "plan_b",
-                         "label": "Plan B approved" if pstatus == "approved" else "Plan B ready", "_at": when})
+                         "label": "Plan B approved" if pstatus == "approved" else "New plan B ready" if replaced
+                         else "Plan B ready", "_at": when})
     elif status in ("open", "covered"):
         facts = p._plan_facts(case_id, now)
         out["plan_b"] = {"id": "P-standby", "state": "standby", "text": _plan_text(facts, preset),
@@ -369,7 +401,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
                       "covered_time": _clock(covered_at, tz) if covered_by else None,  # when it was closed
                       "lessons_cancelled": cancelled}
     out["model_log"] = _model_log(conn, case_id, callout_id, live)
-    out["money"] = today_money_block(conn, policy_id, now)
+    out["money"] = today_money_block(conn, policy_id, now, vid)
     out["flagged"] = [
         {"time_label": _clock(at, tz), "staff": data.get("name"), "text": data.get("text"),
          "label": f"Message from {data.get('name')} flagged for the manager: it tries to change the rules. "
@@ -387,9 +419,10 @@ def _manager_minutes() -> tuple[float | None, str | None]:
     return stats.get("baseline_manager_minutes_median_per_morning"), f"synthetic replay, {stats['mornings']} mornings"
 
 
-def today_money_block(conn: psycopg.Connection, policy_id: str, now: datetime) -> dict:
+def today_money_block(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str | None = None) -> dict:
     minutes, source = _manager_minutes()
-    money = money_model.today_money(conn, policy_id, now, manager_minutes=minutes, manager_minutes_source=source)["money"]
+    money = money_model.today_money(conn, policy_id, now, manager_minutes=minutes, manager_minutes_source=source,
+                                    venue_id=venue_id)["money"]
     cents = money.get("case_cost_cents")
     money["case_cost_label"] = money_model.cost_label(cents / 100) if cents is not None else None
     price = load_policy(conn, policy_id).preset.money.get("lesson_price", {})
@@ -543,11 +576,13 @@ def offer_phone(conn: psycopg.Connection, policy_id: str, offer_ref: str, now: d
     for g in {(g.program, g.level) for g in shift.groups}:
         held = person.programs.get(g[0])
         if held:
-            why.append(f"{_program_short(preset, g[0])}-{g[1]} program — current")
+            prog = preset.programs.get(g[0])
+            why.append(f"{prog.needs(g[1])} — current" if prog is not None and prog.clearance
+                       else f"{_program_short(preset, g[0])}-{g[1]} program — current")
     if place and place.get("week_hours") is not None:
         why.append(f"{place['week_hours']:g} h this week")
     manager = conn.execute("SELECT manager_name FROM policy WHERE id = %s", (policy_id,)).fetchone()[0]
-    labels = _shift_labels(info, shift, preset)
+    labels = _shift_labels(info, shift, preset, _co_teachers(conn, shift_id))
     return plain({
         "offer_id": f"O-{offer_id}",
         "state": status,
@@ -617,7 +652,7 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
     info = p.shift_info(shift_id)
     shift = load_shift(conn, shift_id)
     tz = ZoneInfo(info["tz"])
-    labels = _shift_labels(info, shift, preset)
+    labels = _shift_labels(info, shift, preset, _co_teachers(conn, shift_id))
     manager = conn.execute("SELECT manager_name FROM policy WHERE id = %s", (policy_id,)).fetchone()[0]
     names = dict(conn.execute("SELECT id, full_name FROM staff WHERE policy_id = %s", (policy_id,)).fetchall())
     events = conn.execute("SELECT seq, at, kind, data FROM case_event WHERE case_id = %s ORDER BY seq", (case_id,)).fetchall()
@@ -634,7 +669,9 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
             "language": LANGUAGE_NAMES.get(data.get("language")),
             "audio_url": f"/media/callouts/{code}.ogg" if audio else None,
             "transcript_original": data.get("text"), "transcript_en": data.get("text_en"),
-            "model_tag": f"{MODEL_LABELS.get(voice.get('model'), voice.get('model'))} · {voice['duration_ms'] / 1000:.1f} s"
+            "model_tag": f"{MODEL_LABELS.get(voice.get('model'), voice.get('model'))} · prepared demo answer"
+            if voice.get("synthetic")
+            else f"{MODEL_LABELS.get(voice.get('model'), voice.get('model'))} · {voice['duration_ms'] / 1000:.1f} s"
             if voice.get("duration_ms") else None,
         })
     if "night_check_found" in first:
@@ -705,7 +742,8 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
             steps.append({"kind": "plan_b", "at": _utc(at), "time_label": _utc_label(at),
                           "title": "Approval refused: plan changed",
                           "summary": f"{data.get('plan_id')} was shown with hash {str(data.get('shown_hash'))[:8]}…; "
-                                     f"the data changed, the current plan has hash {str(data.get('current_hash'))[:8]}…"})
+                                     f"the data changed, the current plan has hash {str(data.get('current_hash'))[:8]}…"
+                                     + (f" · {data['why']}" if data.get("why") else "")})
     plan = conn.execute(
         "SELECT id, snapshot, snapshot_hash, status, created_at, decided_at, decided_by, chosen_option FROM plan_b"
         " WHERE case_id = %s AND status IN ('proposed', 'approved') ORDER BY id DESC LIMIT 1",
@@ -719,9 +757,11 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
     covered = first.get("shift_covered")
     if covered:
         at, data = covered
+        co = [n for n in _co_teachers(conn, shift_id) if n != data.get("name")]  # the lesson's other teacher stays
         steps.append({"kind": "covered", "at": _utc(at), "time_label": _utc_label(at), "title": "Schedule covered",
-                      "summary": f"{labels['time_label'].split('–')[0]} covered by {data.get('name')} · "
-                                 f"{cancelled} lesson{'s' if cancelled != 1 else ''} cancelled"})
+                      "summary": f"{labels['time_label'].split('–')[0]} covered by {data.get('name')}"
+                                 + (f", teaching with {' and '.join(co)}" if co else "")
+                                 + f" · {cancelled} lesson{'s' if cancelled != 1 else ''} cancelled"})
     if plan:
         pid, snap, digest, pstatus, created, decided, decided_by, chosen = plan
         lines = snap.get("text", {}).get("lines", [])

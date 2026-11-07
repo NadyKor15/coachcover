@@ -1,0 +1,26 @@
+{
+ "purpose": "screen_message",
+ "model": "nemotron-3.5-content-safety",
+ "input": {
+  "text": "A pipe burst at my place, I can't come in today. Sorry."
+ },
+ "input_sha256": "7176ed4a069b2afaa3fce00c962ca1910841ef2e6485161fa374bb0e71bb23e9",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: the filter's own answer format (as in model check no. 2) for Liam's text call-out; to be recorded live on Vultr",
+ "duration_ms": 600,
+ "response": {
+  "model": "nemotron-3.5-content-safety",
+  "usage": {
+   "prompt_tokens": 470,
+   "completion_tokens": 5
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "User Safety: safe"
+    }
+   }
+  ]
+ }
+}

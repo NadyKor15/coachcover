@@ -240,7 +240,7 @@ class Pipeline:
             text = heard.data["text"]
             voice = {"model": heard.record.model_returned, "duration_ms": heard.record.duration_ms,
                      "cost_usd": heard.record.cost_usd, "recorded": heard.record.source == "recorded",
-                     "seconds": heard.data.get("duration")}
+                     "synthetic": heard.synthetic, "seconds": heard.data.get("duration")}
         today = now.astimezone(tz).date()
         todays = [
             (sid, start)

@@ -435,6 +435,11 @@
       "label": "Ethan Price declined"
     },
     {
+      "time_label": "05:14",
+      "kind": "plan_b",
+      "label": "Plan B ready"
+    },
+    {
       "time_label": "06:00",
       "kind": "shift_start"
     }
