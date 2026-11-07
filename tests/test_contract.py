@@ -119,7 +119,8 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert zoe["why_first"] == "Zoe third: 12 h this week, Preschool, same pool" and zoe["time_label"] == "08:44"
     assert [(t["time_label"], t["kind"]) for t in today["timeline"]] == [
         ("08:40", "callout"), ("08:43", "declined"), ("08:44", "accepted"), ("08:45", "no_reply"), ("09:30", "shift_start")]
-    assert today["outcome"] == {"covered_by": "Zoe Grant", "covered_via": None, "covered_time": "08:45", "lessons_cancelled": 0}  # closed at 08:45
+    assert today["outcome"] == {"covered_by": "Zoe Grant", "covered_via": None, "covered_time": "08:45", "lessons_cancelled": 0,
+                                "private_line": None}  # closed at 08:45; private_line: a private lesson's outcome only
     assert today["plan_b"]["state"] == "standby" and today["plan_b"]["autonomy"] == "propose"
     assert "merge refused" in today["plan_b"]["text"]  # the kids' norm refuses the merge, live
     money = today["money"]  # from coachcover.money with the preset's prices
