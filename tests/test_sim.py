@@ -185,3 +185,18 @@ def test_bad_arguments():
         run(0)
     with pytest.raises(ValueError, match="offers"):
         run(1, params=SimParams(offers="all"))
+
+
+def test_private_lessons_go_to_another_coach_only_after_the_familys_yes(result):
+    b, c = result["summary"][BASELINE], result["summary"][COACHCOVER]
+    assert c["private_lessons"] == b["private_lessons"] > 0  # the same private lessons on the same mornings
+    assert c["private_another_coach_without_family_yes"] == 0  # CoachCover never swaps the coach without a yes
+    assert b["private_another_coach_without_family_yes"] == b["private_lessons"] - b["private_credit"]
+    assert (c["private_another_coach_family_yes"] + c["private_moved_to_own_coach"] + c["private_credit"]
+            == c["private_lessons"])
+    rows = [r for m in result["mornings_detail"] for r in m[COACHCOVER] if r["private"]]
+    assert all(r["family_yes"] for r in rows if r["staff_id"])  # every booked coach: after the family's yes
+    for key in ("p_family_yes", "p_family_no", "family_lag_min", "family_lag_max"):
+        assert result["assumptions"][key].startswith("Assumed, not measured")
+    report = report_markdown(result)
+    assert "Private lessons (one child, one coach) that needed cover" in report and "assumed, not measured" in report

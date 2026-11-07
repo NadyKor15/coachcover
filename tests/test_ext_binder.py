@@ -52,11 +52,14 @@ def test_every_shift_is_checked_and_a_planted_violation_shows(api):
     client, conn = api
     client.post("/api/judge/run")
     data = client.get("/api/binder.json", params={"venue": "V1", "from": "2026-11-09", "to": "2026-11-09"}).json()
+    # scheduled and open: Marina's 17:00 private lesson is still open after the judge's morning (her case runs on)
     ids = [r for (r,) in conn.execute(
-        "SELECT id FROM shift WHERE venue_id = 'V1' AND status = 'scheduled'"
+        "SELECT id FROM shift WHERE venue_id = 'V1' AND status IN ('scheduled', 'open')"
         " AND (starts_at AT TIME ZONE 'America/New_York')::date = '2026-11-09' ORDER BY starts_at, id")]
     assert [r["shift_id"] for r in data["shifts"]] == ids
-    assert data["summary"]["violations"] == independent_violations(conn, ids)
+    held = [i for (i,) in conn.execute("SELECT id FROM shift WHERE id = ANY(%s) AND staff_id IS NOT NULL", (ids,))]
+    assert next(r for r in data["shifts"] if r["shift_id"] == "L-1109-P001")["result"] == "no one on the post"
+    assert data["summary"]["violations"] == independent_violations(conn, held)
     cases = conn.execute(
         "SELECT count(*) FROM cover_case c JOIN shift s ON s.id = c.shift_id WHERE s.venue_id = 'V1'"
         " AND (s.starts_at AT TIME ZONE 'America/New_York')::date = '2026-11-09'").fetchone()[0]

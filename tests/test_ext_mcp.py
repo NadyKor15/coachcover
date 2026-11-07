@@ -7,6 +7,7 @@ the autonomy policy (N1). Public mode (no key) has an hourly limit per address; 
 from __future__ import annotations
 
 import json
+from datetime import timedelta
 
 import anyio
 import httpx
@@ -22,7 +23,8 @@ from tests.test_ext_a2a_http import Server, free_port
 
 pytestmark = pytest.mark.db
 
-TOOLS = {"who_is_allowed", "shifts_on_day", "fragile_shifts", "get_case", "request_cover", "approve_plan_b"}
+TOOLS = {"who_is_allowed", "shifts_on_day", "fragile_shifts", "get_case", "request_cover", "approve_plan_b",
+         "answer_for_family"}
 
 
 @pytest.fixture
@@ -90,7 +92,8 @@ def test_smoke_every_tool_and_the_refused_approval(server):
     assert proposal["status"] == "proposed" and proposal["sent"] is False and proposal["booked"] is False
     assert refused.isError is True
     text = refused.content[0].text
-    assert "Refused by the autonomy policy (N1)" in text and "plan_b = 'propose'" in text
+    assert "Refused by the autonomy policy:" in text and "plan_b = 'propose'" in text
+    assert "N1" not in text  # the policy's code stays in the log and the tool description, not in the text for people
     # nothing moved: no offer sent, the plan still waits for the manager, the proposal is only a proposal
     assert conn.execute("SELECT count(*) FROM offer").fetchone()[0] == offers_before
     assert conn.execute("SELECT status FROM plan_b WHERE id = %s", (plan_id,)).fetchone()[0] == "proposed"
@@ -114,3 +117,36 @@ def test_public_limit_and_keys(server):
         assert {t["name"] for t in keyed.json()["result"]["tools"]} >= TOOLS
         monkeypatch.setenv("COACHCOVER_POLICY_ID", "some-real-school")
         assert http.post(f"{srv.url}/mcp", json=body, headers=headers).status_code == 401
+
+
+def test_an_assistant_reads_the_familys_answer_but_cannot_give_it(new_database, monkeypatch):
+    """A private lesson (preschool story): Chloe said yes to Lily's 17:00 lesson and the family is asked. The
+    assistant sees the question and its status in get_case; answering for the family is refused and changes nothing."""
+    from coachcover.demo import CALLOUT_DELAY, VOICES
+    from coachcover.models import DbLedger, ModelClient
+    from coachcover.pipeline import Pipeline
+    from coachcover.seed import HERO_PRIVATE, NOW, POLICY_ID
+
+    conn = new_database()
+    reset_school(conn)
+    p = Pipeline(conn, ModelClient(DbLedger(conn), mode="replay"), POLICY_ID)
+    voice = VOICES["preschool"]
+    p.callout("S05", now=NOW + CALLOUT_DELAY["preschool"], audio=voice.read_bytes(), filename=voice.name)
+    case = conn.execute("SELECT id FROM cover_case WHERE shift_id = %s", (HERO_PRIVATE,)).fetchone()[0]
+    offer = conn.execute("SELECT id FROM offer WHERE case_id = %s AND staff_id = 'S18'", (case,)).fetchone()[0]
+    p.respond(offer, True, NOW + timedelta(minutes=2))
+    dsn = make_conninfo(TEST_DSN, dbname=conn.execute("SELECT current_database()").fetchone()[0])
+    monkeypatch.setenv("DATABASE_URL", dsn)
+    monkeypatch.delenv("COACHCOVER_MCP_KEY", raising=False)
+    monkeypatch.setenv("COACHCOVER_MCP_CALLS_PER_HOUR", "1000")
+    with Server(dsn, free_port()) as srv:
+        _, (summary, refused) = call_all(f"{srv.url}/mcp", [
+            ("get_case", {"case_id": str(case)}),
+            ("answer_for_family", {"question_id": "Q-1", "answer": "yes"}),
+        ])
+    [question] = payload(summary)["family_questions"]
+    assert (question["question"], question["about"], question["coach"], question["status"]) == (
+        "Q-1", "another coach", "Chloe Hayes", "asked")
+    assert refused.isError is True and "only the family answers Q-1" in refused.content[0].text
+    assert conn.execute("SELECT status FROM client_ask").fetchone() == ("asked",)
+    assert conn.execute("SELECT staff_id, status FROM shift WHERE id = %s", (HERO_PRIVATE,)).fetchone() == (None, "open")

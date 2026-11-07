@@ -28,7 +28,7 @@
     "agent_url": "http://agent-north:8000/a2a/N1",
     "approved": {
       "by": "Omar Haddad",
-      "at": "2026-11-09T10:15:30.134Z",
+      "at": "2026-11-09T10:15:30.131Z",
       "at_label": "10:15:30 UTC"
     }
   },
@@ -45,8 +45,8 @@
   "closed_at": null,
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "747484d9-2a9e-418f-91c0-9ca0505ecfcf",
-    "task_id": "fb2ce182-5cac-4d5c-835b-46aa655e6a9b",
+    "context_id": "809ab4c3-7d5a-4591-b04c-46b4ffb8c795",
+    "task_id": "e507d330-fa00-4b5d-b3ab-a4cb97920f67",
     "task_state": "TASK_STATE_INPUT_REQUIRED"
   },
   "steps": [
@@ -227,7 +227,7 @@
     },
     {
       "seq": 8,
-      "at": "2026-11-09T10:15:30.134Z",
+      "at": "2026-11-09T10:15:30.131Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "N1",
       "venue": "Northside",

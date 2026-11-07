@@ -1,44 +1,52 @@
 {
   "case_id": "C-1109-02",
-  "status": "open",
-  "status_label": "Open",
-  "covered_time_label": null,
-  "covered_by": null,
+  "status": "covered",
+  "status_label": "Covered",
+  "covered_time_label": "08:46",
+  "covered_by": "Chloe Hayes",
   "covered_via": null,
-  "shift_label": "10:30 Teaching pool + Learn-to-Swim Level 1",
+  "shift_label": "17:00 Teaching pool · Private lesson · Lily, age 6, Level 2",
   "venue": {
     "id": "V1",
     "name": "Riverside Aquatic Center"
   },
   "date_label": "Mon, Nov 9",
   "user_label": "Natalie Brooks · Manager",
-  "opened_at": "2026-11-09T13:45:00Z",
-  "closed_at": null,
+  "opened_at": "2026-11-09T13:40:10Z",
+  "closed_at": "2026-11-09T13:46:00Z",
   "steps": [
     {
-      "kind": "ratio",
-      "at": "2026-11-09T13:45:00Z",
-      "time_label": "13:45:00 UTC",
-      "title": "Norm broken: Level 1, Mon 10:30 — now 6 kids, ratio 1:4",
-      "summary": "2 added by front desk; instructors needed: 1 → 2"
+      "kind": "callout",
+      "at": "2026-11-09T13:40:10Z",
+      "time_label": "08:40:10 ET",
+      "title": "Voice call-out",
+      "staff": "Marina Petrova · Instructor",
+      "language": "Russian",
+      "audio_url": "/media/callouts/C-1109-02.ogg",
+      "transcript_original": "Привет, это Марина. У меня температура 38, к 9:30 я не выйду. У меня в 9:30 занятие с малышами. Простите.",
+      "transcript_en": "Hi, it's Marina. I have a fever of 38, I can't make it by nine thirty. I have the nine thirty class with the little ones. Sorry.",
+      "model_tag": "whisper-large-v3-turbo · prepared demo answer"
     },
     {
       "kind": "shift",
-      "at": "2026-11-09T13:45:00Z",
-      "time_label": "13:45:00 UTC",
+      "at": "2026-11-09T13:40:10Z",
+      "time_label": "08:40:10 ET",
       "title": "Shift identified",
-      "shift_id": "L-1109-G003-I2",
-      "summary": "10:30–11:00 · Needs: Instructor · Program LTS-1",
-      "model_tag": null
+      "shift_id": "L-1109-P001",
+      "summary": "17:00–17:30 · Needs: Instructor · Learn-to-Swim Level 2",
+      "model_tag": "muse-glimmer-30b"
     },
     {
       "kind": "allowed",
-      "at": "2026-11-09T13:45:00Z",
-      "time_label": "13:45:00 UTC",
+      "at": "2026-11-09T13:40:10Z",
+      "time_label": "08:40:10 ET",
       "title": "Who is allowed",
       "total": 40,
-      "allowed": 6,
-      "blocked": null,
+      "allowed": 10,
+      "blocked": {
+        "staff": "Javier Morales",
+        "label": "free · BLOCKED: CPR/AED certificate expired Nov 8 · private lesson"
+      },
       "reasons": [
         {
           "code": "ROLE_MISSING",
@@ -48,8 +56,8 @@
         },
         {
           "code": "LEVEL_MISSING",
-          "label": "Not cleared for LTS-1",
-          "count": 11,
+          "label": "Not cleared for Learn-to-Swim Level 2",
+          "count": 6,
           "tone": "risk"
         },
         {
@@ -59,8 +67,14 @@
           "tone": "risk"
         },
         {
-          "code": "CALLED_OUT",
-          "label": "Called out today",
+          "code": "OVERLAPS_COMMITMENT",
+          "label": "On deck at 14:00",
+          "count": 2,
+          "tone": "risk"
+        },
+        {
+          "code": "IS_THE_ABSENT_PERSON",
+          "label": "Called out",
           "count": 1,
           "tone": "risk"
         },
@@ -89,12 +103,6 @@
           "tone": "fragile"
         },
         {
-          "code": "OVERLAPS_COMMITMENT",
-          "label": "Teaching at 10:30",
-          "count": 1,
-          "tone": "risk"
-        },
-        {
           "code": "CERT_REVOKED",
           "label": "Valid until Jul 2027 — REVOKED by issuer on Oct 12 (simulated registry)",
           "count": 1,
@@ -103,8 +111,8 @@
       ],
       "staff": [
         {
-          "id": "S08",
-          "name": "Grace Sullivan",
+          "id": "S18",
+          "name": "Chloe Hayes",
           "allowed": true,
           "reason_label": null
         },
@@ -115,8 +123,26 @@
           "reason_label": null
         },
         {
+          "id": "S25",
+          "name": "Sofia Reyes",
+          "allowed": true,
+          "reason_label": null
+        },
+        {
           "id": "S02",
           "name": "Sofía García",
+          "allowed": true,
+          "reason_label": null
+        },
+        {
+          "id": "S03",
+          "name": "Valentina Castillo",
+          "allowed": true,
+          "reason_label": null
+        },
+        {
+          "id": "S01",
+          "name": "Emma Carter",
           "allowed": true,
           "reason_label": null
         },
@@ -127,22 +153,22 @@
           "reason_label": null
         },
         {
-          "id": "S19",
-          "name": "Megan Coleman",
-          "allowed": true,
-          "reason_label": null
-        },
-        {
           "id": "S17",
           "name": "Zoe Grant",
           "allowed": true,
           "reason_label": null
         },
         {
-          "id": "S05",
-          "name": "Marina Petrova",
-          "allowed": false,
-          "reason_label": "Called out today"
+          "id": "S19",
+          "name": "Megan Coleman",
+          "allowed": true,
+          "reason_label": null
+        },
+        {
+          "id": "S11",
+          "name": "Camila Herrera",
+          "allowed": true,
+          "reason_label": null
         },
         {
           "id": "S35",
@@ -151,22 +177,22 @@
           "reason_label": "Role: not an instructor"
         },
         {
+          "id": "S05",
+          "name": "Marina Petrova",
+          "allowed": false,
+          "reason_label": "Called out"
+        },
+        {
           "id": "S07",
           "name": "Javier Morales",
           "allowed": false,
           "reason_label": "Certificate expired Nov 8"
         },
         {
-          "id": "S18",
-          "name": "Chloe Hayes",
+          "id": "S08",
+          "name": "Grace Sullivan",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
-        },
-        {
-          "id": "S25",
-          "name": "Sofia Reyes",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "On deck at 14:00"
         },
         {
           "id": "S13",
@@ -199,26 +225,20 @@
           "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S10",
-          "name": "Dmitri Volkov",
-          "allowed": false,
-          "reason_label": "Certificate expired Nov 2"
-        },
-        {
           "id": "S27",
           "name": "Anna Kim",
           "allowed": false,
           "reason_label": "Certificate expired Nov 5"
         },
         {
-          "id": "S28",
-          "name": "Ava Mitchell",
+          "id": "S10",
+          "name": "Dmitri Volkov",
           "allowed": false,
-          "reason_label": "Role: not an instructor"
+          "reason_label": "Certificate expired Nov 2"
         },
         {
-          "id": "S32",
-          "name": "Isabela Cruz",
+          "id": "S28",
+          "name": "Ava Mitchell",
           "allowed": false,
           "reason_label": "Role: not an instructor"
         },
@@ -229,10 +249,10 @@
           "reason_label": "Role: not an instructor"
         },
         {
-          "id": "S03",
-          "name": "Valentina Castillo",
+          "id": "S32",
+          "name": "Isabela Cruz",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Role: not an instructor"
         },
         {
           "id": "S14",
@@ -241,28 +261,22 @@
           "reason_label": "Valid until Jul 2027 — REVOKED by issuer on Oct 12 (simulated registry)"
         },
         {
-          "id": "S09",
-          "name": "Lucas Reed",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
-        },
-        {
           "id": "S26",
           "name": "Leo Martins",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
+        },
+        {
+          "id": "S09",
+          "name": "Lucas Reed",
+          "allowed": false,
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S39",
           "name": "Caleb Ward",
           "allowed": false,
           "reason_label": "Role: not an instructor"
-        },
-        {
-          "id": "S01",
-          "name": "Emma Carter",
-          "allowed": false,
-          "reason_label": "Teaching at 10:30"
         },
         {
           "id": "S36",
@@ -286,43 +300,37 @@
           "id": "S16",
           "name": "Andrés Delgado",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S04",
           "name": "Daniel Shaw",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S24",
           "name": "Gabriela Vargas",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S20",
           "name": "Mateo Romero",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "Not cleared for Learn-to-Swim Level 2"
         },
         {
           "id": "S22",
           "name": "Ethan Price",
           "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
+          "reason_label": "On deck at 14:00"
         },
         {
           "id": "S29",
           "name": "Lucía Ramos",
           "allowed": false,
           "reason_label": "Role: not an instructor"
-        },
-        {
-          "id": "S11",
-          "name": "Camila Herrera",
-          "allowed": false,
-          "reason_label": "Not cleared for LTS-1"
         },
         {
           "id": "S06",
@@ -346,55 +354,133 @@
     },
     {
       "kind": "offers",
-      "at": "2026-11-09T13:45:00Z",
-      "time_label": "13:45:00 UTC",
+      "at": "2026-11-09T13:40:10Z",
+      "time_label": "08:40:10 ET",
       "title": "Offers in order",
       "offers": [
         {
           "id": "O-4",
-          "time_label": "08:45",
-          "staff": "Grace Sullivan",
-          "result": "pending",
-          "result_label": "asked, waiting",
-          "why_first": "Grace first: 5.25 h this week, Level 1 (beginner), same pool"
+          "time_label": "08:42",
+          "staff": "Chloe Hayes",
+          "result": "accepted",
+          "result_label": "said yes, the family agreed",
+          "why_first": "Chloe first: 5.75 h this week, Level 2, 21.7 km away"
         },
         {
           "id": "O-5",
-          "time_label": "08:45",
+          "time_label": "08:42",
           "staff": "Diego Navarro",
-          "result": "pending",
-          "result_label": "asked, waiting",
-          "why_first": "Diego second: 5.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
+          "result": "no_reply",
+          "result_label": "no reply, Chloe said yes first",
+          "why_first": "Diego second: 5.75 h this week, Level 2, 21.7 km away"
         },
         {
           "id": "O-6",
-          "time_label": "08:45",
-          "staff": "Sofía García",
-          "result": "pending",
-          "result_label": "asked, waiting",
-          "why_first": "Sofía third: 6 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 3 of 4 families"
+          "time_label": "08:42",
+          "staff": "Sofia Reyes",
+          "result": "no_reply",
+          "result_label": "no reply, Chloe said yes first",
+          "why_first": "Sofia third: 6 h this week, Level 2, same pool"
         }
       ]
+    },
+    {
+      "kind": "family",
+      "at": "2026-11-09T13:42:00Z",
+      "time_label": "08:42:00 ET",
+      "title": "Asked the parent",
+      "summary": "“Hi! Marina can't make it today, so Chloe can teach Lily's private lesson at 17:00 instead. Same time, same place at Riverside Aquatic Center. Is that OK? Reply YES or NO.” · Chloe is held for this time · answer by 09:12 · written by the text model"
+    },
+    {
+      "kind": "family",
+      "at": "2026-11-09T13:46:00Z",
+      "time_label": "08:46:00 ET",
+      "title": "Parent said yes",
+      "summary": "Yes to Chloe instead"
+    },
+    {
+      "kind": "covered",
+      "at": "2026-11-09T13:46:00Z",
+      "time_label": "08:46:00 ET",
+      "title": "Schedule covered",
+      "summary": "17:00 covered by Chloe Hayes · 0 lessons cancelled"
     }
   ],
   "proof": {
     "plan_id": null,
-    "plan_hash": "8d5ad2b871da0e99ecb1bb42455628f8832a10d93dde58ef38d9575648bb4f5a",
+    "plan_hash": "73fa2907ff572011592543aee789ad49865b68b7b5dcdffa818c408f34b63834",
     "policy_label": "cover = auto · plan B = propose"
   },
-  "model_calls": [],
-  "model_cost_usd": 0,
-  "model_cost_label": "0.0000¢",
+  "model_calls": [
+    {
+      "at": "2026-11-09T13:40:10Z",
+      "purpose": "transcribe",
+      "model": "whisper-large-v3-turbo",
+      "model_label": "whisper-large-v3-turbo",
+      "ms": 1050,
+      "input_tokens": null,
+      "output_tokens": null,
+      "cost_usd": 0.000103,
+      "source": "recorded answer tests/fixtures/models/synthetic-transcribe-ru-0930.json (synthetic)"
+    },
+    {
+      "at": "2026-11-09T13:40:10Z",
+      "purpose": "screen_message",
+      "model": "nemotron-3.5-content-safety",
+      "model_label": "nemotron-safety",
+      "ms": 600,
+      "input_tokens": 480,
+      "output_tokens": 5,
+      "cost_usd": 2.5e-05,
+      "source": "recorded answer tests/fixtures/models/synthetic-filter-voice-ru-0930.json (synthetic)"
+    },
+    {
+      "at": "2026-11-09T13:40:10Z",
+      "purpose": "extract_callout",
+      "model": "muse-glimmer-30b",
+      "model_label": "muse-glimmer-30b",
+      "ms": 1400,
+      "input_tokens": 445,
+      "output_tokens": 60,
+      "cost_usd": 0.000171,
+      "source": "recorded answer tests/fixtures/models/synthetic-extract-ru-0930.json (synthetic)"
+    },
+    {
+      "at": "2026-11-09T13:40:10Z",
+      "purpose": "translate",
+      "model": "muse-glimmer-30b",
+      "model_label": "muse-glimmer-30b",
+      "ms": 900,
+      "input_tokens": 140,
+      "output_tokens": 36,
+      "cost_usd": 7.1e-05,
+      "source": "recorded answer tests/fixtures/models/synthetic-translate-ru-0930.json (synthetic)"
+    },
+    {
+      "at": "2026-11-09T13:42:00Z",
+      "purpose": "family_question",
+      "model": "muse-glimmer-30b",
+      "model_label": "muse-glimmer-30b",
+      "ms": 1100,
+      "input_tokens": 240,
+      "output_tokens": 52,
+      "cost_usd": 0.000112,
+      "source": "recorded answer tests/fixtures/models/synthetic-family-question-lily-cover-en.json (synthetic)"
+    }
+  ],
+  "model_cost_usd": 0.000482,
+  "model_cost_label": "0.048¢",
   "risk": {
-    "kids": 6,
-    "refunds_usd": 180.0,
+    "kids": null,
+    "private": true,
+    "refunds_usd": null,
     "overtime_usd": null,
-    "total_usd": 180.0,
+    "total_usd": 50.0,
     "lines": [
       {
-        "kind": "refunds",
-        "usd": 180.0,
-        "label": "Refunds: 6 participants × $30"
+        "kind": "private",
+        "usd": 50.0,
+        "label": "Private lesson credit: 1 × $50"
       }
     ],
     "assumptions": {
@@ -439,6 +525,13 @@
         "assumption": true,
         "source": null,
         "note": "Conservative placeholder for one hour of a manager's time."
+      },
+      "private_lesson_price": {
+        "value": 50.0,
+        "unit": "USD per private lesson (30 min)",
+        "assumption": false,
+        "source": "from the founder's coaching practice",
+        "note": "Price of one private lesson: one child, one coach, 30 minutes. A credit for a private lesson that does not run is worth this much."
       }
     }
   }

@@ -22,7 +22,7 @@ from datetime import UTC, datetime
 from typing import Any, Iterable, Mapping, Sequence
 from zoneinfo import ZoneInfo
 
-from coachcover.model import MONEY_KEYS, Shift
+from coachcover.model import MONEY_KEYS, OPTIONAL_MONEY_KEYS, Shift
 from coachcover.models import call_cost, load_prices
 
 CURRENCY = "USD"
@@ -53,6 +53,7 @@ class MoneyParams:
     overtime_multiplier: Price
     inspection_penalty: Price  # per uncovered morning
     manager_hour: Price
+    private_lesson_price: Price | None = None  # one private lesson (one child, one coach); None: the group price
 
     def __post_init__(self) -> None:
         if self.refund_share.value > 1:
@@ -64,9 +65,16 @@ class MoneyParams:
     def overtime_hour_usd(self) -> float:
         return round(self.hourly_wage.value * self.overtime_multiplier.value, 2)
 
+    @property
+    def private_price(self) -> Price:
+        return self.private_lesson_price or self.lesson_price
+
     def as_dict(self) -> dict:
-        return {name: getattr(self, name).as_dict() for name in
-                ("lesson_price", "refund_share", "hourly_wage", "overtime_multiplier", "inspection_penalty", "manager_hour")}
+        names = ("lesson_price", "refund_share", "hourly_wage", "overtime_multiplier", "inspection_penalty", "manager_hour")
+        out = {name: getattr(self, name).as_dict() for name in names}
+        if self.private_lesson_price is not None:
+            out["private_lesson_price"] = self.private_lesson_price.as_dict()
+        return out
 
 
 def _price(entry: Mapping[str, Any]) -> Price:
@@ -79,7 +87,8 @@ def money_params(prices: Mapping[str, Mapping[str, Any]], overtime_cost_per_hour
     replace a price's value (a replaced value keeps its unit and is marked as the school's own number)."""
     if not prices:
         raise ValueError("the preset has no money block")
-    params = MoneyParams(**{name: _price(prices[name]) for name in MONEY_KEYS})
+    params = MoneyParams(**{name: _price(prices[name]) for name in MONEY_KEYS},
+                         **{name: _price(prices[name]) for name in OPTIONAL_MONEY_KEYS if name in prices})
     if overtime_cost_per_hour is not None:
         multiplier = params.overtime_multiplier.value
         params = replace(params, hourly_wage=Price(
@@ -126,7 +135,16 @@ def uncovered_cost(shifts: Sequence[Shift], params: MoneyParams) -> dict:
     if len(set(ids)) != len(ids):
         raise ValueError("the same shift is listed twice")
     for shift in sorted(shifts, key=lambda s: (s.start.astimezone(UTC), s.id)):
-        if shift.groups:
+        if shift.groups and all(g.kind == "private" for g in shift.groups):
+            # a private lesson that does not run: the family gets that lesson back (a credit), at its own price
+            price = params.private_price.value
+            amount = len(shift.groups) * price * params.refund_share.value
+            lines.append({
+                "kind": "private", "shift_id": shift.id, "participants": len(shift.groups), "usd": round(amount, 2),
+                "label": f"Private lesson credit: {len(shift.groups)} × {usd(price)}"
+                         + ("" if params.refund_share.value == 1 else f" × {params.refund_share.value:g}"),
+            })
+        elif shift.groups:
             participants = sum(g.size for g in shift.groups)
             amount = participants * params.lesson_price.value * params.refund_share.value
             lines.append({
@@ -239,14 +257,19 @@ def case_cost(conn, case_id: int, prices: Mapping | None = None) -> dict:
             "shared_between_cases": shared_between}
 
 
-def _today_cases(conn, policy_id: str, now: datetime, venue_id: str | None = None) -> list[tuple[int, str]]:
+def _today_cases(conn, policy_id: str, now: datetime, venue_id: str | None = None,
+                 private: bool = False) -> list[tuple[int, str]]:
+    """Cases opened today up to `now`: private lessons (`private`) or everything else. A private lesson has its own
+    price and its own card; the morning card is the group lessons and the shifts."""
     tz = ZoneInfo(conn.execute("SELECT tz FROM venue WHERE policy_id = %s ORDER BY id LIMIT 1", (policy_id,)).fetchone()[0])
     day_from = now.astimezone(tz).replace(hour=0, minute=0, second=0, microsecond=0)
     return conn.execute(
         "SELECT c.id, c.shift_id FROM cover_case c JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id"
         " WHERE v.policy_id = %s AND (%s::text IS NULL OR v.id = %s) AND c.opened_at >= %s AND c.opened_at <= %s"
+        " AND EXISTS (SELECT 1 FROM shift_group sg JOIN lesson_group g ON g.id = sg.group_id"
+        "  WHERE sg.shift_id = s.id AND g.kind = 'private') = %s"
         " ORDER BY c.opened_at, c.id",
-        (policy_id, venue_id, venue_id, day_from, now),
+        (policy_id, venue_id, venue_id, day_from, now, private),
     ).fetchall()
 
 
@@ -264,6 +287,12 @@ def summary_lines(uncovered: dict, params: MoneyParams) -> list[dict]:
         hours = round(sum(line["hours"] for line in overtime), 2)
         out.append({"kind": "overtime", "usd": round(sum(line["usd"] for line in overtime), 2),
                     "label": f"Overtime: {hours:g} h × {usd(params.hourly_wage.value)} × {params.overtime_multiplier.value:g}"})
+    private = [line for line in uncovered["lines"] if line["kind"] == "private"]
+    if private:
+        n = sum(line["participants"] for line in private)
+        share = "" if params.refund_share.value == 1 else f" × {params.refund_share.value:g}"
+        out.append({"kind": "private", "usd": round(sum(line["usd"] for line in private), 2),
+                    "label": f"Private lesson credit: {n} × {usd(params.private_price.value)}{share}"})
     out.extend({"kind": line["kind"], "usd": line["usd"], "label": line["label"]}
                for line in uncovered["lines"] if line["kind"] == "inspection")
     return out
@@ -304,9 +333,10 @@ def nobody_accepted_card(uncovered: dict, params: MoneyParams, *, case_bill: dic
 
 def today_money(conn, policy_id: str, now: datetime, params: MoneyParams | None = None, *,
                 manager_minutes: float | None = None, manager_minutes_source: str | None = None,
-                venue_id: str | None = None) -> dict:
+                venue_id: str | None = None, private: bool = False) -> dict:
     """`money` for GET /api/today plus the "If nobody had accepted" card, for the cases opened today up to `now`
-    (at `venue_id` when given: the morning screen is one venue's).
+    (at `venue_id` when given: the morning screen is one venue's; `private`: the day's private lessons instead of the
+    morning, when the screen shows one).
 
     The cost is of today's call-out shifts as if nobody had taken them; the cover cost is the first case of the
     day (the one the screen shows). Without `manager_minutes` the card has no manager line.
@@ -316,7 +346,7 @@ def today_money(conn, policy_id: str, now: datetime, params: MoneyParams | None 
     if params is None:
         policy = load_policy(conn, policy_id)
         params = money_params(policy.preset.money, policy.overtime_cost_per_hour)
-    cases = _today_cases(conn, policy_id, now, venue_id)
+    cases = _today_cases(conn, policy_id, now, venue_id, private)
     shifts = [load_shift(conn, sid) for sid in dict.fromkeys(sid for _, sid in cases)]
     uncovered = uncovered_cost(shifts, params)
     bill = case_cost(conn, cases[0][0]) if cases else None

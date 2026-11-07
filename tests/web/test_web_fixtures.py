@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / "web"
@@ -29,8 +31,12 @@ NESTED = {
     "model_log": {"label", "calls", "usd"},
 }
 EXTENSIONS = {"today": {"flagged", "night_check", "ratio_alert", "judge"}, "callout": {"asr_label"},
-              "outcome": {"covered_via"}, "money": {"source", "case_cost_label"},
-              "offer": {"state", "staff", "needs_label", "why_first"}}
+              "outcome": {"covered_via", "private_line", "family_wait_until"}, "money": {"source", "case_cost_label"},
+              "shift": {"private"}, "offer": {"state", "staff", "needs_label", "why_first", "private"}}
+# the family's page of a private lesson (GET /api/client/{Q-n})
+CLIENT_KEYS = {"ask_id", "kind", "state", "signed", "child", "lesson", "venue", "question", "coach", "instead_of", "day_label",
+               "time_label", "answer_in_s", "answer_by_label", "thread", "current", "outcome", "manager"}
+VENUE_TZ = ZoneInfo("America/New_York")  # the training school; the case page reads in the venue's time ("08:40:10 ET")
 RATIO_KEYS = {"case_id", "status", "tone", "label", "action_label"}
 OFFER_KEYS = {"offer_id", "shift_day", "shift_start", "shift_end", "venue", "shift_detail", "why", "expires_in_s", "window_s", "manager"}
 CASE_KEYS = {"case_id", "status", "status_label", "covered_time_label", "shift_label", "venue", "date_label", "user_label",
@@ -55,10 +61,13 @@ def hours(text: str | None) -> str | None:
 
 def test_fixture_set_is_complete():
     assert today_files() == ["today.json", "today.network_assigned.json", "today.network_open.json",
-                             "today.nightly_check.json", "today.nobody_accepts.json", "today.ratio_covered.json",
-                             "today.ratio_open.json"]
+                             "today.nightly_check.json", "today.nobody_accepts.json", "today.private_declined.json",
+                             "today.private_lesson.json", "today.ratio_covered.json", "today.ratio_open.json"]
     m = load("mocks.json")
-    assert set(m["judge_run"]) == {"dangerous_morning", "nobody_accepts", "nightly_check"}
+    assert set(m["judge_run"]) == {"dangerous_morning", "nobody_accepts", "nightly_check", "private_lesson", "private_declined"}
+    clients = sorted(p.name for p in (FX / "clients").glob("*.json"))
+    assert clients == ["Q-1.covered.json", "Q-1.credit.json", "Q-1.json", "Q-1.moved.json", "Q-1.no.json", "Q-2.credit.json",
+                       "Q-2.json", "Q-2.moved.json", "mocks.json"]
     for file in [*m["today_by_scenario"].values(), *m["today_by_mock"].values()]:
         assert (FX / file).is_file(), file
     t = load("today.json")
@@ -79,7 +88,9 @@ def test_today_fields_follow_the_contract():
             assert all({"code", "label", "count", "tone"} == set(r) for r in d["eligibility"]["reasons"]), name
             assert all({"id", "name", "eligible", "highlight", "reason_label"} == set(s) for s in d["eligibility"]["staff"]), name
         assert all({"time_label", "kind"} <= set(t) <= {"time_label", "kind", "label"} for t in d["timeline"]), name
-        assert all({"id", "time_label", "staff", "result", "why_first"} == set(o) for o in d["offers"]), name
+        # result_label: the offer's result in words (the same words as its timeline label, or on its own when the
+        # family of a private lesson decides)
+        assert all({"id", "time_label", "staff", "result", "why_first", "result_label"} == set(o) for o in d["offers"]), name
         if d.get("ratio_alert"):
             assert RATIO_KEYS <= set(d["ratio_alert"]), name
 
@@ -166,8 +177,9 @@ def test_case_follows_the_morning():
     stamps = [s["at"] for s in d["steps"]]
     assert stamps == sorted(stamps)
     for s in d["steps"]:
-        m = UTC_STAMP.match(s["at"])
-        assert m and s["time_label"] == m.group(1) + " UTC", s
+        assert UTC_STAMP.match(s["at"]), s  # machine fields stay in UTC; the label is the venue's time
+        local = datetime.fromisoformat(s["at"].replace("Z", "+00:00")).astimezone(VENUE_TZ)
+        assert s["time_label"] == f"{local:%H:%M:%S} ET", s
     steps = {s["kind"]: s for s in d["steps"]}
     assert (steps["callout"]["transcript_original"], steps["callout"]["transcript_en"]) == \
         (t["callout"]["transcript_original"], t["callout"]["transcript_en"])
@@ -201,7 +213,7 @@ def test_mocks_match_the_fixtures():
 
 
 def test_pages_declare_charset_first():
-    for page in ("index.html", "offer.html", "case.html", "week.html", "network.html"):
+    for page in ("index.html", "offer.html", "case.html", "week.html", "network.html", "client.html"):
         head = (WEB / page).read_text(encoding="utf-8").split("<head>", 1)[1].lstrip()
         assert head.startswith('<meta charset="UTF-8">'), page
 
@@ -287,3 +299,36 @@ def test_standby_answers():
     assert "already proposed" in sb["repeat"]["error"]
     assert "not cleared" in sb["holder"]["error"] and "not cleared" in sb["not_cleared"]["error"]
     assert sb["unknown"]["error"]
+
+
+def test_no_short_codes_of_programs_or_levels_on_any_screen():
+    """Programs and levels by name ("Learn-to-Swim Level 2"), never the preset's short code ("LTS-2")."""
+    hits = [f"{p.relative_to(FX)}: {m.group(0)}" for p in sorted(FX.rglob("*.json"))
+            for m in re.finditer(r".{0,30}\bLTS\b.{0,20}", p.read_text(encoding="utf-8"))]
+    assert hits == []
+    assert re.search(r"\bLTS\b", "Not cleared for LTS-2")  # the check can see a code
+
+
+def test_the_familys_page_follows_its_answers():
+    """The family's page: the open question, then each real answer of the API; the parent is never named and no id
+    shows in the texts."""
+    asked, covered, no, second = (load(f"clients/{n}.json") for n in ("Q-1", "Q-1.covered", "Q-1.no", "Q-2"))
+    for name in ("Q-1", "Q-1.covered", "Q-1.no", "Q-1.moved", "Q-1.credit", "Q-2", "Q-2.moved", "Q-2.credit"):
+        d = load(f"clients/{name}.json")
+        assert set(d) == CLIENT_KEYS, name
+        assert d["signed"] == f"Parent of {d['child']}", name
+        texts = [d["question"], *(m["text"] for m in d["thread"]), (d["outcome"] or {}).get("line") or ""]
+        assert not any(re.search(r"\b(Q|O|S)-?\d", t) for t in texts), (name, texts)
+    assert (asked["state"], asked["kind"], asked["current"]) == ("asked", "cover", "Q-1") and asked["answer_in_s"] > 0
+    assert [m["from"] for m in asked["thread"]] == ["school"]
+    assert covered["state"] == "yes" and covered["outcome"]["kind"] == "covered" and covered["current"] is None
+    assert no["state"] == "no" and no["current"] == "Q-2" and second["kind"] == "reschedule" and second["state"] == "asked"
+    assert load("clients/Q-2.moved.json")["outcome"]["kind"] == "moved"
+    # once the case is decided the headline says what happened; while a question is open it asks
+    assert asked["question"].endswith("?") and second["question"].endswith("?")
+    for name in ("Q-1.covered", "Q-1.moved", "Q-1.credit", "Q-2.moved", "Q-2.credit"):
+        assert not load(f"clients/{name}.json")["question"].endswith("?"), name
+    assert load("clients/Q-2.moved.json")["question"] == "Lily's lesson is moved to Wed, Nov 11"
+    assert load("clients/Q-1.covered.json")["question"] == "Chloe will teach Lily today"
+    assert load("clients/Q-2.credit.json")["outcome"]["line"] == "A credit for one lesson ($50)"
+    assert load("clients/mocks.json")["closed"]["body"]["reason"].startswith("Thanks — this question was already closed")

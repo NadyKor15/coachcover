@@ -143,3 +143,7 @@ h1{margin:39.5px 0 0 14.9px;font-weight:760;font-size:49.3px;line-height:60px;le
 .load-err{position:absolute;left:310px;top:84px;z-index:5;max-width:900px;padding:10px 16px;border-radius:10px;background:#fbe9e6;border:1px solid #e7b9b1;color:#8f2a20;font-size:18px}
 .load-err[hidden]{display:none}
 body[data-state="loading"] .main{visibility:hidden}
+/* a private lesson (cell flag "private"): a small 1:1 tag in the corner, the number and level stay centred */
+.cell{position:relative}
+.cell .one{position:absolute;top:5px;right:6px;padding:2px 5px 3px;border-radius:6px;background:var(--card);border:1px solid var(--st-safe-line);
+  color:var(--teal);font-size:13px;font-weight:750;line-height:1;letter-spacing:.2px}

@@ -6,6 +6,7 @@ Static files, no build step. Three pages:
 |---|---|---|
 | `index.html` | C: manager's morning, "Who is allowed on deck at 09:30" (1920 × 1080) | `GET /api/today` |
 | `offer.html?id=O-1` | P2: shift offer on the coach's phone (430 wide) | `GET /api/offers/{id}` |
+| `client.html?id=Q-1` | the family's page of a private lesson: another coach or a new time, Yes / No (430 wide; `&mock=client_declined`, `client_credit`, `client_closed` in fixture mode) | `GET /api/client/{id}`, `POST /api/client/{id}/respond` |
 | `case.html?id=C-1109-01` | case page (proof record, variant B), 1920 wide, height follows the data | `GET /api/cases/{id}` |
 | `week.html[?venue=V1&start=2026-11-08]` | Week ahead (W_B): backups per shift, fragile shifts, plan ahead | `GET /api/week`, `GET /api/today` |
 | `network.html?loan=LN-1109-01` | Network (N_B): two venue agents over A2A, one approval per manager; without `loan` it offers to ask the network for today's open shift | `GET /api/network/loans/{ref}`, `GET /api/network`, `GET /api/today` |

@@ -74,6 +74,10 @@ class JudgeBody(BaseModel):
     scenario: str = "dangerous_morning"
 
 
+class FamilyAnswerBody(BaseModel):
+    accept: bool
+
+
 class VolunteerBody(BaseModel):
     staff_id: str
     text: str = Field(min_length=1, max_length=2000)
@@ -188,10 +192,22 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
         if answer not in ("accept", "decline"):
             raise HTTPException(404, "use /accept or /decline")
         state = pipeline(conn).respond(_number(offer_ref, "O-"), answer == "accept", clock_now(conn))
-        if answer == "accept" and state["status"] != "accepted":
+        # "held": the yes counts and waits (someone higher in the wave may still answer; a private lesson's family)
+        if answer == "accept" and state["status"] not in ("accepted", "held"):
             return JSONResponse(status_code=409, content={
                 "reason": state.get("reason") or f"offer is {state['status']}", "state": state["status"]})
         return {"state": state["status"], "case_status": state["case_status"]}
+
+    @app.get("/api/client/{ask_ref}")
+    def get_family_question(ask_ref: str, conn: psycopg.Connection = Depends(get_conn)):
+        """The family's page of a private lesson: the question, the thread, the answer buttons while it is open."""
+        return screens.client_page(conn, policy_id, ask_ref, clock_now(conn))
+
+    @app.post("/api/client/{ask_ref}/respond")
+    def answer_family_question(ask_ref: str, body: FamilyAnswerBody, conn: psycopg.Connection = Depends(get_conn)):
+        p = pipeline(conn)
+        p.family_respond(p.find_ask(ask_ref), body.accept, clock_now(conn))  # 409 when it is no longer open
+        return screens.client_page(conn, policy_id, ask_ref, clock_now(conn))
 
     @app.post("/api/plans/{plan_ref}/approve")
     def approve_plan(plan_ref: str, body: ApproveBody, conn: psycopg.Connection = Depends(get_conn)):
@@ -298,7 +314,7 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
     app.include_router(ext_api.router)
 
     if web.is_dir():
-        for route, page in (("/offer", "offer.html"), ("/case", "case.html")):
+        for route, page in (("/offer", "offer.html"), ("/case", "case.html"), ("/client", "client.html")):
             if (web / page).is_file():
                 app.add_api_route(route, (lambda p=web / page: FileResponse(p)), methods=["GET"], include_in_schema=False)
         app.mount("/", StaticFiles(directory=web, html=True), name="web")

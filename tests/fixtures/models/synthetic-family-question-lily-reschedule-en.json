@@ -1,0 +1,31 @@
+{
+ "purpose": "family_question",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "kind": "reschedule",
+  "language": "en",
+  "child": "Lily",
+  "coach": "Marina",
+  "when": "Wed, Nov 11 at 17:00",
+  "venue": "Riverside Aquatic Center"
+ },
+ "input_sha256": "4b478a375186ca238c740c2aa655ab7ae4dc81040ebc90e1c4d8787faed2db08",
+ "synthetic": true,
+ "source": "synthetic: written by hand to the family_question schema, only facts from input",
+ "duration_ms": 1000,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 230,
+   "completion_tokens": 44
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"body\": \"No problem, Lily stays with Marina. Marina can teach her on Wed, Nov 11 at 17:00 instead. Does that work? Reply YES or NO.\"}"
+    }
+   }
+  ]
+ }
+}

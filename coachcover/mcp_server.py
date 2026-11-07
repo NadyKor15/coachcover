@@ -146,6 +146,10 @@ def case_summary(conn: psycopg.Connection, policy_id: str, case_ref: str) -> dic
     plans = conn.execute("SELECT id, status, snapshot_hash FROM plan_b WHERE case_id = %s ORDER BY id", (case_id,)).fetchall()
     covered = [d for _, _, _, kind, d in events if kind == "shift_covered"]
     ref = notify.case_ref(conn, case_id)
+    # a private lesson: what the family was asked and what they answered (read-only; only the family answers)
+    questions = conn.execute(
+        "SELECT id, kind, staff_id, status, asked_at, answer_by, answered_at, proposed_start FROM client_ask"
+        " WHERE case_id = %s ORDER BY id", (case_id,)).fetchall() if notify._has_column(conn, "client_ask", "id") else []
     return {
         "case": ref, "status": status, "shift": {"id": shift_id, "label": _shift_label(conn, shift_id)[0]},
         "absent": names.get(absent), "opened_at": opened.isoformat(), "closed_at": closed.isoformat() if closed else None,
@@ -154,6 +158,12 @@ def case_summary(conn: psycopg.Connection, policy_id: str, case_ref: str) -> dic
                     "answered_at": b.isoformat() if b else None} for s, st, a, b in offers],
         "plan_b": [{"plan_id": pid, "status": st, "hash": h} for pid, st, h in plans],
         "steps": [{"seq": seq, "at": at.isoformat(), "actor": actor, "kind": kind} for seq, at, actor, kind, _ in events],
+        "family_questions": [
+            {"question": f"Q-{qid}", "about": "another coach" if kind == "cover" else "a new time",
+             "coach": names.get(staff), "status": st, "asked_at": asked.isoformat(), "answer_by": by.isoformat(),
+             "answered_at": answered.isoformat() if answered else None,
+             "new_time": proposed.isoformat() if proposed else None}
+            for qid, kind, staff, st, asked, by, answered, proposed in questions],
         "link": notify.case_link(ref),
     }
 
@@ -174,7 +184,7 @@ def refuse_approval(conn: psycopg.Connection, policy_id: str, plan_id: int) -> s
     mode = load_policy(conn, policy_id).autonomy.get("plan_b", "propose")
     exists = conn.execute("SELECT status FROM plan_b WHERE id = %s", (plan_id,)).fetchone()
     state = f"plan {plan_id} is {exists[0]}" if exists else f"there is no plan {plan_id}"
-    return (f"Refused by the autonomy policy (N1): approving plan B is the manager's action. This school sets "
+    return (f"Refused by the autonomy policy: approving plan B is the manager's action. This school sets "
             f"plan_b = '{mode}': CoachCover proposes, and only the manager approves, in CoachCover, against the hash "
             f"of the plan they saw. An outside assistant can read and propose; it cannot approve. ({state}; nothing changed.)")
 
@@ -232,8 +242,17 @@ def build() -> FastMCP:
     async def approve_plan_b(plan_id: int, hash: str, ctx: Context) -> dict:
         """Approve a plan B. Always refused for assistants: the manager approves in CoachCover (policy N1)."""
         reason = await run(refuse_approval, ctx, plan_id)
-        log.info("refused plan B approval from %s: plan %s", _caller(ctx), plan_id)
+        log.info("refused plan B approval from %s: plan %s (autonomy policy N1)", _caller(ctx), plan_id)
         raise ToolError(reason)
+
+    @server.tool()
+    async def answer_for_family(question_id: str, answer: str, ctx: Context) -> dict:
+        """Answer a private lesson's question in the family's name. Always refused: only the family answers, on
+        their own page; an assistant can read the status with get_case."""
+        log.info("refused an answer for a family from %s: %s (only the family answers)", _caller(ctx), question_id)
+        raise ToolError(f"Refused: only the family answers {question_id}, on their own page. CoachCover never takes "
+                        "another coach, a new time or a credit as agreed without the family's own yes or no; an "
+                        "assistant can read where it stands with get_case. Nothing changed.")
 
     return server
 

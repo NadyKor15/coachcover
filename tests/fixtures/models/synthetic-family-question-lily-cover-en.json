@@ -1,0 +1,33 @@
+{
+ "purpose": "family_question",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "kind": "cover",
+  "language": "en",
+  "child": "Lily",
+  "absent": "Marina",
+  "coach": "Chloe",
+  "time": "17:00",
+  "date": "2026-11-09",
+  "venue": "Riverside Aquatic Center"
+ },
+ "input_sha256": "30a7628e3f602815f24366a3d0ed0a20aafcd51bb8b517b2e319c7b7232238d2",
+ "synthetic": true,
+ "source": "synthetic: written by hand to the family_question schema, only facts from input",
+ "duration_ms": 1100,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 240,
+   "completion_tokens": 52
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"body\": \"Hi! Marina can't make it today, so Chloe can teach Lily's private lesson at 17:00 instead. Same time, same place at Riverside Aquatic Center. Is that OK? Reply YES or NO.\"}"
+    }
+   }
+  ]
+ }
+}

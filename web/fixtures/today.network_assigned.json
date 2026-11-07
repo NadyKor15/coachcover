@@ -24,7 +24,8 @@
     "time_label": "06:00–08:00",
     "lanes_label": "Lanes 3–4 lap swim + Learn-to-Swim Level 3 (8 kids)",
     "needs_label": "Lifeguard + WSI",
-    "program_label": "Program LTS-3"
+    "program_label": "Learn-to-Swim Level 3",
+    "private": false
   },
   "eligibility": {
     "total": 40,
@@ -56,7 +57,7 @@
       },
       {
         "code": "PROGRAM_RENEWAL_OVERDUE",
-        "label": "LTS renewal overdue",
+        "label": "Learn-to-Swim renewal overdue",
         "count": 1,
         "tone": "amber"
       },
@@ -98,7 +99,7 @@
       },
       {
         "code": "LEVEL_MISSING",
-        "label": "Not cleared for LTS-3",
+        "label": "Not cleared for Learn-to-Swim Level 3",
         "count": 2,
         "tone": "plain"
       },
@@ -261,7 +262,7 @@
         "name": "Irina Lebedeva",
         "eligible": false,
         "highlight": false,
-        "reason_label": "LTS renewal overdue"
+        "reason_label": "Learn-to-Swim renewal overdue"
       },
       {
         "id": "S03",
@@ -275,7 +276,7 @@
         "name": "Lucas Reed",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not cleared for LTS-3"
+        "reason_label": "Not cleared for Learn-to-Swim Level 3"
       },
       {
         "id": "S28",
@@ -345,7 +346,7 @@
         "name": "Andrés Delgado",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Not cleared for LTS-3"
+        "reason_label": "Not cleared for Learn-to-Swim Level 3"
       },
       {
         "id": "S10",
@@ -450,42 +451,49 @@
       "time_label": "05:13",
       "staff": "Sofia Reyes",
       "result": "declined",
-      "why_first": "Sofia first: 6 h this week, Level 3, same pool"
+      "why_first": "Sofia first: 6 h this week, Level 3, same pool",
+      "result_label": "declined"
     },
     {
       "id": "O-2",
       "time_label": "05:13",
       "staff": "Leo Martins",
       "result": "declined",
-      "why_first": "Leo second: 9 h this week, Level 3, same pool"
+      "why_first": "Leo second: 9 h this week, Level 3, same pool",
+      "result_label": "declined"
     },
     {
       "id": "O-3",
       "time_label": "05:13",
       "staff": "Zoe Grant",
       "result": "declined",
-      "why_first": "Zoe third: 12 h this week, Level 3, same pool"
+      "why_first": "Zoe third: 12 h this week, Level 3, same pool",
+      "result_label": "declined"
     },
     {
       "id": "O-4",
       "time_label": "05:14",
       "staff": "Mateo Romero",
       "result": "declined",
-      "why_first": "Mateo first: 15 h this week, Level 3, 21.7 km away"
+      "why_first": "Mateo first: 15 h this week, Level 3, 21.7 km away",
+      "result_label": "declined"
     },
     {
       "id": "O-5",
       "time_label": "05:14",
       "staff": "Ethan Price",
       "result": "declined",
-      "why_first": "Ethan second: 16 h this week, Level 3, 21.7 km away"
+      "why_first": "Ethan second: 16 h this week, Level 3, 21.7 km away",
+      "result_label": "declined"
     }
   ],
   "outcome": {
     "covered_by": "Kai Morgan",
     "covered_via": "network_loan",
     "covered_time": "05:17",
-    "lessons_cancelled": 0
+    "lessons_cancelled": 0,
+    "private_line": null,
+    "family_wait_until": null
   },
   "plan_b": {
     "id": "P-standby",

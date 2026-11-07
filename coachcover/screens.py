@@ -79,11 +79,15 @@ def reason_label(code: str, params: dict, preset: Preset, conn: psycopg.Connecti
         program = preset.programs.get(params["program"])
         if program is not None and program.clearance:
             return f"No {program.clearance}"
-        return f"No {_program_short(preset, params['program'])} program"
+        return f"No {program.label if program else params['program']} program"
     if code == "LEVEL_MISSING":
-        return f"Not cleared for {_program_short(preset, params['program'])}-{params['level']}"
+        program = preset.programs.get(params["program"])
+        if program is not None and params["level"] in program.levels:
+            return f"Not cleared for {program.title(params['level'])}"  # the program and level by name, not a code
+        return f"Not cleared for {params['program']} {params['level']}"
     if code == "PROGRAM_RENEWAL_OVERDUE":
-        return f"{_program_short(preset, params['program'])} renewal overdue"
+        program = preset.programs.get(params["program"])
+        return f"{program.label if program else params['program']} renewal overdue"
     if code == "HOURS_LIMIT_EXCEEDED":
         return f"Over {params['limit_hours']:g} h this week"
     if code == "OVERLAPS_COMMITMENT":
@@ -119,6 +123,11 @@ def _co_teachers(conn: psycopg.Connection, shift_id: str) -> list[str]:
     )]
 
 
+def _private_label(name: str) -> str:
+    """A private lesson's group name for screens: "Private · Lily, age 6, Level 2" -> "Private lesson · Lily, age 6, Level 2"."""
+    return "Private lesson · " + name.removeprefix("Private · ") if name.startswith("Private · ") else name
+
+
 def _shift_labels(info: dict, shift, preset: Preset, co_teachers: list[str] | None = None) -> dict:
     tz = ZoneInfo(info["tz"])
     role = preset.roles[shift.role]
@@ -127,7 +136,12 @@ def _shift_labels(info: dict, shift, preset: Preset, co_teachers: list[str] | No
     kids = sum(g.size for g in shift.groups)
     lanes = info["zone"] or info["venue"]
     program = None
-    if shift.groups:
+    if shift.groups and info.get("private"):
+        g = shift.groups[0]
+        # "<zone> · Private lesson · Lily, age 6, Level 2": one child, no count
+        lanes += " · " + _private_label(info["groups"][0]["name"])
+        program = preset.programs[g.program].title(g.level)
+    elif shift.groups:
         g = shift.groups[0]
         prog = preset.programs[g.program]
         lanes += f" + {prog.title(g.level)} ({kids} {participants})"
@@ -140,6 +154,7 @@ def _shift_labels(info: dict, shift, preset: Preset, co_teachers: list[str] | No
         "lanes_label": lanes,
         "needs_label": needs,
         "program_label": program,
+        "private": bool(info.get("private")),
     }
 
 
@@ -164,7 +179,9 @@ def _first_refusal(events: list, grid: list, shift, preset: Preset, conn, tz) ->
         why = reason_label(first["code"], first["params"], preset, conn, tz)
     parts = [" and ".join(x for x in ("free" if free else None, "willing" if willing else None) if x) or "available",
              f"BLOCKED: {why}"]
-    if shift.groups:
+    if shift.groups and all(g.kind == "private" for g in shift.groups):
+        parts.append("private lesson")  # one child, one coach: no group norm to show
+    elif shift.groups:
         kids = sum(g.size for g in shift.groups)
         norm = min(group_norm(g, preset) for g in shift.groups)
         parts += [f"{kids} {preset.copy.get('participants', 'participants')}", f"ratio 1:{norm}"]
@@ -191,6 +208,10 @@ def _plan_option_text(option: dict, preset: Preset) -> str:
         return f"move the {option['children']} newest {participants} to the nearest lesson of their level with room"
     if kind == "cancel_lesson":
         return f"cancel the whole lesson: {option['remedy']} for {option['families']} families"
+    if kind == "reschedule_own":
+        return f"move the lesson to {option['staff_name'].split()[0]}, {option['when']}"
+    if kind == "credit":
+        return f"cancel: a credit for one lesson (${option['amount_usd']:g})"
     return kind
 
 
@@ -245,8 +266,9 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
         ).fetchone()
     if focus is None:
         focus = conn.execute(
+            # the latest call-out; of the cases it opened (a person is out for the whole day), the one that starts first
             "SELECT c.id FROM cover_case c JOIN shift s ON s.id = c.shift_id WHERE s.venue_id = %s AND c.source = 'callout'"
-            " AND c.opened_at <= %s ORDER BY c.opened_at DESC, c.id DESC LIMIT 1",
+            " AND c.opened_at <= %s ORDER BY c.opened_at DESC, s.starts_at, c.id LIMIT 1",
             (vid, now),
         ).fetchone()
     p = Pipeline(conn, None, policy_id)  # type: ignore[arg-type] - read-only use
@@ -351,13 +373,21 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
                 for k in ("callout_received", "night_check_found") if k in first_event][:1]
     rows = []
     stood = _stood_down(conn, case_id)
+    family = _family_offers(conn, case_id)
     for oid, sid, ostatus, sent, expires, responded, line in offers:
         result, when, label, _ = _offer_result(ostatus, sid, sent, expires, responded, stood.get(oid), names,
                                                preset.offer_collect_seconds)
+        if oid in family:  # a private lesson: the coach said yes, the family decides
+            result, label, _ = (x.format(name=names[sid]) for x in FAMILY_OFFER[family[oid][0]])
+            when = responded or when
         rows.append({"id": f"O-{oid}", "time_label": _clock(when, tz), "staff": names[sid], "result": result,
-                     "why_first": line})
-        if result not in ("pending", "held"):
+                     "why_first": line, "result_label": label[len(names[sid]):].lstrip(": ") or None})
+        # on a private lesson the family's answers tell the story; the coaches let go stay in the offers list
+        quiet = info["private"] and (result == "stood_down" or (oid in stood and stood[oid][2]))
+        if result not in ("pending", "held") and not quiet:
             timeline.append({"time_label": _clock(when, tz), "kind": result, "label": label, "_at": when})
+    if info["private"]:
+        timeline.extend({**step, "time_label": _clock(step["_at"], tz)} for step in _family_steps(events))
     # a plan shown and then replaced because the facts changed: when it was shown, and what changed (stable sort:
     # these come before the current plan's line at the same minute)
     for (created,) in conn.execute("SELECT created_at FROM plan_b WHERE case_id = %s AND status = 'superseded'"
@@ -392,9 +422,10 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
     timeline.append({"time_label": _clock(info["start"], tz), "kind": "shift_start"})
     out["timeline"] = timeline
     out["offers"] = rows
-    cancelled = conn.execute(
+    cancelled = conn.execute(  # group lessons; a private lesson's outcome is its own line (moved or a credit)
         "SELECT count(*) FROM shift WHERE venue_id = %s AND status = 'cancelled' AND starts_at >= %s AND starts_at < %s"
-        " AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = shift.id)",
+        " AND EXISTS (SELECT 1 FROM shift_group sg JOIN lesson_group g ON g.id = sg.group_id"
+        "  WHERE sg.shift_id = shift.id AND g.kind = 'group')",
         (vid, local.replace(hour=0, minute=0, second=0, microsecond=0),
          local.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)),
     ).fetchone()[0]
@@ -402,9 +433,14 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
     out["outcome"] = {"covered_by": (covered.get("name") or names.get(covered_by)) if covered_by else None,
                       "covered_via": covered.get("via") if covered else None,
                       "covered_time": _clock(covered_at, tz) if covered_by else None,  # when it was closed
-                      "lessons_cancelled": cancelled}
+                      "lessons_cancelled": cancelled,
+                      "private_line": next((d.get("line") for _, _, k, d in reversed(events)
+                                            if k in ("private_moved", "private_credit")), None),
+                      # a private lesson: the family has the question until then (the banner says so)
+                      "family_wait_until": next((_clock(by, tz) for (by,) in conn.execute(
+                          "SELECT answer_by FROM client_ask WHERE case_id = %s AND status = 'asked'", (case_id,))), None)}
     out["model_log"] = _model_log(conn, case_id, callout_id, live)
-    out["money"] = today_money_block(conn, policy_id, now, vid)
+    out["money"] = today_money_block(conn, policy_id, now, vid, private=info["private"])
     out["flagged"] = [
         {"time_label": _clock(at, tz), "staff": data.get("name"), "text": data.get("text"),
          "label": f"Message from {data.get('name')} flagged for the manager: it tries to change the rules. "
@@ -422,13 +458,15 @@ def _manager_minutes() -> tuple[float | None, str | None]:
     return stats.get("baseline_manager_minutes_median_per_morning"), f"synthetic replay, {stats['mornings']} mornings"
 
 
-def today_money_block(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str | None = None) -> dict:
+def today_money_block(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str | None = None,
+                      private: bool = False) -> dict:
     minutes, source = _manager_minutes()
     money = money_model.today_money(conn, policy_id, now, manager_minutes=minutes, manager_minutes_source=source,
-                                    venue_id=venue_id)["money"]
+                                    venue_id=venue_id, private=private)["money"]
     cents = money.get("case_cost_cents")
     money["case_cost_label"] = money_model.cost_label(cents / 100) if cents is not None else None
-    price = load_policy(conn, policy_id).preset.money.get("lesson_price", {})
+    prices = load_policy(conn, policy_id).preset.money
+    price = (prices.get("private_lesson_price") if private else None) or prices.get("lesson_price", {})
     money["source"] = "assumption" if price.get("assumption", True) else price.get("source")
     return money
 
@@ -439,7 +477,9 @@ def case_risk(shift, policy) -> dict:
     cost = money_model.uncovered_cost([shift], params)
     refunds = sum(line["usd"] for line in cost["lines"] if line["kind"] == "refunds")
     overtime = sum(line["usd"] for line in cost["lines"] if line["kind"] == "overtime")
-    return {"kids": cost["participants"] or None, "refunds_usd": round(refunds, 2) if refunds else None,
+    private = bool(shift.groups) and all(g.kind == "private" for g in shift.groups)
+    return {"kids": (cost["participants"] or None) if not private else None, "private": private,
+            "refunds_usd": round(refunds, 2) if refunds else None,
             "overtime_usd": round(overtime, 2) if overtime else None, "total_usd": cost["total_usd"] or None,
             "lines": money_model.summary_lines(cost, params),
             "assumptions": params.as_dict()}
@@ -452,10 +492,11 @@ def info_absent_name(conn: psycopg.Connection, case_id: int) -> str | None:
     return row[0] if row else None
 
 
-def _stood_down(conn: psycopg.Connection, case_id: int) -> dict[int, tuple[datetime, str]]:
-    """Offers withdrawn because someone else got the shift: offer id -> (when, winner's staff id)."""
+def _stood_down(conn: psycopg.Connection, case_id: int) -> dict[int, tuple[datetime, str, bool]]:
+    """Offers withdrawn because someone else got the shift, or was held for a private lesson's family:
+    offer id -> (when, that person's staff id, held for the family)."""
     return {
-        int(data["offer_id"]): (at, data["covered_by"])
+        int(data["offer_id"]): (at, data.get("covered_by") or data.get("for_family"), "for_family" in data)
         for at, data in conn.execute(
             "SELECT at, data FROM case_event WHERE case_id = %s AND kind = 'offer_stood_down'", (case_id,)
         ).fetchall()
@@ -466,10 +507,11 @@ def _offer_result(ostatus: str, sid: str, sent, expires, responded, stood, names
     """(result, when, timeline label, short label) of one offer."""
     name = names[sid]
     if ostatus == "withdrawn" and stood:
-        at, winner = stood
+        at, winner, for_family = stood
         first = names.get(winner, winner).split()[0]
         if responded is None:
-            return "no_reply", at, f"{name}: no reply, {first} took it", f"no reply, {first} took it"
+            took = f"{first} said yes first" if for_family else f"{first} took it"
+            return "no_reply", at, f"{name}: no reply, {took}", f"no reply, {took}"
         return "stood_down", at, f"{name} said yes, {first} was higher in the queue", f"said yes, {first} was higher"
     minutes = int((expires - sent).total_seconds() // 60)
     return {
@@ -482,6 +524,85 @@ def _offer_result(ostatus: str, sid: str, sent, expires, responded, stood, names
                  f"said yes, waiting {collect} s for anyone higher"),
         "pending": ("pending", sent, f"{name} asked", "asked, waiting"),
     }[ostatus]
+
+
+FAMILY_OFFER = {  # a coach's offer on a private lesson, by the family's answer: (result, timeline label, short label)
+    "asked": ("held", "{name} said yes, waiting for the family", "said yes, waiting for the family"),
+    "yes": ("accepted", "{name} said yes", "said yes, the family agreed"),
+    "no": ("stood_down", "{name} said yes, the family kept their own coach", "said yes, the family kept their own coach"),
+    "silent": ("stood_down", "{name} said yes, the family did not answer", "said yes, no answer from the family"),
+}
+
+
+def _family_offers(conn: psycopg.Connection, case_id: int) -> dict[int, tuple[str, datetime]]:
+    """Offers whose coach was put to the family (private lesson): offer id -> (the family's answer, when)."""
+    return {oid: (status, at) for oid, status, at in conn.execute(
+        "SELECT offer_id, status, coalesce(answered_at, CASE WHEN status = 'silent' THEN answer_by END, asked_at)"
+        " FROM client_ask WHERE case_id = %s AND kind = 'cover' ORDER BY id", (case_id,))}
+
+
+def _family_steps(events: list) -> list[dict]:
+    """The family's part of a private lesson, for the morning screen's timeline: asked, the answer, the outcome. The
+    question about a new time and its answer fold into the outcome ("Moved to Marina, Wed 17:00")."""
+    out = []
+    for _, at, kind, data in events:
+        label = None
+        if kind == "family_asked" and data.get("kind") == "cover":
+            label = "Asked the parent"
+        elif kind in ("family_yes", "family_no") and data.get("kind") == "cover":
+            label = "Parent said yes" if kind == "family_yes" else "Parent said no"
+        elif kind == "family_silent":
+            label = "No answer from the parent"
+        elif kind in ("private_moved", "private_credit"):
+            label = data.get("line")
+        if label:
+            out.append({"kind": "family", "label": label, "_at": at})
+    return out
+
+
+def _family_case_steps(events: list, tz: ZoneInfo) -> list[dict]:
+    """A private lesson in the case file: every question to the family, its answer and what followed."""
+    steps = []
+
+    def add(at, kind, title, summary):
+        steps.append({"kind": kind, "at": _utc(at), "time_label": _local_label(at, tz), "title": title, "summary": summary})
+
+    for _, at, kind, data in events:
+        name = (data.get("name") or "").split(" ")[0]
+        if kind == "family_asked":
+            by = _clock(datetime.fromisoformat(data["answer_by"]), tz)
+            source = "written by the text model" if data.get("text_source") == "model" else "standard text"
+            if data.get("kind") == "cover":
+                add(at, "family", "Asked the parent", f"“{data['text']}” · {name} is held for this time · "
+                                                      f"answer by {by} · {source}")
+            else:
+                add(at, "family", f"Asked the parent about {name}, {data.get('when')}",
+                    f"“{data['text']}” · answer by {by} · {source}")
+        elif kind in ("family_yes", "family_no"):
+            word = "yes" if kind == "family_yes" else "no"
+            what = f"to {name} instead" if data.get("kind") == "cover" else "to the new time"
+            add(at, "family", f"Parent said {word}", f"{word.capitalize()} {what}")
+        elif kind == "family_silent":
+            add(at, "family", "No answer from the parent",
+                "The coach who said yes is let go with thanks; the manager decides: move the lesson or a credit")
+        elif kind == "family_yes_recheck_failed":
+            add(at, "family", "Checked again: not allowed any more", data.get("why") or "")
+        elif kind == "coach_released":
+            add(at, "family", f"{data.get('name')} let go, with thanks", "Free for other offers again")
+        elif kind == "own_coach_checked":
+            tried = [f"{datetime.fromisoformat(t['start']).astimezone(tz):%a} {_short_clock(t['start'], tz)}: "
+                     + ("busy" if "OVERLAPS_COMMITMENT" in t["codes"] else "not allowed" if t["codes"] else "free")
+                     for t in data.get("tried", [])]
+            add(at, "family", f"{data.get('name') or 'The own coach'}: nearest free time at the same hour",
+                " · ".join(tried) or "No free time in the next 7 days")
+        elif kind == "private_moved":
+            add(at, "family", data.get("line"), f"{data.get('name')} teaches it; the old time is cancelled; nothing charged")
+        elif kind == "private_credit":
+            why = {"family_no": "the family said no to the new time", "no_time": "no free time with their own coach",
+                   "too_late": "too close to the start to ask", "time_taken": "the new time was taken meanwhile",
+                   "plan_b": "the manager chose it"}.get(data.get("why"), data.get("why"))
+            add(at, "family", "Credit for one lesson", f"${data.get('amount_usd'):g} credit to the family · {why}")
+    return steps
 
 
 def _ratio_alert(conn: psycopg.Connection, venue_id: str, now: datetime, tz: ZoneInfo, preset: Preset) -> dict | None:
@@ -581,7 +702,7 @@ def offer_phone(conn: psycopg.Connection, policy_id: str, offer_ref: str, now: d
         if held:
             prog = preset.programs.get(g[0])
             why.append(f"{prog.needs(g[1])} — current" if prog is not None and prog.clearance
-                       else f"{_program_short(preset, g[0])}-{g[1]} program — current")
+                       else f"{prog.title(g[1]) if prog is not None else g[0]} — current")
     if place and place.get("week_hours") is not None:
         why.append(f"{place['week_hours']:g} h this week")
     manager = conn.execute("SELECT manager_name FROM policy WHERE id = %s", (policy_id,)).fetchone()[0]
@@ -598,8 +719,100 @@ def offer_phone(conn: psycopg.Connection, policy_id: str, offer_ref: str, now: d
         "needs_label": labels["needs_label"],
         "why": why,
         "why_first": (place or {}).get("line"),
+        "private": bool(info.get("private")),  # a private lesson: a yes waits for the family
         "expires_in_s": max(0, int((expires - now).total_seconds())) if status == "pending" else 0,
         "window_s": int((expires - sent).total_seconds()),
+        "manager": {"name": manager, "role": "Manager"} if manager else None,
+    })
+
+
+def _family_headline(kind: str, outcome: dict | None, coach: str, child: str, day: str) -> str:
+    """The family's page headline: the open question, or, once the case is decided, what happened."""
+    if outcome is None:
+        return f"Can {coach.split()[0]} teach {child} {day}?" if kind == "cover" else f"Move {child}'s lesson to {day}?"
+    if outcome["kind"] == "covered":
+        return f"{outcome['coach']} will teach {child} {outcome['day']}"
+    if outcome["kind"] == "moved":
+        return f"{child}'s lesson is moved to {outcome['day']}"
+    return f"{child}'s lesson is cancelled, with a credit"
+
+
+def client_page(conn: psycopg.Connection, policy_id: str, ask_ref: str, now: datetime) -> dict:
+    """The family's page of a private lesson (`/client?id=Q-n`): what is asked, the thread with the school, and the
+    answer buttons while the question is open. Signed "Parent of <child>": the parent is never named."""
+    qid = str(ask_ref).removeprefix("Q-")
+    row = conn.execute(
+        "SELECT a.id, a.case_id, a.kind, a.staff_id, a.status, a.proposed_start, a.proposed_end, a.asked_at, a.answer_by,"
+        " a.group_id, c.shift_id, c.absent_staff_id FROM client_ask a JOIN cover_case c ON c.id = a.case_id"
+        " JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id WHERE a.id::text = %s AND v.policy_id = %s",
+        (qid, policy_id),
+    ).fetchone()
+    if row is None:
+        raise NotFound(f"unknown question {ask_ref}")
+    ask_id, case_id, kind, staff_id, status, p_start, p_end, asked_at, answer_by, group_id, shift_id, absent = row
+    p = Pipeline(conn, None, policy_id)  # type: ignore[arg-type] - read-only use
+    info = p.shift_info(shift_id)
+    tz = ZoneInfo(info["tz"])
+    child = info["groups"][0]["participant"] or info["groups"][0]["name"]
+    names = dict(conn.execute("SELECT id, full_name FROM staff WHERE policy_id = %s", (policy_id,)).fetchall())
+
+    def day_label(when: datetime) -> str:
+        local = when.astimezone(tz)
+        today_local = now.astimezone(tz).date()
+        if local.date() == today_local:
+            return "today"
+        if local.date() == today_local + timedelta(days=1):
+            return "tomorrow"
+        return f"{local:%a}, {local:%b} {local.day}"
+
+    start, end = (p_start, p_end) if kind == "reschedule" else (info["start"], info["end"])
+    thread = []
+    for at, body in conn.execute("SELECT created_at, body FROM message WHERE case_id = %s AND audience = 'family'"
+                                 " AND group_id = %s ORDER BY created_at, id", (case_id, group_id)):
+        text = body.removeprefix("CoachCover: ")
+        thread.append({"from": "school", "time_label": _clock(at, tz), "text": text[:1].upper() + text[1:], "_at": at})
+    for at, akind, astatus in conn.execute("SELECT answered_at, kind, status FROM client_ask WHERE case_id = %s"
+                                           " AND status IN ('yes', 'no') ORDER BY id", (case_id,)):
+        thread.append({"from": "family", "time_label": _clock(at, tz), "text": "Yes" if astatus == "yes" else "No",
+                       "_at": at})
+    thread.sort(key=lambda m: (m.pop("_at"), m["from"] == "school"))  # an answer comes before the reply to it
+    current = conn.execute("SELECT id FROM client_ask WHERE case_id = %s AND status = 'asked' ORDER BY id DESC LIMIT 1",
+                           (case_id,)).fetchone()
+    outcome = None
+    for _, kind_e, data in conn.execute("SELECT seq, kind, data FROM case_event WHERE case_id = %s AND kind IN"
+                                        " ('shift_covered', 'private_moved', 'private_credit') ORDER BY seq DESC LIMIT 1",
+                                        (case_id,)).fetchall():
+        if kind_e == "shift_covered":
+            outcome = {"kind": "covered", "line": f"{data['name'].split()[0]} teaches {child} {day_label(info['start'])}"
+                                                  f" at {_clock(info['start'], tz)}",
+                       "coach": data["name"].split()[0], "day": day_label(info["start"])}
+        elif kind_e == "private_moved":
+            local = datetime.fromisoformat(data["start"]).astimezone(tz)
+            outcome = {"kind": "moved", "line": f"{child}'s lesson with {data['name'].split()[0]} is on "
+                                               f"{local:%a}, {local:%b} {local.day} at {local:%H:%M}",
+                       "day": f"{local:%a}, {local:%b} {local.day}"}
+        else:
+            outcome = {"kind": "credit", "line": f"A credit for one lesson (${data['amount_usd']:g})"}
+    manager = conn.execute("SELECT manager_name FROM policy WHERE id = %s", (policy_id,)).fetchone()[0]
+    coach = names.get(staff_id, staff_id)
+    return plain({
+        "ask_id": f"Q-{ask_id}",
+        "kind": kind,
+        "state": status,
+        "signed": f"Parent of {child}",
+        "child": child,
+        "lesson": _private_label(info["groups"][0]["name"]),
+        "venue": info["venue"],
+        "question": _family_headline(kind, outcome, coach, child, day_label(start)),
+        "coach": coach,
+        "instead_of": names.get(absent) if kind == "cover" else None,
+        "day_label": day_label(start),
+        "time_label": f"{_clock(start, tz)}–{_clock(end, tz)}",
+        "answer_in_s": max(0, int((answer_by - now).total_seconds())) if status == "asked" else 0,
+        "answer_by_label": _clock(answer_by, tz),
+        "thread": thread,
+        "current": f"Q-{current[0]}" if current else None,
+        "outcome": outcome,
         "manager": {"name": manager, "role": "Manager"} if manager else None,
     })
 
@@ -611,8 +824,14 @@ def _utc(value: datetime) -> str:
     return value.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _utc_label(value: datetime) -> str:
-    return value.astimezone(ZoneInfo("UTC")).strftime("%H:%M:%S UTC")
+# a short name for the venue's zone on the case page ("08:40:10 ET"); machine fields stay in UTC
+ZONE_SHORT = {"America/New_York": "ET", "America/Detroit": "ET", "America/Chicago": "CT", "America/Denver": "MT",
+              "America/Phoenix": "MT", "America/Los_Angeles": "PT", "Pacific/Honolulu": "HT", "America/Anchorage": "AKT"}
+
+
+def _local_label(value: datetime, tz: ZoneInfo) -> str:
+    local = value.astimezone(tz)
+    return f"{local:%H:%M:%S} {ZONE_SHORT.get(str(tz)) or local.tzname()}"
 
 
 def model_calls(conn: psycopg.Connection, case_id: int, callout_id) -> list[dict]:
@@ -666,7 +885,7 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         voice = first.get("voice_transcribed", (None, {}))[1]
         audio = conn.execute("SELECT 1 FROM callout_audio WHERE callout_id = %s", (callout_id,)).fetchone()
         steps.append({
-            "kind": "callout", "at": _utc(at), "time_label": _utc_label(at),
+            "kind": "callout", "at": _utc(at), "time_label": _local_label(at, tz),
             "title": "Voice call-out" if data.get("channel") == "voice" else "Text call-out",
             "staff": f"{names.get(absent)} · {labels['needs_label']}",
             "language": LANGUAGE_NAMES.get(data.get("language")),
@@ -679,26 +898,26 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         })
     if "night_check_found" in first:
         at, data = first["night_check_found"]
-        steps.append({"kind": "night_check", "at": _utc(at), "time_label": _utc_label(at), "title": "Night check",
+        steps.append({"kind": "night_check", "at": _utc(at), "time_label": _local_label(at, tz), "title": "Night check",
                       "summary": f"{data['name']}: " + "; ".join(r["text"] for r in data.get("reasons", []))})
     if "ratio_broken" in first:
         at, data = first["ratio_broken"]
         word = preset.copy.get("participants", "participants")
-        steps.append({"kind": "ratio", "at": _utc(at), "time_label": _utc_label(at),
+        steps.append({"kind": "ratio", "at": _utc(at), "time_label": _local_label(at, tz),
                       "title": f"Norm broken: {data['group_name']} — now {data['participants']} {word}, "
                                f"ratio 1:{data['max_per_instructor']}",
                       "summary": f"{data['added']} added by {data['by']}; instructors needed: "
                                  f"{data['instructors_before']} → {data['instructors_needed']}"})
     for _, at, kind, data in events:
         if kind == "flagged_for_manager":
-            steps.append({"kind": "flagged", "at": _utc(at), "time_label": _utc_label(at),
+            steps.append({"kind": "flagged", "at": _utc(at), "time_label": _local_label(at, tz),
                           "title": "Message flagged for the manager",
                           "summary": f"{data.get('name')}: “{data.get('text')}” · the rules were checked anyway"})
     if "callout_understood" in first or "shift_opened" in first:
         at, data = first.get("callout_understood") or first["shift_opened"]
         by = data.get("by")
         steps.append({
-            "kind": "shift", "at": _utc(at), "time_label": _utc_label(at), "title": "Shift identified",
+            "kind": "shift", "at": _utc(at), "time_label": _local_label(at, tz), "title": "Shift identified",
             "shift_id": shift_id,
             "summary": f"{labels['time_label']} · Needs: {labels['needs_label']}"
             + (f" · {labels['program_label']}" if labels["program_label"] else ""),
@@ -720,7 +939,7 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
                                "reason_label": label})
         refusal = _first_refusal(events, grid, shift, preset, conn, tz)
         steps.append({
-            "kind": "allowed", "at": _utc(at), "time_label": _utc_label(at), "title": "Who is allowed",
+            "kind": "allowed", "at": _utc(at), "time_label": _local_label(at, tz), "title": "Who is allowed",
             "total": data["total"], "allowed": data["eligible"],
             "blocked": {"staff": refusal["staff"], "label": refusal["label"]} if refusal else None,
             "reasons": sorted(chips.values(), key=lambda c: (-c["count"], c["label"])),
@@ -733,16 +952,21 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
     if offers:
         rows = []
         stood = _stood_down(conn, case_id)
+        family = _family_offers(conn, case_id)
         for oid, sid, ostatus, sent, expires, responded, line in offers:
             result, when, _, result_label = _offer_result(ostatus, sid, sent, expires, responded, stood.get(oid), names,
                                                           preset.offer_collect_seconds)
+            if oid in family:  # a private lesson: the coach said yes, the family decided
+                result, _, result_label = FAMILY_OFFER[family[oid][0]]
+                when = responded or when
             rows.append({"id": f"O-{oid}", "time_label": _clock(when, tz), "staff": names[sid], "result": result,
                          "result_label": result_label, "why_first": line})
-        steps.append({"kind": "offers", "at": _utc(offers[0][3]), "time_label": _utc_label(offers[0][3]),
+        steps.append({"kind": "offers", "at": _utc(offers[0][3]), "time_label": _local_label(offers[0][3], tz),
                       "title": "Offers in order", "offers": rows})
+    steps.extend(_family_case_steps(events, tz))
     for _, at, kind, data in events:
         if kind == "approval_refused":
-            steps.append({"kind": "plan_b", "at": _utc(at), "time_label": _utc_label(at),
+            steps.append({"kind": "plan_b", "at": _utc(at), "time_label": _local_label(at, tz),
                           "title": "Approval refused: plan changed",
                           "summary": f"{data.get('plan_id')} was shown with hash {str(data.get('shown_hash'))[:8]}…; "
                                      f"the data changed, the current plan has hash {str(data.get('current_hash'))[:8]}…"
@@ -761,7 +985,7 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
     if covered:
         at, data = covered
         co = [n for n in _co_teachers(conn, shift_id) if n != data.get("name")]  # the lesson's other teacher stays
-        steps.append({"kind": "covered", "at": _utc(at), "time_label": _utc_label(at), "title": "Schedule covered",
+        steps.append({"kind": "covered", "at": _utc(at), "time_label": _local_label(at, tz), "title": "Schedule covered",
                       "summary": f"{labels['time_label'].split('–')[0]} covered by {data.get('name')}"
                                  + (f", teaching with {' and '.join(co)}" if co else "")
                                  + f" · {cancelled} lesson{'s' if cancelled != 1 else ''} cancelled"})
@@ -771,10 +995,10 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         if pstatus == "approved":
             option = snap["options"][chosen]
             text = lines[chosen] if chosen < len(lines) else option["kind"]
-            steps.append({"kind": "plan_b", "at": _utc(decided), "time_label": _utc_label(decided),
+            steps.append({"kind": "plan_b", "at": _utc(decided), "time_label": _local_label(decided, tz),
                           "title": "Plan B approved by hash", "summary": f"{text} · approved by {decided_by} · P-{pid}"})
         else:
-            steps.append({"kind": "plan_b", "at": _utc(created), "time_label": _utc_label(created),
+            steps.append({"kind": "plan_b", "at": _utc(created), "time_label": _local_label(created, tz),
                           "title": "Plan B waiting for approval", "summary": " · ".join(lines) or _plan_text(snap, preset)})
         proof = {"plan_id": f"P-{pid}", "plan_hash": digest}
     elif status in ("open", "covered"):
@@ -785,10 +1009,12 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
     steps.sort(key=lambda s: s["at"])
     calls = model_calls(conn, case_id, callout_id)
     local_day = info["start"].astimezone(tz)
+    private_end = next((k for _, _, k, _ in reversed(events) if k in ("private_moved", "private_credit")), None)
     return plain({
         "case_id": code,
         "status": status,
-        "status_label": STATUS_LABELS.get(status, status),
+        "status_label": {"private_moved": "Moved", "private_credit": "Credit"}.get(private_end)
+        or STATUS_LABELS.get(status, status),
         "covered_time_label": _clock(covered[0], tz) if covered else None,
         "covered_by": covered[1].get("name") if covered else None,
         "covered_via": covered[1].get("via") if covered else None,

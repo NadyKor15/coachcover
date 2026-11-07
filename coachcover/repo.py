@@ -95,9 +95,9 @@ def load_shift(conn: psycopg.Connection, shift_id: str) -> Shift:
         raise ValueError(f"unknown shift {shift_id!r}")
     venue, role, start, end, instructors, zone, extra_certs, assignee = row
     groups = tuple(
-        GroupRef(gid, prog, lv, size, age_min, tuple(sorted((k, int(v)) for k, v in families.items())))
-        for gid, prog, lv, size, age_min, families in conn.execute(
-            "SELECT g.id, p.code, l.code, g.size, g.age_min, g.family_counts FROM shift_group sg"
+        GroupRef(gid, prog, lv, size, age_min, tuple(sorted((k, int(v)) for k, v in families.items())), kind)
+        for gid, prog, lv, size, age_min, families, kind in conn.execute(
+            "SELECT g.id, p.code, l.code, g.size, g.age_min, g.family_counts, g.kind FROM shift_group sg"
             " JOIN lesson_group g ON g.id = sg.group_id"
             " JOIN program_level l ON l.id = g.level_id JOIN program p ON p.id = l.program_id"
             " WHERE sg.shift_id = %s ORDER BY g.id",
@@ -115,6 +115,17 @@ def load_context(conn: psycopg.Connection, policy_id: str, around: Shift) -> Con
         "SELECT s.staff_id, s.id, s.starts_at, s.ends_at FROM shift s JOIN venue v ON v.id = s.venue_id"
         " WHERE v.policy_id = %s AND s.status = 'scheduled' AND s.starts_at < %s AND s.ends_at > %s"
         " ORDER BY s.staff_id, s.starts_at, s.id",
+        (policy_id, window_to, window_from),
+    ):
+        commitments[sid].append(Commitment(ref, "shift", start, end))
+    # a coach held for a private lesson while the family is asked: that time is taken (it counts like the shift, so
+    # the held coach gets no other offer for it); a time proposed to the family's own coach is held the same way
+    for sid, ref, start, end in conn.execute(
+        "SELECT a.staff_id, coalesce(o.shift_id, 'ask-' || a.id), coalesce(a.proposed_start, s.starts_at),"
+        " coalesce(a.proposed_end, s.ends_at) FROM client_ask a JOIN cover_case c ON c.id = a.case_id"
+        " JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id LEFT JOIN offer o ON o.id = a.offer_id"
+        " WHERE v.policy_id = %s AND a.status = 'asked' AND coalesce(a.proposed_start, s.starts_at) < %s"
+        " AND coalesce(a.proposed_end, s.ends_at) > %s ORDER BY a.id",
         (policy_id, window_to, window_from),
     ):
         commitments[sid].append(Commitment(ref, "shift", start, end))

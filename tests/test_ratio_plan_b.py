@@ -121,7 +121,8 @@ def test_every_plan_b_option_for_every_group_of_the_training_school_keeps_the_no
     t = early + timedelta(minutes=1)
     groups = school.execute(
         "SELECT g.id, s.id FROM lesson_group g JOIN shift_group sg ON sg.group_id = g.id JOIN shift s ON s.id = sg.shift_id"
-        " WHERE s.extra_for IS NULL AND s.status = 'scheduled' AND s.starts_at > %s ORDER BY g.id", (early,)
+        " WHERE s.extra_for IS NULL AND s.status = 'scheduled' AND s.starts_at > %s AND g.kind = 'group'"  # one child
+        " ORDER BY g.id", (early,)
     ).fetchall()
     assert len(groups) > 100
     seen, applied = set(), 0

@@ -1,0 +1,52 @@
+{
+  "ask_id": "Q-1",
+  "kind": "cover",
+  "state": "no",
+  "signed": "Parent of Lily",
+  "child": "Lily",
+  "lesson": "Private lesson · Lily, age 6, Level 2",
+  "venue": "Riverside Aquatic Center",
+  "question": "Lily's lesson is cancelled, with a credit",
+  "coach": "Chloe Hayes",
+  "instead_of": "Marina Petrova",
+  "day_label": "today",
+  "time_label": "17:00–17:30",
+  "answer_in_s": 0,
+  "answer_by_label": "09:12",
+  "thread": [
+    {
+      "from": "school",
+      "time_label": "08:42",
+      "text": "Hi! Marina can't make it today, so Chloe can teach Lily's private lesson at 17:00 instead. Same time, same place at Riverside Aquatic Center. Is that OK? Reply YES or NO."
+    },
+    {
+      "from": "family",
+      "time_label": "08:45",
+      "text": "No"
+    },
+    {
+      "from": "school",
+      "time_label": "08:45",
+      "text": "No problem, Lily stays with Marina. Marina can teach her on Wed, Nov 11 at 17:00 instead. Does that work? Reply YES or NO."
+    },
+    {
+      "from": "family",
+      "time_label": "08:45",
+      "text": "No"
+    },
+    {
+      "from": "school",
+      "time_label": "08:45",
+      "text": "Sorry, Lily's private lesson on Mon 17:00 is cancelled. You have a credit for one lesson ($50)."
+    }
+  ],
+  "current": null,
+  "outcome": {
+    "kind": "credit",
+    "line": "A credit for one lesson ($50)"
+  },
+  "manager": {
+    "name": "Natalie Brooks",
+    "role": "Manager"
+  }
+}

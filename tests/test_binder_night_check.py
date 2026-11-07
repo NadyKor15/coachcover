@@ -28,7 +28,8 @@ def _row(data, shift_id):
 
 def test_without_the_night_check_the_trap_is_a_violation(school):
     data = binder.build(school, POLICY_ID, "V1", None, None, NOW)
-    assert data["summary"]["headline"] == "70 shifts · 1 violation"  # V1's week, with the 09:30 lesson's second seat and G121
+    # V1's week, with the 09:30 lesson's second seat, G121 and 7 private lessons
+    assert data["summary"]["headline"] == "77 shifts · 1 violation"
     row = _row(data, TRAP)
     assert row["ok"] is False and row["result"].startswith("VIOLATION: CPR/AED expired")
 
@@ -47,6 +48,6 @@ def test_caught_by_the_night_check_and_covered_is_not_a_violation(school):
     holder = school.execute("SELECT s.full_name FROM shift sh JOIN staff s ON s.id = sh.staff_id WHERE sh.id = %s",
                             (TRAP,)).fetchone()[0]
     data = binder.build(school, POLICY_ID, "V1", None, None, NOW)
-    assert data["summary"]["headline"] == "70 shifts · 0 violations · 1 caught before the shift"
+    assert data["summary"]["headline"] == "77 shifts · 0 violations · 1 caught before the shift"
     assert _row(data, TRAP)["result"] == f"caught by the nightly check · case {run['case_id']} · covered by {holder}"
     assert binder.render(data)[:5] == b"%PDF-"

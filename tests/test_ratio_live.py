@@ -56,9 +56,10 @@ def test_four_to_six_children_at_one_to_four_opens_a_case_and_the_queue_runs(api
     assert wave
     offer_id, staff_id, line, name = wave[0]
     # nobody called out in this test: Marina is free at 10:30 after her 10:15 lesson and has the lightest week
-    assert (staff_id, line) == ("S05", "Marina first: 0.75 h this week, Level 1 (beginner), same pool")
+    # (the 09:30 lesson and her two 30-minute private lessons)
+    assert (staff_id, line) == ("S05", "Marina first: 1.75 h this week, Level 1 (beginner), same pool")
     lines = {sid: text for _, sid, text, _ in wave}
-    assert lines["S15"] == "Diego third: 5.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 5 of 6 families"
+    assert lines["S15"] == "Diego third: 5.75 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 5 of 6 families"
     assert client.post(f"/api/offers/O-{offer_id}/accept").status_code == 200
     closed = client.get("/api/today").json()["ratio_alert"]
     assert (closed["status"], closed["tone"]) == ("covered", "green")

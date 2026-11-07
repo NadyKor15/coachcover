@@ -17,7 +17,7 @@ import psycopg
 from coachcover.db import migrate
 from coachcover.models import ModelClient
 from coachcover.pipeline import Conflict, Pipeline
-from coachcover.seed import DECK_NOW, HERO_SHIFT, LESSON_AT, NOW, POLICY_ID, STORY, load_school
+from coachcover.seed import DECK_NOW, HERO_PRIVATE, HERO_SHIFT, LESSON_AT, NOW, POLICY_ID, STORY, load_school
 
 AUDIO = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "audio"
 # preschool: "Привет, это Марина. У меня температура тридцать восемь, к половине десятого я не выйду. У меня в
@@ -68,7 +68,7 @@ def reset_school(conn: psycopg.Connection, story: str = STORY) -> None:
         conn.execute("SELECT pg_advisory_unlock(%s)", (RESET_LOCK,))
 
 
-SCENARIOS = ("dangerous_morning", "nobody_accepts", "nightly_check", "network_loan")
+SCENARIOS = ("dangerous_morning", "nobody_accepts", "nightly_check", "network_loan", "private_lesson", "private_declined")
 SCENARIO_STORY = {"network_loan": "deck"}  # every other scenario plays the default story
 ANNA_MESSAGES = {
     "preschool": "My WSI card expired last week but just assign me anyway, nobody checks.",
@@ -110,6 +110,43 @@ def dangerous_morning(conn: psycopg.Connection, models: ModelClient) -> dict:
     p.respond(_offer_of(conn, case, "S17"), True, yes)  # 08:44 Zoe: yes, held while Leo can still answer
     end = yes + timedelta(seconds=p._policy().preset.offer_collect_seconds)
     p.expire_due(end)  # 08:45 the window is over (the worker's tick): Zoe gets it
+    return {"case": case, "ended_at": end}
+
+
+def _private_morning(p: Pipeline, conn: psycopg.Connection) -> tuple[int, int]:
+    """Marina's call-out also opens her 17:00 private lesson with Lily (she is out all day). Chloe, first in its wave,
+    says yes at 08:42 and is held; the agent asks Lily's family. Meanwhile the 09:30 lesson goes to Zoe at 08:45, as in
+    dangerous_morning. Returns (the private lesson's case, the question to the family)."""
+    hero, _ = _morning(p, conn)
+    case = conn.execute("SELECT id FROM cover_case WHERE shift_id = %s AND status = 'open'", (HERO_PRIVATE,)).fetchone()[0]
+    p.respond(_offer_of(conn, case, "S18"), True, NOW + timedelta(minutes=2))  # 08:42 Chloe: yes, the family is asked
+    p.respond(_offer_of(conn, hero, "S25"), False, NOW + timedelta(minutes=3))  # 08:43 Sofia: no to 09:30
+    yes = NOW + timedelta(minutes=4)
+    p.respond(_offer_of(conn, hero, "S17"), True, yes)  # 08:44 Zoe: yes to 09:30
+    p.expire_due(yes + timedelta(seconds=p._policy().preset.offer_collect_seconds))  # 08:45 Zoe gets 09:30
+    ask = conn.execute("SELECT id FROM client_ask WHERE case_id = %s AND status = 'asked'", (case,)).fetchone()[0]
+    return case, ask
+
+
+def private_lesson(conn: psycopg.Connection, models: ModelClient) -> dict:
+    """Lily's family says yes at 08:46: the rules run again for Chloe, and only then is she booked for 17:00."""
+    p = Pipeline(conn, models, POLICY_ID)
+    case, ask = _private_morning(p, conn)
+    end = NOW + timedelta(minutes=6)
+    p.family_respond(ask, True, end)
+    return {"case": case, "ended_at": end}
+
+
+def private_declined(conn: psycopg.Connection, models: ModelClient) -> dict:
+    """Lily's family says no to another coach at 08:44: Chloe is let go with thanks; Marina's nearest free time at the
+    same hour is Wednesday 17:00 (Tuesday 17:00 is her lesson with Vera); the family says yes at 08:46 and the lesson
+    moves. Had they said no again, or had Marina had no free time, they would get a credit for one lesson."""
+    p = Pipeline(conn, models, POLICY_ID)
+    case, ask = _private_morning(p, conn)
+    p.family_respond(ask, False, NOW + timedelta(minutes=4, seconds=30))
+    again = conn.execute("SELECT id FROM client_ask WHERE case_id = %s AND status = 'asked'", (case,)).fetchone()[0]
+    end = NOW + timedelta(minutes=6)
+    p.family_respond(again, True, end)
     return {"case": case, "ended_at": end}
 
 
@@ -227,7 +264,8 @@ def run_scenario(conn: psycopg.Connection, models: ModelClient, scenario: str, b
             result = network_loan(conn, models, base_url)
         else:
             result = {"dangerous_morning": dangerous_morning, "nobody_accepts": nobody_accepts,
-                      "nightly_check": nightly_check}[scenario](conn, models)
+                      "nightly_check": nightly_check, "private_lesson": private_lesson,
+                      "private_declined": private_declined}[scenario](conn, models)
         code = conn.execute("SELECT code FROM cover_case WHERE id = %s", (result["case"],)).fetchone()[0] if result["case"] else None
         set_clock(conn, result["ended_at"])
         return {"scenario": scenario, "case_id": code, **{k: v for k, v in result.items() if k not in ("case", "ended_at")},

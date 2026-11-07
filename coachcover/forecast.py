@@ -199,6 +199,7 @@ def week(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str 
                      + (f" · {', '.join(dict.fromkeys(_level_label(policy, g) for g in shift.groups))}" if shift.groups else ""),
             "holder": {"staff_id": holder, "name": names.get(holder, holder)} if holder else None,
             "uncovered": status[0] == "open", "past": past,
+            "private": bool(shift.groups) and all(g.kind == "private" for g in shift.groups),  # one child, one coach
         }
         if past:
             cell.update({"backups": None, "level": "past", "backup_names": [], "other_venues_cleared": None,
