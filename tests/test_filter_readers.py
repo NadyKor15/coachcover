@@ -59,7 +59,7 @@ def _read(conn, card: str, cert_type: str = "lifeguarding") -> dict:
 
 @pytest.mark.db
 def test_readers_agree_on_dates_but_not_on_the_id_trusted_with_a_note(school):
-    result = _read(school, "h01")  # Maria Lopez; readers: NAT-4ESI-10 and HAT-4851-10
+    result = _read(school, "h01")  # a test card with an earlier fictional name; readers: NAT-4ESI-10 and HAT-4851-10
     assert result["notes"] == ["check_id"] and result["flags"] == []
     assert result["review"] is False
     assert [(c["issued_on"], c["expires_on"], c["review"]) for c in result["cards"]] == [("2025-10-26", "2027-10-26", False)]
@@ -78,7 +78,7 @@ def test_readers_disagree_on_a_date_blocked_until_a_person_checks(school):
     assert "dates_disagree" in result["flags"] and result["review"] is True
     card = result["cards"][0]
     assert school.execute("SELECT needs_review FROM staff_cert WHERE id = %s", (card["id"],)).fetchone() == (True,)
-    school.execute("UPDATE staff_cert SET verified_by_human = 'manager:Dana', verified_at = now() WHERE id = %s", (card["id"],))
+    school.execute("UPDATE staff_cert SET verified_by_human = 'manager:Natalie', verified_at = now() WHERE id = %s", (card["id"],))
     assert school.execute("SELECT needs_review FROM staff_cert WHERE id = %s", (card["id"],)).fetchone() == (False,)
 
 

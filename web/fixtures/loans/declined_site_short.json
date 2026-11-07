@@ -17,7 +17,7 @@
   "borrower": {
     "venue_id": "V1",
     "venue_name": "Riverside Aquatic Center",
-    "manager": "Dana Ruiz",
+    "manager": "Natalie Brooks",
     "agent_url": "http://api:8000/a2a/V1",
     "approved": null
   },
@@ -31,18 +31,18 @@
   "candidate": null,
   "approvals": 0,
   "approvals_needed": 2,
-  "created_at": "2026-11-09T10:15:30.066Z",
-  "closed_at": "2026-11-09T10:15:32.066Z",
+  "created_at": "2026-11-09T10:15:30.035Z",
+  "closed_at": "2026-11-09T10:15:32.035Z",
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "6823d9ad-6fdc-4d31-9439-d335ebbe619e",
-    "task_id": "f1fe5edf-3e29-4bf6-8352-62e6bdda3df4",
+    "context_id": "10276800-19b4-48ab-88fc-ad4e26a3e0c4",
+    "task_id": "3985df0a-6868-4ba5-b703-2d6b55cdd9b9",
     "task_state": "TASK_STATE_REJECTED"
   },
   "steps": [
     {
       "seq": 1,
-      "at": "2026-11-09T10:15:30.066Z",
+      "at": "2026-11-09T10:15:30.035Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -63,7 +63,7 @@
     },
     {
       "seq": 2,
-      "at": "2026-11-09T10:15:30.066Z",
+      "at": "2026-11-09T10:15:30.035Z",
       "at_label": "10:15:30 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -81,7 +81,7 @@
     },
     {
       "seq": 3,
-      "at": "2026-11-09T10:15:31.066Z",
+      "at": "2026-11-09T10:15:31.035Z",
       "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
@@ -121,7 +121,7 @@
     },
     {
       "seq": 4,
-      "at": "2026-11-09T10:15:31.066Z",
+      "at": "2026-11-09T10:15:31.035Z",
       "at_label": "10:15:31 UTC",
       "venue_id": "N1",
       "venue": "Northside",
@@ -152,7 +152,7 @@
     },
     {
       "seq": 5,
-      "at": "2026-11-09T10:15:32.066Z",
+      "at": "2026-11-09T10:15:32.035Z",
       "at_label": "10:15:32 UTC",
       "venue_id": "V1",
       "venue": "Riverside",
@@ -170,7 +170,7 @@
     },
     {
       "seq": 6,
-      "at": "2026-11-09T10:15:32.066Z",
+      "at": "2026-11-09T10:15:32.035Z",
       "at_label": "10:15:32 UTC",
       "venue_id": "V1",
       "venue": "Riverside",

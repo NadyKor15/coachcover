@@ -89,7 +89,7 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     # names and the story, from the data
     assert today["title"] == "Who is allowed on deck at 06:00"
     assert today["venue"] == {"id": "V1", "name": "Riverside Aquatic Center", "term": "pool"}
-    assert today["user_label"] == "Dana Ruiz · Manager" and today["now_label"] == "Mon, Nov 9 · 05:15"
+    assert today["user_label"] == "Natalie Brooks · Manager" and today["now_label"] == "Mon, Nov 9 · 05:15"
     callout = today["callout"]
     assert callout["staff"] == "Marina Petrova · Lifeguard + WSI" and callout["case_id"] == "C-1109-01"
     assert callout["transcript_original"] == ref["callout"]["transcript_original"]
@@ -108,14 +108,14 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert elig["first_refusal"]["contrast_quote"] == ref["eligibility"]["first_refusal"]["contrast_quote"]
     assert sum(r["count"] for r in elig["reasons"]) == 40 - 5
     assert {r["tone"] for r in elig["reasons"]} <= {"red", "amber", "plain"}
-    assert [s["name"] for s in elig["staff"] if s["highlight"]] == ["Maria Lopez"]
+    assert [s["name"] for s in elig["staff"] if s["highlight"]] == ["Zoe Grant"]
     assert [(o["staff"], o["result"]) for o in today["offers"]] == [
-        ("Sofia Reyes", "declined"), ("Leo Martins", "no_reply"), ("Maria Lopez", "accepted")]
-    maria = today["offers"][-1]
-    assert maria["why_first"] == "Maria third: 12 h this week, Level 3, same pool" and maria["time_label"] == "05:14"
+        ("Sofia Reyes", "declined"), ("Leo Martins", "no_reply"), ("Zoe Grant", "accepted")]
+    zoe = today["offers"][-1]
+    assert zoe["why_first"] == "Zoe third: 12 h this week, Level 3, same pool" and zoe["time_label"] == "05:14"
     assert [(t["time_label"], t["kind"]) for t in today["timeline"]] == [
         ("05:12", "callout"), ("05:13", "declined"), ("05:14", "accepted"), ("05:15", "no_reply"), ("06:00", "shift_start")]
-    assert today["outcome"] == {"covered_by": "Maria Lopez", "covered_via": None, "covered_time": "05:15", "lessons_cancelled": 0}  # closed at 05:15
+    assert today["outcome"] == {"covered_by": "Zoe Grant", "covered_via": None, "covered_time": "05:15", "lessons_cancelled": 0}  # closed at 05:15
     assert today["plan_b"]["state"] == "standby" and today["plan_b"]["autonomy"] == "propose"
     assert "merge refused" in today["plan_b"]["text"]  # the kids' norm refuses the merge, live
     money = today["money"]  # from coachcover.money with the preset's prices
@@ -126,8 +126,8 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert today["flagged"][0]["staff"] == "Anna Kim"  # her "assign me anyway" message was flagged
     assert today["judge"] == {"running": False, "case_id": "C-1109-01"}
     # the same 12 hours on the phone
-    offer_id = maria_offer = next(o["id"] for o in today["offers"] if o["staff"] == "Maria Lopez")
-    phone = client.get(f"/api/offers/{maria_offer}").json()
+    offer_id = zoe_offer = next(o["id"] for o in today["offers"] if o["staff"] == "Zoe Grant")
+    phone = client.get(f"/api/offers/{zoe_offer}").json()
     assert "12 h this week" in phone["why"] and offer_id.startswith("O-")
 
 
@@ -138,7 +138,7 @@ def test_offer_phone_matches_the_fixture(api):
     phone = client.get(f"/api/offers/O-{offer_id}").json()
     assert shape_gaps(phone, load("offers/O-1.json")) == []
     assert (phone["shift_day"], phone["shift_start"], phone["shift_end"]) == ("today", "06:00", "08:00")
-    assert phone["venue"] == "Riverside Aquatic Center" and phone["manager"] == {"name": "Dana Ruiz", "role": "Manager"}
+    assert phone["venue"] == "Riverside Aquatic Center" and phone["manager"] == {"name": "Natalie Brooks", "role": "Manager"}
     assert [w.split(" — ")[0] for w in phone["why"][:3]] == ["Lifeguard", "WSI", "CPR/AED"]
     assert all(" — valid to " in w for w in phone["why"][:3])
     assert phone["why"][3:] == ["LTS-3 program — current", "12 h this week"]
@@ -198,7 +198,7 @@ def test_nightly_check_opens_a_case_for_the_manager(api):
     approval = conn.execute("SELECT id, status FROM approval WHERE action = 'night_cover'").fetchone()
     assert approval[1] == "pending"
     assert conn.execute("SELECT count(*) FROM offer").fetchone() == (0,)  # nothing happens before the manager says yes
-    assert client.post(f"/api/approvals/{approval[0]}/approve", json={"by": "manager:Dana"}).status_code == 200
+    assert client.post(f"/api/approvals/{approval[0]}/approve", json={"by": "manager:Natalie"}).status_code == 200
     assert conn.execute("SELECT count(*) FROM offer WHERE status = 'pending'").fetchone() == (3,)  # one wave of three
 
 

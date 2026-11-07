@@ -6,7 +6,7 @@
     "term": "pool"
   },
   "now_label": "Mon, Nov 9 · 05:15",
-  "user_label": "Dana Ruiz · Manager",
+  "user_label": "Natalie Brooks · Manager",
   "lang": "en",
   "callout": {
     "case_id": "C-1109-01",
@@ -132,7 +132,7 @@
       },
       {
         "id": "S17",
-        "name": "Maria Lopez",
+        "name": "Zoe Grant",
         "eligible": true,
         "highlight": true,
         "reason_label": null
@@ -307,7 +307,7 @@
       },
       {
         "id": "S04",
-        "name": "Daniel Brooks",
+        "name": "Daniel Shaw",
         "eligible": false,
         "highlight": false,
         "reason_label": "Teaching at 6:00"
@@ -328,7 +328,7 @@
       },
       {
         "id": "S19",
-        "name": "Zoe Coleman",
+        "name": "Megan Coleman",
         "eligible": false,
         "highlight": false,
         "reason_label": "Teaching at 7:00"
@@ -417,12 +417,12 @@
     {
       "time_label": "05:14",
       "kind": "accepted",
-      "label": "Maria Lopez accepted"
+      "label": "Zoe Grant accepted"
     },
     {
       "time_label": "05:15",
       "kind": "no_reply",
-      "label": "Leo Martins: no reply, Maria took it"
+      "label": "Leo Martins: no reply, Zoe took it"
     },
     {
       "time_label": "06:00",
@@ -447,13 +447,13 @@
     {
       "id": "O-3",
       "time_label": "05:14",
-      "staff": "Maria Lopez",
+      "staff": "Zoe Grant",
       "result": "accepted",
-      "why_first": "Maria third: 12 h this week, Level 3, same pool"
+      "why_first": "Zoe third: 12 h this week, Level 3, same pool"
     }
   ],
   "outcome": {
-    "covered_by": "Maria Lopez",
+    "covered_by": "Zoe Grant",
     "covered_via": null,
     "covered_time": "05:15",
     "lessons_cancelled": 0

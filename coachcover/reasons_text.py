@@ -154,7 +154,7 @@ def _level_text(program: str, level: str, preset: Preset | None) -> str:
 
 
 def describe_place(ranked: Ranked, name: str, lang: str = "en", preset: Preset | None = None) -> str:
-    """One line for a queue place, e.g. "Maria first: 12 h this week, Level 3, same venue". Tenure stays in place()."""
+    """One line for a queue place, e.g. "Zoe first: 12 h this week, Level 3, same venue". Tenure stays in place()."""
     if lang not in LANGUAGES:
         raise ValueError(f"unsupported language {lang!r}; use one of {LANGUAGES}")
     t = _PLACE[lang]

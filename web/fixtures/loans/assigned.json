@@ -17,10 +17,10 @@
   "borrower": {
     "venue_id": "V1",
     "venue_name": "Riverside Aquatic Center",
-    "manager": "Dana Ruiz",
+    "manager": "Natalie Brooks",
     "agent_url": "http://api:8000/a2a/V1",
     "approved": {
-      "by": "Dana Ruiz",
+      "by": "Natalie Brooks",
       "at": "2026-11-09T10:16:40.000Z",
       "at_label": "10:16:40 UTC"
     }
@@ -49,8 +49,8 @@
   "closed_at": "2026-11-09T10:17:22.000Z",
   "a2a": {
     "protocol_version": "1.0",
-    "context_id": "b3316dff-4da9-4903-8dd9-0bd8609e1cec",
-    "task_id": "5a451383-5aaf-4c30-a319-e9b569fd9194",
+    "context_id": "ec5937c7-1396-471e-9ff0-7e3a7fe0387c",
+    "task_id": "bc2afb5a-87f8-44c9-a793-477bc32c5063",
     "task_state": "TASK_STATE_COMPLETED"
   },
   "steps": [
@@ -213,13 +213,13 @@
       "actor": "agent",
       "kind": "awaiting_approval",
       "title": "Waiting for both managers",
-      "detail": "Riverside: Dana Ruiz, Northside: Omar Haddad",
+      "detail": "Riverside: Natalie Brooks, Northside: Omar Haddad",
       "data": {
         "name": "Kai Morgan",
         "managers": [
           [
             "V1",
-            "Dana Ruiz"
+            "Natalie Brooks"
           ],
           [
             "N1",
@@ -238,11 +238,11 @@
       "side": "borrower",
       "actor": "manager",
       "kind": "approved",
-      "title": "Dana Ruiz (Riverside manager) approved",
+      "title": "Natalie Brooks (Riverside manager) approved",
       "detail": "",
       "data": {
         "side": "borrower",
-        "manager": "Dana Ruiz"
+        "manager": "Natalie Brooks"
       }
     },
     {
@@ -328,7 +328,7 @@
         "staff_id": "N01",
         "approved_by": {
           "lender": "Omar Haddad",
-          "borrower": "Dana Ruiz"
+          "borrower": "Natalie Brooks"
         }
       }
     },

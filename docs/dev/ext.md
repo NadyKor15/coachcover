@@ -91,8 +91,8 @@ COACHCOVER_A2A_PEERS='...same...' uvicorn --factory coachcover.api:create_app --
  "network_id": "demo-network",
  "shift": {"id": "L-1109-G002", "label": "Mon 06:00–08:00 · Lifeguard · Riverside Aquatic Center", "time_label": "Mon 06:00–08:00"},
  "case": {"id": 1, "ref": "C-1109-01", "link": "/case.html?id=C-1109-01"},
- "borrower": {"venue_id": "V1", "venue_name": "Riverside Aquatic Center", "manager": "Dana Ruiz",
-              "agent_url": "http://…/a2a/V1", "approved": {"by": "Dana Ruiz", "at": "2026-11-09T10:18:00.142Z", "at_label": "10:18:00 UTC"}},
+ "borrower": {"venue_id": "V1", "venue_name": "Riverside Aquatic Center", "manager": "Natalie Brooks",
+              "agent_url": "http://…/a2a/V1", "approved": {"by": "Natalie Brooks", "at": "2026-11-09T10:18:00.142Z", "at_label": "10:18:00 UTC"}},
  "lender": {"venue_id": "N1", "venue_name": "Northside Aquatic Center", "manager": "Omar Haddad", "agent_url": "…", "approved": null},
  "candidate": {"staff_id": "N01", "name": "Kai Morgan", "from_venue": "Northside Aquatic Center",
                "line": "Kai first: 8 h this week, Level 3, 8.6 km away, 4.2 yr at this level", "week_hours": 8.0},
@@ -165,7 +165,7 @@ seed) the week shows 19 fragile shifts across the three venues; with `"policy"` 
     "start": "2026-11-09T10:30:00+00:00", "end": "…", "time_label": "05:30–10:00", "role": "lifeguard",
     "role_label": "Lifeguard", "label": "Mon 05:30–10:00 · Lifeguard", "holder": {"staff_id": "S28", "name": "Ava Mitchell"},
     "uncovered": false, "past": false, "backups": 3, "level": "safe",
-    "backup_names": ["Olivia Grant", "Rafael Ortiz", "Nikita Morozov"], "other_venues_cleared": 11,
+    "backup_names": ["Olivia Hart", "Rafael Ortiz", "Nikita Morozov"], "other_venues_cleared": 11,
     "standby": null}]}],
  "fixes": {
    "standby": [{"shift_id": "…", "label": "Wed 06:00–06:30 · Swim instructor · Level 6", "level": "fragile",
@@ -185,11 +185,11 @@ picked greedily; the test re-runs the rules with the course applied and checks e
 
 ## (6) What if: `POST /api/whatif`
 
-JSON `{"text": "А если завтра и Мария заболеет?"}` or multipart `text` / `audio`. Answer:
+JSON `{"text": "А если завтра и Зои заболеет?"}` or multipart `text` / `audio`. Answer:
 ```json
 {"dry_run": true,
  "question": {"text": "…", "heard_from": "text|voice", "language": "ru"},
- "understood": {"by": "muse-glimmer-30b|fallback", "people": [{"name": "Maria", "day": "tomorrow", "staff_id": "S17", "staff_name": "Maria …"}],
+ "understood": {"by": "muse-glimmer-30b|fallback", "people": [{"name": "Zoe", "day": "tomorrow", "staff_id": "S17", "staff_name": "Zoe …"}],
                 "unknown": [], "ambiguous": []},
  "plan": [{"staff_id": "S17", "staff_name": "…", "date": "2026-11-10", "day": "tomorrow", "reported_at": "…",
            "shifts": [{"shift_id": "L-1110-G005", "label": "…", "time_label": "Tue 06:00–06:30", "cleared": 9,
@@ -202,7 +202,7 @@ JSON `{"text": "А если завтра и Мария заболеет?"}` or m
                                                                "text": "merging with the Level 2 group at 06:00 would put 9 participants with 1 instructor(s); the norm is 1:8"}]},
                        "cost": {"if_someone_says_yes_usd": 0.0, "if_nobody_says_yes_usd": 0.0, "if_nobody_families_affected": null, "basis": "…"}}]}],
  "summary": {"shifts": 1, "covered": 1, "need_plan_b": 0, "norm_breaks_if_nobody": 1, "worst_case_usd": 0.0,
-             "headline": "Maria … off tomorrow: 1 shift(s) · 1 covered (Marina) · 1 norm break(s) if nobody says yes · worst case $0.00"},
+             "headline": "Zoe … off tomorrow: 1 shift(s) · 1 covered (Marina) · 1 norm break(s) if nobody says yes · worst case $0.00"},
  "model_calls": [{"purpose": "whatif_parse", "model": "muse-glimmer-30b", "source": "recorded", "ok": true, "synthetic": true, "duration_ms": 900, "cost_usd": 6.9e-05}],
  "database": {"before": "<sha256>", "after": "<sha256>", "unchanged": true},
  "note": "Plan only: the pipeline ran in a transaction that was rolled back. Nothing was sent, booked or stored."}
@@ -228,7 +228,7 @@ shift" once the night check's case is covered.
 
 ## (10) Team chat posts: `GET /api/team-posts`
 
-After each closed cover (`covered` or `plan_b`): `"06:00 covered by Maria, case C-1109-01"` with
+After each closed cover (`covered` or `plan_b`): `"06:00 covered by Zoe, case C-1109-01"` with
 `link: "/case.html?id=C-1109-01"`, channel `#<first word of the venue>-staff`, delivery `simulated`, a log line
 `would post to #riverside-staff: …`. Once per case. `GET` runs the sweep; the worker can call
 `notify.sweep(conn, policy_id, now)` each tick. A loan posts on both venues' channels.

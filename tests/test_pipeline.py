@@ -16,7 +16,7 @@ pytestmark = pytest.mark.db
 FIXTURES = Path(__file__).parent / "fixtures"
 RU_VOICE = (FIXTURES / "audio" / "ru-callout.ogg").read_bytes()
 HERO, NEXT_DOOR = "L-1109-G002", "L-1109-G001"
-QUEUE = ["S25", "S26", "S17", "S20", "S22"]  # Sofia 6 h, Leo 9 h, Maria 12 h, then 15, 16 h
+QUEUE = ["S25", "S26", "S17", "S20", "S22"]  # Sofia 6 h, Leo 9 h, Zoe 12 h, then 15, 16 h
 RESTING = "S24"  # Gabriela closed Lakeview at 21:00 Sunday: only 9 h of rest before 06:00
 TRAPS = {"S07", "S10", "S13", "S14", "S27"}
 RESERVE = {"S06", "S12", "S23"}
@@ -77,14 +77,14 @@ def test_voice_callout_to_covered_shift_with_case_file(school):
     wave = school.execute("SELECT staff_id, wave, place->>'line' FROM offer WHERE case_id = %s ORDER BY queue_pos",
                           (case,)).fetchall()
     assert [(sid, w) for sid, w, _ in wave] == [("S25", 1), ("S26", 1), ("S17", 1)]  # one wave of three, queue order
-    assert wave[2][2] == "Maria third: 12 h this week, Level 3, same pool"
+    assert wave[2][2] == "Zoe third: 12 h this week, Level 3, same pool"
     offer = dict((sid, oid) for oid, sid in school.execute("SELECT id, staff_id FROM offer WHERE case_id = %s", (case,)))
     p.respond(offer["S25"], False, minutes(1))  # 05:13 Sofia: no
-    held = p.respond(offer["S17"], True, minutes(2))  # 05:14 Maria: yes, held while Leo (higher) may still answer
+    held = p.respond(offer["S17"], True, minutes(2))  # 05:14 Zoe: yes, held while Leo (higher) may still answer
     assert (held["status"], held["case_status"]) == ("held", "open")
     p.expire_due(minutes(2.5))  # inside the 60 s window: nothing moves
     assert school.execute("SELECT status FROM offer WHERE id = %s", (offer["S17"],)).fetchone() == ("held",)
-    p.expire_due(minutes(3))  # 05:15 the window is over: Maria gets it, Leo stands down
+    p.expire_due(minutes(3))  # 05:15 the window is over: Zoe gets it, Leo stands down
     assert school.execute("SELECT staff_id, status FROM offer WHERE case_id = %s ORDER BY queue_pos", (case,)).fetchall() == [
         ("S25", "declined"), ("S26", "withdrawn"), ("S17", "accepted")]
     assert school.execute("SELECT staff_id, status FROM shift WHERE id = %s", (HERO,)).fetchone() == ("S17", "scheduled")

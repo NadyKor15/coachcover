@@ -6,7 +6,7 @@
     "term": "pool"
   },
   "now_label": "Mon, Nov 9 · 05:17",
-  "user_label": "Dana Ruiz · Manager",
+  "user_label": "Natalie Brooks · Manager",
   "lang": "en",
   "callout": {
     "case_id": "C-1109-01",
@@ -132,7 +132,7 @@
       },
       {
         "id": "S17",
-        "name": "Maria Lopez",
+        "name": "Zoe Grant",
         "eligible": true,
         "highlight": false,
         "reason_label": null
@@ -307,7 +307,7 @@
       },
       {
         "id": "S04",
-        "name": "Daniel Brooks",
+        "name": "Daniel Shaw",
         "eligible": false,
         "highlight": false,
         "reason_label": "Teaching at 6:00"
@@ -328,7 +328,7 @@
       },
       {
         "id": "S19",
-        "name": "Zoe Coleman",
+        "name": "Megan Coleman",
         "eligible": false,
         "highlight": false,
         "reason_label": "Teaching at 7:00"
@@ -422,7 +422,7 @@
     {
       "time_label": "05:13",
       "kind": "declined",
-      "label": "Maria Lopez declined"
+      "label": "Zoe Grant declined"
     },
     {
       "time_label": "05:14",
@@ -457,9 +457,9 @@
     {
       "id": "O-3",
       "time_label": "05:13",
-      "staff": "Maria Lopez",
+      "staff": "Zoe Grant",
       "result": "declined",
-      "why_first": "Maria third: 12 h this week, Level 3, same pool"
+      "why_first": "Zoe third: 12 h this week, Level 3, same pool"
     },
     {
       "id": "O-4",

@@ -3,7 +3,7 @@
   "status": "covered",
   "status_label": "Covered",
   "covered_time_label": "05:15",
-  "covered_by": "Maria Lopez",
+  "covered_by": "Zoe Grant",
   "covered_via": null,
   "shift_label": "06:00 Lanes 3–4 lap swim + Learn-to-Swim Level 3",
   "venue": {
@@ -11,7 +11,7 @@
     "name": "Riverside Aquatic Center"
   },
   "date_label": "Mon, Nov 9",
-  "user_label": "Dana Ruiz · Manager",
+  "user_label": "Natalie Brooks · Manager",
   "opened_at": "2026-11-09T10:12:00Z",
   "closed_at": "2026-11-09T10:15:00Z",
   "steps": [
@@ -148,7 +148,7 @@
         },
         {
           "id": "S17",
-          "name": "Maria Lopez",
+          "name": "Zoe Grant",
           "allowed": true,
           "reason_label": null
         },
@@ -298,7 +298,7 @@
         },
         {
           "id": "S04",
-          "name": "Daniel Brooks",
+          "name": "Daniel Shaw",
           "allowed": false,
           "reason_label": "Teaching at 6:00"
         },
@@ -316,7 +316,7 @@
         },
         {
           "id": "S19",
-          "name": "Zoe Coleman",
+          "name": "Megan Coleman",
           "allowed": false,
           "reason_label": "Teaching at 7:00"
         },
@@ -395,16 +395,16 @@
           "time_label": "05:15",
           "staff": "Leo Martins",
           "result": "no_reply",
-          "result_label": "no reply, Maria took it",
+          "result_label": "no reply, Zoe took it",
           "why_first": "Leo second: 9 h this week, Level 3, same pool"
         },
         {
           "id": "O-3",
           "time_label": "05:14",
-          "staff": "Maria Lopez",
+          "staff": "Zoe Grant",
           "result": "accepted",
           "result_label": "accepted",
-          "why_first": "Maria third: 12 h this week, Level 3, same pool"
+          "why_first": "Zoe third: 12 h this week, Level 3, same pool"
         }
       ]
     },
@@ -420,7 +420,7 @@
       "at": "2026-11-09T10:15:00Z",
       "time_label": "10:15:00 UTC",
       "title": "Schedule covered",
-      "summary": "06:00 covered by Maria Lopez · 0 lessons cancelled"
+      "summary": "06:00 covered by Zoe Grant · 0 lessons cancelled"
     }
   ],
   "proof": {

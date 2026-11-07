@@ -2,9 +2,9 @@
  "purpose": "whatif_parse",
  "model": "muse-glimmer-30b",
  "input": {
-  "question": "А если завтра и Мария заболеет?"
+  "question": "А если завтра и Зои заболеет?"
  },
- "input_sha256": "96d85e1d254baa3b23d14c1e8e36568c82c0b3da42fbe811109e908da741bdcf",
+ "input_sha256": "5e7ee32b69ccf1965d2dc78fc15ec5f22a778bcaabe59ef4045c520cc1c1a81d",
  "synthetic": true,
  "source": "synthetic: written by hand to the whatif_parse schema, only facts from the question",
  "duration_ms": 900,
@@ -18,7 +18,7 @@
    {
     "message": {
      "role": "assistant",
-     "content": "{\"people\": [{\"name\": \"Maria\", \"day\": \"tomorrow\"}], \"language\": \"ru\"}"
+     "content": "{\"people\": [{\"name\": \"Zoe\", \"day\": \"tomorrow\"}], \"language\": \"ru\"}"
     }
    }
   ]

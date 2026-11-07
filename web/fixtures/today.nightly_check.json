@@ -6,7 +6,7 @@
     "term": "pool"
   },
   "now_label": "Sun, Nov 8 · 21:30",
-  "user_label": "Dana Ruiz · Manager",
+  "user_label": "Natalie Brooks · Manager",
   "lang": "en",
   "callout": null,
   "shift": {
@@ -135,14 +135,14 @@
       },
       {
         "id": "S19",
-        "name": "Zoe Coleman",
+        "name": "Megan Coleman",
         "eligible": true,
         "highlight": false,
         "reason_label": null
       },
       {
         "id": "S17",
-        "name": "Maria Lopez",
+        "name": "Zoe Grant",
         "eligible": true,
         "highlight": false,
         "reason_label": null
@@ -261,7 +261,7 @@
       },
       {
         "id": "S04",
-        "name": "Daniel Brooks",
+        "name": "Daniel Shaw",
         "eligible": false,
         "highlight": false,
         "reason_label": "Not cleared for LTS-2"

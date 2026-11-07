@@ -44,18 +44,18 @@ def test_the_preset_sets_the_waves():
 def test_two_yes_in_the_window_the_one_higher_in_the_queue_gets_the_shift(morning):
     conn, p, case = morning
     o = offers(conn, case)
-    assert list(o) == ["S25", "S26", "S17"]  # Sofia, Leo, Maria: one wave
-    p.respond(o["S17"], True, at(2))  # 05:14 Maria: yes (Sofia and Leo, higher, have not answered)
+    assert list(o) == ["S25", "S26", "S17"]  # Sofia, Leo, Zoe: one wave
+    p.respond(o["S17"], True, at(2))  # 05:14 Zoe: yes (Sofia and Leo, higher, have not answered)
     p.respond(o["S26"], True, at(2.25))  # 05:14:15 Leo: yes, still below Sofia, who may answer
     assert statuses(conn, case) == [("S25", "pending"), ("S26", "held"), ("S17", "held")]
     p.expire_due(at(2.9))  # 55 s after the first yes: still collecting
     assert conn.execute("SELECT staff_id FROM shift WHERE id = %s", (HERO,)).fetchone() == (None,)
-    p.expire_due(at(3))  # 05:15, 60 s after Maria's yes: the higher yes wins
+    p.expire_due(at(3))  # 05:15, 60 s after Zoe's yes: the higher yes wins
     assert conn.execute("SELECT staff_id, status FROM shift WHERE id = %s", (HERO,)).fetchone() == ("S26", "scheduled")
     assert statuses(conn, case) == [("S25", "withdrawn"), ("S26", "accepted"), ("S17", "withdrawn")]
     texts = dict(conn.execute("SELECT staff_id, body FROM message WHERE case_id = %s AND audience = 'staff'"
                               " AND body LIKE '%%Leo%%'", (case,)).fetchall())
-    assert set(texts) == {"S25", "S17"}  # Sofia (silent) and Maria (the lower yes) both stand down, in Spanish
+    assert set(texts) == {"S25", "S17"}  # Sofia (silent) and Zoe (the lower yes) both stand down, in Spanish
     assert texts["S17"] == "CoachCover: gracias — Leo ya cubrió Mon 09.11 06:00-08:00."
 
 

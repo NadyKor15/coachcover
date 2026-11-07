@@ -69,8 +69,8 @@ def test_closure_and_certificate_upload(api):
                                               "ends_at": "2026-11-09T08:00:00-05:00"}).status_code == 422
     assert client.post("/api/closures", json={"venue_id": "V1", "reason": "weather", "starts_at": "2026-11-09T06:00:00",
                                               "ends_at": "2026-11-09T08:00:00"}).status_code == 422
-    with open(FIXTURES / "cards" / "hard" / "h01.jpg", "rb") as f:  # Maria Lopez's card: dates agree, card number not
-        card = client.post("/api/staff/S17/certificates", data={"cert_type": "lifeguarding"},
+    with open(FIXTURES / "cards" / "hard" / "h04.jpg", "rb") as f:  # Sofia Reyes's card: dates agree, card number not
+        card = client.post("/api/staff/S25/certificates", data={"cert_type": "lifeguarding"},
                            files={"photo": ("card.jpg", f, "image/jpeg")}).json()
     assert card["review"] is False and card["notes"] == ["check_id"]
     assert client.post("/api/staff/S02/certificates", files={"photo": ("a.txt", b"hello", "text/plain")}).status_code == 415

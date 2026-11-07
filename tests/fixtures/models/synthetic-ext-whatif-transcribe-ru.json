@@ -2,16 +2,16 @@
  "purpose": "transcribe",
  "model": "whisper-large-v3-turbo",
  "input": {
-  "audio_sha256": "886c31358c1238b1c39f00e81f7711677515179dffafe72c2ee73daabf322268"
+  "audio_sha256": "f02c9f95019d1127a4b172acef444f943c25db0f6f92df2a87ea8022754b43a3"
  },
- "input_sha256": "69aca0c4888759f3264e47450b5234d98e66ec586635fcc6d758966bfde623b7",
+ "input_sha256": "4f1f84708caf5db8b41f0869ff86a39b1ded7b36bb550e8595a3f673d412000b",
  "synthetic": true,
  "source": "synthetic: the audio is macOS text-to-speech (voice Milena) of this exact sentence; the speech model was not called",
  "duration_ms": 640,
  "response": {
-  "text": " А если завтра и Мария заболеет?",
+  "text": " А если завтра и Зои заболеет?",
   "model": "whisper-large-v3-turbo",
   "language": "russian",
-  "duration": 2.08
+  "duration": 2.01
  }
 }

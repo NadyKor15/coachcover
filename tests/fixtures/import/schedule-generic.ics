@@ -19,7 +19,7 @@ DTSTART;TZID=America/New_York:20261026T060000
 DTEND;TZID=America/New_York:20261026T063000
 RRULE:FREQ=WEEKLY;BYDAY=MO,WE;COUNT=6
 EXDATE;TZID=America/New_York:20261028T060000
-ATTENDEE;CN="Daniel Brooks";ROLE=REQ-PARTICIPANT:mailto:daniel.brooks@example.com
+ATTENDEE;CN="Daniel Shaw";ROLE=REQ-PARTICIPANT:mailto:daniel.shaw@example.com
 END:VEVENT
 BEGIN:VEVENT
 UID:class-l3@example.com
@@ -29,7 +29,7 @@ CATEGORIES:Swim instructor
 LOCATION:Northside
 DTSTART;TZID=America/New_York:20261102T070000
 DTEND;TZID=America/New_York:20261102T073000
-ATTENDEE;CN="Daniel Brooks":mailto:daniel.brooks@example.com
+ATTENDEE;CN="Daniel Shaw":mailto:daniel.shaw@example.com
 END:VEVENT
 BEGIN:VEVENT
 UID:night-guard@example.com

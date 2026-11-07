@@ -60,6 +60,7 @@ _CYR = dict(zip("абвгдеёжзийклмнопрстуфхцчшщъыьэ�
                 ["a", "b", "v", "g", "d", "e", "e", "zh", "z", "i", "y", "k", "l", "m", "n", "o", "p", "r", "s", "t",
                  "u", "f", "kh", "ts", "ch", "sh", "shch", "", "y", "", "e", "yu", "ya"]))
 _CYR_NAMES = {"мария": "maria", "мэри": "mary", "софия": "sofia", "анна": "anna", "марина": "marina",
+              "зои": "zoe", "зоя": "zoe",
               "лео": "leo", "ноа": "noah", "кай": "kai", "дмитрий": "dmitri", "елена": "elena", "ирина": "irina"}
 OFFER_ANSWER_STEP = timedelta(seconds=30)
 
