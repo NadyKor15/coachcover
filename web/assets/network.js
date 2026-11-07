@@ -248,8 +248,8 @@
     btn.disabled = false;
   }
 
-  async function loadLoan() {
-    const r = await CC.get('/api/network/loans/' + encodeURIComponent(loanRef));
+  async function loadLoan(ref) {
+    const r = await CC.get('/api/network/loans/' + encodeURIComponent(ref));
     const err = $('#loadErr');
     if (r.status === 200 && r.body && typeof r.body === 'object') {
       ui.loan = r.body;
@@ -257,7 +257,7 @@
       document.body.dataset.state = 'ready';
       render();
     } else {
-      err.textContent = 'Could not load loan ' + loanRef + ' — ' + CC.errorText(r);
+      err.textContent = 'Could not load loan ' + ref + ' — ' + CC.errorText(r);
       err.hidden = false;
       document.body.dataset.state = ui.loan ? 'ready' : 'error';
     }
@@ -267,7 +267,9 @@
     const [n, t] = await Promise.all([CC.get('/api/network'), CC.get('/api/today')]);
     ui.network = n.status === 200 ? n.body : null;
     ui.today = t.status === 200 ? t.body : null;
-    if (loanRef) return loadLoan();
+    // without ?loan= the page opens the loan of the morning's case, if there is one (the judge's network scene)
+    const ref = loanRef || (ui.today && ui.today.network_loan && ui.today.network_loan.code) || '';
+    if (ref) return loadLoan(ref);
     ui.loan = null;
     document.body.dataset.state = 'ready';
     render();

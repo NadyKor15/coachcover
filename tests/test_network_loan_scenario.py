@@ -49,6 +49,13 @@ def test_network_loan_covers_the_hero_shift_with_both_approvals(api):
                          " JOIN cover_case c ON c.id = o.case_id WHERE c.code = 'C-1109-01'").fetchone()
     assert asked[0] == asked[1] == 5
     assert conn.execute("SELECT staff_id FROM shift WHERE id = 'L-1109-G002'").fetchone() == ("N01",)
+    # the founder's morning, not the old 06:00 deck shift: the 09:30 preschool lesson, an instructor, 08:45:20
+    assert body["ended_at"].startswith("2026-11-09T08:45:20")
+    assert (today["shift"]["time_label"], today["shift"]["needs_label"]) == ("09:30–10:15", "Instructor")
+    labels = [t.get("label") for t in today["timeline"]]
+    assert ["Asked the network", "Northside offers Kai Morgan", "Both managers agreed"] == [
+        x for x in labels if x in ("Asked the network", "Northside offers Kai Morgan", "Both managers agreed")]
+    assert today["network_loan"]["code"] == body["loan"]  # the Network screen opens it without ?loan=
 
 
 def test_loan_steps_follow_each_other_in_time_on_both_agents(api):

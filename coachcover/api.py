@@ -19,8 +19,8 @@ from pathlib import Path
 from typing import Iterator
 
 import psycopg
+from anyio import to_thread
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Response, UploadFile
-from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -144,15 +144,15 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
         path = request.url.path
         if not path.startswith("/api/") or path == "/api/judge/run":
             return await call_next(request)
-        if await run_in_threadpool(resetting):
+        if await to_thread.run_sync(resetting):
             return busy()
         try:
             response = await call_next(request)
         except Exception:
-            if await run_in_threadpool(resetting):  # the rebuild started while this request ran
+            if await to_thread.run_sync(resetting):  # the rebuild started while this request ran
                 return busy()
             raise
-        if response.status_code in (422, 500) and await run_in_threadpool(resetting):
+        if response.status_code in (422, 500) and await to_thread.run_sync(resetting):
             return busy()
         return response
 

@@ -304,6 +304,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
         "model_log": {"label": None, "calls": 0, "usd": 0.0},
         "flagged": [],
         "night_check": _night_check(conn, vid, now, tz),
+        "network_loan": None,
         "ratio_alert": _ratio_alert(conn, vid, now, tz, preset),
         "judge": judge,
     }
@@ -390,6 +391,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
             timeline.append({"time_label": _clock(when, tz), "kind": result, "label": label, "_at": when})
     if info["private"]:
         timeline.extend({**step, "time_label": _clock(step["_at"], tz)} for step in _family_steps(events))
+    timeline.extend({**step, "time_label": _clock(step["_at"], tz)} for step in _network_steps(events))
     # a plan shown and then replaced because the facts changed: when it was shown, and what changed (stable sort:
     # these come before the current plan's line at the same minute)
     for (created,) in conn.execute("SELECT created_at FROM plan_b WHERE case_id = %s AND status = 'superseded'"
@@ -441,6 +443,8 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
                       # a private lesson: the family has the question until then (the banner says so)
                       "family_wait_until": next((_clock(by, tz) for (by,) in conn.execute(
                           "SELECT answer_by FROM client_ask WHERE case_id = %s AND status = 'asked'", (case_id,))), None)}
+    loan = next((data.get("loan") for _, _, kind, data in reversed(events) if kind == "network_loan_requested"), None)
+    out["network_loan"] = {"code": loan, "link": f"/network.html?loan={loan}"} if loan else None
     out["model_log"] = _model_log(conn, case_id, callout_id, live)
     out["money"] = today_money_block(conn, policy_id, now, vid, private=info["private"])
     out["flagged"] = [
@@ -541,6 +545,23 @@ def _family_offers(conn: psycopg.Connection, case_id: int) -> dict[int, tuple[st
     return {oid: (status, at) for oid, status, at in conn.execute(
         "SELECT offer_id, status, coalesce(answered_at, CASE WHEN status = 'silent' THEN answer_by END, asked_at)"
         " FROM client_ask WHERE case_id = %s AND kind = 'cover' ORDER BY id", (case_id,))}
+
+
+def _network_steps(events: list) -> list[dict]:
+    """A loan from another venue of the network, for the morning's timeline: asked, offered, both managers agreed."""
+    out, approvals = [], 0
+    for _, at, kind, data in events:
+        label = None
+        if kind == "network_loan_requested":
+            label = "Asked the network"
+        elif kind == "network_loan_offered":
+            label = f"{str(data.get('from') or 'Another venue').split()[0]} offers {data.get('name')}"
+        elif kind == "network_loan_approved":
+            approvals += 1
+            label = "Both managers agreed" if approvals == 2 else None
+        if label:
+            out.append({"kind": "network", "label": label, "_at": at})
+    return out
 
 
 def _family_steps(events: list) -> list[dict]:

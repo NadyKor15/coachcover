@@ -74,9 +74,7 @@ Scenario (each step is a row of `ext_loan_step`, written by the side that took i
    the shift, closes the case (`shift_covered` event, `via: network_loan`), supersedes plan B, messages the
    person; team posts on both channels.
 
-Demo: the judge scenario `network_loan` plays it on the deck story of the training school (Marina's 06:00 deck
-shift; `reset_school(conn, "deck")`). On the preschool morning (09:30, ages 3–5) Northside has nobody with the
-preschool training, so a loan for that lesson is declined.
+Demo: the judge scenario `network_loan` plays the founder's morning (the preschool story): Marina's 09:30 preschool lesson; everyone allowed at Riverside (Sofia, Leo, Zoe, then Mateo and Ethan) says no; Riverside's agent asks the network; Northside offers Kai Morgan, who holds the preschool training (training data), Riverside's rules clear him, Natalie Brooks and Omar Haddad approve, and he is booked at 08:45:20. Today shows "Asked the network", "Northside offers Kai Morgan", "Both managers agreed" and gives the loan's code (`network_loan`), which the Network screen opens without `?loan=`. The A2A tests still use the deck story (`reset_school(conn, "deck")`).
 
 Two agents, two addresses on one machine: run two servers and point the borrower at the lender:
 ```bash

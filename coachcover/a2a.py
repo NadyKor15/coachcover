@@ -311,8 +311,7 @@ def _install_member(conn: psycopg.Connection, m: dict) -> None:
                  date.fromisoformat(expires), f"manager:{m['venue_id']}",
                  datetime.combine(date.fromisoformat(issued), time(12, 0), tzinfo=UTC)),
             )
-        prog = s.get("program")
-        if prog:
+        for prog in [*([s["program"]] if s.get("program") else []), *s.get("programs", [])]:
             program_id = conn.execute("SELECT id FROM program WHERE preset_code = %s AND code = %s",
                                       (preset, prog["code"])).fetchone()[0]
             sp_id = conn.execute(

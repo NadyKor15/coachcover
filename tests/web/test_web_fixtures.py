@@ -30,7 +30,7 @@ NESTED = {
     "money": {"uncovered_morning_usd", "uncovered_morning_label", "case_cost_cents", "manager_hour_usd"},
     "model_log": {"label", "calls", "usd"},
 }
-EXTENSIONS = {"today": {"flagged", "night_check", "ratio_alert", "judge"}, "callout": {"asr_label"},
+EXTENSIONS = {"today": {"flagged", "night_check", "ratio_alert", "judge", "network_loan"}, "callout": {"asr_label"},
               "outcome": {"covered_via", "private_line", "family_wait_until"}, "money": {"source", "case_cost_label"},
               "shift": {"private"}, "offer": {"state", "staff", "needs_label", "why_first", "private"}}
 # the family's page of a private lesson (GET /api/client/{Q-n})

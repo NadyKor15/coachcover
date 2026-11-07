@@ -19,6 +19,7 @@
     accepted: { size: 49, svg: '<svg width="26" height="20" viewBox="0 0 26 20" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5l6.5 6L23 3.5"/></svg>' },
     planmark: { size: 44, svg: '<svg width="22" height="18" viewBox="0 0 30 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h8.5l15.5 16"/><path d="M19.5 19.5h7v-7"/><path d="M13.5 6.6C9 9.5 6.4 13.5 6 19"/></svg>' },
     family: { size: 44, svg: '<svg width="22" height="20" viewBox="0 0 22 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3.5h16a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H9l-4.5 3.5V14.5H3A1.5 1.5 0 0 1 1.5 13V5A1.5 1.5 0 0 1 3 3.5z"/></svg>' },
+    network: { size: 44, svg: '<svg width="22" height="20" viewBox="0 0 22 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.5" cy="10" r="3"/><circle cx="17.5" cy="4.5" r="3"/><circle cx="17.5" cy="15.5" r="3"/><path d="M7.3 8.8l7.4-3.1M7.3 11.2l7.4 3.1"/></svg>' },
     other: { size: 44, svg: '' },
     end: { size: 26, svg: '' }
   };
@@ -54,6 +55,7 @@
     if (s === 'declined' || s === 'accepted') return s;
     if (s === 'plan_b' || s === 'planb') return 'planmark';
     if (s === 'family') return 'family';
+    if (s === 'network') return 'network';
     if (s === 'shift_start' || s === 'end') return 'end';
     return 'other';
   }
