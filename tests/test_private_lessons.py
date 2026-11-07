@@ -341,6 +341,9 @@ def test_a_yes_too_close_to_the_start_goes_to_the_manager_not_the_family(morning
     p.respond(offers(conn, case)["S18"], True, at("16:05"))  # under an hour before 17:00: no time to ask
     assert asks(conn, case) == [] and statuses(conn, case)[0] == ("S18", "withdrawn")
     assert "family_too_late" in kinds(conn, case)
+    late = conn.execute("SELECT body FROM message WHERE case_id = %s AND staff_id = 'S18' ORDER BY id DESC LIMIT 1",
+                        (case,)).fetchone()[0]
+    assert "too close to the start to check with the family" in late
     plan = conn.execute("SELECT snapshot FROM plan_b WHERE case_id = %s AND status = 'proposed'", (case,)).fetchone()[0]
     assert [o["kind"] for o in plan["options"]] == ["reschedule_own", "credit"]
     assert conn.execute("SELECT staff_id, status FROM shift WHERE id = %s", (PRIVATE,)).fetchone() == (None, "open")

@@ -74,6 +74,14 @@ RELEASED_SILENT = {
           "No hace falta que vengas.",
     "ru": "CoachCover: спасибо! Семья не ответила вовремя, решение по {when} за менеджером. Приходить не нужно.",
 }
+RELEASED_LATE = {
+    "en": "CoachCover: thank you! It's too close to the start to check with the family, so the manager decides about "
+          "{when}. You don't need to come.",
+    "es": "CoachCover: ¡gracias! Falta muy poco para empezar y no da tiempo a consultar a la familia; el gerente decide "
+          "sobre {when}. No hace falta que vengas.",
+    "ru": "CoachCover: спасибо! До начала слишком мало времени, чтобы спросить семью, решение по {when} за менеджером. "
+          "Приходить не нужно.",
+}
 PRIVATE_MOVED_COACH = {
     "en": "CoachCover: {child}'s private lesson moves to {when} at {venue}. The family agreed. Get well soon!",
     "es": "CoachCover: la clase privada de {child} pasa a {when} en {venue}. La familia está de acuerdo. ¡Que te mejores!",

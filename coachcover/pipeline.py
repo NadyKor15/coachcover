@@ -920,6 +920,16 @@ class Pipeline:
         absent = self.conn.execute("SELECT s.full_name FROM cover_case c JOIN staff s ON s.id = c.absent_staff_id"
                                    " WHERE c.id = %s", (case_id,)).fetchone()
         answer_by = self._answer_by(info, now, policy)
+        if answer_by <= now:
+            # too close to the start to ask: every coach still open is let go and the manager decides (move or credit)
+            self._event(case_id, now, "agent", "family_too_late", {"staff_id": staff_id, "name": coach,
+                                                                    "answer_by": answer_by})
+            for other_id, other in self.conn.execute(
+                "SELECT id, staff_id FROM offer WHERE case_id = %s AND status IN ('pending', 'held') AND NOT overtime"
+                " ORDER BY queue_pos", (case_id,)).fetchall():
+                self._release(case_id, other_id, other, info, now, M.RELEASED_LATE)
+            self.propose_plan_b(case_id, now)
+            return {"offer_id": offer_id, "staff_id": staff_id, "asked": None}
         for other_id, other in self.conn.execute(
             "UPDATE offer SET status = 'withdrawn' WHERE case_id = %s AND status IN ('pending', 'held') AND id <> %s"
             " AND NOT overtime RETURNING id, staff_id", (case_id, offer_id),
@@ -929,13 +939,6 @@ class Pipeline:
             lang = M.lang_or_en(self._staff_row(other)["language"])
             self._message(now, "staff", lang, M.PRIVATE_STOOD_DOWN[lang].format(name=coach.split()[0], when=self._when(info)),
                           staff_id=other, case_id=case_id, offer_id=other_id)
-        if answer_by <= now:
-            # too close to the start to ask: the coach is let go and the manager decides (move or credit)
-            self._event(case_id, now, "agent", "family_too_late", {"staff_id": staff_id, "name": coach,
-                                                                    "answer_by": answer_by})
-            self._release(case_id, offer_id, staff_id, info, now, M.RELEASED_SILENT)
-            self.propose_plan_b(case_id, now)
-            return {"offer_id": offer_id, "staff_id": staff_id, "asked": None}
         facts = {"kind": "cover", "language": family["language"], "child": family["child"],
                  "absent": absent[0].split()[0] if absent else "Your coach", "coach": coach.split()[0],
                  "time": f"{info['local_start']:%H:%M}", "date": info["local_start"].date(), "venue": info["venue"]}
