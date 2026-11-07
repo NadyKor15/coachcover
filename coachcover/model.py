@@ -21,6 +21,7 @@ WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", 
 AUTONOMY_ACTIONS = ("assign_cover", "plan_b", "merge_groups", "overtime", "night_cover")
 AUTONOMY_MODES = ("auto", "propose", "off")
 REMEDIES = ("credit", "makeup")
+MONEY_KEYS = ("lesson_price", "refund_share", "hourly_wage", "overtime_multiplier", "inspection_penalty", "manager_hour")
 
 
 def check_autonomy(autonomy: Mapping[str, str]) -> None:
@@ -128,6 +129,7 @@ class Preset:
     young_age_max: int | None = None  # groups with children up to this age use young_max_per_instructor
     young_max_per_instructor: int | None = None
     copy: Mapping[str, str] = field(default_factory=dict)  # screen and prompt texts of this kind of business
+    money: Mapping[str, Mapping[str, object]] = field(default_factory=dict)  # prices for the money card, see MONEY_KEYS
 
     def __post_init__(self) -> None:
         _require_code(self.code, "preset code")

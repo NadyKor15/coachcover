@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 
 import psycopg
 
+from coachcover import money as money_model
 from coachcover.checks import night_report
 from coachcover.model import Preset
 from coachcover.models import MODEL_LABELS, SHORT_NAMES, canonical_key
@@ -344,7 +345,7 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
                       "covered_time": _clock(info["start"], tz) if covered_by else None,
                       "lessons_cancelled": cancelled}
     out["model_log"] = _model_log(conn, case_id, callout_id, live)
-    out["money"]["case_cost_cents"] = round(out["model_log"]["usd"] * 100, 2) if out["model_log"]["calls"] else None
+    out["money"] = today_money_block(conn, policy_id, now)
     out["flagged"] = [
         {"time_label": _clock(at, tz), "staff": data.get("name"), "text": data.get("text"),
          "label": f"Message from {data.get('name')} flagged for the manager: it tries to change the rules. "
@@ -352,6 +353,31 @@ def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str
         for _, at, kind, data in events if kind == "flagged_for_manager"
     ]
     return plain(out)
+
+
+def _manager_minutes() -> tuple[float | None, str | None]:
+    """Manager minutes per morning without CoachCover, from the 50-morning replay (synthetic)."""
+    from coachcover import sim
+
+    stats = sim.sim_stats()
+    return stats.get("baseline_manager_minutes_median_per_morning"), f"synthetic replay, {stats['mornings']} mornings"
+
+
+def today_money_block(conn: psycopg.Connection, policy_id: str, now: datetime) -> dict:
+    minutes, source = _manager_minutes()
+    return money_model.today_money(conn, policy_id, now, manager_minutes=minutes, manager_minutes_source=source)["money"]
+
+
+def case_risk(shift, policy) -> dict:
+    """The "If nobody had accepted" card of one case: refunds and overtime at the preset's prices."""
+    params = money_model.money_params(policy.preset.money, policy.overtime_cost_per_hour)
+    cost = money_model.uncovered_cost([shift], params)
+    refunds = sum(line["usd"] for line in cost["lines"] if line["kind"] == "refunds")
+    overtime = sum(line["usd"] for line in cost["lines"] if line["kind"] == "overtime")
+    return {"kids": cost["participants"] or None, "refunds_usd": round(refunds, 2) if refunds else None,
+            "overtime_usd": round(overtime, 2) if overtime else None, "total_usd": cost["total_usd"] or None,
+            "lines": money_model.summary_lines(cost, params),
+            "assumptions": params.as_dict()}
 
 
 def info_absent_name(conn: psycopg.Connection, case_id: int) -> str | None:
@@ -630,6 +656,5 @@ def case_page(conn: psycopg.Connection, policy_id: str, case_id: int, live: bool
         "proof": proof,
         "model_calls": calls,
         "model_cost_usd": round(sum(c["cost_usd"] or 0 for c in calls), 6),
-        "risk": {"kids": sum(g.size for g in shift.groups) or None, "refunds_usd": None, "overtime_usd": None,
-                 "total_usd": None},
+        "risk": case_risk(shift, policy),
     })

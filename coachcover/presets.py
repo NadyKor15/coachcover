@@ -10,12 +10,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from coachcover.model import WEEKDAYS, CertType, Level, Policy, Preset, Program, Role, check_autonomy
+from coachcover.model import MONEY_KEYS, WEEKDAYS, CertType, Level, Policy, Preset, Program, Role, check_autonomy
 
 PRESET_DIR = Path(__file__).parent / "presets"
 
 _PRESET_KEYS = {"code", "label", "note", "venue_term", "cert_types", "roles", "programs", "policy_defaults"}
-_PRESET_OPTIONAL = {"note", "young_children", "copy"}
+_PRESET_OPTIONAL = {"note", "young_children", "copy", "money"}
+_PRICE_KEYS = {"value", "unit", "assumption", "note"}
 _DEFAULT_KEYS = {
     "max_weekly_hours",
     "week_start",
@@ -130,7 +131,34 @@ def preset_from_dict(data: dict) -> Preset:
         young_age_max=young["max_age"] if young else None,
         young_max_per_instructor=young["max_per_instructor"] if young else None,
         copy=_copy(data),
+        money=_money(data),
     )
+
+
+def _money(data: dict) -> dict:
+    """Prices for the money card: every one says its unit and whether it is an assumption."""
+    if "money" not in data:
+        return {}
+    where = f"preset {data['code']} money"
+    block = _keys(data["money"], set(MONEY_KEYS), where)
+    out = {}
+    for name, entry in block.items():
+        _keys(entry, _PRICE_KEYS, f"{where}.{name}", optional={"source"})
+        value = entry["value"]
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+            raise ValueError(f"{where}.{name}: value must be a number >= 0")
+        if not isinstance(entry["assumption"], bool):
+            raise ValueError(f"{where}.{name}: assumption must be true or false")
+        if not entry["assumption"] and not entry.get("source"):
+            raise ValueError(f"{where}.{name}: a price that is not an assumption needs a source")
+        if not (isinstance(entry["unit"], str) and isinstance(entry["note"], str)):
+            raise ValueError(f"{where}.{name}: unit and note are text")
+        out[name] = dict(entry)
+    if out["refund_share"]["value"] > 1:
+        raise ValueError(f"{where}.refund_share: value must be between 0 and 1")
+    if out["overtime_multiplier"]["value"] < 1:
+        raise ValueError(f"{where}.overtime_multiplier: value must be >= 1")
+    return out
 
 
 def _copy(data: dict) -> dict[str, str]:

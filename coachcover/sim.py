@@ -19,7 +19,7 @@ Both strategies run on that same morning, each on its own copy of the schedule.
 - CoachCover: `rules.eligible` + `rules.rank`, one offer at a time with the
   policy's timer, the rules again at "yes"; when nobody is left, plan B in the
   core's order (merge, reserve person, overtime, move, close) under the policy's
-  autonomy. The plan B options mirror `Pipeline._plan_facts`.
+  autonomy. Plan B comes from the core's pure function, coachcover.planb.plan_b_options.
 
 Every placement of both strategies is audited by the same `rules.eligible` at the
 moment of booking; a placement with a blocking reason is a violation. Run:
@@ -45,7 +45,7 @@ from zoneinfo import ZoneInfo
 
 from coachcover import seed as school_seed
 from coachcover.model import Commitment, Context, GroupRef, Policy, Shift, Staff, StaffCert, StaffProgram, Venue
-from coachcover.pipeline import OPTION_ORDER, strictest
+from coachcover.planb import plan_b_options as core_plan_b_options
 from coachcover.presets import default_policy
 from coachcover.rules import Code, add_months, assess, eligible, rank
 
@@ -635,39 +635,11 @@ def run_baseline(world: World, morning: Morning, params: SimParams = SimParams()
 # --- CoachCover: rules, ranked offers with a timer, plan B ---------------------------
 
 
-def plan_b_options(state: State, shift: Shift, absent: str, now: datetime) -> list[dict]:
-    """Plan B in the core's order (Pipeline._plan_facts): merge, reserve person, overtime, move, close."""
-    world, staff = state.world, state.morning.staff
-    policy = world.policy
-    auto = policy.autonomy
-    context = state.context()
-    options: list[dict] = []
-    if shift.groups and auto["merge_groups"] != "off":
-        for partner in state.partners(shift):
-            teacher = staff.get(partner.assignee)
-            merged = Shift(partner.id, partner.venue, partner.role, partner.start, partner.end,
-                           partner.groups + shift.groups, partner.instructors, partner.zone,
-                           assignee=None, merged_shift_ids=(shift.id,))
-            if teacher is not None and eligible(teacher, merged, now, policy, context).ok:
-                options.append({"kind": "merge", "mode": strictest(auto["plan_b"], auto["merge_groups"]),
-                                "into_shift_id": partner.id, "staff_id": teacher.id})
-    reserve_roles = {r.code for r in policy.preset.roles.values() if r.reserve}
-    leads = [s for s in staff.values() if s.roles & reserve_roles and s.id != absent]
-    ready = [r for r in rank(assess(s, shift, now, policy, context) for s in leads) if r.candidate.decision.ok]
-    if ready:
-        options.append({"kind": "lead", "mode": auto["plan_b"], "staff_id": ready[0].candidate.staff_id})
-    if auto["overtime"] != "off":
-        people = [s for s in staff.values() if not (s.roles & reserve_roles)]
-        for r in rank(assess(s, shift, now, policy, context) for s in people):
-            blocking = [x for x in r.candidate.decision.reasons if x.blocking]
-            if blocking and all(x.code == Code.HOURS_LIMIT_EXCEEDED for x in blocking):
-                options.append({"kind": "overtime", "mode": strictest("propose", auto["plan_b"]),
-                                "staff_id": r.candidate.staff_id})
-                break
-    if shift.groups:
-        options.append({"kind": "reschedule", "mode": auto["plan_b"]})
-    options.append({"kind": "close", "mode": auto["plan_b"]})
-    options.sort(key=lambda o: OPTION_ORDER.index(o["kind"]))
+def plan_b_options(state: State, shift: Shift, absent: str, now: datetime, exclude: Iterable[str] = ()) -> list[dict]:
+    """Plan B from the core's pure function (coachcover.planb), on the replay's own state."""
+    options, _ = core_plan_b_options(shift=shift, absent=absent, partners=state.partners(shift),
+                                     staff=state.morning.staff, policy=state.world.policy, context=state.context(),
+                                     now=now, exclude=frozenset(exclude))
     return options
 
 

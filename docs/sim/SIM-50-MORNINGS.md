@@ -9,27 +9,27 @@ The school is fictional (`coachcover/seed.py`): 3 venues, 40 staff, 204 shifts i
 
 | Metric | Group chat + phone tree | CoachCover |
 |---|---:|---:|
-| Shifts that needed cover | 90 | 90 |
-| Placements of a person without permission | 46 | 0 |
-|   of them: no role for the shift | 16 | 0 |
-|   of them: certificate expired, missing or unconfirmed | 11 | 0 |
-|   of them: no program or level, renewal overdue | 15 | 0 |
-|   of them: over the weekly hours limit | 4 | 0 |
+| Shifts that needed cover | 85 | 85 |
+| Placements of a person without permission | 44 | 0 |
+|   of them: no role for the shift | 7 | 0 |
+|   of them: certificate expired, missing or unconfirmed | 16 | 0 |
+|   of them: no program or level, renewal overdue | 18 | 0 |
+|   of them: over the weekly hours limit | 3 | 0 |
 |   of them: group norm broken | 0 | 0 |
-| Placements with an expired certificate (any reason list) | 10 | 0 |
-| People placed (cover, merge, reserve, overtime) | 90 | 87 |
-| Median minutes from call-out to a closed shift | 13.4 | 18.9 |
-| 90th percentile, minutes | 15.8 | 46.2 |
-| Closed after the shift had started | 0 | 10 |
-| Closed without a person (no manager step), % | 0.0 | 68.9 |
-| Lessons cancelled or moved | 0 | 0 |
-| Participants left without their lesson | 0 | 0 |
-| Shifts without groups left empty | 0 | 3 |
+| Placements with an expired certificate (any reason list) | 14 | 0 |
+| People placed (cover, merge, reserve, overtime) | 85 | 84 |
+| Median minutes from call-out to a closed shift | 13.2 | 24.4 |
+| 90th percentile, minutes | 15.7 | 43.5 |
+| Closed after the shift had started | 0 | 7 |
+| Closed without a person (no manager step), % | 0.0 | 82.4 |
+| Lessons cancelled or moved | 0 | 1 |
+| Participants left without their lesson | 0 | 7 |
+| Shifts without groups left empty | 0 | 0 |
 | Approved overtime | 0 | 0 |
 | Manager minutes, median per morning | 6.0 | 0.0 |
 
-Outcomes, baseline: {'covered': 90}; CoachCover: {'covered': 62, 'reserve': 25, 'uncovered': 3}.
-Blocking codes behind the baseline violations: {'CERT_EXPIRED': 10, 'CERT_MISSING': 16, 'CERT_NEEDS_REVIEW': 1, 'HOURS_LIMIT_EXCEEDED': 5, 'LEVEL_MISSING': 12, 'PROGRAM_MISSING': 14, 'PROGRAM_RENEWAL_OVERDUE': 4, 'ROLE_MISSING': 16}.
+Outcomes, baseline: {'covered': 85}; CoachCover: {'covered': 70, 'moved': 1, 'reserve': 14}.
+Blocking codes behind the baseline violations: {'CERT_EXPIRED': 14, 'CERT_MISSING': 7, 'CERT_NEEDS_REVIEW': 2, 'HOURS_LIMIT_EXCEEDED': 3, 'LEVEL_MISSING': 20, 'PROGRAM_MISSING': 8, 'PROGRAM_RENEWAL_OVERDUE': 2, 'ROLE_MISSING': 7}.
 
 A placement is one person put on a shift (cover, the teacher of a merged group, a reserve person, approved overtime). It is a violation when `rules.eligible` returns a blocking reason for that person and shift at the moment of booking. The breakdown counts each violation once, under the first of: role, certificate, program, hours, group norm. CoachCover's approved overtime is not counted as a violation: the manager approved it with its price, as the core does.
 
@@ -42,12 +42,12 @@ A placement is one person put on a shift (cover, the teacher of a merged group, 
 
 | Metric | `baseline_manager_checks_role` | `coachcover_three_offers_at_once` |
 |---|---:|---:|
-| Placements without permission | 38 | 0 |
-|   no role / certificate / program / hours / group norm | 0 / 14 / 21 / 3 / 0 | 0 / 0 / 0 / 0 / 0 |
-| Median minutes to close | 13.5 | 8.7 |
-| 90th percentile, minutes | 16.2 | 26.8 |
-| Closed after the shift had started | 0 | 4 |
-| Closed without a person, % | 0.0 | 67.8 |
+| Placements without permission | 41 | 0 |
+|   no role / certificate / program / hours / group norm | 0 / 17 / 21 / 3 / 0 | 0 / 0 / 0 / 0 / 0 |
+| Median minutes to close | 13.3 | 10.1 |
+| 90th percentile, minutes | 15.7 | 23.5 |
+| Closed after the shift had started | 0 | 1 |
+| Closed without a person, % | 0.0 | 77.6 |
 
 - `baseline_manager_checks_role`: Baseline where the manager takes only people who hold the shift's role (job title); cards, programs, hours and the group norm are still not checked.
 - `coachcover_three_offers_at_once`: CoachCover with three offers open at once instead of one (the first eligible yes wins). Not what the core does today; shown to size that change.
@@ -89,7 +89,7 @@ Every value is an assumption of this replay, not a measurement of a real school.
 | `rota_swaps` | [0, 3] | How many of the morning's lessons are handed to another cleared instructor (min, max). |
 | `p_renewal_overdue` | 0.4 | Chance that one instructor's program renewal is overdue that week. |
 
-Policy of the preset: offer timer 5 min, weekly limit 40 h, autonomy {'assign_cover': 'auto', 'plan_b': 'propose', 'merge_groups': 'propose', 'overtime': 'propose'}.
+Policy of the preset: offer timer 5 min, weekly limit 40 h, autonomy {'assign_cover': 'auto', 'plan_b': 'propose', 'merge_groups': 'propose', 'overtime': 'propose', 'night_cover': 'propose'}.
 
 ## Limits of this replay
 

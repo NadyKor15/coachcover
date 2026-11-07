@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Iterator
 
@@ -29,6 +29,7 @@ from coachcover.db import migrate
 from coachcover.demo import SCENARIOS, clock_now, reset_school, run_scenario
 from coachcover.models import DbLedger, ModelClient, ModelError
 from coachcover.pipeline import Conflict, NotFound, Pipeline
+from coachcover.schedule_import import MAX_IMPORT_BYTES, import_schedule
 from coachcover.seed import POLICY_ID
 
 MAX_AUDIO_BYTES = 10 * 1024 * 1024
@@ -207,6 +208,20 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
         if len(data) > MAX_IMAGE_BYTES:
             raise HTTPException(413, "photo is larger than 8 MB")
         return pipeline(conn).read_certificate(staff_id, data, photo.content_type, clock_now(conn), cert_type=cert_type)
+
+    @app.post("/api/import", status_code=201)
+    async def post_import(file: UploadFile = File(...), tz: str | None = Form(default=None),
+                          date_order: str = Form(default="MDY"), venue_id: str | None = Form(default=None),
+                          date_from: date | None = Form(default=None), date_to: date | None = Form(default=None),
+                          conn: psycopg.Connection = Depends(get_conn)):
+        data = await file.read(MAX_IMPORT_BYTES + 1)
+        if len(data) > MAX_IMPORT_BYTES:
+            raise HTTPException(413, "schedule file is larger than 2 MB")
+        if (date_from is None) != (date_to is None):
+            raise ValueError("give date_from and date_to together")
+        window = (date_from, date_to) if date_from else None
+        return import_schedule(conn, policy_id, data, file.filename or "", clock_now(conn), tz=tz,
+                               date_order=date_order, default_venue=venue_id, window=window)
 
     @app.get("/api/stats")
     def get_stats(conn: psycopg.Connection = Depends(get_conn)):

@@ -290,3 +290,24 @@ def test_callout_validation(school):
         p.callout("S05", now=NOW, text="  ")
     with pytest.raises(NotFound):
         p.callout("NOBODY", now=NOW, text="hi")
+
+
+def test_overtime_is_not_offered_again_after_a_no(school):
+    p = pipeline(school)
+    cases, _ = voice_callout(p)
+    case = cases[HERO]
+    decline_all(school, p, case)
+    plan_id, snapshot, digest = school.execute(
+        "SELECT id, snapshot, snapshot_hash FROM plan_b WHERE case_id = %s AND status = 'proposed'", (case,)
+    ).fetchone()
+    index = next(i for i, o in enumerate(snapshot["options"]) if o["kind"] == "overtime")
+    p.approve_plan_b(plan_id, digest, minutes(40), by="manager:test", option=index)
+    offer_id, staff_id = pending(school, case)
+    assert staff_id == "S11"
+    p.respond(offer_id, False, minutes(41))  # Camila says no to the overtime
+    assert school.execute("SELECT status FROM plan_b WHERE id = %s", (plan_id,)).fetchone() == ("failed",)
+    new_snapshot = school.execute("SELECT snapshot FROM plan_b WHERE case_id = %s AND status = 'proposed'", (case,)).fetchone()[0]
+    suggested = {o.get("staff_id") for o in new_snapshot["options"]}
+    assert "S11" not in suggested  # not offered the overtime a second time
+    assert not suggested & set(QUEUE)  # nor anyone who already said no
+    assert "plan_b_failed" in events(school, case)

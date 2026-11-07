@@ -27,14 +27,13 @@ import psycopg
 from psycopg.types.json import Jsonb
 
 from coachcover import messages as M
-from coachcover.model import Policy, Shift
+from coachcover.model import Policy
 from coachcover.models import SECOND_READER_MODEL, TEXT_MODEL, ModelClient, ModelError, canonical_key, sha256_bytes
+from coachcover.planb import plan_b_options, strictest  # noqa: F401 - strictest kept importable from here
 from coachcover.reasons_text import describe, describe_place
 from coachcover.repo import load_context, load_policy, load_shift, load_staff
 from coachcover.rules import Code, Ranked, assess, eligible, rank
 
-MODE_ORDER = {"auto": 0, "propose": 1, "off": 2}
-OPTION_ORDER = ("merge", "lead", "overtime", "reschedule", "close")
 
 
 class PipelineError(Exception):
@@ -49,10 +48,6 @@ class Conflict(PipelineError):
     def __init__(self, message: str, detail: dict | None = None):
         super().__init__(message)
         self.detail = detail or {}
-
-
-def strictest(*modes: str) -> str:
-    return max(modes, key=MODE_ORDER.__getitem__)
 
 
 def _default(value: Any) -> Any:
@@ -470,6 +465,12 @@ class Pipeline:
             if queue:
                 return self._send_offer(case_id, shift_id, queue[0], names, policy, now, len(offered) + 1)
             self._event(case_id, now, "agent", "queue_exhausted", {"offered": len(offered)})
+            # an approved option that left the case open did not work out (the overtime person said no)
+            failed = self.conn.execute(
+                "UPDATE plan_b SET status = 'failed' WHERE case_id = %s AND status = 'approved' RETURNING id", (case_id,)
+            ).fetchall()
+            for (plan_id,) in failed:
+                self._event(case_id, now, "agent", "plan_b_failed", {"plan_id": f"P-{plan_id}"})
         return self.propose_plan_b(case_id, now)
 
     def _send_offer(self, case_id: int, shift_id: str, r: Ranked, names: dict, policy: Policy, now: datetime,
@@ -627,77 +628,21 @@ class Pipeline:
             "SELECT shift_id, absent_staff_id FROM cover_case WHERE id = %s", (case_id,)
         ).fetchone()
         policy = self._policy()
-        auto = policy.autonomy
         staff = {s.id: s for s in load_staff(self.conn, self.policy_id)}
         shift = load_shift(self.conn, shift_id)
         context = load_context(self.conn, self.policy_id, shift)
         info = self.shift_info(shift_id)
-        tz = ZoneInfo(info["tz"])
-        families = sum(g["size"] for g in info["groups"])
-        group_ids = [g["id"] for g in info["groups"]]
-        options: list[dict] = []
-        rejected: list[dict] = []
-        if shift.groups and auto["merge_groups"] != "off":
-            partners = self.conn.execute(
-                "SELECT s.id FROM shift s WHERE s.venue_id = %s AND s.role_id = (SELECT role_id FROM shift WHERE id = %s)"
-                " AND s.starts_at = %s AND s.ends_at = %s AND s.status = 'scheduled' AND s.id <> %s"
-                " AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = s.id) ORDER BY s.id",
-                (shift.venue, shift_id, shift.start, shift.end, shift_id),
-            ).fetchall()
-            for (partner_id,) in partners:
-                partner = load_shift(self.conn, partner_id)
-                teacher = staff.get(partner.assignee)
-                merged = Shift(partner.id, partner.venue, partner.role, partner.start, partner.end,
-                               partner.groups + shift.groups, partner.instructors, partner.zone,
-                               assignee=None, merged_shift_ids=(shift_id,))
-                decision = eligible(teacher, merged, now, policy, context)
-                participants = sum(g.size for g in merged.groups)
-                if decision.ok:
-                    per = min(policy.preset.programs[g.program].levels[g.level].max_per_instructor for g in merged.groups)
-                    options.append({
-                        "kind": "merge", "mode": strictest(auto["plan_b"], auto["merge_groups"]),
-                        "into_shift_id": partner.id, "staff_id": teacher.id, "staff_name": teacher.name,
-                        "groups": [g.id for g in merged.groups], "participants": participants,
-                        "capacity": per * merged.instructors,
-                    })
-                else:
-                    rejected.append({"kind": "merge", "into_shift_id": partner.id, "participants": participants,
-                                     "codes": [r.code.value for r in decision.reasons if r.blocking]})
-        reserve_roles = {r.code for r in policy.preset.roles.values() if r.reserve}
-        leads = [s for s in staff.values() if s.roles & reserve_roles and s.id != absent]
-        lead_rank = rank(assess(s, shift, now, policy, context) for s in leads)
-        ready = [r for r in lead_rank if r.candidate.decision.ok]
-        if ready:
-            lead = staff[ready[0].candidate.staff_id]
-            options.append({"kind": "lead", "mode": auto["plan_b"], "staff_id": lead.id, "staff_name": lead.name})
-        elif leads:
-            rejected.append({"kind": "lead", "codes": sorted({r.code.value for x in lead_rank
-                                                               for r in x.candidate.decision.reasons if r.blocking})})
-        if auto["overtime"] != "off":
-            people = [s for s in staff.values() if not (s.roles & reserve_roles)]
-            for r in rank(assess(s, shift, now, policy, context) for s in people):
-                blocking = [x for x in r.candidate.decision.reasons if x.blocking]
-                if blocking and all(x.code == Code.HOURS_LIMIT_EXCEEDED for x in blocking):
-                    over = round(sum(x.params["hours_after"] - x.params["limit_hours"] for x in blocking), 2)
-                    person = staff[r.candidate.staff_id]
-                    options.append({
-                        "kind": "overtime", "mode": strictest("propose", auto["plan_b"]),
-                        "staff_id": person.id, "staff_name": person.name, "hours_over": over,
-                        "cost_usd": round(over * policy.overtime_cost_per_hour, 2),
-                    })
-                    break
-        local_day = info["local_start"].date()
-        if shift.groups:
-            options.append({
-                "kind": "reschedule", "mode": auto["plan_b"], "groups": group_ids, "families": families,
-                "remedy": "makeup", "valid_until": local_day + timedelta(days=policy.makeup_window_days),
-            })
-        options.append({
-            "kind": "close", "mode": auto["plan_b"], "zone_id": info["zone_id"], "groups": group_ids,
-            "families": families, "remedy": policy.default_remedy,
-            "valid_until": local_day + timedelta(days=policy.makeup_window_days) if policy.default_remedy == "makeup" else None,
-        })
-        options.sort(key=lambda o: OPTION_ORDER.index(o["kind"]))
+        partner_ids = [r[0] for r in self.conn.execute(
+            "SELECT s.id FROM shift s WHERE s.venue_id = %s AND s.role_id = (SELECT role_id FROM shift WHERE id = %s)"
+            " AND s.starts_at = %s AND s.ends_at = %s AND s.status = 'scheduled' AND s.id <> %s"
+            " AND EXISTS (SELECT 1 FROM shift_group sg WHERE sg.shift_id = s.id) ORDER BY s.id",
+            (shift.venue, shift_id, shift.start, shift.end, shift_id),
+        )]
+        asked = {r[0] for r in self.conn.execute("SELECT staff_id FROM offer WHERE case_id = %s", (case_id,))}
+        options, rejected = plan_b_options(
+            shift=shift, absent=absent, partners=[load_shift(self.conn, pid) for pid in partner_ids], staff=staff,
+            policy=policy, context=context, now=now, exclude=asked,
+        )
         return plain({
             "case_id": case_id,
             "shift": {"id": shift_id, "label": info["label"], "venue": info["venue"], "zone_id": info["zone_id"],

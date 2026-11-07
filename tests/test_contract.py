@@ -118,9 +118,11 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert today["outcome"] == {"covered_by": "Maria Lopez", "covered_time": "06:00", "lessons_cancelled": 0}
     assert today["plan_b"]["state"] == "standby" and today["plan_b"]["autonomy"] == "propose"
     assert "merge refused" in today["plan_b"]["text"]  # the kids' norm refuses the merge, live
-    money = today["money"]
-    assert money["uncovered_morning_usd"] is None and money["manager_hour_usd"] is None  # unknown until the money model is in
-    assert money["case_cost_cents"] > 0 and today["model_log"]["calls"] >= 4 and today["model_log"]["usd"] > 0
+    money = today["money"]  # from coachcover.money with the preset's prices (assumptions)
+    assert money["uncovered_morning_usd"] == 120.0  # 8 children x $15
+    assert money["uncovered_morning_label"] == "If nobody had accepted: $120 (Refunds: 8 participants × $15)"
+    assert money["manager_hour_usd"] == 25.0 and 0 < money["case_cost_cents"] < 1
+    assert today["model_log"]["calls"] >= 4 and today["model_log"]["usd"] > 0
     assert today["flagged"][0]["staff"] == "Anna Kim"  # her "assign me anyway" message was flagged
     assert today["judge"] == {"running": False, "case_id": "C-1109-01"}
     # the same 12 hours on the phone
@@ -159,7 +161,9 @@ def test_case_page_matches_the_fixture(api):
     whisper = next(c for c in page["model_calls"] if c["purpose"] == "transcribe")
     assert whisper["ms"] == 1050 and whisper["cost_usd"] > 0 and "transcribe-ru.json" in whisper["source"]
     assert page["model_cost_usd"] == pytest.approx(sum(c["cost_usd"] or 0 for c in page["model_calls"]))
-    assert page["risk"]["kids"] == 8 and page["risk"]["total_usd"] is None
+    risk = page["risk"]
+    assert (risk["kids"], risk["refunds_usd"], risk["overtime_usd"], risk["total_usd"]) == (8, 120.0, None, 120.0)
+    assert risk["assumptions"]["lesson_price"]["assumption"] is True
     assert page["proof"]["policy_label"] == "cover = auto · plan B = propose"
     download = client.get("/api/cases/C-1109-01?download=true")
     assert "attachment" in download.headers["content-disposition"] and download.json() == page
@@ -225,8 +229,10 @@ def test_stats_in_the_contract_shape(api):
     client, _ = api
     client.post("/api/judge/run", json={"scenario": "dangerous_morning"})
     stats = client.get("/api/stats").json()
-    assert {"runs", "closed_without_human_pct", "median_minutes_to_cover", "eligibility_violations", "sim"} <= set(stats)
-    assert stats["runs"] == 1 and stats["eligibility_violations"] == 0 and stats["sim"] is None
+    assert set(stats) == {"runs", "closed_without_human_pct", "median_minutes_to_cover", "eligibility_violations", "sim"}
+    assert stats["runs"] == 1 and stats["eligibility_violations"] == 0
+    assert stats["sim"]["synthetic"] is True and stats["sim"]["coachcover_violations"] == 0
+    assert stats["sim"]["mornings"] == 50 and stats["sim"]["baseline_violations"] > 0
     assert stats["closed_without_human_pct"] == 100.0 and stats["median_minutes_to_cover"] == 7.0
 
 

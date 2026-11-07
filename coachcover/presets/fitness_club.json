@@ -31,6 +31,14 @@
       ]
     }
   ],
+  "money": {
+    "lesson_price": {"value": 12.0, "unit": "USD per participant per class", "assumption": true, "note": "Conservative placeholder for one group class; replace with the club's price list."},
+    "refund_share": {"value": 1.0, "unit": "share of the lesson price", "assumption": true, "note": "Every participant of a lesson that does not run gets a refund or a credit."},
+    "hourly_wage": {"value": 20.0, "unit": "USD per hour", "assumption": true, "note": "Conservative placeholder for an hourly staff wage; used only when the policy has no overtime price."},
+    "overtime_multiplier": {"value": 1.5, "unit": "x the wage per overtime hour", "assumption": false, "source": "US Fair Labor Standards Act: time and a half for hours over 40 in a workweek", "note": "Overtime is paid at time and a half."},
+    "inspection_penalty": {"value": 0.0, "unit": "USD per uncovered morning", "assumption": true, "note": "Off by default; set a fine or the cost of a closure if an inspector would act."},
+    "manager_hour": {"value": 25.0, "unit": "USD per hour", "assumption": true, "note": "Conservative placeholder for one hour of a manager's time."}
+  },
   "policy_defaults": {
     "max_weekly_hours": 40,
     "week_start": "monday",

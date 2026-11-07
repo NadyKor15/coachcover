@@ -68,3 +68,14 @@ CREATE TABLE IF NOT EXISTS ops.judge_state (
     started_at timestamptz,
     finished_at timestamptz
 );
+
+-- An approved plan B option that did not work out (the overtime person said no): "failed", so a new plan can follow.
+ALTER TABLE plan_b DROP CONSTRAINT plan_b_status_check;
+ALTER TABLE plan_b ADD CONSTRAINT plan_b_status_check
+    CHECK (status IN ('proposed', 'approved', 'rejected', 'superseded', 'failed'));
+ALTER TABLE plan_b DROP CONSTRAINT plan_b_check;
+ALTER TABLE plan_b ADD CONSTRAINT plan_b_decided
+    CHECK ((status IN ('approved', 'rejected', 'failed')) = (decided_by IS NOT NULL AND decided_at IS NOT NULL));
+ALTER TABLE plan_b DROP CONSTRAINT plan_b_choice_when_approved;
+ALTER TABLE plan_b ADD CONSTRAINT plan_b_choice_when_approved
+    CHECK ((status IN ('approved', 'failed')) = (chosen_option IS NOT NULL));

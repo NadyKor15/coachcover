@@ -20,7 +20,8 @@
    "assign_cover": "auto",
    "plan_b": "propose",
    "merge_groups": "propose",
-   "overtime": "propose"
+   "overtime": "propose",
+   "night_cover": "propose"
   }
  },
  "params": {
@@ -110,62 +111,61 @@
  },
  "summary": {
   "baseline": {
-   "cases": 90,
-   "placements": 90,
-   "violations": 46,
-   "violations_pct_of_placements": 51.1,
+   "cases": 85,
+   "placements": 85,
+   "violations": 44,
+   "violations_pct_of_placements": 51.8,
    "violations_by_reason": {
-    "role": 16,
-    "certificate": 11,
-    "program": 15,
-    "hours": 4,
+    "role": 7,
+    "certificate": 16,
+    "program": 18,
+    "hours": 3,
     "ratio": 0,
     "other": 0
    },
    "violations_any_reason": {
-    "role": 16,
-    "certificate": 27,
-    "program": 30,
-    "hours": 5,
+    "role": 7,
+    "certificate": 23,
+    "program": 28,
+    "hours": 3,
     "ratio": 0,
     "other": 0
    },
    "violations_by_code": {
-    "CERT_EXPIRED": 10,
-    "CERT_MISSING": 16,
-    "CERT_NEEDS_REVIEW": 1,
-    "HOURS_LIMIT_EXCEEDED": 5,
-    "LEVEL_MISSING": 12,
-    "PROGRAM_MISSING": 14,
-    "PROGRAM_RENEWAL_OVERDUE": 4,
-    "ROLE_MISSING": 16
+    "CERT_EXPIRED": 14,
+    "CERT_MISSING": 7,
+    "CERT_NEEDS_REVIEW": 2,
+    "HOURS_LIMIT_EXCEEDED": 3,
+    "LEVEL_MISSING": 20,
+    "PROGRAM_MISSING": 8,
+    "PROGRAM_RENEWAL_OVERDUE": 2,
+    "ROLE_MISSING": 7
    },
-   "expired_certificate_placements": 10,
-   "median_minutes_to_close": 13.4,
-   "p90_minutes_to_close": 15.8,
-   "mean_minutes_to_close": 13.8,
+   "expired_certificate_placements": 14,
+   "median_minutes_to_close": 13.2,
+   "p90_minutes_to_close": 15.7,
+   "mean_minutes_to_close": 13.6,
    "closed_after_shift_start": 0,
    "closed_without_human": 0,
    "closed_without_human_pct": 0.0,
-   "covered": 90,
+   "covered": 85,
    "lessons_cancelled": 0,
    "participants_without_lesson": 0,
    "shifts_without_groups_left_empty": 0,
    "approved_overtime": 0,
    "outcomes": {
-    "covered": 90
+    "covered": 85
    },
    "channels": {
-    "chat": 89,
-    "phone": 1
+    "chat": 85
    },
-   "asked_total": 2,
-   "manager_minutes_total": 276.0,
+   "asked_total": 0,
+   "manager_minutes_total": 255.0,
    "manager_minutes_median_per_morning": 6.0
   },
   "coachcover": {
-   "cases": 90,
-   "placements": 87,
+   "cases": 85,
+   "placements": 84,
    "violations": 0,
    "violations_pct_of_placements": 0.0,
    "violations_by_reason": {
@@ -186,28 +186,28 @@
    },
    "violations_by_code": {},
    "expired_certificate_placements": 0,
-   "median_minutes_to_close": 18.9,
-   "p90_minutes_to_close": 46.2,
-   "mean_minutes_to_close": 22.5,
-   "closed_after_shift_start": 10,
-   "closed_without_human": 62,
-   "closed_without_human_pct": 68.9,
-   "covered": 87,
-   "lessons_cancelled": 0,
-   "participants_without_lesson": 0,
-   "shifts_without_groups_left_empty": 3,
+   "median_minutes_to_close": 24.4,
+   "p90_minutes_to_close": 43.5,
+   "mean_minutes_to_close": 24.9,
+   "closed_after_shift_start": 7,
+   "closed_without_human": 70,
+   "closed_without_human_pct": 82.4,
+   "covered": 84,
+   "lessons_cancelled": 1,
+   "participants_without_lesson": 7,
+   "shifts_without_groups_left_empty": 0,
    "approved_overtime": 0,
    "outcomes": {
-    "covered": 62,
-    "reserve": 25,
-    "uncovered": 3
+    "covered": 70,
+    "moved": 1,
+    "reserve": 14
    },
    "channels": {
-    "offer": 62,
-    "plan_b": 28
+    "offer": 70,
+    "plan_b": 15
    },
-   "asked_total": 395,
-   "manager_minutes_total": 31.0,
+   "asked_total": 452,
+   "manager_minutes_total": 15.0,
    "manager_minutes_median_per_morning": 0.0
   }
  },
@@ -219,13 +219,13 @@
    },
    "strategy": "baseline",
    "summary": {
-    "cases": 90,
-    "placements": 90,
-    "violations": 38,
-    "violations_pct_of_placements": 42.2,
+    "cases": 85,
+    "placements": 85,
+    "violations": 41,
+    "violations_pct_of_placements": 48.2,
     "violations_by_reason": {
      "role": 0,
-     "certificate": 14,
+     "certificate": 17,
      "program": 21,
      "hours": 3,
      "ratio": 0,
@@ -233,40 +233,40 @@
     },
     "violations_any_reason": {
      "role": 0,
-     "certificate": 14,
-     "program": 24,
-     "hours": 5,
+     "certificate": 17,
+     "program": 25,
+     "hours": 3,
      "ratio": 0,
      "other": 0
     },
     "violations_by_code": {
-     "CERT_EXPIRED": 12,
+     "CERT_EXPIRED": 14,
      "CERT_NEEDS_REVIEW": 3,
-     "HOURS_LIMIT_EXCEEDED": 5,
-     "LEVEL_MISSING": 20,
-     "PROGRAM_RENEWAL_OVERDUE": 5
+     "HOURS_LIMIT_EXCEEDED": 3,
+     "LEVEL_MISSING": 24,
+     "PROGRAM_MISSING": 1,
+     "PROGRAM_RENEWAL_OVERDUE": 2
     },
-    "expired_certificate_placements": 11,
-    "median_minutes_to_close": 13.5,
-    "p90_minutes_to_close": 16.2,
-    "mean_minutes_to_close": 14.2,
+    "expired_certificate_placements": 14,
+    "median_minutes_to_close": 13.3,
+    "p90_minutes_to_close": 15.7,
+    "mean_minutes_to_close": 13.6,
     "closed_after_shift_start": 0,
     "closed_without_human": 0,
     "closed_without_human_pct": 0.0,
-    "covered": 90,
+    "covered": 85,
     "lessons_cancelled": 0,
     "participants_without_lesson": 0,
     "shifts_without_groups_left_empty": 0,
     "approved_overtime": 0,
     "outcomes": {
-     "covered": 90
+     "covered": 85
     },
     "channels": {
-     "chat": 88,
-     "phone": 2
+     "chat": 85
     },
-    "asked_total": 5,
-    "manager_minutes_total": 285.0,
+    "asked_total": 0,
+    "manager_minutes_total": 255.0,
     "manager_minutes_median_per_morning": 6.0
    }
   },
@@ -277,8 +277,8 @@
    },
    "strategy": "coachcover",
    "summary": {
-    "cases": 90,
-    "placements": 87,
+    "cases": 85,
+    "placements": 84,
     "violations": 0,
     "violations_pct_of_placements": 0.0,
     "violations_by_reason": {
@@ -299,28 +299,28 @@
     },
     "violations_by_code": {},
     "expired_certificate_placements": 0,
-    "median_minutes_to_close": 8.7,
-    "p90_minutes_to_close": 26.8,
+    "median_minutes_to_close": 10.1,
+    "p90_minutes_to_close": 23.5,
     "mean_minutes_to_close": 12.0,
-    "closed_after_shift_start": 4,
-    "closed_without_human": 61,
-    "closed_without_human_pct": 67.8,
-    "covered": 87,
-    "lessons_cancelled": 0,
-    "participants_without_lesson": 0,
-    "shifts_without_groups_left_empty": 3,
+    "closed_after_shift_start": 1,
+    "closed_without_human": 66,
+    "closed_without_human_pct": 77.6,
+    "covered": 84,
+    "lessons_cancelled": 1,
+    "participants_without_lesson": 7,
+    "shifts_without_groups_left_empty": 0,
     "approved_overtime": 0,
     "outcomes": {
-     "covered": 61,
-     "reserve": 26,
-     "uncovered": 3
+     "covered": 66,
+     "moved": 1,
+     "reserve": 18
     },
     "channels": {
-     "offer": 61,
-     "plan_b": 29
+     "offer": 66,
+     "plan_b": 19
     },
-    "asked_total": 494,
-    "manager_minutes_total": 32.0,
+    "asked_total": 560,
+    "manager_minutes_total": 19.0,
     "manager_minutes_median_per_morning": 0.0
    }
   }
@@ -342,8 +342,8 @@
     {
      "kind": "rota",
      "shift_id": "L-1109-G082",
-     "from": "S19",
-     "to": "S08"
+     "from": "S16",
+     "to": "S06"
     },
     {
      "kind": "hours",
@@ -387,7 +387,7 @@
     {
      "kind": "card",
      "staff_id": "S06",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-31"
     }
    ],
@@ -420,16 +420,16 @@
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S16",
+     "staff_id": "S08",
      "human": false,
-     "closed_at": "2026-11-09T05:34-05:00",
-     "minutes": 2.3,
+     "closed_at": "2026-11-09T05:45-05:00",
+     "minutes": 13.9,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 1,
+     "asked": 4,
      "manager_minutes": 0.0
     }
    ]
@@ -439,10 +439,10 @@
    "day": "2026-11-10",
    "callouts": [
     {
-     "staff_id": "S22",
-     "at": "2026-11-10T05:54-05:00",
+     "staff_id": "S24",
+     "at": "2026-11-10T05:12-05:00",
      "shift_ids": [
-      "L-1110-G048"
+      "G-1110-V3-0530"
      ]
     }
    ],
@@ -450,8 +450,8 @@
     {
      "kind": "rota",
      "shift_id": "L-1110-G007",
-     "from": "S10",
-     "to": "S09"
+     "from": "S04",
+     "to": "S12"
     },
     {
      "kind": "hours",
@@ -466,7 +466,7 @@
     {
      "kind": "card",
      "staff_id": "S15",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-24"
     },
     {
@@ -478,7 +478,7 @@
     {
      "kind": "card",
      "staff_id": "S11",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-20"
     },
     {
@@ -490,13 +490,13 @@
     {
      "kind": "card",
      "staff_id": "S08",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-22"
     },
     {
      "kind": "card",
      "staff_id": "S16",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-02"
     },
     {
@@ -519,14 +519,14 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1110-G048",
-     "lesson": true,
+     "shift_id": "G-1110-V3-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S21",
+     "staff_id": "S28",
      "human": true,
-     "closed_at": "2026-11-10T06:06-05:00",
-     "minutes": 12.8,
+     "closed_at": "2026-11-10T05:24-05:00",
+     "minutes": 12.2,
      "late": false,
      "violation": null,
      "codes": [],
@@ -538,20 +538,20 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1110-G048",
-     "lesson": true,
+     "shift_id": "G-1110-V3-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S21",
+     "staff_id": "S35",
      "human": false,
-     "closed_at": "2026-11-10T06:20-05:00",
-     "minutes": 26.4,
+     "closed_at": "2026-11-10T05:21-05:00",
+     "minutes": 9.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 7,
+     "asked": 2,
      "manager_minutes": 0.0
     }
    ]
@@ -561,8 +561,8 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S04",
-     "at": "2026-11-11T04:37-05:00",
+     "staff_id": "S07",
+     "at": "2026-11-11T05:12-05:00",
      "shift_ids": [
       "L-1111-G011"
      ]
@@ -582,44 +582,49 @@
     {
      "kind": "card",
      "staff_id": "S21",
-     "cert_type": "lifeguarding",
+     "cert_type": "wsi",
      "expires_on": "2026-11-10"
     },
     {
      "kind": "card",
      "staff_id": "S22",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-21"
     },
     {
      "kind": "card",
      "staff_id": "S04",
      "cert_type": "wsi",
-     "expires_on": "2026-10-21"
+     "expires_on": "2026-11-09"
     },
     {
      "kind": "card",
      "staff_id": "S17",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-21"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-19"
     },
     {
      "kind": "card",
      "staff_id": "S16",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-11-12"
+     "expires_on": "2026-10-28"
     },
     {
      "kind": "card",
      "staff_id": "S36",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-10-21"
+     "expires_on": "2026-11-24"
     },
     {
      "kind": "card",
      "staff_id": "S02",
-     "cert_type": "wsi",
-     "expires_on": "2026-10-26"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-06"
+    },
+    {
+     "kind": "unconfirmed",
+     "staff_id": "S03",
+     "cert_type": "lifeguarding"
     }
    ],
    "baseline": [
@@ -628,10 +633,10 @@
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S02",
+     "staff_id": "S04",
      "human": true,
-     "closed_at": "2026-11-11T04:49-05:00",
-     "minutes": 12.7,
+     "closed_at": "2026-11-11T05:25-05:00",
+     "minutes": 13.5,
      "late": false,
      "violation": "certificate",
      "codes": [
@@ -647,19 +652,19 @@
     {
      "shift_id": "L-1111-G011",
      "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-11T05:26-05:00",
-     "minutes": 49.0,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S20",
+     "human": false,
+     "closed_at": "2026-11-11T05:42-05:00",
+     "minutes": 30.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 8,
-     "manager_minutes": 1.0
+     "manager_minutes": 0.0
     }
    ]
   },
@@ -668,24 +673,17 @@
    "day": "2026-11-12",
    "callouts": [
     {
-     "staff_id": "S26",
-     "at": "2026-11-12T04:58-05:00",
+     "staff_id": "S10",
+     "at": "2026-11-12T05:03-05:00",
      "shift_ids": [
       "G-1112-V1-0530"
      ]
     },
     {
-     "staff_id": "S10",
-     "at": "2026-11-12T05:14-05:00",
+     "staff_id": "S07",
+     "at": "2026-11-12T05:10-05:00",
      "shift_ids": [
-      "L-1112-G015"
-     ]
-    },
-    {
-     "staff_id": "S22",
-     "at": "2026-11-12T05:38-05:00",
-     "shift_ids": [
-      "L-1112-G054"
+      "L-1112-G014"
      ]
     }
    ],
@@ -693,14 +691,14 @@
     {
      "kind": "rota",
      "shift_id": "L-1112-G055",
-     "from": "S06",
+     "from": "S13",
      "to": "S23"
     },
     {
      "kind": "rota",
      "shift_id": "L-1112-G016",
-     "from": "S17",
-     "to": "S01"
+     "from": "S08",
+     "to": "S02"
     },
     {
      "kind": "hours",
@@ -734,24 +732,13 @@
      "kind": "card",
      "staff_id": "S04",
      "cert_type": "wsi",
-     "expires_on": "2026-10-26"
+     "expires_on": "2026-11-21"
     },
     {
      "kind": "card",
      "staff_id": "S08",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-23"
-    },
-    {
-     "kind": "unconfirmed",
-     "staff_id": "S16",
-     "cert_type": "cpr_aed"
-    },
-    {
-     "kind": "renewal",
-     "staff_id": "S17",
-     "program": "learn_to_swim",
-     "renewed_at": "2025-10-12"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-08"
     }
    ],
    "baseline": [
@@ -762,7 +749,7 @@
      "channel": "chat",
      "staff_id": "S11",
      "human": true,
-     "closed_at": "2026-11-12T05:10-05:00",
+     "closed_at": "2026-11-12T05:15-05:00",
      "minutes": 12.2,
      "late": false,
      "violation": "hours",
@@ -775,34 +762,13 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1112-G015",
+     "shift_id": "L-1112-G014",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
      "staff_id": "S34",
      "human": true,
-     "closed_at": "2026-11-12T05:26-05:00",
-     "minutes": 12.2,
-     "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING",
-      "PROGRAM_MISSING"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1112-G054",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S34",
-     "human": true,
-     "closed_at": "2026-11-12T05:50-05:00",
+     "closed_at": "2026-11-12T05:22-05:00",
      "minutes": 12.2,
      "late": false,
      "violation": "role",
@@ -823,10 +789,10 @@
      "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S32",
+     "staff_id": "S13",
      "human": false,
-     "closed_at": "2026-11-12T05:08-05:00",
-     "minutes": 10.2,
+     "closed_at": "2026-11-12T05:11-05:00",
+     "minutes": 8.3,
      "late": false,
      "violation": null,
      "codes": [],
@@ -836,37 +802,20 @@
      "manager_minutes": 0.0
     },
     {
-     "shift_id": "L-1112-G015",
+     "shift_id": "L-1112-G014",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S05",
+     "staff_id": "S17",
      "human": false,
-     "closed_at": "2026-11-12T05:17-05:00",
-     "minutes": 3.9,
+     "closed_at": "2026-11-12T05:50-05:00",
+     "minutes": 40.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 1,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1112-G054",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S05",
-     "human": false,
-     "closed_at": "2026-11-12T05:41-05:00",
-     "minutes": 3.9,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 1,
+     "asked": 9,
      "manager_minutes": 0.0
     }
    ]
@@ -876,17 +825,17 @@
    "day": "2026-11-13",
    "callouts": [
     {
-     "staff_id": "S04",
+     "staff_id": "S02",
      "at": "2026-11-13T04:54-05:00",
      "shift_ids": [
-      "L-1113-G017"
+      "L-1113-G058"
      ]
     },
     {
-     "staff_id": "S14",
+     "staff_id": "S10",
      "at": "2026-11-13T05:33-05:00",
      "shift_ids": [
-      "L-1113-G099"
+      "L-1113-G017"
      ]
     }
    ],
@@ -915,13 +864,13 @@
     {
      "kind": "card",
      "staff_id": "S19",
-     "cert_type": "lifeguarding",
+     "cert_type": "wsi",
      "expires_on": "2026-11-25"
     },
     {
      "kind": "card",
      "staff_id": "S01",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-24"
     },
     {
@@ -951,14 +900,14 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1113-G017",
+     "shift_id": "L-1113-G058",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S24",
+     "staff_id": "S15",
      "human": true,
      "closed_at": "2026-11-13T05:06-05:00",
-     "minutes": 12.5,
+     "minutes": 12.2,
      "late": false,
      "violation": null,
      "codes": [],
@@ -968,14 +917,14 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1113-G099",
+     "shift_id": "L-1113-G017",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S15",
+     "staff_id": "S24",
      "human": true,
      "closed_at": "2026-11-13T05:45-05:00",
-     "minutes": 12.2,
+     "minutes": 12.5,
      "late": false,
      "violation": null,
      "codes": [],
@@ -987,37 +936,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1113-G017",
+     "shift_id": "L-1113-G058",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S24",
+     "staff_id": "S15",
      "human": false,
-     "closed_at": "2026-11-13T05:22-05:00",
-     "minutes": 28.3,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 7,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1113-G099",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S04",
-     "human": false,
-     "closed_at": "2026-11-13T05:39-05:00",
-     "minutes": 6.9,
+     "closed_at": "2026-11-13T04:58-05:00",
+     "minutes": 4.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 2,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1113-G017",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S04",
+     "human": false,
+     "closed_at": "2026-11-13T05:47-05:00",
+     "minutes": 14.2,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 4,
      "manager_minutes": 0.0
     }
    ]
@@ -1027,17 +976,17 @@
    "day": "2026-11-09",
    "callouts": [
     {
-     "staff_id": "S33",
+     "staff_id": "S30",
      "at": "2026-11-09T04:36-05:00",
      "shift_ids": [
-      "G-1109-V2-0530"
+      "G-1109-V1-0530"
      ]
     },
     {
-     "staff_id": "S28",
-     "at": "2026-11-09T04:52-05:00",
+     "staff_id": "S21",
+     "at": "2026-11-09T05:14-05:00",
      "shift_ids": [
-      "G-1109-V1-0530"
+      "L-1109-G084"
      ]
     }
    ],
@@ -1045,8 +994,8 @@
     {
      "kind": "rota",
      "shift_id": "L-1109-G004",
-     "from": "S05",
-     "to": "S06"
+     "from": "S08",
+     "to": "S17"
     },
     {
      "kind": "hours",
@@ -1067,7 +1016,7 @@
      "kind": "card",
      "staff_id": "S06",
      "cert_type": "wsi",
-     "expires_on": "2026-11-25"
+     "expires_on": "2026-11-16"
     },
     {
      "kind": "card",
@@ -1090,7 +1039,7 @@
     {
      "kind": "card",
      "staff_id": "S08",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-09"
     },
     {
@@ -1114,7 +1063,7 @@
    ],
    "baseline": [
     {
-     "shift_id": "G-1109-V2-0530",
+     "shift_id": "G-1109-V1-0530",
      "lesson": false,
      "outcome": "covered",
      "channel": "chat",
@@ -1131,13 +1080,13 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "G-1109-V1-0530",
-     "lesson": false,
+     "shift_id": "L-1109-G084",
+     "lesson": true,
      "outcome": "covered",
      "channel": "chat",
      "staff_id": "S26",
      "human": true,
-     "closed_at": "2026-11-09T05:05-05:00",
+     "closed_at": "2026-11-09T05:27-05:00",
      "minutes": 13.6,
      "late": false,
      "violation": null,
@@ -1150,37 +1099,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "G-1109-V2-0530",
-     "lesson": false,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S30",
-     "human": false,
-     "closed_at": "2026-11-09T05:20-05:00",
-     "minutes": 44.3,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 10,
-     "manager_minutes": 0.0
-    },
-    {
      "shift_id": "G-1109-V1-0530",
      "lesson": false,
      "outcome": "covered",
      "channel": "offer",
      "staff_id": "S26",
      "human": false,
-     "closed_at": "2026-11-09T05:39-05:00",
-     "minutes": 47.8,
-     "late": true,
+     "closed_at": "2026-11-09T05:28-05:00",
+     "minutes": 52.2,
+     "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 11,
+     "asked": 12,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1109-G084",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S25",
+     "human": false,
+     "closed_at": "2026-11-09T05:33-05:00",
+     "minutes": 19.2,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 4,
      "manager_minutes": 0.0
     }
    ]
@@ -1190,17 +1139,17 @@
    "day": "2026-11-10",
    "callouts": [
     {
-     "staff_id": "S10",
+     "staff_id": "S12",
      "at": "2026-11-10T04:44-05:00",
      "shift_ids": [
-      "L-1110-G007"
+      "L-1110-G006"
      ]
     },
     {
-     "staff_id": "S14",
+     "staff_id": "S17",
      "at": "2026-11-10T05:12-05:00",
      "shift_ids": [
-      "L-1110-G087"
+      "L-1110-G008"
      ]
     }
    ],
@@ -1209,19 +1158,19 @@
      "kind": "rota",
      "shift_id": "L-1110-G086",
      "from": "S03",
-     "to": "S12"
+     "to": "S15"
     },
     {
      "kind": "rota",
      "shift_id": "L-1110-G008",
-     "from": "S08",
-     "to": "S05"
+     "from": "S01",
+     "to": "S17"
     },
     {
      "kind": "rota",
      "shift_id": "L-1110-G048",
-     "from": "S22",
-     "to": "S08"
+     "from": "S06",
+     "to": "S23"
     },
     {
      "kind": "hours",
@@ -1251,7 +1200,7 @@
     {
      "kind": "card",
      "staff_id": "S22",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-30"
     },
     {
@@ -1299,31 +1248,33 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1110-G007",
+     "shift_id": "L-1110-G006",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S18",
+     "staff_id": "S19",
      "human": true,
-     "closed_at": "2026-11-10T04:57-05:00",
-     "minutes": 13.1,
+     "closed_at": "2026-11-10T04:56-05:00",
+     "minutes": 12.7,
      "late": false,
-     "violation": null,
-     "codes": [],
+     "violation": "certificate",
+     "codes": [
+      "CERT_EXPIRED"
+     ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1110-G087",
+     "shift_id": "L-1110-G008",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S07",
+     "staff_id": "S10",
      "human": true,
-     "closed_at": "2026-11-10T05:26-05:00",
-     "minutes": 14.2,
+     "closed_at": "2026-11-10T05:24-05:00",
+     "minutes": 12.3,
      "late": false,
      "violation": "certificate",
      "codes": [
@@ -1337,37 +1288,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1110-G007",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S16",
-     "human": false,
-     "closed_at": "2026-11-10T04:48-05:00",
-     "minutes": 4.3,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 1,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1110-G087",
+     "shift_id": "L-1110-G006",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
      "staff_id": "S18",
      "human": false,
-     "closed_at": "2026-11-10T05:22-05:00",
-     "minutes": 10.0,
+     "closed_at": "2026-11-10T05:07-05:00",
+     "minutes": 23.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 3,
+     "asked": 5,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1110-G008",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S18",
+     "human": false,
+     "closed_at": "2026-11-10T05:41-05:00",
+     "minutes": 29.8,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 7,
      "manager_minutes": 0.0
     }
    ]
@@ -1377,24 +1328,10 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S07",
-     "at": "2026-11-11T05:35-05:00",
+     "staff_id": "S21",
+     "at": "2026-11-11T05:29-05:00",
      "shift_ids": [
-      "L-1111-G012"
-     ]
-    },
-    {
-     "staff_id": "S18",
-     "at": "2026-11-11T05:35-05:00",
-     "shift_ids": [
-      "L-1111-G052"
-     ]
-    },
-    {
-     "staff_id": "S06",
-     "at": "2026-11-11T05:44-05:00",
-     "shift_ids": [
-      "L-1111-G049"
+      "L-1111-G090"
      ]
     }
    ],
@@ -1402,8 +1339,8 @@
     {
      "kind": "rota",
      "shift_id": "L-1111-G009",
-     "from": "S17",
-     "to": "S12"
+     "from": "S12",
+     "to": "S13"
     },
     {
      "kind": "hours",
@@ -1426,82 +1363,43 @@
      "kind": "card",
      "staff_id": "S04",
      "cert_type": "wsi",
-     "expires_on": "2026-10-31"
+     "expires_on": "2026-11-11"
     },
     {
      "kind": "card",
      "staff_id": "S07",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-21"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-10-23"
     },
     {
      "kind": "card",
      "staff_id": "S20",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-04"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-09"
     },
     {
      "kind": "card",
      "staff_id": "S26",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-10-21"
-    },
-    {
-     "kind": "unconfirmed",
-     "staff_id": "S30",
-     "cert_type": "cpr_aed"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-11"
     },
     {
      "kind": "renewal",
-     "staff_id": "S09",
+     "staff_id": "S01",
      "program": "learn_to_swim",
      "renewed_at": "2025-10-11"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1111-G012",
+     "shift_id": "L-1111-G090",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S17",
+     "staff_id": "S03",
      "human": true,
-     "closed_at": "2026-11-11T05:47-05:00",
-     "minutes": 12.3,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1111-G052",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S22",
-     "human": true,
-     "closed_at": "2026-11-11T05:49-05:00",
-     "minutes": 14.6,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1111-G049",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S17",
-     "human": true,
-     "closed_at": "2026-11-11T05:56-05:00",
-     "minutes": 12.3,
+     "closed_at": "2026-11-11T05:41-05:00",
+     "minutes": 12.4,
      "late": false,
      "violation": null,
      "codes": [],
@@ -1513,54 +1411,20 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1111-G012",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S17",
-     "human": false,
-     "closed_at": "2026-11-11T05:42-05:00",
-     "minutes": 7.3,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 2,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1111-G052",
+     "shift_id": "L-1111-G090",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
      "staff_id": "S03",
      "human": false,
-     "closed_at": "2026-11-11T05:54-05:00",
-     "minutes": 19.4,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 4,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1111-G049",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S17",
-     "human": false,
      "closed_at": "2026-11-11T05:51-05:00",
-     "minutes": 7.3,
+     "minutes": 22.4,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 2,
+     "asked": 5,
      "manager_minutes": 0.0
     }
    ]
@@ -1570,10 +1434,17 @@
    "day": "2026-11-12",
    "callouts": [
     {
-     "staff_id": "S08",
-     "at": "2026-11-12T05:21-05:00",
+     "staff_id": "S04",
+     "at": "2026-11-12T04:39-05:00",
      "shift_ids": [
-      "L-1112-G013"
+      "L-1112-G015"
+     ]
+    },
+    {
+     "staff_id": "S15",
+     "at": "2026-11-12T05:16-05:00",
+     "shift_ids": [
+      "L-1112-G054"
      ]
     }
    ],
@@ -1581,63 +1452,77 @@
     {
      "kind": "rota",
      "shift_id": "L-1112-G093",
-     "from": "S09",
-     "to": "S17"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S07",
-     "week_hours": 38.75
+     "from": "S23",
+     "to": "S16"
     },
     {
      "kind": "hours",
      "staff_id": "S32",
-     "week_hours": 35.5
+     "week_hours": 40.0
     },
     {
      "kind": "hours",
      "staff_id": "S27",
-     "week_hours": 39.75
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S40",
-     "week_hours": 38.0
+     "week_hours": 37.75
     },
     {
      "kind": "card",
-     "staff_id": "S23",
+     "staff_id": "S38",
      "cert_type": "cpr_aed",
      "expires_on": "2026-11-12"
     },
     {
      "kind": "card",
-     "staff_id": "S39",
+     "staff_id": "S03",
      "cert_type": "cpr_aed",
      "expires_on": "2026-11-24"
     },
     {
      "kind": "card",
-     "staff_id": "S09",
-     "cert_type": "wsi",
+     "staff_id": "S23",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-09"
     },
     {
-     "kind": "unconfirmed",
-     "staff_id": "S01",
-     "cert_type": "cpr_aed"
+     "kind": "card",
+     "staff_id": "S39",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-25"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S09",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-10-29"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1112-G013",
+     "shift_id": "L-1112-G015",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S06",
+     "staff_id": "S22",
      "human": true,
-     "closed_at": "2026-11-12T05:35-05:00",
-     "minutes": 14.0,
+     "closed_at": "2026-11-12T04:52-05:00",
+     "minutes": 13.2,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "L-1112-G054",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S22",
+     "human": true,
+     "closed_at": "2026-11-12T05:29-05:00",
+     "minutes": 13.2,
      "late": false,
      "violation": null,
      "codes": [],
@@ -1649,21 +1534,38 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1112-G013",
+     "shift_id": "L-1112-G015",
      "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S06",
-     "human": true,
-     "closed_at": "2026-11-12T05:49-05:00",
-     "minutes": 28.3,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S15",
+     "human": false,
+     "closed_at": "2026-11-12T04:49-05:00",
+     "minutes": 10.7,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 4,
-     "manager_minutes": 1.0
+     "asked": 2,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1112-G054",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S22",
+     "human": false,
+     "closed_at": "2026-11-12T05:54-05:00",
+     "minutes": 38.2,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 8,
+     "manager_minutes": 0.0
     }
    ]
   },
@@ -1672,17 +1574,17 @@
    "day": "2026-11-13",
    "callouts": [
     {
-     "staff_id": "S18",
-     "at": "2026-11-13T04:41-05:00",
+     "staff_id": "S04",
+     "at": "2026-11-13T04:33-05:00",
      "shift_ids": [
-      "L-1113-G059"
+      "L-1113-G019"
      ]
     },
     {
-     "staff_id": "S23",
-     "at": "2026-11-13T05:47-05:00",
+     "staff_id": "S26",
+     "at": "2026-11-13T04:58-05:00",
      "shift_ids": [
-      "L-1113-G100"
+      "G-1113-V1-0530"
      ]
     }
    ],
@@ -1705,7 +1607,7 @@
     {
      "kind": "card",
      "staff_id": "S16",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-18"
     },
     {
@@ -1735,32 +1637,37 @@
     {
      "kind": "card",
      "staff_id": "S14",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-10-26"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-22"
     },
     {
      "kind": "card",
      "staff_id": "S24",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-08"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-17"
+    },
+    {
+     "kind": "unconfirmed",
+     "staff_id": "S26",
+     "cert_type": "wsi"
     },
     {
      "kind": "renewal",
-     "staff_id": "S07",
+     "staff_id": "S04",
      "program": "learn_to_swim",
      "renewed_at": "2025-10-13"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1113-G059",
+     "shift_id": "L-1113-G019",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S03",
+     "staff_id": "S17",
      "human": true,
-     "closed_at": "2026-11-13T04:53-05:00",
-     "minutes": 12.2,
+     "closed_at": "2026-11-13T04:49-05:00",
+     "minutes": 16.5,
      "late": false,
      "violation": null,
      "codes": [],
@@ -1770,14 +1677,14 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1113-G100",
-     "lesson": true,
+     "shift_id": "G-1113-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S02",
+     "staff_id": "S32",
      "human": true,
-     "closed_at": "2026-11-13T05:59-05:00",
-     "minutes": 12.4,
+     "closed_at": "2026-11-13T05:10-05:00",
+     "minutes": 12.6,
      "late": false,
      "violation": null,
      "codes": [],
@@ -1789,37 +1696,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1113-G059",
+     "shift_id": "L-1113-G019",
      "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S03",
-     "human": false,
-     "closed_at": "2026-11-13T04:58-05:00",
-     "minutes": 17.2,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-13T05:16-05:00",
+     "minutes": 43.5,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 4,
-     "manager_minutes": 0.0
+     "asked": 7,
+     "manager_minutes": 1.0
     },
     {
-     "shift_id": "L-1113-G100",
-     "lesson": true,
+     "shift_id": "G-1113-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S02",
+     "staff_id": "S35",
      "human": false,
-     "closed_at": "2026-11-13T05:59-05:00",
-     "minutes": 12.4,
+     "closed_at": "2026-11-13T05:02-05:00",
+     "minutes": 4.3,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 3,
+     "asked": 1,
      "manager_minutes": 0.0
     }
    ]
@@ -1829,17 +1736,17 @@
    "day": "2026-11-09",
    "callouts": [
     {
-     "staff_id": "S33",
-     "at": "2026-11-09T04:34-05:00",
+     "staff_id": "S09",
+     "at": "2026-11-09T04:51-05:00",
      "shift_ids": [
-      "G-1109-V2-0530"
+      "L-1109-G081"
      ]
     },
     {
-     "staff_id": "S40",
-     "at": "2026-11-09T05:00-05:00",
+     "staff_id": "S04",
+     "at": "2026-11-09T04:52-05:00",
      "shift_ids": [
-      "G-1109-V3-0530"
+      "L-1109-G001"
      ]
     }
    ],
@@ -1848,79 +1755,98 @@
      "kind": "rota",
      "shift_id": "L-1109-G041",
      "from": "S02",
-     "to": "S24"
+     "to": "S18"
     },
     {
      "kind": "rota",
      "shift_id": "L-1109-G043",
      "from": "S18",
-     "to": "S10"
+     "to": "S26"
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S15",
+     "week_hours": 35.75
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S07",
+     "week_hours": 38.25
     },
     {
      "kind": "hours",
      "staff_id": "S17",
-     "week_hours": 35.5
+     "week_hours": 39.5
     },
     {
      "kind": "hours",
      "staff_id": "S14",
-     "week_hours": 35.5
+     "week_hours": 37.0
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S01",
+     "week_hours": 39.75
     },
     {
      "kind": "card",
-     "staff_id": "S20",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-11"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S33",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-10-22"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S25",
+     "staff_id": "S03",
      "cert_type": "cpr_aed",
      "expires_on": "2026-10-21"
     },
     {
-     "kind": "renewal",
-     "staff_id": "S14",
-     "program": "learn_to_swim",
-     "renewed_at": "2025-10-09"
+     "kind": "card",
+     "staff_id": "S26",
+     "cert_type": "wsi",
+     "expires_on": "2026-11-05"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S28",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-09"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S07",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-01"
     }
    ],
    "baseline": [
     {
-     "shift_id": "G-1109-V2-0530",
-     "lesson": false,
+     "shift_id": "L-1109-G081",
+     "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S32",
+     "staff_id": "S03",
      "human": true,
-     "closed_at": "2026-11-09T04:49-05:00",
-     "minutes": 15.9,
+     "closed_at": "2026-11-09T05:05-05:00",
+     "minutes": 14.8,
      "late": false,
-     "violation": null,
-     "codes": [],
+     "violation": "certificate",
+     "codes": [
+      "CERT_EXPIRED"
+     ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "G-1109-V3-0530",
-     "lesson": false,
+     "shift_id": "L-1109-G001",
+     "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S38",
+     "staff_id": "S31",
      "human": true,
-     "closed_at": "2026-11-09T05:16-05:00",
-     "minutes": 16.7,
+     "closed_at": "2026-11-09T05:08-05:00",
+     "minutes": 16.9,
      "late": false,
-     "violation": null,
-     "codes": [],
+     "violation": "program",
+     "codes": [
+      "PROGRAM_MISSING"
+     ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -1929,38 +1855,38 @@
    ],
    "coachcover": [
     {
-     "shift_id": "G-1109-V2-0530",
-     "lesson": false,
+     "shift_id": "L-1109-G081",
+     "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S32",
+     "staff_id": "S04",
      "human": false,
-     "closed_at": "2026-11-09T04:52-05:00",
-     "minutes": 18.2,
+     "closed_at": "2026-11-09T04:54-05:00",
+     "minutes": 3.8,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 4,
+     "asked": 1,
      "manager_minutes": 0.0
     },
     {
-     "shift_id": "G-1109-V3-0530",
-     "lesson": false,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S23",
-     "human": true,
-     "closed_at": "2026-11-09T05:59-05:00",
-     "minutes": 59.7,
-     "late": true,
+     "shift_id": "L-1109-G001",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S22",
+     "human": false,
+     "closed_at": "2026-11-09T05:24-05:00",
+     "minutes": 32.8,
+     "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 11,
-     "manager_minutes": 1.0
+     "asked": 7,
+     "manager_minutes": 0.0
     }
    ]
   },
@@ -1969,10 +1895,10 @@
    "day": "2026-11-10",
    "callouts": [
     {
-     "staff_id": "S10",
-     "at": "2026-11-10T05:23-05:00",
+     "staff_id": "S11",
+     "at": "2026-11-10T04:56-05:00",
      "shift_ids": [
-      "L-1110-G007"
+      "G-1110-V2-0530"
      ]
     }
    ],
@@ -1981,13 +1907,13 @@
      "kind": "rota",
      "shift_id": "L-1110-G046",
      "from": "S02",
-     "to": "S05"
+     "to": "S01"
     },
     {
      "kind": "rota",
      "shift_id": "L-1110-G008",
-     "from": "S08",
-     "to": "S06"
+     "from": "S01",
+     "to": "S20"
     },
     {
      "kind": "hours",
@@ -2018,7 +1944,7 @@
     {
      "kind": "card",
      "staff_id": "S18",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-30"
     },
     {
@@ -2030,26 +1956,28 @@
     {
      "kind": "unconfirmed",
      "staff_id": "S15",
-     "cert_type": "cpr_aed"
+     "cert_type": "wsi"
+    },
+    {
+     "kind": "renewal",
+     "staff_id": "S11",
+     "program": "learn_to_swim",
+     "renewed_at": "2025-10-10"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1110-G007",
-     "lesson": true,
+     "shift_id": "G-1110-V2-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
      "staff_id": "S36",
      "human": true,
-     "closed_at": "2026-11-10T05:36-05:00",
+     "closed_at": "2026-11-10T05:09-05:00",
      "minutes": 13.9,
      "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING",
-      "PROGRAM_MISSING"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -2058,20 +1986,20 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1110-G007",
-     "lesson": true,
+     "shift_id": "G-1110-V2-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S03",
+     "staff_id": "S25",
      "human": false,
-     "closed_at": "2026-11-10T05:42-05:00",
-     "minutes": 19.3,
+     "closed_at": "2026-11-10T05:25-05:00",
+     "minutes": 29.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 4,
+     "asked": 6,
      "manager_minutes": 0.0
     }
    ]
@@ -2081,24 +2009,17 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S01",
-     "at": "2026-11-11T04:39-05:00",
-     "shift_ids": [
-      "L-1111-G010"
-     ]
-    },
-    {
      "staff_id": "S18",
-     "at": "2026-11-11T04:46-05:00",
+     "at": "2026-11-11T05:09-05:00",
      "shift_ids": [
-      "L-1111-G052"
+      "L-1111-G050"
      ]
     },
     {
-     "staff_id": "S14",
-     "at": "2026-11-11T05:27-05:00",
+     "staff_id": "S15",
+     "at": "2026-11-11T05:38-05:00",
      "shift_ids": [
-      "L-1111-G092"
+      "L-1111-G049"
      ]
     }
    ],
@@ -2107,17 +2028,12 @@
      "kind": "rota",
      "shift_id": "L-1111-G051",
      "from": "S13",
-     "to": "S17"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S08",
-     "week_hours": 39.0
+     "to": "S21"
     },
     {
      "kind": "hours",
      "staff_id": "S25",
-     "week_hours": 35.5
+     "week_hours": 37.5
     },
     {
      "kind": "hours",
@@ -2125,106 +2041,56 @@
      "week_hours": 39.0
     },
     {
-     "kind": "hours",
-     "staff_id": "S39",
-     "week_hours": 39.75
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S10",
-     "week_hours": 35.75
-    },
-    {
      "kind": "card",
-     "staff_id": "S06",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-16"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S23",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-10-21"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S05",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-10-23"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S36",
+     "staff_id": "S07",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-11-11"
+     "expires_on": "2026-11-07"
     },
     {
      "kind": "card",
-     "staff_id": "S11",
+     "staff_id": "S02",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-10"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S17",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-19"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S18",
      "cert_type": "wsi",
-     "expires_on": "2026-10-31"
+     "expires_on": "2026-10-22"
     },
     {
      "kind": "card",
-     "staff_id": "S31",
+     "staff_id": "S29",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-11-29"
+     "expires_on": "2026-11-14"
     },
     {
      "kind": "unconfirmed",
-     "staff_id": "S14",
-     "cert_type": "cpr_aed"
+     "staff_id": "S03",
+     "cert_type": "lifeguarding"
     },
     {
      "kind": "renewal",
-     "staff_id": "S17",
+     "staff_id": "S11",
      "program": "learn_to_swim",
      "renewed_at": "2025-10-11"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1111-G010",
+     "shift_id": "L-1111-G050",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S19",
+     "staff_id": "S23",
      "human": true,
-     "closed_at": "2026-11-11T04:51-05:00",
-     "minutes": 12.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1111-G052",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S19",
-     "human": true,
-     "closed_at": "2026-11-11T04:58-05:00",
-     "minutes": 12.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1111-G092",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S21",
-     "human": true,
-     "closed_at": "2026-11-11T05:39-05:00",
+     "closed_at": "2026-11-11T05:21-05:00",
      "minutes": 12.2,
      "late": false,
      "violation": null,
@@ -2233,35 +2099,37 @@
      "lessons_cancelled": 0,
      "asked": 0,
      "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "L-1111-G049",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S27",
+     "human": true,
+     "closed_at": "2026-11-11T05:50-05:00",
+     "minutes": 12.5,
+     "late": false,
+     "violation": "program",
+     "codes": [
+      "LEVEL_MISSING"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
     }
    ],
    "coachcover": [
     {
-     "shift_id": "L-1111-G010",
+     "shift_id": "L-1111-G050",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S19",
+     "staff_id": "S05",
      "human": false,
-     "closed_at": "2026-11-11T04:46-05:00",
-     "minutes": 7.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 2,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1111-G052",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S01",
-     "human": false,
-     "closed_at": "2026-11-11T04:49-05:00",
-     "minutes": 3.2,
+     "closed_at": "2026-11-11T05:12-05:00",
+     "minutes": 3.4,
      "late": false,
      "violation": null,
      "codes": [],
@@ -2271,20 +2139,20 @@
      "manager_minutes": 0.0
     },
     {
-     "shift_id": "L-1111-G092",
+     "shift_id": "L-1111-G049",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S03",
+     "staff_id": "S02",
      "human": false,
-     "closed_at": "2026-11-11T05:35-05:00",
-     "minutes": 8.4,
+     "closed_at": "2026-11-11T05:41-05:00",
+     "minutes": 3.9,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 2,
+     "asked": 1,
      "manager_minutes": 0.0
     }
    ]
@@ -2297,21 +2165,22 @@
      "staff_id": "S04",
      "at": "2026-11-12T05:09-05:00",
      "shift_ids": [
-      "L-1112-G055"
+      "L-1112-G015"
      ]
     },
     {
-     "staff_id": "S02",
+     "staff_id": "S01",
      "at": "2026-11-12T05:12-05:00",
      "shift_ids": [
-      "L-1112-G056"
+      "L-1112-G013"
      ]
     },
     {
-     "staff_id": "S05",
+     "staff_id": "S06",
      "at": "2026-11-12T05:15-05:00",
      "shift_ids": [
-      "L-1112-G094"
+      "L-1112-G094",
+      "L-1112-G055"
      ]
     }
    ],
@@ -2319,20 +2188,20 @@
     {
      "kind": "rota",
      "shift_id": "L-1112-G053",
-     "from": "S20",
-     "to": "S11"
+     "from": "S06",
+     "to": "S22"
     },
     {
      "kind": "rota",
      "shift_id": "L-1112-G094",
-     "from": "S23",
-     "to": "S05"
+     "from": "S19",
+     "to": "S06"
     },
     {
      "kind": "rota",
      "shift_id": "L-1112-G055",
-     "from": "S06",
-     "to": "S04"
+     "from": "S13",
+     "to": "S06"
     },
     {
      "kind": "hours",
@@ -2371,8 +2240,8 @@
     {
      "kind": "card",
      "staff_id": "S02",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-17"
+     "cert_type": "wsi",
+     "expires_on": "2026-10-26"
     },
     {
      "kind": "renewal",
@@ -2383,7 +2252,7 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1112-G055",
+     "shift_id": "L-1112-G015",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -2404,32 +2273,13 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1112-G056",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S11",
-     "human": true,
-     "closed_at": "2026-11-12T05:26-05:00",
-     "minutes": 14.1,
-     "late": false,
-     "violation": "hours",
-     "codes": [
-      "HOURS_LIMIT_EXCEEDED"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1112-G094",
+     "shift_id": "L-1112-G013",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
      "staff_id": "S31",
      "human": true,
-     "closed_at": "2026-11-12T05:28-05:00",
+     "closed_at": "2026-11-12T05:25-05:00",
      "minutes": 13.0,
      "late": false,
      "violation": "role",
@@ -2442,169 +2292,40 @@
      "lessons_cancelled": 0,
      "asked": 0,
      "manager_minutes": 3.0
-    }
-   ],
-   "coachcover": [
-    {
-     "shift_id": "L-1112-G055",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S06",
-     "human": true,
-     "closed_at": "2026-11-12T05:44-05:00",
-     "minutes": 35.2,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 5,
-     "manager_minutes": 1.0
-    },
-    {
-     "shift_id": "L-1112-G056",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S15",
-     "human": false,
-     "closed_at": "2026-11-12T05:25-05:00",
-     "minutes": 13.4,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 0.0
     },
     {
      "shift_id": "L-1112-G094",
      "lesson": true,
      "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S15",
-     "human": false,
-     "closed_at": "2026-11-12T05:28-05:00",
-     "minutes": 13.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 4,
-     "manager_minutes": 0.0
-    }
-   ]
-  },
-  {
-   "index": 14,
-   "day": "2026-11-13",
-   "callouts": [
-    {
-     "staff_id": "S17",
-     "at": "2026-11-13T05:42-05:00",
-     "shift_ids": [
-      "L-1113-G100"
-     ]
-    }
-   ],
-   "changes": [
-    {
-     "kind": "rota",
-     "shift_id": "L-1113-G099",
-     "from": "S14",
-     "to": "S21"
-    },
-    {
-     "kind": "rota",
-     "shift_id": "L-1113-G100",
-     "from": "S23",
-     "to": "S17"
-    },
-    {
-     "kind": "rota",
-     "shift_id": "L-1113-G017",
-     "from": "S04",
-     "to": "S23"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S12",
-     "week_hours": 37.75
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S04",
-     "week_hours": 39.5
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S17",
-     "week_hours": 39.5
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S34",
-     "week_hours": 36.5
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S08",
-     "week_hours": 37.75
-    },
-    {
-     "kind": "card",
-     "staff_id": "S29",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-13"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S11",
-     "cert_type": "wsi",
-     "expires_on": "2026-10-27"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S38",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-13"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S07",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-25"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S05",
-     "cert_type": "wsi",
-     "expires_on": "2026-10-27"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S24",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-08"
-    }
-   ],
-   "baseline": [
-    {
-     "shift_id": "L-1113-G100",
-     "lesson": true,
-     "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S14",
+     "staff_id": "S03",
      "human": true,
-     "closed_at": "2026-11-13T05:54-05:00",
-     "minutes": 12.5,
+     "closed_at": "2026-11-12T05:28-05:00",
+     "minutes": 13.4,
      "late": false,
      "violation": "program",
      "codes": [
+      "LEVEL_MISSING",
       "PROGRAM_RENEWAL_OVERDUE"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "L-1112-G055",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S27",
+     "human": true,
+     "closed_at": "2026-11-12T05:30-05:00",
+     "minutes": 15.9,
+     "late": false,
+     "violation": "program",
+     "codes": [
+      "LEVEL_MISSING"
      ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
@@ -2614,20 +2335,193 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1113-G100",
+     "shift_id": "L-1112-G015",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S03",
+     "staff_id": "S27",
      "human": false,
-     "closed_at": "2026-11-13T05:47-05:00",
-     "minutes": 5.2,
+     "closed_at": "2026-11-12T05:17-05:00",
+     "minutes": 8.9,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 1,
+     "asked": 2,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1112-G013",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-12T05:37-05:00",
+     "minutes": 25.7,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 4,
+     "manager_minutes": 1.0
+    },
+    {
+     "shift_id": "L-1112-G094",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S12",
+     "human": true,
+     "closed_at": "2026-11-12T05:42-05:00",
+     "minutes": 27.2,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 5,
+     "manager_minutes": 1.0
+    },
+    {
+     "shift_id": "L-1112-G055",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S12",
+     "human": true,
+     "closed_at": "2026-11-12T05:54-05:00",
+     "minutes": 39.4,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 7,
+     "manager_minutes": 1.0
+    }
+   ]
+  },
+  {
+   "index": 14,
+   "day": "2026-11-13",
+   "callouts": [
+    {
+     "staff_id": "S01",
+     "at": "2026-11-13T04:41-05:00",
+     "shift_ids": [
+      "L-1113-G020"
+     ]
+    }
+   ],
+   "changes": [
+    {
+     "kind": "rota",
+     "shift_id": "L-1113-G099",
+     "from": "S03",
+     "to": "S24"
+    },
+    {
+     "kind": "rota",
+     "shift_id": "L-1113-G100",
+     "from": "S14",
+     "to": "S27"
+    },
+    {
+     "kind": "rota",
+     "shift_id": "L-1113-G017",
+     "from": "S10",
+     "to": "S27"
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S04",
+     "week_hours": 34.75
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S17",
+     "week_hours": 36.5
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S34",
+     "week_hours": 34.5
+    },
+    {
+     "kind": "card",
+     "staff_id": "S10",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-16"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S34",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-10-27"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S26",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-13"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S29",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-25"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S11",
+     "cert_type": "wsi",
+     "expires_on": "2026-11-13"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S07",
+     "cert_type": "wsi",
+     "expires_on": "2026-10-27"
+    }
+   ],
+   "baseline": [
+    {
+     "shift_id": "L-1113-G020",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S20",
+     "human": true,
+     "closed_at": "2026-11-13T04:54-05:00",
+     "minutes": 13.4,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    }
+   ],
+   "coachcover": [
+    {
+     "shift_id": "L-1113-G020",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S03",
+     "human": false,
+     "closed_at": "2026-11-13T05:10-05:00",
+     "minutes": 29.0,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 6,
      "manager_minutes": 0.0
     }
    ]
@@ -2637,7 +2531,7 @@
    "day": "2026-11-09",
    "callouts": [
     {
-     "staff_id": "S40",
+     "staff_id": "S39",
      "at": "2026-11-09T04:57-05:00",
      "shift_ids": [
       "G-1109-V3-0530"
@@ -2651,7 +2545,7 @@
      ]
     },
     {
-     "staff_id": "S33",
+     "staff_id": "S32",
      "at": "2026-11-09T05:11-05:00",
      "shift_ids": [
       "G-1109-V2-0530"
@@ -2663,55 +2557,55 @@
      "kind": "rota",
      "shift_id": "L-1109-G084",
      "from": "S21",
-     "to": "S20"
+     "to": "S24"
     },
     {
      "kind": "rota",
      "shift_id": "L-1109-G003",
-     "from": "S12",
-     "to": "S21"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S26",
-     "week_hours": 36.0
+     "from": "S01",
+     "to": "S15"
     },
     {
      "kind": "hours",
      "staff_id": "S02",
-     "week_hours": 36.25
+     "week_hours": 39.75
     },
     {
      "kind": "hours",
      "staff_id": "S19",
-     "week_hours": 36.5
+     "week_hours": 38.0
     },
     {
      "kind": "hours",
      "staff_id": "S10",
-     "week_hours": 35.25
+     "week_hours": 36.75
     },
     {
      "kind": "hours",
      "staff_id": "S37",
-     "week_hours": 34.25
+     "week_hours": 39.25
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S21",
+     "week_hours": 38.25
     },
     {
      "kind": "card",
      "staff_id": "S23",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-20"
     },
     {
      "kind": "card",
      "staff_id": "S17",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-14"
     },
     {
      "kind": "card",
      "staff_id": "S08",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-28"
     }
    ],
@@ -2780,48 +2674,48 @@
      "channel": "offer",
      "staff_id": "S34",
      "human": false,
-     "closed_at": "2026-11-09T05:28-05:00",
-     "minutes": 31.8,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 7,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "G-1109-V2-0530",
-     "lesson": false,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S23",
-     "human": true,
-     "closed_at": "2026-11-09T06:09-05:00",
-     "minutes": 58.1,
-     "late": true,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 12,
-     "manager_minutes": 1.0
-    },
-    {
-     "shift_id": "L-1109-G081",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-09T05:44-05:00",
-     "minutes": 33.0,
+     "closed_at": "2026-11-09T05:22-05:00",
+     "minutes": 25.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 6,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "G-1109-V2-0530",
+     "lesson": false,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S01",
+     "human": false,
+     "closed_at": "2026-11-09T05:51-05:00",
+     "minutes": 40.2,
+     "late": true,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 10,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1109-G081",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-09T05:52-05:00",
+     "minutes": 41.5,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 7,
      "manager_minutes": 1.0
     }
    ]
@@ -2831,17 +2725,17 @@
    "day": "2026-11-10",
    "callouts": [
     {
-     "staff_id": "S15",
+     "staff_id": "S14",
      "at": "2026-11-10T04:47-05:00",
      "shift_ids": [
-      "L-1110-G046"
+      "L-1110-G087"
      ]
     },
     {
-     "staff_id": "S29",
+     "staff_id": "S24",
      "at": "2026-11-10T05:14-05:00",
      "shift_ids": [
-      "G-1110-V1-0530"
+      "G-1110-V3-0530"
      ]
     }
    ],
@@ -2849,8 +2743,8 @@
     {
      "kind": "rota",
      "shift_id": "L-1110-G006",
-     "from": "S07",
-     "to": "S06"
+     "from": "S12",
+     "to": "S07"
     },
     {
      "kind": "rota",
@@ -2877,7 +2771,7 @@
     {
      "kind": "card",
      "staff_id": "S18",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-10"
     },
     {
@@ -2895,7 +2789,7 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1110-G046",
+     "shift_id": "L-1110-G087",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -2916,17 +2810,19 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "G-1110-V1-0530",
+     "shift_id": "G-1110-V3-0530",
      "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S24",
+     "staff_id": "S08",
      "human": true,
-     "closed_at": "2026-11-10T05:27-05:00",
-     "minutes": 13.0,
+     "closed_at": "2026-11-10T05:28-05:00",
+     "minutes": 14.9,
      "late": false,
-     "violation": null,
-     "codes": [],
+     "violation": "certificate",
+     "codes": [
+      "CERT_EXPIRED"
+     ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -2935,37 +2831,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1110-G046",
+     "shift_id": "L-1110-G087",
      "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-10T05:21-05:00",
-     "minutes": 34.3,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S24",
+     "human": false,
+     "closed_at": "2026-11-10T05:23-05:00",
+     "minutes": 36.7,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 5,
-     "manager_minutes": 1.0
+     "asked": 9,
+     "manager_minutes": 0.0
     },
     {
-     "shift_id": "G-1110-V1-0530",
+     "shift_id": "G-1110-V3-0530",
      "lesson": false,
      "outcome": "covered",
      "channel": "offer",
      "staff_id": "S37",
      "human": false,
-     "closed_at": "2026-11-10T05:41-05:00",
-     "minutes": 27.6,
+     "closed_at": "2026-11-10T05:50-05:00",
+     "minutes": 36.9,
      "late": true,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 6,
+     "asked": 9,
      "manager_minutes": 0.0
     }
    ]
@@ -2975,10 +2871,17 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S14",
-     "at": "2026-11-11T04:55-05:00",
+     "staff_id": "S11",
+     "at": "2026-11-11T04:43-05:00",
      "shift_ids": [
-      "L-1111-G092"
+      "G-1111-V2-0530"
+     ]
+    },
+    {
+     "staff_id": "S26",
+     "at": "2026-11-11T05:03-05:00",
+     "shift_ids": [
+      "G-1111-V1-0530"
      ]
     }
    ],
@@ -2986,19 +2889,19 @@
     {
      "kind": "rota",
      "shift_id": "L-1111-G011",
-     "from": "S04",
-     "to": "S20"
+     "from": "S07",
+     "to": "S21"
     },
     {
      "kind": "rota",
      "shift_id": "L-1111-G012",
-     "from": "S07",
-     "to": "S05"
+     "from": "S10",
+     "to": "S15"
     },
     {
      "kind": "rota",
      "shift_id": "L-1111-G091",
-     "from": "S24",
+     "from": "S16",
      "to": "S09"
     },
     {
@@ -3025,48 +2928,66 @@
      "kind": "card",
      "staff_id": "S16",
      "cert_type": "wsi",
-     "expires_on": "2026-10-24"
+     "expires_on": "2026-11-15"
     },
     {
      "kind": "card",
      "staff_id": "S28",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-12-01"
+     "expires_on": "2026-11-20"
     },
     {
      "kind": "card",
      "staff_id": "S10",
-     "cert_type": "wsi",
-     "expires_on": "2026-10-23"
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-11"
     },
     {
      "kind": "card",
      "staff_id": "S31",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-11-14"
+     "expires_on": "2026-10-23"
     },
     {
      "kind": "card",
      "staff_id": "S14",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-11"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-13"
     },
     {
-     "kind": "unconfirmed",
-     "staff_id": "S14",
-     "cert_type": "wsi"
+     "kind": "renewal",
+     "staff_id": "S11",
+     "program": "learn_to_swim",
+     "renewed_at": "2025-10-11"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1111-G092",
-     "lesson": true,
+     "shift_id": "G-1111-V2-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S12",
+     "staff_id": "S03",
      "human": true,
-     "closed_at": "2026-11-11T05:07-05:00",
-     "minutes": 12.8,
+     "closed_at": "2026-11-11T04:55-05:00",
+     "minutes": 12.3,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "G-1111-V1-0530",
+     "lesson": false,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S28",
+     "human": true,
+     "closed_at": "2026-11-11T05:16-05:00",
+     "minutes": 13.0,
      "late": false,
      "violation": null,
      "codes": [],
@@ -3078,21 +2999,38 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1111-G092",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-11T05:49-05:00",
-     "minutes": 54.6,
+     "shift_id": "G-1111-V2-0530",
+     "lesson": false,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S37",
+     "human": false,
+     "closed_at": "2026-11-11T05:17-05:00",
+     "minutes": 34.2,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 9,
-     "manager_minutes": 1.0
+     "asked": 7,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "G-1111-V1-0530",
+     "lesson": false,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S28",
+     "human": false,
+     "closed_at": "2026-11-11T05:30-05:00",
+     "minutes": 27.1,
+     "late": true,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 6,
+     "manager_minutes": 0.0
     }
    ]
   },
@@ -3101,17 +3039,17 @@
    "day": "2026-11-12",
    "callouts": [
     {
-     "staff_id": "S02",
+     "staff_id": "S01",
      "at": "2026-11-12T05:17-05:00",
      "shift_ids": [
-      "L-1112-G056"
+      "L-1112-G013"
      ]
     },
     {
      "staff_id": "S03",
      "at": "2026-11-12T05:49-05:00",
      "shift_ids": [
-      "L-1112-G096"
+      "L-1112-G095"
      ]
     }
    ],
@@ -3119,19 +3057,14 @@
     {
      "kind": "rota",
      "shift_id": "L-1112-G055",
-     "from": "S06",
-     "to": "S04"
+     "from": "S13",
+     "to": "S06"
     },
     {
      "kind": "rota",
      "shift_id": "L-1112-G053",
-     "from": "S20",
+     "from": "S06",
      "to": "S17"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S30",
-     "week_hours": 36.0
     },
     {
      "kind": "hours",
@@ -3144,26 +3077,30 @@
      "week_hours": 38.0
     },
     {
-     "kind": "card",
-     "staff_id": "S29",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-12-01"
+     "kind": "hours",
+     "staff_id": "S21",
+     "week_hours": 35.25
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S05",
+     "week_hours": 39.5
     },
     {
      "kind": "card",
-     "staff_id": "S05",
+     "staff_id": "S38",
      "cert_type": "cpr_aed",
      "expires_on": "2026-10-26"
     },
     {
      "kind": "card",
-     "staff_id": "S03",
-     "cert_type": "wsi",
+     "staff_id": "S04",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-12"
     },
     {
      "kind": "card",
-     "staff_id": "S38",
+     "staff_id": "S28",
      "cert_type": "lifeguarding",
      "expires_on": "2026-11-16"
     },
@@ -3176,35 +3113,37 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1112-G056",
+     "shift_id": "L-1112-G013",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S15",
+     "staff_id": "S26",
      "human": true,
-     "closed_at": "2026-11-12T05:30-05:00",
-     "minutes": 13.4,
+     "closed_at": "2026-11-12T05:31-05:00",
+     "minutes": 14.2,
      "late": false,
-     "violation": null,
-     "codes": [],
+     "violation": "program",
+     "codes": [
+      "LEVEL_MISSING"
+     ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1112-G096",
+     "shift_id": "L-1112-G095",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S01",
+     "staff_id": "S15",
      "human": true,
-     "closed_at": "2026-11-12T06:03-05:00",
-     "minutes": 14.0,
+     "closed_at": "2026-11-12T06:02-05:00",
+     "minutes": 13.4,
      "late": false,
      "violation": "program",
      "codes": [
-      "PROGRAM_RENEWAL_OVERDUE"
+      "LEVEL_MISSING"
      ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
@@ -3214,31 +3153,157 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1112-G056",
+     "shift_id": "L-1112-G013",
      "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S18",
-     "human": false,
-     "closed_at": "2026-11-12T05:22-05:00",
-     "minutes": 5.4,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-12T05:44-05:00",
+     "minutes": 27.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 1,
-     "manager_minutes": 0.0
+     "asked": 3,
+     "manager_minutes": 1.0
     },
     {
-     "shift_id": "L-1112-G096",
+     "shift_id": "L-1112-G095",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S26",
+     "human": false,
+     "closed_at": "2026-11-12T06:05-05:00",
+     "minutes": 16.3,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 5,
+     "manager_minutes": 0.0
+    }
+   ]
+  },
+  {
+   "index": 19,
+   "day": "2026-11-13",
+   "callouts": [
+    {
+     "staff_id": "S23",
+     "at": "2026-11-13T04:45-05:00",
+     "shift_ids": [
+      "L-1113-G098"
+     ]
+    }
+   ],
+   "changes": [
+    {
+     "kind": "rota",
+     "shift_id": "L-1113-G100",
+     "from": "S14",
+     "to": "S12"
+    },
+    {
+     "kind": "rota",
+     "shift_id": "L-1113-G097",
+     "from": "S21",
+     "to": "S08"
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S19",
+     "week_hours": 34.5
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S09",
+     "week_hours": 38.0
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S10",
+     "week_hours": 34.5
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S05",
+     "week_hours": 37.5
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S01",
+     "week_hours": 35.75
+    },
+    {
+     "kind": "card",
+     "staff_id": "S22",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-10-29"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S17",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-13"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S08",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-12-03"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S37",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-13"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S15",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-14"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S07",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-10"
+    }
+   ],
+   "baseline": [
+    {
+     "shift_id": "L-1113-G098",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S15",
+     "human": true,
+     "closed_at": "2026-11-13T04:58-05:00",
+     "minutes": 13.1,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    }
+   ],
+   "coachcover": [
+    {
+     "shift_id": "L-1113-G098",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
      "staff_id": "S15",
      "human": false,
-     "closed_at": "2026-11-12T05:57-05:00",
-     "minutes": 8.4,
+     "closed_at": "2026-11-13T04:53-05:00",
+     "minutes": 8.1,
      "late": false,
      "violation": null,
      "codes": [],
@@ -3250,165 +3315,14 @@
    ]
   },
   {
-   "index": 19,
-   "day": "2026-11-13",
-   "callouts": [
-    {
-     "staff_id": "S20",
-     "at": "2026-11-13T04:37-05:00",
-     "shift_ids": [
-      "L-1113-G060"
-     ]
-    },
-    {
-     "staff_id": "S31",
-     "at": "2026-11-13T05:04-05:00",
-     "shift_ids": [
-      "G-1113-V2-0530"
-     ]
-    }
-   ],
-   "changes": [
-    {
-     "kind": "rota",
-     "shift_id": "L-1113-G100",
-     "from": "S23",
-     "to": "S22"
-    },
-    {
-     "kind": "rota",
-     "shift_id": "L-1113-G097",
-     "from": "S19",
-     "to": "S05"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S31",
-     "week_hours": 35.0
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S19",
-     "week_hours": 34.5
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S09",
-     "week_hours": 34.0
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S10",
-     "week_hours": 39.75
-    },
-    {
-     "kind": "card",
-     "staff_id": "S07",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-02"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S11",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-12-02"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S39",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-10-27"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S40",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-23"
-    }
-   ],
-   "baseline": [
-    {
-     "shift_id": "L-1113-G060",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S17",
-     "human": true,
-     "closed_at": "2026-11-13T04:50-05:00",
-     "minutes": 13.1,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "G-1113-V2-0530",
-     "lesson": false,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S35",
-     "human": true,
-     "closed_at": "2026-11-13T05:16-05:00",
-     "minutes": 12.6,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    }
-   ],
-   "coachcover": [
-    {
-     "shift_id": "L-1113-G060",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S05",
-     "human": false,
-     "closed_at": "2026-11-13T04:41-05:00",
-     "minutes": 4.1,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 1,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "G-1113-V2-0530",
-     "lesson": false,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S35",
-     "human": false,
-     "closed_at": "2026-11-13T05:06-05:00",
-     "minutes": 2.6,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 1,
-     "manager_minutes": 0.0
-    }
-   ]
-  },
-  {
    "index": 20,
    "day": "2026-11-09",
    "callouts": [
     {
-     "staff_id": "S05",
-     "at": "2026-11-09T05:13-05:00",
+     "staff_id": "S09",
+     "at": "2026-11-09T04:34-05:00",
      "shift_ids": [
-      "L-1109-G001",
-      "L-1109-G004"
+      "L-1109-G081"
      ]
     }
    ],
@@ -3416,13 +3330,8 @@
     {
      "kind": "rota",
      "shift_id": "L-1109-G044",
-     "from": "S15",
-     "to": "S13"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S10",
-     "week_hours": 34.0
+     "from": "S03",
+     "to": "S10"
     },
     {
      "kind": "hours",
@@ -3430,21 +3339,20 @@
      "week_hours": 38.25
     },
     {
-     "kind": "card",
-     "staff_id": "S12",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-12"
+     "kind": "hours",
+     "staff_id": "S01",
+     "week_hours": 38.0
     },
     {
      "kind": "card",
-     "staff_id": "S36",
+     "staff_id": "S40",
      "cert_type": "cpr_aed",
      "expires_on": "2026-11-04"
     },
     {
      "kind": "card",
      "staff_id": "S19",
-     "cert_type": "lifeguarding",
+     "cert_type": "wsi",
      "expires_on": "2026-11-29"
     },
     {
@@ -3466,47 +3374,40 @@
      "expires_on": "2026-11-18"
     },
     {
-     "kind": "unconfirmed",
-     "staff_id": "S16",
-     "cert_type": "wsi"
+     "kind": "card",
+     "staff_id": "S28",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-13"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S05",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-09"
     },
     {
      "kind": "renewal",
-     "staff_id": "S18",
+     "staff_id": "S11",
      "program": "learn_to_swim",
      "renewed_at": "2025-10-09"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1109-G001",
+     "shift_id": "L-1109-G081",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S15",
+     "staff_id": "S14",
      "human": true,
-     "closed_at": "2026-11-09T05:26-05:00",
-     "minutes": 13.5,
+     "closed_at": "2026-11-09T04:50-05:00",
+     "minutes": 16.3,
      "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1109-G004",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S15",
-     "human": true,
-     "closed_at": "2026-11-09T05:28-05:00",
-     "minutes": 15.5,
-     "late": false,
-     "violation": null,
-     "codes": [],
+     "violation": "program",
+     "codes": [
+      "LEVEL_MISSING",
+      "PROGRAM_RENEWAL_OVERDUE"
+     ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -3515,38 +3416,21 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1109-G001",
+     "shift_id": "L-1109-G081",
      "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S15",
-     "human": false,
-     "closed_at": "2026-11-09T05:20-05:00",
-     "minutes": 7.1,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-09T05:12-05:00",
+     "minutes": 38.4,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 2,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1109-G004",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S01",
-     "human": false,
-     "closed_at": "2026-11-09T05:20-05:00",
-     "minutes": 7.4,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 2,
-     "manager_minutes": 0.0
+     "asked": 6,
+     "manager_minutes": 1.0
     }
    ]
   },
@@ -3555,17 +3439,17 @@
    "day": "2026-11-10",
    "callouts": [
     {
-     "staff_id": "S22",
-     "at": "2026-11-10T05:09-05:00",
+     "staff_id": "S24",
+     "at": "2026-11-10T04:49-05:00",
      "shift_ids": [
-      "L-1110-G048"
+      "G-1110-V3-0530"
      ]
     },
     {
-     "staff_id": "S23",
+     "staff_id": "S26",
      "at": "2026-11-10T05:43-05:00",
      "shift_ids": [
-      "L-1110-G085"
+      "L-1110-G008"
      ]
     }
    ],
@@ -3573,8 +3457,8 @@
     {
      "kind": "rota",
      "shift_id": "L-1110-G008",
-     "from": "S08",
-     "to": "S12"
+     "from": "S01",
+     "to": "S26"
     },
     {
      "kind": "hours",
@@ -3604,14 +3488,14 @@
     {
      "kind": "card",
      "staff_id": "S19",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-06"
     },
     {
      "kind": "card",
      "staff_id": "S01",
      "cert_type": "wsi",
-     "expires_on": "2026-11-07"
+     "expires_on": "2026-10-24"
     },
     {
      "kind": "card",
@@ -3628,28 +3512,24 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1110-G048",
-     "lesson": true,
+     "shift_id": "G-1110-V3-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S28",
+     "staff_id": "S40",
      "human": true,
-     "closed_at": "2026-11-10T05:25-05:00",
-     "minutes": 16.7,
+     "closed_at": "2026-11-10T05:01-05:00",
+     "minutes": 12.2,
      "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING",
-      "PROGRAM_MISSING"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1110-G085",
+     "shift_id": "L-1110-G008",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -3670,38 +3550,38 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1110-G048",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S06",
-     "human": true,
-     "closed_at": "2026-11-10T05:55-05:00",
-     "minutes": 46.2,
+     "shift_id": "G-1110-V3-0530",
+     "lesson": false,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S40",
+     "human": false,
+     "closed_at": "2026-11-10T05:27-05:00",
+     "minutes": 38.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 8,
-     "manager_minutes": 1.0
+     "asked": 9,
+     "manager_minutes": 0.0
     },
     {
-     "shift_id": "L-1110-G085",
+     "shift_id": "L-1110-G008",
      "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-10T06:11-05:00",
-     "minutes": 28.7,
-     "late": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S25",
+     "human": false,
+     "closed_at": "2026-11-10T06:03-05:00",
+     "minutes": 20.4,
+     "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 4,
-     "manager_minutes": 1.0
+     "asked": 5,
+     "manager_minutes": 0.0
     }
    ]
   },
@@ -3710,17 +3590,10 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S36",
-     "at": "2026-11-11T04:34-05:00",
+     "staff_id": "S12",
+     "at": "2026-11-11T05:29-05:00",
      "shift_ids": [
-      "G-1111-V3-0530"
-     ]
-    },
-    {
-     "staff_id": "S01",
-     "at": "2026-11-11T04:38-05:00",
-     "shift_ids": [
-      "L-1111-G010"
+      "L-1111-G009"
      ]
     }
    ],
@@ -3728,14 +3601,14 @@
     {
      "kind": "rota",
      "shift_id": "L-1111-G012",
-     "from": "S07",
-     "to": "S06"
+     "from": "S10",
+     "to": "S17"
     },
     {
      "kind": "rota",
      "shift_id": "L-1111-G051",
      "from": "S13",
-     "to": "S10"
+     "to": "S21"
     },
     {
      "kind": "hours",
@@ -3761,58 +3634,40 @@
      "kind": "card",
      "staff_id": "S17",
      "cert_type": "wsi",
-     "expires_on": "2026-10-21"
+     "expires_on": "2026-11-15"
     },
     {
      "kind": "card",
      "staff_id": "S20",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-10-26"
+     "expires_on": "2026-10-21"
     },
     {
      "kind": "card",
      "staff_id": "S04",
      "cert_type": "wsi",
-     "expires_on": "2026-11-21"
+     "expires_on": "2026-10-26"
     },
     {
      "kind": "card",
      "staff_id": "S02",
      "cert_type": "wsi",
-     "expires_on": "2026-11-04"
+     "expires_on": "2026-11-18"
     }
    ],
    "baseline": [
     {
-     "shift_id": "G-1111-V3-0530",
-     "lesson": false,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S25",
-     "human": true,
-     "closed_at": "2026-11-11T04:47-05:00",
-     "minutes": 13.4,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1111-G010",
+     "shift_id": "L-1111-G009",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S07",
+     "staff_id": "S01",
      "human": true,
-     "closed_at": "2026-11-11T04:51-05:00",
-     "minutes": 13.7,
+     "closed_at": "2026-11-11T05:41-05:00",
+     "minutes": 12.1,
      "late": false,
-     "violation": "certificate",
+     "violation": "program",
      "codes": [
-      "CERT_EXPIRED",
       "LEVEL_MISSING"
      ],
      "approved_overtime": false,
@@ -3823,38 +3678,21 @@
    ],
    "coachcover": [
     {
-     "shift_id": "G-1111-V3-0530",
-     "lesson": false,
+     "shift_id": "L-1111-G009",
+     "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S33",
+     "staff_id": "S24",
      "human": false,
-     "closed_at": "2026-11-11T04:59-05:00",
-     "minutes": 25.3,
+     "closed_at": "2026-11-11T05:52-05:00",
+     "minutes": 23.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 6,
+     "asked": 5,
      "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1111-G010",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S23",
-     "human": true,
-     "closed_at": "2026-11-11T05:00-05:00",
-     "minutes": 22.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 2,
-     "manager_minutes": 1.0
     }
    ]
   },
@@ -3863,10 +3701,17 @@
    "day": "2026-11-12",
    "callouts": [
     {
-     "staff_id": "S17",
+     "staff_id": "S06",
      "at": "2026-11-12T04:30-05:00",
      "shift_ids": [
-      "L-1112-G016"
+      "L-1112-G053"
+     ]
+    },
+    {
+     "staff_id": "S14",
+     "at": "2026-11-12T04:52-05:00",
+     "shift_ids": [
+      "L-1112-G096"
      ]
     }
    ],
@@ -3874,8 +3719,8 @@
     {
      "kind": "rota",
      "shift_id": "L-1112-G014",
-     "from": "S12",
-     "to": "S15"
+     "from": "S07",
+     "to": "S18"
     },
     {
      "kind": "hours",
@@ -3901,29 +3746,29 @@
      "kind": "card",
      "staff_id": "S08",
      "cert_type": "wsi",
-     "expires_on": "2026-11-20"
+     "expires_on": "2026-11-18"
     },
     {
      "kind": "card",
      "staff_id": "S04",
      "cert_type": "wsi",
-     "expires_on": "2026-11-01"
+     "expires_on": "2026-11-16"
     },
     {
      "kind": "card",
      "staff_id": "S16",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-08"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-23"
     },
     {
      "kind": "card",
      "staff_id": "S39",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-11-28"
+     "expires_on": "2026-11-08"
     },
     {
      "kind": "unconfirmed",
-     "staff_id": "S12",
+     "staff_id": "S07",
      "cert_type": "cpr_aed"
     },
     {
@@ -3935,21 +3780,34 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1112-G016",
+     "shift_id": "L-1112-G053",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S36",
+     "staff_id": "S05",
      "human": true,
      "closed_at": "2026-11-12T04:42-05:00",
      "minutes": 12.8,
      "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING",
-      "PROGRAM_MISSING"
-     ],
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "L-1112-G096",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S05",
+     "human": true,
+     "closed_at": "2026-11-12T05:04-05:00",
+     "minutes": 12.8,
+     "late": false,
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -3958,20 +3816,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1112-G016",
+     "shift_id": "L-1112-G053",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S18",
+     "staff_id": "S05",
      "human": false,
-     "closed_at": "2026-11-12T04:43-05:00",
-     "minutes": 13.6,
+     "closed_at": "2026-11-12T04:32-05:00",
+     "minutes": 2.8,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 3,
+     "asked": 1,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1112-G096",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S05",
+     "human": false,
+     "closed_at": "2026-11-12T04:54-05:00",
+     "minutes": 2.8,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 1,
      "manager_minutes": 0.0
     }
    ]
@@ -3981,22 +3856,8 @@
    "day": "2026-11-13",
    "callouts": [
     {
-     "staff_id": "S21",
-     "at": "2026-11-13T05:05-05:00",
-     "shift_ids": [
-      "L-1113-G098"
-     ]
-    },
-    {
-     "staff_id": "S31",
-     "at": "2026-11-13T05:05-05:00",
-     "shift_ids": [
-      "G-1113-V2-0530"
-     ]
-    },
-    {
-     "staff_id": "S20",
-     "at": "2026-11-13T05:29-05:00",
+     "staff_id": "S15",
+     "at": "2026-11-13T05:33-05:00",
      "shift_ids": [
       "L-1113-G060"
      ]
@@ -4006,107 +3867,60 @@
     {
      "kind": "rota",
      "shift_id": "L-1113-G018",
-     "from": "S01",
-     "to": "S23"
+     "from": "S12",
+     "to": "S25"
     },
     {
      "kind": "rota",
      "shift_id": "L-1113-G059",
-     "from": "S18",
-     "to": "S16"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S02",
-     "week_hours": 34.25
+     "from": "S13",
+     "to": "S23"
     },
     {
      "kind": "hours",
      "staff_id": "S05",
-     "week_hours": 34.75
+     "week_hours": 39.5
     },
     {
      "kind": "hours",
      "staff_id": "S13",
-     "week_hours": 34.25
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S26",
-     "week_hours": 37.5
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S23",
-     "week_hours": 37.25
+     "week_hours": 36.0
     },
     {
      "kind": "card",
-     "staff_id": "S15",
+     "staff_id": "S08",
+     "cert_type": "wsi",
+     "expires_on": "2026-10-30"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S03",
+     "cert_type": "wsi",
+     "expires_on": "2026-11-26"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S37",
      "cert_type": "cpr_aed",
      "expires_on": "2026-12-01"
     },
     {
-     "kind": "card",
-     "staff_id": "S38",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-10-24"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S25",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-29"
+     "kind": "renewal",
+     "staff_id": "S02",
+     "program": "learn_to_swim",
+     "renewed_at": "2025-10-13"
     }
    ],
    "baseline": [
-    {
-     "shift_id": "G-1113-V2-0530",
-     "lesson": false,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S27",
-     "human": true,
-     "closed_at": "2026-11-13T05:18-05:00",
-     "minutes": 13.9,
-     "late": false,
-     "violation": "certificate",
-     "codes": [
-      "CERT_EXPIRED"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1113-G098",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S16",
-     "human": true,
-     "closed_at": "2026-11-13T05:20-05:00",
-     "minutes": 15.2,
-     "late": false,
-     "violation": "program",
-     "codes": [
-      "LEVEL_MISSING"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
     {
      "shift_id": "L-1113-G060",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S03",
+     "staff_id": "S22",
      "human": true,
-     "closed_at": "2026-11-13T05:42-05:00",
-     "minutes": 13.4,
+     "closed_at": "2026-11-13T05:45-05:00",
+     "minutes": 12.8,
      "late": false,
      "violation": null,
      "codes": [],
@@ -4118,54 +3932,20 @@
    ],
    "coachcover": [
     {
-     "shift_id": "G-1113-V2-0530",
-     "lesson": false,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S39",
-     "human": false,
-     "closed_at": "2026-11-13T05:37-05:00",
-     "minutes": 32.6,
-     "late": true,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 7,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1113-G098",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S05",
-     "human": false,
-     "closed_at": "2026-11-13T05:36-05:00",
-     "minutes": 31.7,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 7,
-     "manager_minutes": 0.0
-    },
-    {
      "shift_id": "L-1113-G060",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S15",
+     "staff_id": "S17",
      "human": false,
-     "closed_at": "2026-11-13T05:45-05:00",
-     "minutes": 16.8,
+     "closed_at": "2026-11-13T05:53-05:00",
+     "minutes": 20.6,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 4,
+     "asked": 6,
      "manager_minutes": 0.0
     }
    ]
@@ -4175,24 +3955,10 @@
    "day": "2026-11-09",
    "callouts": [
     {
-     "staff_id": "S01",
-     "at": "2026-11-09T04:36-05:00",
+     "staff_id": "S30",
+     "at": "2026-11-09T05:07-05:00",
      "shift_ids": [
-      "L-1109-G002"
-     ]
-    },
-    {
-     "staff_id": "S03",
-     "at": "2026-11-09T05:02-05:00",
-     "shift_ids": [
-      "L-1109-G083"
-     ]
-    },
-    {
-     "staff_id": "S15",
-     "at": "2026-11-09T05:24-05:00",
-     "shift_ids": [
-      "L-1109-G044"
+      "G-1109-V1-0530"
      ]
     }
    ],
@@ -4221,54 +3987,54 @@
      "kind": "card",
      "staff_id": "S02",
      "cert_type": "wsi",
-     "expires_on": "2026-11-08"
+     "expires_on": "2026-10-24"
     },
     {
      "kind": "card",
      "staff_id": "S25",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-10-28"
+     "cert_type": "wsi",
+     "expires_on": "2026-10-27"
     },
     {
      "kind": "card",
      "staff_id": "S01",
-     "cert_type": "wsi",
-     "expires_on": "2026-10-30"
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-09"
     },
     {
      "kind": "card",
      "staff_id": "S15",
+     "cert_type": "wsi",
+     "expires_on": "2026-11-12"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S36",
      "cert_type": "cpr_aed",
      "expires_on": "2026-10-30"
     },
     {
      "kind": "card",
-     "staff_id": "S36",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-06"
-    },
-    {
-     "kind": "card",
      "staff_id": "S09",
      "cert_type": "wsi",
-     "expires_on": "2026-11-24"
+     "expires_on": "2026-11-19"
     },
     {
      "kind": "renewal",
-     "staff_id": "S07",
+     "staff_id": "S15",
      "program": "learn_to_swim",
      "renewed_at": "2025-10-09"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1109-G002",
-     "lesson": true,
+     "shift_id": "G-1109-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S21",
+     "staff_id": "S23",
      "human": true,
-     "closed_at": "2026-11-09T04:48-05:00",
+     "closed_at": "2026-11-09T05:19-05:00",
      "minutes": 12.8,
      "late": false,
      "violation": null,
@@ -4277,95 +4043,25 @@
      "lessons_cancelled": 0,
      "asked": 0,
      "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1109-G083",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S11",
-     "human": true,
-     "closed_at": "2026-11-09T05:15-05:00",
-     "minutes": 13.7,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1109-G044",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S14",
-     "human": true,
-     "closed_at": "2026-11-09T05:40-05:00",
-     "minutes": 16.2,
-     "late": false,
-     "violation": "program",
-     "codes": [
-      "PROGRAM_RENEWAL_OVERDUE"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
     }
    ],
    "coachcover": [
     {
-     "shift_id": "L-1109-G002",
-     "lesson": true,
+     "shift_id": "G-1109-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S21",
+     "staff_id": "S13",
      "human": false,
-     "closed_at": "2026-11-09T05:11-05:00",
-     "minutes": 35.6,
+     "closed_at": "2026-11-09T05:15-05:00",
+     "minutes": 8.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 8,
+     "asked": 2,
      "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1109-G083",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S11",
-     "human": false,
-     "closed_at": "2026-11-09T05:36-05:00",
-     "minutes": 34.3,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 8,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1109-G044",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S06",
-     "human": true,
-     "closed_at": "2026-11-09T06:05-05:00",
-     "minutes": 41.0,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 7,
-     "manager_minutes": 1.0
     }
    ]
   },
@@ -4374,10 +4070,17 @@
    "day": "2026-11-10",
    "callouts": [
     {
-     "staff_id": "S07",
-     "at": "2026-11-10T04:34-05:00",
+     "staff_id": "S10",
+     "at": "2026-11-10T05:03-05:00",
      "shift_ids": [
-      "L-1110-G006"
+      "L-1110-G005"
+     ]
+    },
+    {
+     "staff_id": "S26",
+     "at": "2026-11-10T05:18-05:00",
+     "shift_ids": [
+      "L-1110-G007"
      ]
     }
    ],
@@ -4386,24 +4089,19 @@
      "kind": "rota",
      "shift_id": "L-1110-G086",
      "from": "S03",
-     "to": "S06"
+     "to": "S07"
     },
     {
      "kind": "rota",
      "shift_id": "L-1110-G007",
-     "from": "S10",
-     "to": "S24"
+     "from": "S04",
+     "to": "S26"
     },
     {
      "kind": "rota",
      "shift_id": "L-1110-G008",
-     "from": "S08",
+     "from": "S01",
      "to": "S18"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S20",
-     "week_hours": 38.75
     },
     {
      "kind": "hours",
@@ -4421,34 +4119,85 @@
      "week_hours": 39.25
     },
     {
-     "kind": "card",
-     "staff_id": "S33",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-10-25"
+     "kind": "hours",
+     "staff_id": "S12",
+     "week_hours": 34.5
     },
     {
      "kind": "card",
      "staff_id": "S04",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-02"
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-10"
     },
     {
      "kind": "card",
      "staff_id": "S10",
      "cert_type": "cpr_aed",
      "expires_on": "2026-10-28"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S30",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-13"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S27",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-08"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S39",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-17"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S11",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-10-27"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S14",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-18"
+    },
+    {
+     "kind": "unconfirmed",
+     "staff_id": "S08",
+     "cert_type": "lifeguarding"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1110-G006",
+     "shift_id": "L-1110-G005",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S03",
+     "staff_id": "S16",
      "human": true,
-     "closed_at": "2026-11-10T04:49-05:00",
-     "minutes": 15.8,
+     "closed_at": "2026-11-10T05:18-05:00",
+     "minutes": 15.0,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "L-1110-G007",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S12",
+     "human": true,
+     "closed_at": "2026-11-10T05:30-05:00",
+     "minutes": 12.1,
      "late": false,
      "violation": null,
      "codes": [],
@@ -4460,20 +4209,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1110-G006",
+     "shift_id": "L-1110-G005",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S03",
+     "staff_id": "S04",
      "human": false,
-     "closed_at": "2026-11-10T04:46-05:00",
-     "minutes": 12.3,
+     "closed_at": "2026-11-10T05:33-05:00",
+     "minutes": 30.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 3,
+     "asked": 6,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1110-G007",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S04",
+     "human": false,
+     "closed_at": "2026-11-10T05:28-05:00",
+     "minutes": 10.7,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 2,
      "manager_minutes": 0.0
     }
    ]
@@ -4483,10 +4249,10 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S36",
-     "at": "2026-11-11T04:31-05:00",
+     "staff_id": "S21",
+     "at": "2026-11-11T05:39-05:00",
      "shift_ids": [
-      "G-1111-V3-0530"
+      "L-1111-G090"
      ]
     }
    ],
@@ -4495,86 +4261,63 @@
      "kind": "rota",
      "shift_id": "L-1111-G051",
      "from": "S13",
-     "to": "S19"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S35",
-     "week_hours": 36.5
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S18",
-     "week_hours": 39.0
+     "to": "S18"
     },
     {
      "kind": "hours",
      "staff_id": "S03",
-     "week_hours": 34.5
+     "week_hours": 39.0
     },
     {
      "kind": "hours",
      "staff_id": "S13",
+     "week_hours": 34.5
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S26",
      "week_hours": 37.25
     },
     {
-     "kind": "card",
-     "staff_id": "S12",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-10-27"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S15",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-12"
+     "kind": "hours",
+     "staff_id": "S18",
+     "week_hours": 37.25
     },
     {
      "kind": "card",
      "staff_id": "S37",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-11-15"
+     "expires_on": "2026-10-27"
     },
     {
      "kind": "card",
      "staff_id": "S10",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-02"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-12"
     },
     {
      "kind": "card",
      "staff_id": "S30",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-11-11"
+     "expires_on": "2026-11-15"
     },
     {
      "kind": "card",
      "staff_id": "S27",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-07"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S32",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-11-10"
-    },
-    {
-     "kind": "unconfirmed",
-     "staff_id": "S06",
-     "cert_type": "cpr_aed"
+     "expires_on": "2026-11-02"
     }
    ],
    "baseline": [
     {
-     "shift_id": "G-1111-V3-0530",
-     "lesson": false,
+     "shift_id": "L-1111-G090",
+     "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S33",
+     "staff_id": "S23",
      "human": true,
-     "closed_at": "2026-11-11T04:46-05:00",
-     "minutes": 15.6,
+     "closed_at": "2026-11-11T05:51-05:00",
+     "minutes": 12.7,
      "late": false,
      "violation": null,
      "codes": [],
@@ -4586,20 +4329,20 @@
    ],
    "coachcover": [
     {
-     "shift_id": "G-1111-V3-0530",
-     "lesson": false,
+     "shift_id": "L-1111-G090",
+     "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S33",
+     "staff_id": "S05",
      "human": false,
-     "closed_at": "2026-11-11T04:53-05:00",
-     "minutes": 22.7,
+     "closed_at": "2026-11-11T05:44-05:00",
+     "minutes": 5.2,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 5,
+     "asked": 1,
      "manager_minutes": 0.0
     }
    ]
@@ -4652,13 +4395,13 @@
     {
      "kind": "card",
      "staff_id": "S19",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-12"
     },
     {
      "kind": "card",
      "staff_id": "S14",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-25"
     },
     {
@@ -4705,16 +4448,16 @@
      "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S32",
+     "staff_id": "S25",
      "human": false,
-     "closed_at": "2026-11-12T04:48-05:00",
-     "minutes": 2.5,
+     "closed_at": "2026-11-12T04:58-05:00",
+     "minutes": 12.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 1,
+     "asked": 3,
      "manager_minutes": 0.0
     }
    ]
@@ -4724,10 +4467,17 @@
    "day": "2026-11-13",
    "callouts": [
     {
-     "staff_id": "S19",
-     "at": "2026-11-13T04:45-05:00",
+     "staff_id": "S01",
+     "at": "2026-11-13T05:53-05:00",
      "shift_ids": [
-      "L-1113-G097"
+      "L-1113-G020"
+     ]
+    },
+    {
+     "staff_id": "S04",
+     "at": "2026-11-13T05:54-05:00",
+     "shift_ids": [
+      "L-1113-G019"
      ]
     }
    ],
@@ -4735,14 +4485,14 @@
     {
      "kind": "rota",
      "shift_id": "L-1113-G059",
-     "from": "S18",
-     "to": "S06"
+     "from": "S13",
+     "to": "S16"
     },
     {
      "kind": "rota",
      "shift_id": "L-1113-G100",
-     "from": "S23",
-     "to": "S21"
+     "from": "S14",
+     "to": "S24"
     },
     {
      "kind": "hours",
@@ -4762,49 +4512,62 @@
     {
      "kind": "card",
      "staff_id": "S26",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-11"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-13"
     },
     {
      "kind": "card",
      "staff_id": "S32",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-10-27"
+     "expires_on": "2026-11-11"
     },
     {
      "kind": "card",
      "staff_id": "S28",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-10-31"
+     "expires_on": "2026-10-27"
     },
     {
      "kind": "card",
      "staff_id": "S15",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-13"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-10-31"
     },
     {
      "kind": "unconfirmed",
-     "staff_id": "S20",
-     "cert_type": "wsi"
-    },
-    {
-     "kind": "renewal",
-     "staff_id": "S21",
-     "program": "learn_to_swim",
-     "renewed_at": "2025-10-13"
+     "staff_id": "S02",
+     "cert_type": "cpr_aed"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1113-G097",
+     "shift_id": "L-1113-G020",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S24",
+     "staff_id": "S08",
      "human": true,
-     "closed_at": "2026-11-13T04:59-05:00",
-     "minutes": 14.9,
+     "closed_at": "2026-11-13T06:07-05:00",
+     "minutes": 14.6,
+     "late": false,
+     "violation": "certificate",
+     "codes": [
+      "CERT_EXPIRED"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "L-1113-G019",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S25",
+     "human": true,
+     "closed_at": "2026-11-13T06:09-05:00",
+     "minutes": 15.9,
      "late": false,
      "violation": "program",
      "codes": [
@@ -4818,20 +4581,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1113-G097",
+     "shift_id": "L-1113-G020",
      "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-13T05:10-05:00",
-     "minutes": 25.1,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S25",
+     "human": false,
+     "closed_at": "2026-11-13T06:04-05:00",
+     "minutes": 11.1,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 3,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1113-G019",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-13T06:31-05:00",
+     "minutes": 37.0,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 5,
      "manager_minutes": 1.0
     }
    ]
@@ -4841,24 +4621,24 @@
    "day": "2026-11-09",
    "callouts": [
     {
-     "staff_id": "S19",
-     "at": "2026-11-09T04:45-05:00",
+     "staff_id": "S39",
+     "at": "2026-11-09T04:37-05:00",
+     "shift_ids": [
+      "G-1109-V3-0530"
+     ]
+    },
+    {
+     "staff_id": "S16",
+     "at": "2026-11-09T05:35-05:00",
      "shift_ids": [
       "L-1109-G082"
      ]
     },
     {
      "staff_id": "S18",
-     "at": "2026-11-09T05:02-05:00",
+     "at": "2026-11-09T05:53-05:00",
      "shift_ids": [
       "L-1109-G043"
-     ]
-    },
-    {
-     "staff_id": "S40",
-     "at": "2026-11-09T05:02-05:00",
-     "shift_ids": [
-      "G-1109-V3-0530"
      ]
     }
    ],
@@ -4877,19 +4657,19 @@
      "kind": "card",
      "staff_id": "S07",
      "cert_type": "wsi",
-     "expires_on": "2026-11-08"
+     "expires_on": "2026-10-21"
     },
     {
      "kind": "card",
      "staff_id": "S14",
      "cert_type": "wsi",
-     "expires_on": "2026-11-21"
+     "expires_on": "2026-11-09"
     },
     {
      "kind": "card",
      "staff_id": "S37",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-11-09"
+     "expires_on": "2026-11-06"
     },
     {
      "kind": "card",
@@ -4924,39 +4704,36 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1109-G082",
-     "lesson": true,
+     "shift_id": "G-1109-V3-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S29",
+     "staff_id": "S35",
      "human": true,
-     "closed_at": "2026-11-09T04:59-05:00",
-     "minutes": 14.0,
+     "closed_at": "2026-11-09T04:50-05:00",
+     "minutes": 13.4,
      "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING",
-      "PROGRAM_MISSING"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "G-1109-V3-0530",
-     "lesson": false,
+     "shift_id": "L-1109-G082",
+     "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S34",
+     "staff_id": "S08",
      "human": true,
-     "closed_at": "2026-11-09T05:15-05:00",
-     "minutes": 13.4,
+     "closed_at": "2026-11-09T05:50-05:00",
+     "minutes": 15.7,
      "late": false,
      "violation": "certificate",
      "codes": [
-      "CERT_EXPIRED"
+      "CERT_EXPIRED",
+      "LEVEL_MISSING"
      ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
@@ -4968,17 +4745,13 @@
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S29",
+     "staff_id": "S25",
      "human": true,
-     "closed_at": "2026-11-09T05:18-05:00",
-     "minutes": 16.0,
+     "closed_at": "2026-11-09T06:08-05:00",
+     "minutes": 15.7,
      "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING",
-      "PROGRAM_MISSING"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -4987,55 +4760,55 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1109-G082",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-09T05:11-05:00",
-     "minutes": 26.1,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 1.0
-    },
-    {
      "shift_id": "G-1109-V3-0530",
      "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S37",
+     "staff_id": "S35",
      "human": false,
-     "closed_at": "2026-11-09T05:29-05:00",
-     "minutes": 27.5,
+     "closed_at": "2026-11-09T04:40-05:00",
+     "minutes": 3.4,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 7,
+     "asked": 1,
      "manager_minutes": 0.0
     },
     {
-     "shift_id": "L-1109-G043",
+     "shift_id": "L-1109-G082",
      "lesson": true,
      "outcome": "reserve",
      "channel": "plan_b",
      "staff_id": "S06",
      "human": true,
-     "closed_at": "2026-11-09T05:43-05:00",
-     "minutes": 41.8,
+     "closed_at": "2026-11-09T05:59-05:00",
+     "minutes": 24.4,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 7,
+     "asked": 4,
      "manager_minutes": 1.0
+    },
+    {
+     "shift_id": "L-1109-G043",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S25",
+     "human": false,
+     "closed_at": "2026-11-09T06:25-05:00",
+     "minutes": 32.7,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 9,
+     "manager_minutes": 0.0
     }
    ]
   },
@@ -5044,10 +4817,10 @@
    "day": "2026-11-10",
    "callouts": [
     {
-     "staff_id": "S08",
-     "at": "2026-11-10T04:55-05:00",
+     "staff_id": "S23",
+     "at": "2026-11-10T05:06-05:00",
      "shift_ids": [
-      "L-1110-G008"
+      "L-1110-G085"
      ]
     }
    ],
@@ -5055,8 +4828,8 @@
     {
      "kind": "rota",
      "shift_id": "L-1110-G006",
-     "from": "S07",
-     "to": "S12"
+     "from": "S12",
+     "to": "S15"
     },
     {
      "kind": "hours",
@@ -5086,65 +4859,67 @@
     {
      "kind": "card",
      "staff_id": "S03",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-05"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-09"
     },
     {
      "kind": "card",
      "staff_id": "S07",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-03"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-09"
     },
     {
      "kind": "card",
      "staff_id": "S18",
-     "cert_type": "wsi",
-     "expires_on": "2026-10-29"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S35",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-13"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S26",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-21"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S15",
      "cert_type": "cpr_aed",
      "expires_on": "2026-11-10"
     },
     {
      "kind": "card",
+     "staff_id": "S35",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-10-29"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S26",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-13"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S15",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-21"
+    },
+    {
+     "kind": "card",
      "staff_id": "S12",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-10-28"
+     "expires_on": "2026-11-10"
     },
     {
      "kind": "renewal",
-     "staff_id": "S09",
+     "staff_id": "S25",
      "program": "learn_to_swim",
      "renewed_at": "2025-10-10"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1110-G008",
+     "shift_id": "L-1110-G085",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S17",
+     "staff_id": "S18",
      "human": true,
-     "closed_at": "2026-11-10T05:08-05:00",
+     "closed_at": "2026-11-10T05:19-05:00",
      "minutes": 13.6,
      "late": false,
-     "violation": null,
-     "codes": [],
+     "violation": "program",
+     "codes": [
+      "LEVEL_MISSING"
+     ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -5153,20 +4928,20 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1110-G008",
+     "shift_id": "L-1110-G085",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S17",
+     "staff_id": "S19",
      "human": false,
-     "closed_at": "2026-11-10T05:03-05:00",
-     "minutes": 8.6,
+     "closed_at": "2026-11-10T05:30-05:00",
+     "minutes": 24.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 2,
+     "asked": 5,
      "manager_minutes": 0.0
     }
    ]
@@ -5176,10 +4951,10 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S15",
-     "at": "2026-11-11T04:45-05:00",
+     "staff_id": "S10",
+     "at": "2026-11-11T05:01-05:00",
      "shift_ids": [
-      "L-1111-G050"
+      "L-1111-G012"
      ]
     }
    ],
@@ -5188,24 +4963,19 @@
      "kind": "rota",
      "shift_id": "L-1111-G051",
      "from": "S13",
-     "to": "S19"
+     "to": "S27"
     },
     {
      "kind": "rota",
      "shift_id": "L-1111-G090",
      "from": "S21",
-     "to": "S22"
+     "to": "S02"
     },
     {
      "kind": "rota",
      "shift_id": "L-1111-G052",
-     "from": "S18",
-     "to": "S02"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S12",
-     "week_hours": 39.25
+     "from": "S02",
+     "to": "S06"
     },
     {
      "kind": "hours",
@@ -5218,60 +4988,56 @@
      "week_hours": 39.25
     },
     {
+     "kind": "hours",
+     "staff_id": "S20",
+     "week_hours": 36.25
+    },
+    {
      "kind": "card",
      "staff_id": "S04",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-10-27"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S20",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-10-23"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S40",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-11"
+     "expires_on": "2026-10-31"
     },
     {
      "kind": "card",
      "staff_id": "S30",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-11-10"
+     "expires_on": "2026-11-22"
     },
     {
      "kind": "card",
      "staff_id": "S06",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-28"
+     "cert_type": "wsi",
+     "expires_on": "2026-10-26"
     },
     {
      "kind": "card",
      "staff_id": "S17",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-01"
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-10"
     },
     {
-     "kind": "unconfirmed",
-     "staff_id": "S07",
-     "cert_type": "wsi"
+     "kind": "card",
+     "staff_id": "S24",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-28"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1111-G050",
+     "shift_id": "L-1111-G012",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S12",
+     "staff_id": "S17",
      "human": true,
-     "closed_at": "2026-11-11T04:57-05:00",
-     "minutes": 12.4,
+     "closed_at": "2026-11-11T05:13-05:00",
+     "minutes": 12.9,
      "late": false,
-     "violation": null,
-     "codes": [],
+     "violation": "certificate",
+     "codes": [
+      "CERT_EXPIRED"
+     ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -5280,20 +5046,20 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1111-G050",
+     "shift_id": "L-1111-G012",
      "lesson": true,
      "outcome": "reserve",
      "channel": "plan_b",
-     "staff_id": "S23",
+     "staff_id": "S12",
      "human": true,
-     "closed_at": "2026-11-11T05:23-05:00",
-     "minutes": 38.9,
+     "closed_at": "2026-11-11T06:06-05:00",
+     "minutes": 65.4,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 6,
+     "asked": 12,
      "manager_minutes": 1.0
     }
    ]
@@ -5303,10 +5069,10 @@
    "day": "2026-11-12",
    "callouts": [
     {
-     "staff_id": "S02",
-     "at": "2026-11-12T04:54-05:00",
+     "staff_id": "S10",
+     "at": "2026-11-12T04:43-05:00",
      "shift_ids": [
-      "L-1112-G056"
+      "G-1112-V1-0530"
      ]
     }
    ],
@@ -5339,54 +5105,47 @@
     {
      "kind": "card",
      "staff_id": "S12",
-     "cert_type": "cpr_aed",
+     "cert_type": "wsi",
      "expires_on": "2026-11-12"
     },
     {
      "kind": "card",
      "staff_id": "S16",
-     "cert_type": "wsi",
+     "cert_type": "cpr_aed",
      "expires_on": "2026-11-12"
     },
     {
      "kind": "card",
      "staff_id": "S01",
-     "cert_type": "wsi",
-     "expires_on": "2026-12-01"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-12"
     },
     {
      "kind": "card",
      "staff_id": "S23",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-05"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-12"
     },
     {
      "kind": "card",
      "staff_id": "S19",
      "cert_type": "wsi",
-     "expires_on": "2026-11-03"
-    },
-    {
-     "kind": "unconfirmed",
-     "staff_id": "S06",
-     "cert_type": "wsi"
+     "expires_on": "2026-11-19"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1112-G056",
-     "lesson": true,
+     "shift_id": "G-1112-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S08",
+     "staff_id": "S36",
      "human": true,
-     "closed_at": "2026-11-12T05:06-05:00",
-     "minutes": 12.9,
+     "closed_at": "2026-11-12T04:55-05:00",
+     "minutes": 12.6,
      "late": false,
-     "violation": "certificate",
-     "codes": [
-      "CERT_EXPIRED"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -5395,20 +5154,20 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1112-G056",
-     "lesson": true,
+     "shift_id": "G-1112-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S04",
+     "staff_id": "S36",
      "human": false,
-     "closed_at": "2026-11-12T05:07-05:00",
-     "minutes": 13.9,
+     "closed_at": "2026-11-12T05:20-05:00",
+     "minutes": 37.6,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 3,
+     "asked": 9,
      "manager_minutes": 0.0
     }
    ]
@@ -5418,14 +5177,14 @@
    "day": "2026-11-13",
    "callouts": [
     {
-     "staff_id": "S13",
+     "staff_id": "S06",
      "at": "2026-11-13T05:06-05:00",
      "shift_ids": [
       "L-1113-G057"
      ]
     },
     {
-     "staff_id": "S28",
+     "staff_id": "S26",
      "at": "2026-11-13T05:07-05:00",
      "shift_ids": [
       "G-1113-V1-0530"
@@ -5468,7 +5227,7 @@
     {
      "kind": "card",
      "staff_id": "S05",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-21"
     },
     {
@@ -5506,20 +5265,20 @@
      "shift_id": "L-1113-G057",
      "lesson": true,
      "outcome": "covered",
-     "channel": "phone",
-     "staff_id": "S22",
+     "channel": "chat",
+     "staff_id": "S19",
      "human": true,
-     "closed_at": "2026-11-13T05:33-05:00",
-     "minutes": 27.0,
+     "closed_at": "2026-11-13T05:18-05:00",
+     "minutes": 12.2,
      "late": false,
      "violation": "program",
      "codes": [
-      "PROGRAM_RENEWAL_OVERDUE"
+      "LEVEL_MISSING"
      ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 2,
-     "manager_minutes": 9.0
+     "asked": 0,
+     "manager_minutes": 3.0
     },
     {
      "shift_id": "G-1113-V1-0530",
@@ -5545,36 +5304,36 @@
     {
      "shift_id": "L-1113-G057",
      "lesson": true,
-     "outcome": "reserve",
+     "outcome": "moved",
      "channel": "plan_b",
-     "staff_id": "S12",
+     "staff_id": null,
      "human": true,
-     "closed_at": "2026-11-13T05:33-05:00",
-     "minutes": 27.8,
+     "closed_at": "2026-11-13T05:38-05:00",
+     "minutes": 32.8,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 4,
+     "lessons_cancelled": 1,
+     "asked": 5,
      "manager_minutes": 1.0
     },
     {
      "shift_id": "G-1113-V1-0530",
      "lesson": false,
-     "outcome": "uncovered",
-     "channel": "plan_b",
-     "staff_id": null,
-     "human": true,
-     "closed_at": "2026-11-13T06:11-05:00",
-     "minutes": 64.1,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S19",
+     "human": false,
+     "closed_at": "2026-11-13T06:06-05:00",
+     "minutes": 59.4,
      "late": true,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 11,
-     "manager_minutes": 2.0
+     "asked": 13,
+     "manager_minutes": 0.0
     }
    ]
   },
@@ -5583,24 +5342,10 @@
    "day": "2026-11-09",
    "callouts": [
     {
-     "staff_id": "S02",
-     "at": "2026-11-09T04:39-05:00",
-     "shift_ids": [
-      "L-1109-G041"
-     ]
-    },
-    {
-     "staff_id": "S01",
-     "at": "2026-11-09T05:01-05:00",
+     "staff_id": "S05",
+     "at": "2026-11-09T05:41-05:00",
      "shift_ids": [
       "L-1109-G002"
-     ]
-    },
-    {
-     "staff_id": "S12",
-     "at": "2026-11-09T05:17-05:00",
-     "shift_ids": [
-      "L-1109-G003"
      ]
     }
    ],
@@ -5608,19 +5353,19 @@
     {
      "kind": "rota",
      "shift_id": "L-1109-G042",
-     "from": "S06",
-     "to": "S17"
+     "from": "S15",
+     "to": "S21"
     },
     {
      "kind": "rota",
      "shift_id": "L-1109-G083",
-     "from": "S03",
-     "to": "S16"
+     "from": "S19",
+     "to": "S25"
     },
     {
      "kind": "rota",
      "shift_id": "L-1109-G001",
-     "from": "S05",
+     "from": "S04",
      "to": "S11"
     },
     {
@@ -5652,7 +5397,7 @@
     {
      "kind": "card",
      "staff_id": "S04",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-25"
     },
     {
@@ -5665,36 +5410,31 @@
      "kind": "card",
      "staff_id": "S09",
      "cert_type": "wsi",
-     "expires_on": "2026-11-09"
+     "expires_on": "2026-11-29"
     },
     {
      "kind": "card",
      "staff_id": "S34",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-10-26"
+     "expires_on": "2026-11-10"
     },
     {
      "kind": "card",
      "staff_id": "S32",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-03"
-    },
-    {
-     "kind": "unconfirmed",
-     "staff_id": "S13",
-     "cert_type": "wsi"
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-10-22"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1109-G041",
+     "shift_id": "L-1109-G002",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S04",
+     "staff_id": "S27",
      "human": true,
-     "closed_at": "2026-11-09T04:52-05:00",
-     "minutes": 13.5,
+     "closed_at": "2026-11-09T05:53-05:00",
+     "minutes": 12.6,
      "late": false,
      "violation": "certificate",
      "codes": [
@@ -5704,95 +5444,24 @@
      "lessons_cancelled": 0,
      "asked": 0,
      "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1109-G002",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S21",
-     "human": true,
-     "closed_at": "2026-11-09T05:15-05:00",
-     "minutes": 14.3,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1109-G003",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S11",
-     "human": true,
-     "closed_at": "2026-11-09T05:29-05:00",
-     "minutes": 12.7,
-     "late": false,
-     "violation": "program",
-     "codes": [
-      "LEVEL_MISSING",
-      "HOURS_LIMIT_EXCEEDED"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
     }
    ],
    "coachcover": [
     {
-     "shift_id": "L-1109-G041",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S21",
-     "human": false,
-     "closed_at": "2026-11-09T05:07-05:00",
-     "minutes": 28.3,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 6,
-     "manager_minutes": 0.0
-    },
-    {
      "shift_id": "L-1109-G002",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S02",
+     "staff_id": "S20",
      "human": false,
-     "closed_at": "2026-11-09T05:08-05:00",
-     "minutes": 7.6,
-     "late": false,
+     "closed_at": "2026-11-09T06:09-05:00",
+     "minutes": 28.9,
+     "late": true,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 2,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1109-G003",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S02",
-     "human": false,
-     "closed_at": "2026-11-09T05:34-05:00",
-     "minutes": 17.6,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 4,
+     "asked": 7,
      "manager_minutes": 0.0
     }
    ]
@@ -5802,10 +5471,10 @@
    "day": "2026-11-10",
    "callouts": [
     {
-     "staff_id": "S07",
-     "at": "2026-11-10T05:32-05:00",
+     "staff_id": "S05",
+     "at": "2026-11-10T05:15-05:00",
      "shift_ids": [
-      "L-1110-G006"
+      "L-1110-G085"
      ]
     }
    ],
@@ -5813,20 +5482,20 @@
     {
      "kind": "rota",
      "shift_id": "L-1110-G007",
-     "from": "S10",
-     "to": "S09"
+     "from": "S04",
+     "to": "S12"
     },
     {
      "kind": "rota",
      "shift_id": "L-1110-G086",
      "from": "S03",
-     "to": "S18"
+     "to": "S19"
     },
     {
      "kind": "rota",
      "shift_id": "L-1110-G085",
      "from": "S23",
-     "to": "S08"
+     "to": "S05"
     },
     {
      "kind": "hours",
@@ -5856,13 +5525,13 @@
     {
      "kind": "card",
      "staff_id": "S27",
-     "cert_type": "lifeguarding",
+     "cert_type": "wsi",
      "expires_on": "2026-10-28"
     },
     {
      "kind": "card",
      "staff_id": "S13",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-25"
     },
     {
@@ -5880,24 +5549,25 @@
     {
      "kind": "card",
      "staff_id": "S25",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-10-30"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-26"
     },
     {
-     "kind": "unconfirmed",
-     "staff_id": "S19",
-     "cert_type": "wsi"
+     "kind": "renewal",
+     "staff_id": "S10",
+     "program": "learn_to_swim",
+     "renewed_at": "2025-10-10"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1110-G006",
+     "shift_id": "L-1110-G085",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S31",
+     "staff_id": "S32",
      "human": true,
-     "closed_at": "2026-11-10T05:44-05:00",
+     "closed_at": "2026-11-10T05:27-05:00",
      "minutes": 12.0,
      "late": false,
      "violation": "role",
@@ -5914,15 +5584,233 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1110-G006",
+     "shift_id": "L-1110-G085",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S17",
+     "human": false,
+     "closed_at": "2026-11-10T05:30-05:00",
+     "minutes": 15.0,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 4,
+     "manager_minutes": 0.0
+    }
+   ]
+  },
+  {
+   "index": 37,
+   "day": "2026-11-11",
+   "callouts": [
+    {
+     "staff_id": "S27",
+     "at": "2026-11-11T04:49-05:00",
+     "shift_ids": [
+      "L-1111-G011"
+     ]
+    },
+    {
+     "staff_id": "S13",
+     "at": "2026-11-11T05:07-05:00",
+     "shift_ids": [
+      "L-1111-G051"
+     ]
+    },
+    {
+     "staff_id": "S16",
+     "at": "2026-11-11T05:48-05:00",
+     "shift_ids": [
+      "L-1111-G091"
+     ]
+    }
+   ],
+   "changes": [
+    {
+     "kind": "rota",
+     "shift_id": "L-1111-G011",
+     "from": "S07",
+     "to": "S27"
+    },
+    {
+     "kind": "rota",
+     "shift_id": "L-1111-G009",
+     "from": "S12",
+     "to": "S20"
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S02",
+     "week_hours": 35.25
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S24",
+     "week_hours": 37.0
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S31",
+     "week_hours": 36.25
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S27",
+     "week_hours": 35.5
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S22",
+     "week_hours": 38.75
+    },
+    {
+     "kind": "card",
+     "staff_id": "S35",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-17"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S40",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-03"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S19",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-10-28"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S06",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-10-28"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S07",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-11"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S09",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-26"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S37",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-24"
+    }
+   ],
+   "baseline": [
+    {
+     "shift_id": "L-1111-G011",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S22",
+     "human": true,
+     "closed_at": "2026-11-11T05:04-05:00",
+     "minutes": 15.2,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "L-1111-G051",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S07",
+     "human": true,
+     "closed_at": "2026-11-11T05:21-05:00",
+     "minutes": 14.4,
+     "late": false,
+     "violation": "certificate",
+     "codes": [
+      "CERT_EXPIRED"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "L-1111-G091",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S21",
+     "human": true,
+     "closed_at": "2026-11-11T06:01-05:00",
+     "minutes": 13.5,
+     "late": false,
+     "violation": "program",
+     "codes": [
+      "LEVEL_MISSING"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    }
+   ],
+   "coachcover": [
+    {
+     "shift_id": "L-1111-G011",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S22",
+     "human": false,
+     "closed_at": "2026-11-11T05:43-05:00",
+     "minutes": 54.3,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 12,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1111-G051",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-11T06:12-05:00",
+     "minutes": 65.4,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 13,
+     "manager_minutes": 1.0
+    },
+    {
+     "shift_id": "L-1111-G091",
      "lesson": true,
      "outcome": "reserve",
      "channel": "plan_b",
      "staff_id": "S12",
      "human": true,
-     "closed_at": "2026-11-10T06:18-05:00",
-     "minutes": 46.8,
-     "late": true,
+     "closed_at": "2026-11-11T06:29-05:00",
+     "minutes": 41.3,
+     "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
@@ -5933,124 +5821,14 @@
    ]
   },
   {
-   "index": 37,
-   "day": "2026-11-11",
-   "callouts": [
-    {
-     "staff_id": "S18",
-     "at": "2026-11-11T05:23-05:00",
-     "shift_ids": [
-      "L-1111-G052"
-     ]
-    }
-   ],
-   "changes": [
-    {
-     "kind": "rota",
-     "shift_id": "L-1111-G011",
-     "from": "S04",
-     "to": "S10"
-    },
-    {
-     "kind": "rota",
-     "shift_id": "L-1111-G009",
-     "from": "S17",
-     "to": "S23"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S24",
-     "week_hours": 39.0
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S31",
-     "week_hours": 39.0
-    },
-    {
-     "kind": "card",
-     "staff_id": "S15",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-07"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S19",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-21"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S33",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-15"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S06",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-11"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S25",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-11"
-    },
-    {
-     "kind": "unconfirmed",
-     "staff_id": "S07",
-     "cert_type": "wsi"
-    }
-   ],
-   "baseline": [
-    {
-     "shift_id": "L-1111-G052",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S01",
-     "human": true,
-     "closed_at": "2026-11-11T05:35-05:00",
-     "minutes": 12.9,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    }
-   ],
-   "coachcover": [
-    {
-     "shift_id": "L-1111-G052",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S17",
-     "human": false,
-     "closed_at": "2026-11-11T05:32-05:00",
-     "minutes": 9.4,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 2,
-     "manager_minutes": 0.0
-    }
-   ]
-  },
-  {
    "index": 38,
    "day": "2026-11-12",
    "callouts": [
     {
-     "staff_id": "S08",
-     "at": "2026-11-12T05:15-05:00",
+     "staff_id": "S10",
+     "at": "2026-11-12T04:31-05:00",
      "shift_ids": [
-      "L-1112-G013"
+      "G-1112-V1-0530"
      ]
     }
    ],
@@ -6058,40 +5836,35 @@
     {
      "kind": "rota",
      "shift_id": "L-1112-G015",
-     "from": "S10",
-     "to": "S22"
+     "from": "S04",
+     "to": "S23"
     },
     {
      "kind": "rota",
      "shift_id": "L-1112-G054",
-     "from": "S22",
-     "to": "S11"
+     "from": "S15",
+     "to": "S05"
     },
     {
      "kind": "rota",
      "shift_id": "L-1112-G096",
-     "from": "S03",
-     "to": "S23"
+     "from": "S14",
+     "to": "S11"
     },
     {
      "kind": "hours",
-     "staff_id": "S13",
-     "week_hours": 34.25
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S40",
+     "staff_id": "S02",
      "week_hours": 36.75
     },
     {
      "kind": "hours",
-     "staff_id": "S03",
+     "staff_id": "S22",
      "week_hours": 36.5
     },
     {
      "kind": "card",
      "staff_id": "S20",
-     "cert_type": "lifeguarding",
+     "cert_type": "wsi",
      "expires_on": "2026-11-25"
     },
     {
@@ -6103,7 +5876,7 @@
     {
      "kind": "card",
      "staff_id": "S24",
-     "cert_type": "lifeguarding",
+     "cert_type": "wsi",
      "expires_on": "2026-11-12"
     },
     {
@@ -6115,46 +5888,43 @@
     {
      "kind": "card",
      "staff_id": "S09",
+     "cert_type": "wsi",
+     "expires_on": "2026-11-12"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S15",
      "cert_type": "cpr_aed",
      "expires_on": "2026-11-14"
     },
     {
      "kind": "card",
-     "staff_id": "S15",
-     "cert_type": "wsi",
+     "staff_id": "S37",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-26"
     },
     {
-     "kind": "card",
-     "staff_id": "S37",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-04"
-    },
-    {
-     "kind": "unconfirmed",
-     "staff_id": "S02",
-     "cert_type": "cpr_aed"
-    },
-    {
      "kind": "renewal",
-     "staff_id": "S19",
+     "staff_id": "S06",
      "program": "learn_to_swim",
      "renewed_at": "2025-10-12"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1112-G013",
-     "lesson": true,
+     "shift_id": "G-1112-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S17",
+     "staff_id": "S37",
      "human": true,
-     "closed_at": "2026-11-12T05:27-05:00",
-     "minutes": 12.9,
+     "closed_at": "2026-11-12T04:44-05:00",
+     "minutes": 13.3,
      "late": false,
-     "violation": null,
-     "codes": [],
+     "violation": "certificate",
+     "codes": [
+      "CERT_EXPIRED"
+     ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -6163,20 +5933,20 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1112-G013",
-     "lesson": true,
+     "shift_id": "G-1112-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S17",
+     "staff_id": "S09",
      "human": false,
-     "closed_at": "2026-11-12T05:22-05:00",
-     "minutes": 7.9,
+     "closed_at": "2026-11-12T05:09-05:00",
+     "minutes": 38.0,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 2,
+     "asked": 8,
      "manager_minutes": 0.0
     }
    ]
@@ -6186,10 +5956,10 @@
    "day": "2026-11-13",
    "callouts": [
     {
-     "staff_id": "S10",
-     "at": "2026-11-13T05:00-05:00",
+     "staff_id": "S26",
+     "at": "2026-11-13T04:37-05:00",
      "shift_ids": [
-      "L-1113-G019"
+      "G-1113-V1-0530"
      ]
     }
    ],
@@ -6197,81 +5967,76 @@
     {
      "kind": "rota",
      "shift_id": "L-1113-G020",
-     "from": "S07",
-     "to": "S05"
+     "from": "S01",
+     "to": "S17"
     },
     {
      "kind": "rota",
      "shift_id": "L-1113-G060",
-     "from": "S20",
+     "from": "S15",
      "to": "S22"
     },
     {
      "kind": "rota",
      "shift_id": "L-1113-G058",
-     "from": "S15",
+     "from": "S02",
      "to": "S08"
     },
     {
      "kind": "hours",
-     "staff_id": "S01",
-     "week_hours": 37.75
-    },
-    {
-     "kind": "hours",
      "staff_id": "S21",
-     "week_hours": 35.75
+     "week_hours": 40.0
     },
     {
      "kind": "hours",
      "staff_id": "S26",
-     "week_hours": 34.5
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S20",
-     "week_hours": 39.5
+     "week_hours": 37.75
     },
     {
      "kind": "card",
-     "staff_id": "S06",
-     "cert_type": "wsi",
+     "staff_id": "S07",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-18"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S39",
+     "cert_type": "cpr_aed",
      "expires_on": "2026-11-04"
     },
     {
      "kind": "card",
-     "staff_id": "S28",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-02"
+     "staff_id": "S15",
+     "cert_type": "wsi",
+     "expires_on": "2026-11-23"
     },
     {
      "kind": "card",
-     "staff_id": "S26",
+     "staff_id": "S06",
      "cert_type": "lifeguarding",
      "expires_on": "2026-11-13"
     },
     {
      "kind": "card",
-     "staff_id": "S12",
+     "staff_id": "S28",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-10-25"
+     "expires_on": "2026-11-30"
     },
     {
-     "kind": "renewal",
-     "staff_id": "S13",
-     "program": "learn_to_swim",
-     "renewed_at": "2025-10-13"
+     "kind": "unconfirmed",
+     "staff_id": "S31",
+     "cert_type": "cpr_aed"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1113-G019",
-     "lesson": true,
+     "shift_id": "G-1113-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
      "staff_id": "S16",
      "human": true,
-     "closed_at": "2026-11-13T05:12-05:00",
+     "closed_at": "2026-11-13T04:49-05:00",
      "minutes": 12.8,
      "late": false,
      "violation": null,
@@ -6284,20 +6049,20 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1113-G019",
-     "lesson": true,
+     "shift_id": "G-1113-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S16",
+     "staff_id": "S40",
      "human": false,
-     "closed_at": "2026-11-13T05:02-05:00",
-     "minutes": 2.8,
+     "closed_at": "2026-11-13T05:16-05:00",
+     "minutes": 39.8,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 1,
+     "asked": 10,
      "manager_minutes": 0.0
     }
    ]
@@ -6307,10 +6072,17 @@
    "day": "2026-11-09",
    "callouts": [
     {
-     "staff_id": "S04",
+     "staff_id": "S21",
      "at": "2026-11-09T04:47-05:00",
      "shift_ids": [
-      "L-1109-G043"
+      "L-1109-G084"
+     ]
+    },
+    {
+     "staff_id": "S08",
+     "at": "2026-11-09T04:57-05:00",
+     "shift_ids": [
+      "L-1109-G004"
      ]
     }
    ],
@@ -6318,82 +6090,82 @@
     {
      "kind": "rota",
      "shift_id": "L-1109-G003",
-     "from": "S12",
+     "from": "S01",
      "to": "S17"
     },
     {
      "kind": "rota",
      "shift_id": "L-1109-G043",
      "from": "S18",
-     "to": "S04"
+     "to": "S06"
     },
     {
      "kind": "rota",
      "shift_id": "L-1109-G044",
-     "from": "S15",
-     "to": "S18"
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S23",
-     "week_hours": 35.5
+     "from": "S03",
+     "to": "S15"
     },
     {
      "kind": "hours",
      "staff_id": "S19",
-     "week_hours": 37.25
+     "week_hours": 35.75
     },
     {
      "kind": "hours",
      "staff_id": "S37",
-     "week_hours": 35.5
+     "week_hours": 36.0
     },
     {
-     "kind": "card",
-     "staff_id": "S37",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-02"
+     "kind": "hours",
+     "staff_id": "S17",
+     "week_hours": 38.0
     },
     {
      "kind": "card",
      "staff_id": "S14",
-     "cert_type": "wsi",
-     "expires_on": "2026-11-09"
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-15"
     },
     {
      "kind": "card",
      "staff_id": "S08",
      "cert_type": "wsi",
-     "expires_on": "2026-11-26"
+     "expires_on": "2026-11-27"
     },
     {
      "kind": "card",
      "staff_id": "S30",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-26"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S20",
      "cert_type": "cpr_aed",
      "expires_on": "2026-11-08"
     },
     {
      "kind": "card",
-     "staff_id": "S20",
-     "cert_type": "wsi",
+     "staff_id": "S25",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-28"
     },
     {
      "kind": "card",
-     "staff_id": "S25",
+     "staff_id": "S26",
      "cert_type": "lifeguarding",
      "expires_on": "2026-11-23"
     },
     {
      "kind": "card",
-     "staff_id": "S26",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-07"
+     "staff_id": "S23",
+     "cert_type": "wsi",
+     "expires_on": "2026-10-23"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1109-G043",
+     "shift_id": "L-1109-G084",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -6401,6 +6173,25 @@
      "human": true,
      "closed_at": "2026-11-09T04:59-05:00",
      "minutes": 12.4,
+     "late": false,
+     "violation": "certificate",
+     "codes": [
+      "CERT_EXPIRED"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "L-1109-G004",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S02",
+     "human": true,
+     "closed_at": "2026-11-09T05:09-05:00",
+     "minutes": 12.9,
      "late": false,
      "violation": null,
      "codes": [],
@@ -6412,20 +6203,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1109-G043",
+     "shift_id": "L-1109-G084",
      "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-09T05:16-05:00",
-     "minutes": 29.4,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S02",
+     "human": false,
+     "closed_at": "2026-11-09T04:54-05:00",
+     "minutes": 7.9,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 4,
+     "asked": 2,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1109-G004",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S12",
+     "human": true,
+     "closed_at": "2026-11-09T05:49-05:00",
+     "minutes": 52.1,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 10,
      "manager_minutes": 1.0
     }
    ]
@@ -6435,10 +6243,10 @@
    "day": "2026-11-10",
    "callouts": [
     {
-     "staff_id": "S13",
-     "at": "2026-11-10T04:30-05:00",
+     "staff_id": "S12",
+     "at": "2026-11-10T05:32-05:00",
      "shift_ids": [
-      "L-1110-G045"
+      "L-1110-G006"
      ]
     }
    ],
@@ -6477,14 +6285,14 @@
     {
      "kind": "card",
      "staff_id": "S23",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-02"
     },
     {
      "kind": "card",
      "staff_id": "S05",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-18"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-06"
     },
     {
      "kind": "card",
@@ -6496,34 +6304,40 @@
      "kind": "card",
      "staff_id": "S40",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-10-21"
+     "expires_on": "2026-11-09"
     },
     {
      "kind": "card",
      "staff_id": "S26",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-10-25"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-04"
+    },
+    {
+     "kind": "unconfirmed",
+     "staff_id": "S11",
+     "cert_type": "cpr_aed"
     },
     {
      "kind": "renewal",
-     "staff_id": "S15",
+     "staff_id": "S10",
      "program": "learn_to_swim",
      "renewed_at": "2025-10-10"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1110-G045",
+     "shift_id": "L-1110-G006",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S05",
+     "staff_id": "S13",
      "human": true,
-     "closed_at": "2026-11-10T04:42-05:00",
-     "minutes": 12.3,
+     "closed_at": "2026-11-10T05:44-05:00",
+     "minutes": 12.9,
      "late": false,
-     "violation": "program",
+     "violation": "certificate",
      "codes": [
+      "CERT_NEEDS_REVIEW",
       "LEVEL_MISSING"
      ],
      "approved_overtime": false,
@@ -6534,21 +6348,21 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1110-G045",
+     "shift_id": "L-1110-G006",
      "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-10T05:07-05:00",
-     "minutes": 37.0,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S15",
+     "human": false,
+     "closed_at": "2026-11-10T05:36-05:00",
+     "minutes": 4.9,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 5,
-     "manager_minutes": 1.0
+     "asked": 1,
+     "manager_minutes": 0.0
     }
    ]
   },
@@ -6557,17 +6371,24 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S14",
-     "at": "2026-11-11T04:32-05:00",
+     "staff_id": "S13",
+     "at": "2026-11-11T04:48-05:00",
      "shift_ids": [
-      "L-1111-G092"
+      "L-1111-G051"
      ]
     },
     {
-     "staff_id": "S06",
-     "at": "2026-11-11T04:52-05:00",
+     "staff_id": "S21",
+     "at": "2026-11-11T05:07-05:00",
      "shift_ids": [
-      "L-1111-G049"
+      "L-1111-G090"
+     ]
+    },
+    {
+     "staff_id": "S18",
+     "at": "2026-11-11T05:35-05:00",
+     "shift_ids": [
+      "L-1111-G050"
      ]
     }
    ],
@@ -6575,69 +6396,91 @@
     {
      "kind": "rota",
      "shift_id": "L-1111-G091",
-     "from": "S24",
-     "to": "S03"
+     "from": "S16",
+     "to": "S24"
+    },
+    {
+     "kind": "hours",
+     "staff_id": "S27",
+     "week_hours": 38.5
     },
     {
      "kind": "hours",
      "staff_id": "S33",
-     "week_hours": 39.25
+     "week_hours": 36.5
     },
     {
-     "kind": "hours",
-     "staff_id": "S28",
-     "week_hours": 35.75
-    },
-    {
-     "kind": "hours",
-     "staff_id": "S39",
-     "week_hours": 39.5
-    },
-    {
-     "kind": "hours",
+     "kind": "card",
      "staff_id": "S32",
-     "week_hours": 35.0
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-11-10"
     },
     {
-     "kind": "hours",
+     "kind": "card",
      "staff_id": "S04",
-     "week_hours": 36.75
+     "cert_type": "wsi",
+     "expires_on": "2026-10-22"
     },
     {
      "kind": "card",
-     "staff_id": "S25",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-26"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S32",
+     "staff_id": "S19",
      "cert_type": "cpr_aed",
      "expires_on": "2026-10-23"
     },
     {
      "kind": "card",
-     "staff_id": "S34",
+     "staff_id": "S01",
      "cert_type": "cpr_aed",
      "expires_on": "2026-10-31"
     },
     {
-     "kind": "renewal",
-     "staff_id": "S14",
-     "program": "learn_to_swim",
-     "renewed_at": "2025-10-11"
+     "kind": "card",
+     "staff_id": "S11",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-10-29"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S20",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-26"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S29",
+     "cert_type": "lifeguarding",
+     "expires_on": "2026-10-24"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1111-G092",
+     "shift_id": "L-1111-G051",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S01",
+     "staff_id": "S16",
      "human": true,
-     "closed_at": "2026-11-11T04:46-05:00",
-     "minutes": 14.1,
+     "closed_at": "2026-11-11T05:02-05:00",
+     "minutes": 14.6,
+     "late": false,
+     "violation": "program",
+     "codes": [
+      "LEVEL_MISSING"
+     ],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 0,
+     "manager_minutes": 3.0
+    },
+    {
+     "shift_id": "L-1111-G090",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "chat",
+     "staff_id": "S02",
+     "human": true,
+     "closed_at": "2026-11-11T05:20-05:00",
+     "minutes": 13.6,
      "late": false,
      "violation": null,
      "codes": [],
@@ -6647,13 +6490,13 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1111-G049",
+     "shift_id": "L-1111-G050",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S18",
+     "staff_id": "S16",
      "human": true,
-     "closed_at": "2026-11-11T05:06-05:00",
+     "closed_at": "2026-11-11T05:49-05:00",
      "minutes": 14.6,
      "late": false,
      "violation": "program",
@@ -6668,14 +6511,48 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1111-G092",
+     "shift_id": "L-1111-G051",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S15",
+     "staff_id": "S03",
      "human": false,
-     "closed_at": "2026-11-11T04:45-05:00",
-     "minutes": 13.0,
+     "closed_at": "2026-11-11T05:14-05:00",
+     "minutes": 26.8,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 6,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1111-G090",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S02",
+     "human": false,
+     "closed_at": "2026-11-11T05:15-05:00",
+     "minutes": 8.6,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 2,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1111-G050",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S03",
+     "human": false,
+     "closed_at": "2026-11-11T05:55-05:00",
+     "minutes": 20.0,
      "late": false,
      "violation": null,
      "codes": [],
@@ -6683,23 +6560,6 @@
      "lessons_cancelled": 0,
      "asked": 4,
      "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1111-G049",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-11T05:15-05:00",
-     "minutes": 23.1,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 1.0
     }
    ]
   },
@@ -6708,10 +6568,10 @@
    "day": "2026-11-12",
    "callouts": [
     {
-     "staff_id": "S20",
+     "staff_id": "S15",
      "at": "2026-11-12T04:54-05:00",
      "shift_ids": [
-      "L-1112-G053"
+      "L-1112-G054"
      ]
     }
    ],
@@ -6780,7 +6640,7 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1112-G053",
+     "shift_id": "L-1112-G054",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -6791,7 +6651,8 @@
      "late": false,
      "violation": "certificate",
      "codes": [
-      "CERT_NEEDS_REVIEW"
+      "CERT_NEEDS_REVIEW",
+      "LEVEL_MISSING"
      ],
      "approved_overtime": false,
      "lessons_cancelled": 0,
@@ -6801,7 +6662,7 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1112-G053",
+     "shift_id": "L-1112-G054",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
@@ -6824,7 +6685,7 @@
    "day": "2026-11-13",
    "callouts": [
     {
-     "staff_id": "S28",
+     "staff_id": "S26",
      "at": "2026-11-13T04:34-05:00",
      "shift_ids": [
       "G-1113-V1-0530"
@@ -6867,13 +6728,13 @@
     {
      "kind": "card",
      "staff_id": "S03",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-10"
     },
     {
      "kind": "card",
      "staff_id": "S21",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-27"
     }
    ],
@@ -6888,11 +6749,8 @@
      "closed_at": "2026-11-13T04:49-05:00",
      "minutes": 15.1,
      "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -6903,19 +6761,19 @@
     {
      "shift_id": "G-1113-V1-0530",
      "lesson": false,
-     "outcome": "uncovered",
-     "channel": "plan_b",
-     "staff_id": null,
-     "human": true,
-     "closed_at": "2026-11-13T05:43-05:00",
-     "minutes": 69.4,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S16",
+     "human": false,
+     "closed_at": "2026-11-13T05:31-05:00",
+     "minutes": 57.8,
      "late": true,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 13,
-     "manager_minutes": 2.0
+     "manager_minutes": 0.0
     }
    ]
   },
@@ -6924,19 +6782,17 @@
    "day": "2026-11-09",
    "callouts": [
     {
-     "staff_id": "S05",
-     "at": "2026-11-09T05:08-05:00",
+     "staff_id": "S22",
+     "at": "2026-11-09T04:48-05:00",
      "shift_ids": [
-      "L-1109-G001",
-      "L-1109-G004"
+      "L-1109-G082"
      ]
     },
     {
      "staff_id": "S02",
      "at": "2026-11-09T05:15-05:00",
      "shift_ids": [
-      "L-1109-G041",
-      "L-1109-G003"
+      "L-1109-G041"
      ]
     }
    ],
@@ -6944,20 +6800,20 @@
     {
      "kind": "rota",
      "shift_id": "L-1109-G003",
-     "from": "S12",
-     "to": "S02"
+     "from": "S01",
+     "to": "S06"
     },
     {
      "kind": "rota",
      "shift_id": "L-1109-G002",
-     "from": "S01",
-     "to": "S15"
+     "from": "S05",
+     "to": "S12"
     },
     {
      "kind": "rota",
      "shift_id": "L-1109-G082",
-     "from": "S19",
-     "to": "S21"
+     "from": "S16",
+     "to": "S22"
     },
     {
      "kind": "hours",
@@ -6987,7 +6843,7 @@
     {
      "kind": "card",
      "staff_id": "S10",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-26"
     },
     {
@@ -7017,33 +6873,14 @@
    ],
    "baseline": [
     {
-     "shift_id": "L-1109-G001",
+     "shift_id": "L-1109-G082",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S24",
+     "staff_id": "S25",
      "human": true,
-     "closed_at": "2026-11-09T05:20-05:00",
+     "closed_at": "2026-11-09T05:00-05:00",
      "minutes": 12.4,
-     "late": false,
-     "violation": "program",
-     "codes": [
-      "LEVEL_MISSING"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1109-G004",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S24",
-     "human": true,
-     "closed_at": "2026-11-09T05:22-05:00",
-     "minutes": 14.4,
      "late": false,
      "violation": "program",
      "codes": [
@@ -7059,31 +6896,10 @@
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S39",
+     "staff_id": "S40",
      "human": true,
      "closed_at": "2026-11-09T05:28-05:00",
      "minutes": 13.6,
-     "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING",
-      "PROGRAM_MISSING"
-     ],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 0,
-     "manager_minutes": 3.0
-    },
-    {
-     "shift_id": "L-1109-G003",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "chat",
-     "staff_id": "S39",
-     "human": true,
-     "closed_at": "2026-11-09T05:30-05:00",
-     "minutes": 15.6,
      "late": false,
      "violation": "role",
      "codes": [
@@ -7099,13 +6915,13 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1109-G001",
+     "shift_id": "L-1109-G082",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S08",
+     "staff_id": "S24",
      "human": false,
-     "closed_at": "2026-11-09T05:20-05:00",
+     "closed_at": "2026-11-09T05:00-05:00",
      "minutes": 12.1,
      "late": false,
      "violation": null,
@@ -7116,55 +6932,21 @@
      "manager_minutes": 0.0
     },
     {
-     "shift_id": "L-1109-G004",
-     "lesson": true,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S08",
-     "human": false,
-     "closed_at": "2026-11-09T05:26-05:00",
-     "minutes": 18.4,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 4,
-     "manager_minutes": 0.0
-    },
-    {
      "shift_id": "L-1109-G041",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S24",
+     "staff_id": "S25",
      "human": false,
-     "closed_at": "2026-11-09T05:46-05:00",
-     "minutes": 31.0,
+     "closed_at": "2026-11-09T05:19-05:00",
+     "minutes": 4.5,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 7,
+     "asked": 2,
      "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1109-G003",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-09T05:37-05:00",
-     "minutes": 22.5,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 1.0
     }
    ]
   },
@@ -7173,17 +6955,17 @@
    "day": "2026-11-10",
    "callouts": [
     {
+     "staff_id": "S11",
+     "at": "2026-11-10T05:04-05:00",
+     "shift_ids": [
+      "G-1110-V2-0530"
+     ]
+    },
+    {
      "staff_id": "S29",
      "at": "2026-11-10T05:12-05:00",
      "shift_ids": [
       "G-1110-V1-0530"
-     ]
-    },
-    {
-     "staff_id": "S13",
-     "at": "2026-11-10T05:38-05:00",
-     "shift_ids": [
-      "L-1110-G045"
      ]
     }
    ],
@@ -7192,7 +6974,7 @@
      "kind": "rota",
      "shift_id": "L-1110-G046",
      "from": "S02",
-     "to": "S15"
+     "to": "S08"
     },
     {
      "kind": "hours",
@@ -7217,14 +6999,14 @@
     {
      "kind": "card",
      "staff_id": "S18",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-21"
     },
     {
      "kind": "card",
      "staff_id": "S15",
      "cert_type": "wsi",
-     "expires_on": "2026-11-03"
+     "expires_on": "2026-11-13"
     },
     {
      "kind": "card",
@@ -7235,39 +7017,36 @@
     {
      "kind": "card",
      "staff_id": "S21",
-     "cert_type": "lifeguarding",
+     "cert_type": "wsi",
      "expires_on": "2026-11-05"
     }
    ],
    "baseline": [
     {
-     "shift_id": "G-1110-V1-0530",
+     "shift_id": "G-1110-V2-0530",
      "lesson": false,
      "outcome": "covered",
      "channel": "chat",
      "staff_id": "S09",
      "human": true,
-     "closed_at": "2026-11-10T05:24-05:00",
+     "closed_at": "2026-11-10T05:16-05:00",
      "minutes": 12.1,
      "late": false,
-     "violation": "role",
-     "codes": [
-      "ROLE_MISSING",
-      "CERT_MISSING"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1110-G045",
-     "lesson": true,
+     "shift_id": "G-1110-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "chat",
      "staff_id": "S22",
      "human": true,
-     "closed_at": "2026-11-10T05:50-05:00",
+     "closed_at": "2026-11-10T05:24-05:00",
      "minutes": 12.1,
      "late": false,
      "violation": null,
@@ -7280,37 +7059,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "G-1110-V1-0530",
+     "shift_id": "G-1110-V2-0530",
      "lesson": false,
      "outcome": "covered",
      "channel": "offer",
      "staff_id": "S31",
      "human": false,
-     "closed_at": "2026-11-10T05:25-05:00",
-     "minutes": 13.2,
+     "closed_at": "2026-11-10T05:27-05:00",
+     "minutes": 23.2,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 3,
+     "asked": 5,
      "manager_minutes": 0.0
     },
     {
-     "shift_id": "L-1110-G045",
-     "lesson": true,
+     "shift_id": "G-1110-V1-0530",
+     "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S09",
+     "staff_id": "S25",
      "human": false,
-     "closed_at": "2026-11-10T05:45-05:00",
-     "minutes": 7.1,
-     "late": false,
+     "closed_at": "2026-11-10T05:37-05:00",
+     "minutes": 25.3,
+     "late": true,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 2,
+     "asked": 5,
      "manager_minutes": 0.0
     }
    ]
@@ -7320,24 +7099,24 @@
    "day": "2026-11-11",
    "callouts": [
     {
-     "staff_id": "S11",
-     "at": "2026-11-11T05:02-05:00",
+     "staff_id": "S09",
+     "at": "2026-11-11T05:13-05:00",
      "shift_ids": [
-      "G-1111-V2-0530"
+      "L-1111-G089"
      ]
     },
     {
-     "staff_id": "S07",
-     "at": "2026-11-11T05:13-05:00",
+     "staff_id": "S10",
+     "at": "2026-11-11T05:35-05:00",
      "shift_ids": [
       "L-1111-G012"
      ]
     },
     {
-     "staff_id": "S24",
+     "staff_id": "S21",
      "at": "2026-11-11T05:38-05:00",
      "shift_ids": [
-      "L-1111-G091"
+      "L-1111-G090"
      ]
     }
    ],
@@ -7355,7 +7134,7 @@
     {
      "kind": "card",
      "staff_id": "S19",
-     "cert_type": "lifeguarding",
+     "cert_type": "wsi",
      "expires_on": "2026-11-13"
     },
     {
@@ -7373,7 +7152,7 @@
     {
      "kind": "card",
      "staff_id": "S09",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-11-11"
     },
     {
@@ -7397,14 +7176,14 @@
    ],
    "baseline": [
     {
-     "shift_id": "G-1111-V2-0530",
-     "lesson": false,
+     "shift_id": "L-1111-G089",
+     "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S35",
+     "staff_id": "S05",
      "human": true,
-     "closed_at": "2026-11-11T05:14-05:00",
-     "minutes": 12.7,
+     "closed_at": "2026-11-11T05:27-05:00",
+     "minutes": 14.7,
      "late": false,
      "violation": null,
      "codes": [],
@@ -7420,7 +7199,7 @@
      "channel": "chat",
      "staff_id": "S08",
      "human": true,
-     "closed_at": "2026-11-11T05:26-05:00",
+     "closed_at": "2026-11-11T05:48-05:00",
      "minutes": 13.9,
      "late": false,
      "violation": "certificate",
@@ -7433,19 +7212,17 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1111-G091",
+     "shift_id": "L-1111-G090",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S05",
+     "staff_id": "S27",
      "human": true,
-     "closed_at": "2026-11-11T05:52-05:00",
-     "minutes": 14.7,
+     "closed_at": "2026-11-11T05:53-05:00",
+     "minutes": 15.4,
      "late": false,
-     "violation": "program",
-     "codes": [
-      "LEVEL_MISSING"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -7454,24 +7231,7 @@
    ],
    "coachcover": [
     {
-     "shift_id": "G-1111-V2-0530",
-     "lesson": false,
-     "outcome": "covered",
-     "channel": "offer",
-     "staff_id": "S35",
-     "human": false,
-     "closed_at": "2026-11-11T05:04-05:00",
-     "minutes": 2.7,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 1,
-     "manager_minutes": 0.0
-    },
-    {
-     "shift_id": "L-1111-G012",
+     "shift_id": "L-1111-G089",
      "lesson": true,
      "outcome": "covered",
      "channel": "offer",
@@ -7488,21 +7248,38 @@
      "manager_minutes": 0.0
     },
     {
-     "shift_id": "L-1111-G091",
+     "shift_id": "L-1111-G012",
      "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-11T06:14-05:00",
-     "minutes": 36.2,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S05",
+     "human": false,
+     "closed_at": "2026-11-11T05:39-05:00",
+     "minutes": 4.7,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 6,
-     "manager_minutes": 1.0
+     "asked": 1,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1111-G090",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S27",
+     "human": false,
+     "closed_at": "2026-11-11T05:43-05:00",
+     "minutes": 5.4,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 1,
+     "manager_minutes": 0.0
     }
    ]
   },
@@ -7511,24 +7288,24 @@
    "day": "2026-11-12",
    "callouts": [
     {
-     "staff_id": "S26",
+     "staff_id": "S24",
      "at": "2026-11-12T04:47-05:00",
      "shift_ids": [
-      "G-1112-V1-0530"
+      "G-1112-V3-0530"
      ]
     },
     {
-     "staff_id": "S10",
+     "staff_id": "S08",
      "at": "2026-11-12T05:23-05:00",
      "shift_ids": [
-      "L-1112-G015"
+      "L-1112-G016"
      ]
     },
     {
-     "staff_id": "S16",
+     "staff_id": "S13",
      "at": "2026-11-12T05:26-05:00",
      "shift_ids": [
-      "L-1112-G095"
+      "L-1112-G055"
      ]
     }
    ],
@@ -7561,25 +7338,25 @@
     {
      "kind": "card",
      "staff_id": "S22",
-     "cert_type": "wsi",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-28"
     },
     {
      "kind": "card",
      "staff_id": "S04",
      "cert_type": "wsi",
-     "expires_on": "2026-11-15"
+     "expires_on": "2026-11-09"
     },
     {
      "kind": "card",
      "staff_id": "S38",
      "cert_type": "lifeguarding",
-     "expires_on": "2026-11-28"
+     "expires_on": "2026-11-06"
     }
    ],
    "baseline": [
     {
-     "shift_id": "G-1112-V1-0530",
+     "shift_id": "G-1112-V3-0530",
      "lesson": false,
      "outcome": "covered",
      "channel": "chat",
@@ -7598,7 +7375,7 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1112-G015",
+     "shift_id": "L-1112-G016",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -7617,7 +7394,7 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "L-1112-G095",
+     "shift_id": "L-1112-G055",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
@@ -7626,10 +7403,8 @@
      "closed_at": "2026-11-12T05:42-05:00",
      "minutes": 16.5,
      "late": false,
-     "violation": "certificate",
-     "codes": [
-      "CERT_EXPIRED"
-     ],
+     "violation": null,
+     "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 0,
@@ -7638,55 +7413,55 @@
    ],
    "coachcover": [
     {
-     "shift_id": "G-1112-V1-0530",
+     "shift_id": "G-1112-V3-0530",
      "lesson": false,
-     "outcome": "uncovered",
-     "channel": "plan_b",
-     "staff_id": null,
-     "human": true,
-     "closed_at": "2026-11-12T05:52-05:00",
-     "minutes": 65.6,
-     "late": true,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 12,
-     "manager_minutes": 2.0
-    },
-    {
-     "shift_id": "L-1112-G015",
-     "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-12T06:09-05:00",
-     "minutes": 46.1,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 7,
-     "manager_minutes": 1.0
-    },
-    {
-     "shift_id": "L-1112-G095",
-     "lesson": true,
      "outcome": "covered",
      "channel": "offer",
      "staff_id": "S09",
      "human": false,
-     "closed_at": "2026-11-12T05:34-05:00",
-     "minutes": 8.7,
+     "closed_at": "2026-11-12T05:19-05:00",
+     "minutes": 32.5,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
-     "asked": 2,
+     "asked": 8,
      "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1112-G016",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S11",
+     "human": false,
+     "closed_at": "2026-11-12T06:22-05:00",
+     "minutes": 59.1,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 13,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1112-G055",
+     "lesson": true,
+     "outcome": "reserve",
+     "channel": "plan_b",
+     "staff_id": "S06",
+     "human": true,
+     "closed_at": "2026-11-12T06:01-05:00",
+     "minutes": 35.8,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 5,
+     "manager_minutes": 1.0
     }
    ]
   },
@@ -7695,17 +7470,17 @@
    "day": "2026-11-13",
    "callouts": [
     {
-     "staff_id": "S19",
-     "at": "2026-11-13T04:37-05:00",
+     "staff_id": "S23",
+     "at": "2026-11-13T04:45-05:00",
      "shift_ids": [
-      "L-1113-G097"
+      "L-1113-G098"
      ]
     },
     {
-     "staff_id": "S37",
-     "at": "2026-11-13T04:50-05:00",
+     "staff_id": "S15",
+     "at": "2026-11-13T05:35-05:00",
      "shift_ids": [
-      "G-1113-V3-0530"
+      "L-1113-G060"
      ]
     }
    ],
@@ -7713,14 +7488,14 @@
     {
      "kind": "rota",
      "shift_id": "L-1113-G058",
-     "from": "S15",
+     "from": "S02",
      "to": "S05"
     },
     {
      "kind": "rota",
      "shift_id": "L-1113-G020",
-     "from": "S07",
-     "to": "S15"
+     "from": "S01",
+     "to": "S06"
     },
     {
      "kind": "hours",
@@ -7728,52 +7503,68 @@
      "week_hours": 37.0
     },
     {
-     "kind": "card",
-     "staff_id": "S09",
-     "cert_type": "wsi",
-     "expires_on": "2026-12-03"
+     "kind": "hours",
+     "staff_id": "S18",
+     "week_hours": 36.25
     },
     {
-     "kind": "card",
+     "kind": "hours",
      "staff_id": "S37",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-13"
-    },
-    {
-     "kind": "card",
-     "staff_id": "S29",
-     "cert_type": "lifeguarding",
-     "expires_on": "2026-11-26"
+     "week_hours": 34.75
     },
     {
      "kind": "card",
      "staff_id": "S10",
-     "cert_type": "cpr_aed",
-     "expires_on": "2026-11-25"
+     "cert_type": "wsi",
+     "expires_on": "2026-11-15"
     },
     {
      "kind": "card",
      "staff_id": "S02",
      "cert_type": "cpr_aed",
-     "expires_on": "2026-11-30"
+     "expires_on": "2026-11-26"
     },
     {
      "kind": "card",
      "staff_id": "S20",
      "cert_type": "wsi",
+     "expires_on": "2026-11-05"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S39",
+     "cert_type": "cpr_aed",
+     "expires_on": "2026-11-04"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S34",
+     "cert_type": "lifeguarding",
      "expires_on": "2026-10-27"
+    },
+    {
+     "kind": "card",
+     "staff_id": "S14",
+     "cert_type": "wsi",
+     "expires_on": "2026-11-09"
+    },
+    {
+     "kind": "renewal",
+     "staff_id": "S06",
+     "program": "learn_to_swim",
+     "renewed_at": "2025-10-13"
     }
    ],
    "baseline": [
     {
-     "shift_id": "L-1113-G097",
+     "shift_id": "L-1113-G098",
      "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S23",
+     "staff_id": "S03",
      "human": true,
-     "closed_at": "2026-11-13T04:49-05:00",
-     "minutes": 12.5,
+     "closed_at": "2026-11-13T04:57-05:00",
+     "minutes": 12.8,
      "late": false,
      "violation": null,
      "codes": [],
@@ -7783,14 +7574,14 @@
      "manager_minutes": 3.0
     },
     {
-     "shift_id": "G-1113-V3-0530",
-     "lesson": false,
+     "shift_id": "L-1113-G060",
+     "lesson": true,
      "outcome": "covered",
      "channel": "chat",
-     "staff_id": "S39",
+     "staff_id": "S21",
      "human": true,
-     "closed_at": "2026-11-13T05:03-05:00",
-     "minutes": 13.9,
+     "closed_at": "2026-11-13T05:47-05:00",
+     "minutes": 12.5,
      "late": false,
      "violation": null,
      "codes": [],
@@ -7802,37 +7593,37 @@
    ],
    "coachcover": [
     {
-     "shift_id": "L-1113-G097",
+     "shift_id": "L-1113-G098",
      "lesson": true,
-     "outcome": "reserve",
-     "channel": "plan_b",
-     "staff_id": "S12",
-     "human": true,
-     "closed_at": "2026-11-13T05:00-05:00",
-     "minutes": 23.1,
-     "late": false,
-     "violation": null,
-     "codes": [],
-     "approved_overtime": false,
-     "lessons_cancelled": 0,
-     "asked": 3,
-     "manager_minutes": 1.0
-    },
-    {
-     "shift_id": "G-1113-V3-0530",
-     "lesson": false,
      "outcome": "covered",
      "channel": "offer",
-     "staff_id": "S39",
+     "staff_id": "S01",
      "human": false,
-     "closed_at": "2026-11-13T05:04-05:00",
-     "minutes": 14.6,
+     "closed_at": "2026-11-13T05:03-05:00",
+     "minutes": 18.8,
      "late": false,
      "violation": null,
      "codes": [],
      "approved_overtime": false,
      "lessons_cancelled": 0,
      "asked": 4,
+     "manager_minutes": 0.0
+    },
+    {
+     "shift_id": "L-1113-G060",
+     "lesson": true,
+     "outcome": "covered",
+     "channel": "offer",
+     "staff_id": "S21",
+     "human": false,
+     "closed_at": "2026-11-13T05:56-05:00",
+     "minutes": 21.1,
+     "late": false,
+     "violation": null,
+     "codes": [],
+     "approved_overtime": false,
+     "lessons_cancelled": 0,
+     "asked": 5,
      "manager_minutes": 0.0
     }
    ]

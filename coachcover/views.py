@@ -7,7 +7,6 @@ its data-slot elements without logic.
 from __future__ import annotations
 
 import dataclasses
-from collections import Counter
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
@@ -84,32 +83,24 @@ def event_line(kind: str, data: dict, at: datetime, tz: ZoneInfo, names: dict) -
 
 
 def stats(conn: psycopg.Connection, policy_id: str) -> dict:
-    """Run numbers for the screens. `sim` comes from the simulation lane when it is part of the build."""
+    """GET /api/stats, keys as in the contract; `sim` is the 50-morning replay (synthetic)."""
+    from coachcover import sim
+
     rows = conn.execute(
-        "SELECT c.id, c.status, c.opened_at, c.closed_at, EXISTS (SELECT 1 FROM approval a WHERE a.case_id = c.id),"
-        " EXISTS (SELECT 1 FROM plan_b p WHERE p.case_id = c.id AND p.status = 'approved' AND p.decided_by NOT IN ('agent'))"
+        "SELECT c.status, c.opened_at, c.closed_at, EXISTS (SELECT 1 FROM approval a WHERE a.case_id = c.id),"
+        " EXISTS (SELECT 1 FROM plan_b p WHERE p.case_id = c.id AND p.status = 'approved' AND p.decided_by <> 'agent')"
         " FROM cover_case c JOIN shift s ON s.id = c.shift_id JOIN venue v ON v.id = s.venue_id WHERE v.policy_id = %s",
         (policy_id,),
     ).fetchall()
-    closed = [r for r in rows if r[1] != "open"]
-    by_agent = [r for r in closed if r[1] == "covered" and not r[4] and not r[5]]
-    minutes = sorted((r[3] - r[2]).total_seconds() / 60 for r in rows if r[1] == "covered" and r[3])
-    plan_b = Counter(
-        snap["options"][chosen]["kind"]
-        for snap, chosen in conn.execute("SELECT p.snapshot, p.chosen_option FROM plan_b p WHERE p.status = 'approved'")
-    )
-    cost, calls = conn.execute("SELECT coalesce(sum(cost_usd), 0), count(*) FROM model_call").fetchone()
-    runs = conn.execute("SELECT count(*) FROM ops.judge_run").fetchone()[0]
+    closed = [r for r in rows if r[0] != "open"]
+    by_agent = [r for r in closed if r[0] == "covered" and not r[3] and not r[4]]
+    minutes = sorted((r[2] - r[1]).total_seconds() / 60 for r in rows if r[0] == "covered" and r[2])
     return plain({
-        "runs": runs,
-        "cases": len(rows),
+        "runs": conn.execute("SELECT count(*) FROM ops.judge_run").fetchone()[0],
         "closed_without_human_pct": round(100 * len(by_agent) / len(closed), 1) if closed else None,
         "median_minutes_to_cover": minutes[len(minutes) // 2] if minutes else None,
         "eligibility_violations": eligibility_violations(conn, policy_id),
-        "plan_b_by_option": dict(plan_b),
-        "model_calls": calls,
-        "model_cost_usd": round(float(cost), 6),
-        "sim": None,
+        "sim": sim.sim_stats(),
     })
 
 
