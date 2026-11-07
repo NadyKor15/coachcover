@@ -16,7 +16,7 @@ from coachcover.seed import DECK_NOW, HERO_SEAT, NOW, POLICY_ID, build_school, l
 
 pytestmark = pytest.mark.db
 
-DEMO_LESSON = "L-1109-G002"  # preschool: Marina's Monday 08:00-08:45 Preschool swim, ages 3-5 (8 kids, 2 instructors);
+DEMO_LESSON = "L-1109-G002"  # preschool: Marina's Monday 09:30-10:15 Preschool swim, ages 3-5 (8 kids, 2 instructors);
 #                              deck: her 06:00-08:00 lanes + Level 3 (8 young kids) at V1
 DEMO_GUARD_BLOCK = "G-1109-V1-0530"  # Monday 05:30-10:00 lifeguard block at V1
 
@@ -60,7 +60,7 @@ def test_school_size_and_languages(school):
     assert _count(school, "SELECT count(*) FROM zone") == 6
     assert _count(school, "SELECT count(*) FROM staff") == 40
     assert _count(school, "SELECT count(DISTINCT full_name) FROM staff") == 40
-    assert _count(school, "SELECT count(*) FROM lesson_group") == 121  # + the lesson next door to the 08:00 one
+    assert _count(school, "SELECT count(*) FROM lesson_group") == 121  # + the lesson next door to the 09:30 one
     assert len(build_school("deck").groups) == 120
     assert _count(school, "SELECT count(*) FROM lesson_group WHERE instructor_id IS NULL") == 0
     langs = {r[0] for r in school.execute("SELECT DISTINCT unnest(family_languages) FROM lesson_group")}
@@ -79,7 +79,7 @@ def test_every_group_size_fits_its_level_norm(story, request):
     ).fetchall()
     assert over == []
     two = conn.execute("SELECT count(*) FROM shift WHERE id = 'L-1109-G002-I2'").fetchone()[0]
-    assert two == (1 if story == "school" else 0)  # preschool: the 08:00 lesson has its second instructor's seat
+    assert two == (1 if story == "school" else 0)  # preschool: the 09:30 lesson has its second instructor's seat
 
 
 def test_trap_counts_in_the_data(school):
@@ -121,7 +121,7 @@ def test_the_traps_meet_the_rules_at_the_morning_call_out(school):
     group = lesson.groups[0]
     assert (group.program, group.level, group.size, group.age_min) == ("preschool", "3-5", 8, 3)
     assert (lesson.venue, lesson.zone, lesson.role, lesson.instructors) == ("V1", "V1-TEACH", "instructor", 2)
-    assert f"{lesson.start.astimezone(NOW.tzinfo):%H:%M}" == "08:00" and NOW.strftime("%H:%M") == "07:10"
+    assert f"{lesson.start.astimezone(NOW.tzinfo):%H:%M}" == "09:30" and NOW.strftime("%H:%M") == "08:40"
     lesson_ctx, guard_ctx = load_context(school, POLICY_ID, lesson), load_context(school, POLICY_ID, guard)
 
     def decide(sid, shift, ctx):
@@ -138,15 +138,14 @@ def test_the_traps_meet_the_rules_at_the_morning_call_out(school):
     assert decide("S13", lesson, lesson_ctx).codes[0] == Code.CERT_NEEDS_REVIEW
     revoked = decide("S14", lesson, lesson_ctx)  # printed valid, revoked by the issuer (simulated registry)
     assert revoked.codes == [Code.CERT_REVOKED, Code.PROGRAM_MISSING] and revoked.reasons[0].params["cert_type"] == "wsi"
-    rest = decide("S24", lesson, lesson_ctx)  # cleared for preschool; closed Lakeview's late swim on Sunday at 22:30
-    assert rest.codes == [Code.REST_TOO_SHORT] and rest.reasons[0].params["rest_hours"] == 9.5
+    assert decide("S24", lesson, lesson_ctx).codes == [Code.PROGRAM_MISSING]  # Gabriela: no preschool training
     second = decide("S01", lesson, lesson_ctx)  # Emma Carter teaches this lesson with Marina: her own seat
     assert second.codes == [Code.OVERLAPS_COMMITMENT] and second.reasons[0].params["ref"] == HERO_SEAT
     cleared = {sid for sid in staff if decide(sid, lesson, lesson_ctx).reasons == ()}
     assert cleared == {"S06", "S17", "S20", "S22", "S25", "S26"}  # the five, plus Liam Foster (reserve, plan B only)
     no_clearance = [sid for sid in staff if decide(sid, lesson, lesson_ctx).codes == [Code.PROGRAM_MISSING]]
-    # only the preschool training is missing: 8 instructors and the reserve head coaches Noah Bennett and Harper Hughes
-    assert len(no_clearance) == 10 and {"S12", "S23"} <= set(no_clearance)
+    # only the preschool training is missing: 9 instructors and the reserve head coaches Noah Bennett and Harper Hughes
+    assert len(no_clearance) == 11 and {"S12", "S23", "S24"} <= set(no_clearance)
 
     assert decide("S27", guard, guard_ctx).codes == []  # her lifeguard card is fine: only the WSI ran out
     assert decide("S28", lesson, lesson_ctx).codes[:3] == [Code.ROLE_MISSING, Code.CERT_MISSING, Code.PROGRAM_MISSING]
@@ -154,7 +153,7 @@ def test_the_traps_meet_the_rules_at_the_morning_call_out(school):
     assert decide("S30", holder_view, guard_ctx).codes == [Code.CERT_EXPIRES_ON_SHIFT_DAY]  # her card ends today
     over = decide("S29", guard, guard_ctx)
     assert over.codes == [Code.HOURS_LIMIT_EXCEEDED] and over.reasons[0].params["hours_after"] == 42.5
-    # the instructor of the lesson next door (lap lanes, the same 08:00-08:45) is busy
+    # the instructor of the lesson next door (lap lanes, the same 09:30-10:15) is busy
     neighbour = school.execute("SELECT staff_id FROM shift WHERE id = 'L-1109-G121'").fetchone()[0]
     assert Code.OVERLAPS_COMMITMENT in decide(neighbour, lesson, lesson_ctx).codes
 

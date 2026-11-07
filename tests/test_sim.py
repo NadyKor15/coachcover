@@ -106,7 +106,7 @@ def test_the_audit_is_not_blind():
     state = State(world, morning)
     assert "CERT_EXPIRED" in _audit(state, "S27", lesson, NOW)
     assert "ROLE_MISSING" in _audit(state, "S28", world.shifts["L-1109-G003"], NOW)  # a lifeguard on a lesson
-    # merges: Marina's 8 children aged 3-5 with the 6 next door (lap lanes, 08:00) break 1:4; with 2 + 2 children
+    # merges: Marina's 8 children aged 3-5 with the 6 next door (lap lanes, 09:30) break 1:4; with 2 + 2 children
     # the norm fits and only the preschool training of the teacher next door is missing
     hero, next_door = world.shifts["L-1109-G002"], world.shifts["L-1109-G121"]
     teacher = next_door.assignee

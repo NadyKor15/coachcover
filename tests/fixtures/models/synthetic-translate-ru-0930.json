@@ -1,0 +1,27 @@
+{
+ "purpose": "translate",
+ "model": "muse-glimmer-30b",
+ "input": {
+  "text": "Привет, это Марина. У меня температура 38, к 9:30 я не выйду. У меня в 9:30 занятие с малышами. Простите.",
+  "to": "en"
+ },
+ "input_sha256": "9b9d8fc8a814844c5afcee1d253ea02f7c4e3bc4de303a81f5e27691ac24d3ed",
+ "synthetic": true,
+ "source": "prepared demo answer, not a model output: written by hand to the translate schema for ru-callout-0930.ogg (synthesized locally with macOS say -v Milena); to be recorded live on Vultr",
+ "duration_ms": 900,
+ "response": {
+  "model": "muse-glimmer-30b",
+  "usage": {
+   "prompt_tokens": 140,
+   "completion_tokens": 36
+  },
+  "choices": [
+   {
+    "message": {
+     "role": "assistant",
+     "content": "{\"text\": \"Hi, it's Marina. I have a fever of 38, I can't make it by nine thirty. I have the nine thirty class with the little ones. Sorry.\"}"
+    }
+   }
+  ]
+ }
+}

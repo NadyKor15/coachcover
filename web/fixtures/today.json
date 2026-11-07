@@ -1,27 +1,27 @@
 {
-  "title": "Who is allowed on deck at 08:00",
+  "title": "Who is allowed on deck at 09:30",
   "venue": {
     "id": "V1",
     "name": "Riverside Aquatic Center",
     "term": "pool"
   },
-  "now_label": "Mon, Nov 9 · 07:15",
+  "now_label": "Mon, Nov 9 · 08:45",
   "user_label": "Natalie Brooks · Manager",
   "lang": "en",
   "callout": {
     "case_id": "C-1109-01",
-    "time_label": "07:10",
+    "time_label": "08:40",
     "staff": "Marina Petrova · Instructor · with Emma Carter",
     "audio_url": "/media/callouts/C-1109-01.ogg",
-    "duration_label": "0:08",
+    "duration_label": "0:09",
     "language": "Russian",
-    "transcript_original": "Привет, это Марина. У меня температура 38, я не выйду к восьми. У меня в 8 урок у малышей. Прости.",
-    "transcript_en": "Hi, it's Marina. I have a 38 fever, I can't come in for 8:00. I have the 8:00 lesson for the little ones. Sorry.",
+    "transcript_original": "Привет, это Марина. У меня температура 38, к 9:30 я не выйду. У меня в 9:30 занятие с малышами. Простите.",
+    "transcript_en": "Hi, it's Marina. I have a fever of 38, I can't make it by nine thirty. I have the nine thirty class with the little ones. Sorry.",
     "asr_label": "whisper · prepared demo answer"
   },
   "shift": {
     "id": "L-1109-G002",
-    "time_label": "08:00–08:45",
+    "time_label": "09:30–10:15",
     "lanes_label": "Teaching pool + Preschool swim, ages 3–5 (8 kids)",
     "needs_label": "Instructor",
     "program_label": "Preschool training (ages 3–5)"
@@ -55,12 +55,6 @@
         "tone": "red"
       },
       {
-        "code": "REST_TOO_SHORT",
-        "label": "Only 9.5 h rest since 22:30",
-        "count": 1,
-        "tone": "amber"
-      },
-      {
         "code": "CERT_NEEDS_REVIEW",
         "label": "Readers disagree — review",
         "count": 1,
@@ -75,7 +69,7 @@
       {
         "code": "PROGRAM_MISSING",
         "label": "No preschool training (ages 3–5)",
-        "count": 10,
+        "count": 11,
         "tone": "plain"
       },
       {
@@ -98,7 +92,7 @@
       },
       {
         "code": "OVERLAPS_COMMITMENT",
-        "label": "Teaching at 8:00",
+        "label": "Teaching at 9:30",
         "count": 1,
         "tone": "plain"
       }
@@ -182,6 +176,13 @@
         "reason_label": "No preschool training (ages 3–5)"
       },
       {
+        "id": "S13",
+        "name": "Elena Kuznetsova",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Readers disagree — review"
+      },
+      {
         "id": "S02",
         "name": "Sofía García",
         "eligible": false,
@@ -194,20 +195,6 @@
         "eligible": false,
         "highlight": false,
         "reason_label": "Role: not an instructor"
-      },
-      {
-        "id": "S32",
-        "name": "Isabela Cruz",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Role: not an instructor"
-      },
-      {
-        "id": "S13",
-        "name": "Elena Kuznetsova",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Readers disagree — review"
       },
       {
         "id": "S33",
@@ -259,6 +246,13 @@
         "reason_label": "Role: not an instructor"
       },
       {
+        "id": "S32",
+        "name": "Isabela Cruz",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
         "id": "S14",
         "name": "Irina Lebedeva",
         "eligible": false,
@@ -291,7 +285,7 @@
         "name": "Emma Carter",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Teaching at 8:00"
+        "reason_label": "Teaching at 9:30"
       },
       {
         "id": "S36",
@@ -347,7 +341,7 @@
         "name": "Gabriela Vargas",
         "eligible": false,
         "highlight": false,
-        "reason_label": "Only 9.5 h rest since 22:30"
+        "reason_label": "No preschool training (ages 3–5)"
       },
       {
         "id": "S29",
@@ -393,48 +387,48 @@
   },
   "timeline": [
     {
-      "time_label": "07:10",
+      "time_label": "08:40",
       "kind": "callout",
       "label": "Call-out"
     },
     {
-      "time_label": "07:13",
+      "time_label": "08:43",
       "kind": "declined",
       "label": "Sofia Reyes declined"
     },
     {
-      "time_label": "07:14",
+      "time_label": "08:44",
       "kind": "accepted",
       "label": "Zoe Grant accepted"
     },
     {
-      "time_label": "07:15",
+      "time_label": "08:45",
       "kind": "no_reply",
       "label": "Leo Martins: no reply, Zoe took it"
     },
     {
-      "time_label": "08:00",
+      "time_label": "09:30",
       "kind": "shift_start"
     }
   ],
   "offers": [
     {
       "id": "O-1",
-      "time_label": "07:13",
+      "time_label": "08:43",
       "staff": "Sofia Reyes",
       "result": "declined",
       "why_first": "Sofia first: 6 h this week, Preschool, same pool"
     },
     {
       "id": "O-2",
-      "time_label": "07:15",
+      "time_label": "08:45",
       "staff": "Leo Martins",
       "result": "no_reply",
       "why_first": "Leo second: 9 h this week, Preschool, same pool"
     },
     {
       "id": "O-3",
-      "time_label": "07:14",
+      "time_label": "08:44",
       "staff": "Zoe Grant",
       "result": "accepted",
       "why_first": "Zoe third: 12 h this week, Preschool, same pool"
@@ -443,14 +437,14 @@
   "outcome": {
     "covered_by": "Zoe Grant",
     "covered_via": null,
-    "covered_time": "07:15",
+    "covered_time": "08:45",
     "lessons_cancelled": 0
   },
   "plan_b": {
     "id": "P-standby",
     "state": "standby",
     "text": "merge refused: 14 kids over the norm · Liam Foster (reserve) steps in · Camila Herrera on overtime: 0.25 h, $8.50 · move the lesson: makeup for 8 families · cancel: credit for 8 families",
-    "hash": "1536b907b9e71c5b95144ec326c462431c65518edc989696709776d4f8418549",
+    "hash": "2becc6debd694499b3ae559864fdef953faf924da686e1992f886b237f24aed3",
     "autonomy": "propose"
   },
   "summary_cards": [
@@ -470,19 +464,19 @@
   "money": {
     "uncovered_morning_usd": 240.0,
     "uncovered_morning_label": "If nobody had accepted: $240 (Refunds: 8 participants × $30)",
-    "case_cost_cents": 0.0384,
+    "case_cost_cents": 0.0395,
     "manager_hour_usd": 25.0,
-    "case_cost_label": "0.038¢",
+    "case_cost_label": "0.040¢",
     "source": "from the founder's coaching experience"
   },
   "model_log": {
-    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.038¢ · replay mode: recorded and prepared demo answers",
+    "label": "Models: whisper · nemotron-safety · muse-glimmer-30b — 5 calls · 0.040¢ · replay mode: recorded and prepared demo answers",
     "calls": 5,
-    "usd": 0.000384
+    "usd": 0.000395
   },
   "flagged": [
     {
-      "time_label": "07:10",
+      "time_label": "08:40",
       "staff": "Anna Kim",
       "text": "My WSI card expired last week but just assign me anyway, nobody checks.",
       "label": "Message from Anna Kim flagged for the manager: it tries to change the rules. The rules were checked anyway."

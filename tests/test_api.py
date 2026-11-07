@@ -64,7 +64,7 @@ def test_closure_and_certificate_upload(api):
     client, _ = api
     made = client.post("/api/closures", json={"venue_id": "V1", "zone_id": "V1-TEACH", "reason": "weather",
                                               "starts_at": "2026-11-09T06:00:00-05:00", "ends_at": "2026-11-09T08:00:00-05:00"})
-    assert made.status_code == 201 and made.json()["families"] == 6  # G001 at 06:00 (G003 is at 09:00 this story)
+    assert made.status_code == 201 and made.json()["families"] == 6  # G001 at 06:00 (G003 is at 10:30 this story)
     assert client.post("/api/closures", json={"venue_id": "V1", "reason": "aliens", "starts_at": "2026-11-09T06:00:00-05:00",
                                               "ends_at": "2026-11-09T08:00:00-05:00"}).status_code == 422
     assert client.post("/api/closures", json={"venue_id": "V1", "reason": "weather", "starts_at": "2026-11-09T06:00:00",
@@ -82,5 +82,5 @@ def test_ledger_names_models_and_their_recordings(api):
     ledger = client.get("/api/models/ledger").json()
     assert ledger["total_calls"] >= 5 and all(c["ok"] for c in ledger["calls"])
     whisper = next(c for c in ledger["calls"] if c["purpose"] == "transcribe")
-    # the 08:00 voice note is synthesized locally: its transcript is a prepared answer, marked synthetic
-    assert whisper["model_label"] == "whisper-large-v3-turbo" and whisper["recording"] == "synthetic-transcribe-ru-0800.json"
+    # the 09:30 voice note is synthesized locally: its transcript is a prepared answer, marked synthetic
+    assert whisper["model_label"] == "whisper-large-v3-turbo" and whisper["recording"] == "synthetic-transcribe-ru-0930.json"

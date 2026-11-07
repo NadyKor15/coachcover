@@ -14,7 +14,7 @@
     "end": "2026-11-15",
     "label": "Nov 9 – Nov 15"
   },
-  "now": "2026-11-09T12:15:00.029202+00:00",
+  "now": "2026-11-09T13:45:00.031749+00:00",
   "threshold": 1,
   "backups_from": "venue",
   "legend": [
@@ -139,12 +139,12 @@
           "venue_id": "V1",
           "venue_name": "Riverside Aquatic Center",
           "day": "2026-11-09",
-          "start": "2026-11-09T13:00:00+00:00",
-          "end": "2026-11-09T13:45:00+00:00",
-          "time_label": "08:00–08:45",
+          "start": "2026-11-09T14:30:00+00:00",
+          "end": "2026-11-09T15:15:00+00:00",
+          "time_label": "09:30–10:15",
           "role": "instructor",
           "role_label": "Swim instructor",
-          "label": "Mon 08:00–08:45 · Swim instructor · Preschool",
+          "label": "Mon 09:30–10:15 · Swim instructor · Preschool",
           "holder": {
             "staff_id": "S17",
             "name": "Zoe Grant"
@@ -165,12 +165,12 @@
           "venue_id": "V1",
           "venue_name": "Riverside Aquatic Center",
           "day": "2026-11-09",
-          "start": "2026-11-09T13:00:00+00:00",
-          "end": "2026-11-09T13:45:00+00:00",
-          "time_label": "08:00–08:45",
+          "start": "2026-11-09T14:30:00+00:00",
+          "end": "2026-11-09T15:15:00+00:00",
+          "time_label": "09:30–10:15",
           "role": "instructor",
           "role_label": "Swim instructor",
-          "label": "Mon 08:00–08:45 · Swim instructor · Preschool",
+          "label": "Mon 09:30–10:15 · Swim instructor · Preschool",
           "holder": {
             "staff_id": "S01",
             "name": "Emma Carter"
@@ -191,12 +191,12 @@
           "venue_id": "V1",
           "venue_name": "Riverside Aquatic Center",
           "day": "2026-11-09",
-          "start": "2026-11-09T13:00:00+00:00",
-          "end": "2026-11-09T13:45:00+00:00",
-          "time_label": "08:00–08:45",
+          "start": "2026-11-09T14:30:00+00:00",
+          "end": "2026-11-09T15:15:00+00:00",
+          "time_label": "09:30–10:15",
           "role": "instructor",
           "role_label": "Swim instructor",
-          "label": "Mon 08:00–08:45 · Swim instructor · Level 4",
+          "label": "Mon 09:30–10:15 · Swim instructor · Level 4",
           "holder": {
             "staff_id": "S04",
             "name": "Daniel Shaw"
@@ -209,33 +209,7 @@
             "Sofia Reyes",
             "Leo Martins"
           ],
-          "other_venues_cleared": 8,
-          "standby": null
-        },
-        {
-          "shift_id": "L-1109-G003",
-          "venue_id": "V1",
-          "venue_name": "Riverside Aquatic Center",
-          "day": "2026-11-09",
-          "start": "2026-11-09T14:00:00+00:00",
-          "end": "2026-11-09T14:30:00+00:00",
-          "time_label": "09:00–09:30",
-          "role": "instructor",
-          "role_label": "Swim instructor",
-          "label": "Mon 09:00–09:30 · Swim instructor · Level 1 (beginner)",
-          "holder": {
-            "staff_id": "S01",
-            "name": "Emma Carter"
-          },
-          "uncovered": false,
-          "past": false,
-          "backups": 2,
-          "level": "safe",
-          "backup_names": [
-            "Grace Sullivan",
-            "Zoe Grant"
-          ],
-          "other_venues_cleared": 4,
+          "other_venues_cleared": 9,
           "standby": null
         },
         {
@@ -255,14 +229,40 @@
           },
           "uncovered": false,
           "past": false,
-          "backups": 9,
+          "backups": 6,
           "level": "safe",
           "backup_names": [
-            "Emma Carter",
-            "Daniel Shaw",
-            "Grace Sullivan"
+            "Grace Sullivan",
+            "Dmitri Volkov",
+            "Sofia Reyes"
           ],
           "other_venues_cleared": 20,
+          "standby": null
+        },
+        {
+          "shift_id": "L-1109-G003",
+          "venue_id": "V1",
+          "venue_name": "Riverside Aquatic Center",
+          "day": "2026-11-09",
+          "start": "2026-11-09T15:30:00+00:00",
+          "end": "2026-11-09T16:00:00+00:00",
+          "time_label": "10:30–11:00",
+          "role": "instructor",
+          "role_label": "Swim instructor",
+          "label": "Mon 10:30–11:00 · Swim instructor · Level 1 (beginner)",
+          "holder": {
+            "staff_id": "S01",
+            "name": "Emma Carter"
+          },
+          "uncovered": false,
+          "past": false,
+          "backups": 2,
+          "level": "safe",
+          "backup_names": [
+            "Grace Sullivan",
+            "Zoe Grant"
+          ],
+          "other_venues_cleared": 4,
           "standby": null
         },
         {
@@ -1689,7 +1689,7 @@
             "Marina Petrova",
             "Sofia Reyes"
           ],
-          "other_venues_cleared": 8,
+          "other_venues_cleared": 7,
           "standby": null
         },
         {

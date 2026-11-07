@@ -28,7 +28,7 @@ def _row(data, shift_id):
 
 def test_without_the_night_check_the_trap_is_a_violation(school):
     data = binder.build(school, POLICY_ID, "V1", None, None, NOW)
-    assert data["summary"]["headline"] == "70 shifts · 1 violation"  # V1's week, with the 08:00 lesson's second seat and G121
+    assert data["summary"]["headline"] == "70 shifts · 1 violation"  # V1's week, with the 09:30 lesson's second seat and G121
     row = _row(data, TRAP)
     assert row["ok"] is False and row["result"].startswith("VIOLATION: CPR/AED expired")
 

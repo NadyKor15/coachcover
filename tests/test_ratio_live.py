@@ -10,7 +10,7 @@ from tests.conftest import TEST_DSN
 
 pytestmark = pytest.mark.db
 
-GROUP = "G003"  # Riverside, Mon 07:00, Level 1 beginners aged 4-5: 4 children at the 1:4 norm, mostly Spanish-speaking
+GROUP = "G003"  # Riverside, Mon 10:30 (07:00 in the deck story), Level 1 beginners aged 4-5: 4 children at the 1:4 norm, mostly Spanish-speaking
 SHIFT = "L-1109-G003"
 
 
@@ -47,7 +47,7 @@ def test_four_to_six_children_at_one_to_four_opens_a_case_and_the_queue_runs(api
     assert page.status_code == 200, page.text  # the case file of a ratio case opens like any other
     assert page.json()["steps"][0]["kind"] == "ratio"
     banner = client.get("/api/today").json()["ratio_alert"]
-    assert banner["label"] == "Level 1, Mon 09:00 — now 6 kids, ratio 1:4 broken"  # 07:00 in the deck story
+    assert banner["label"] == "Level 1, Mon 10:30 — now 6 kids, ratio 1:4 broken"  # 07:00 in the deck story
     assert (banner["status"], banner["tone"], banner["case_id"]) == ("open", "red", case["case_id"])
 
     # the same queue rules: an offer went out to the first eligible person, the line says why
@@ -55,7 +55,7 @@ def test_four_to_six_children_at_one_to_four_opens_a_case_and_the_queue_runs(api
                         " WHERE o.status = 'pending' ORDER BY o.queue_pos").fetchall()
     assert wave
     offer_id, staff_id, line, name = wave[0]
-    # nobody called out in this test: Marina is free at 09:00 after her 08:45 lesson and has the lightest week
+    # nobody called out in this test: Marina is free at 10:30 after her 10:15 lesson and has the lightest week
     assert (staff_id, line) == ("S05", "Marina first: 0.75 h this week, Level 1 (beginner), same pool")
     lines = {sid: text for _, sid, text, _ in wave}
     assert lines["S15"] == "Diego third: 5.25 h this week, Level 1 (beginner), 21.7 km away, speaks Spanish like 5 of 6 families"

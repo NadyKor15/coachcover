@@ -174,25 +174,18 @@
         "reason_label": "On deck at 14:00"
       },
       {
-        "id": "S30",
-        "name": "Nikita Morozov",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Role: not an instructor"
-      },
-      {
-        "id": "S32",
-        "name": "Isabela Cruz",
-        "eligible": false,
-        "highlight": false,
-        "reason_label": "Role: not an instructor"
-      },
-      {
         "id": "S13",
         "name": "Elena Kuznetsova",
         "eligible": false,
         "highlight": false,
         "reason_label": "Readers disagree — review"
+      },
+      {
+        "id": "S30",
+        "name": "Nikita Morozov",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
       },
       {
         "id": "S33",
@@ -232,6 +225,13 @@
       {
         "id": "S28",
         "name": "Ava Mitchell",
+        "eligible": false,
+        "highlight": false,
+        "reason_label": "Role: not an instructor"
+      },
+      {
+        "id": "S32",
+        "name": "Isabela Cruz",
         "eligible": false,
         "highlight": false,
         "reason_label": "Role: not an instructor"

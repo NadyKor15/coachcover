@@ -33,7 +33,7 @@ def api(new_database, monkeypatch):
 def test_a_called_out_person_gets_no_offer_or_clearance_that_day(api):
     client, conn = api
     assert client.post("/api/judge/run", json={"scenario": "dangerous_morning"}).status_code == 200
-    # the 09:00 beginners grow over their norm: a second-instructor seat opens at 09:00, after Marina's call-out
+    # the 10:30 beginners grow over their norm: a second-instructor seat opens at 10:30, after Marina's call-out
     alert = client.post("/api/groups/G003/enroll", json={"add": 2, "language": "es"}).json()["alerts"][0]
     seat = alert["cases"][0]["extra_shift_id"]
     case = client.get(f"/api/cases/{alert['cases'][0]['case_id']}").json()

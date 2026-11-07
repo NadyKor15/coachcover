@@ -5,18 +5,18 @@ Three venues, 40 staff (all lifeguards, 27 also WSI instructors), 120 weekly gro
 story), and one policy week of shifts (Mon 2026-11-09 .. Sun 2026-11-15): one lesson per group plus lifeguard
 blocks at every venue every day.
 
-"preschool" (the default; the founder's morning): the manager is in at 07:00; at 07:10 S05 Marina Petrova, a swim
-instructor, sends a Russian voice note: a 38 fever, she cannot come to her 08:00 lesson L-1109-G002 at Riverside
+"preschool" (the default; the founder's morning): at 08:40 S05 Marina Petrova, a swim instructor, sends a Russian
+voice note: a 38 fever, she cannot come to her 09:30 class L-1109-G002 (09:30-10:15) at Riverside
 Aquatic Center, teaching pool: "Preschool swim, ages 3–5", 8 children aged 3–5 (norm 1:4, two instructors). The
 second instructor, S01 Emma Carter, comes (seat L-1109-G002-I2); one replacement is needed: a swim instructor with
 WSI, CPR/AED and the school's own preschool training (ages 3–5). Manager: Natalie Brooks.
   - 40 people -> 5 cleared: S25 Sofia Reyes 6 h, S26 Leo Martins 9 h, S17 Zoe Grant 12 h (V1), then S20 15 h,
-    S22 16 h (V2). 10 people hold everything but the preschool training; S27 Anna Kim has it, is free and
-    volunteers, but her WSI expired 2026-11-05: blocked first. S24 Gabriela Vargas has it but closed Lakeview's late
-    swim on Sunday at 22:30 (9.5 h of rest); S14 Irina Lebedeva's WSI is revoked by the issuer (simulated registry).
-  - Plan B: merging with G121 next door (Level 4, 6 children, lap lanes 08:00-08:45) breaks 1:4; S06 Liam Foster,
+    S22 16 h (V2). 11 people hold everything but the preschool training; S27 Anna Kim has it, is free and
+    volunteers, but her WSI expired 2026-11-05: blocked first. S14 Irina Lebedeva's WSI is revoked by the issuer
+    (simulated registry). Mateo's Monday 10:00 Maplewood block is on Friday 14:00 in this story (it would overlap).
+  - Plan B: merging with G121 next door (Level 4, 6 children, lap lanes 09:30-10:15) breaks 1:4; S06 Liam Foster,
     head coach in reserve, has the training; S11 Camila Herrera could do it on overtime (39.5 h + 0.75 h).
-  - Live norm: G003 (Level 1, 4 children aged 4-5, Emma Carter) is at 09:00 (07:00 in the deck story).
+  - Live norm: G003 (Level 1, 4 children aged 4-5, Emma Carter) is at 10:30 (07:00 in the deck story).
 "deck" (judge scenario network_loan only, "another morning"): S05 cannot come to her 06:00-08:00 deck shift
 L-1109-G002 (lanes 3-4 plus Learn-to-Swim Level 3, 8 children aged 4-5, a lifeguard with WSI) at 05:12 (the
 recorded Russian voice note "это Марина... в 6 дорожка и в 7 урок у малышей"); Anna's lifeguard card expired
@@ -56,8 +56,11 @@ STORIES = ("preschool", "deck")
 STORY = "preschool"  # the default story; "deck" is the judge scenario network_loan's morning
 # preschool: the lesson and the moment the manager is told, one pair. Moving them also needs: a new voice note naming
 # the hour (coachcover/demo.py VOICES), scripts/make_preschool_recordings.py, and the fixtures (tests/web/make_fixtures.py)
-LESSON_AT, CALLOUT_AT = time(8, 0), time(7, 10)
-NOW = datetime.combine(TODAY, CALLOUT_AT, tzinfo=TZ)  # preschool: Marina's voice note comes at 07:10
+LESSON_AT, CALLOUT_AT = time(9, 30), time(8, 40)
+NOW = datetime.combine(TODAY, CALLOUT_AT, tzinfo=TZ)  # preschool: Marina's voice note comes at 08:40
+LESSON_END = (datetime.combine(TODAY, LESSON_AT) + timedelta(minutes=45)).time()
+# the live-norm group G003 starts an hour after the lesson, so it has not started at "now" (the judge's 08:45)
+LIVE_NORM_AT = (datetime.combine(TODAY, LESSON_AT) + timedelta(hours=1)).time()
 DECK_NOW = datetime(2026, 11, 9, 5, 12, tzinfo=TZ)  # deck: the voice note at 05:12
 WEEK_START = date(2026, 11, 9)  # Monday: the training school's week is Mon 9 - Sun 15, as on the week screen
 WEEK_DAY = "monday"  # the school's policy week (the swim preset's default is Sunday)
@@ -68,9 +71,8 @@ HERO_SHIFT = "L-1109-G002"
 HERO_SEAT = "L-1109-G002-I2"  # preschool: the lesson's second instructor, who comes
 SECOND_INSTRUCTOR = "S01"  # Emma Carter
 # preschool training (ages 3-5), the school's own rule: Marina and Emma (on the lesson), Anna (blocked by her WSI),
-# the five cleared, the reserve head coach Liam (plan B), Camila (plan B overtime) and Gabriela (too little rest).
-# Nobody else holds it.
-PRESCHOOL = ("S01", "S05", "S06", "S11", "S17", "S20", "S22", "S24", "S25", "S26", "S27")
+# the five cleared, the reserve head coach Liam (plan B) and Camila (plan B overtime). Nobody else holds it.
+PRESCHOOL = ("S01", "S05", "S06", "S11", "S17", "S20", "S22", "S25", "S26", "S27")
 
 # id, name, lat, lon, deck zone, zones in group order
 VENUES = [
@@ -150,7 +152,7 @@ OVERDUE_PROGRAM = ("S14", date(2025, 10, 1))
 # The issuer's registry is SIMULATED (training data, not a real issuer). Carlos Mendoza's lifeguard card is printed
 # valid to 2028 but the issuer revoked it on Jul 24 (cards voided after the fact, as in Iowa in 2023).
 REVOKED = {("S35", "lifeguarding"): date(2026, 7, 24)}
-# preschool: Irina Lebedeva's WSI is printed valid but revoked by the issuer too, so the 08:00 lesson shows the trap
+# preschool: Irina Lebedeva's WSI is printed valid but revoked by the issuer too, so the preschool lesson shows the trap
 # (her lessons are already off the week: her program renewal is overdue; her lifeguard blocks need no WSI)
 PRESCHOOL_REVOKED = {**REVOKED, ("S14", "wsi"): date(2026, 10, 12)}
 DEMO_ABSENT = "S05"
@@ -181,7 +183,7 @@ FIXED_BLOCKS = {
 }
 FIXED_ONLY = set(FIXED_BLOCKS) | {DEMO_ABSENT}  # no greedy work at all
 FREE_MONDAY = {"S07", "S10", "S13", "S14"}  # the night check meets only S07's fixed Monday lesson
-RESERVE_EARLY = {"S06", "S12", "S23"}  # head coaches in reserve: free before 08:00 every day, for plan B
+RESERVE_EARLY = {"S06", "S12", "S23"}  # head coaches in reserve: free in the mornings (see _off), for plan B
 
 GUARD_BLOCKS = [(time(5, 30), 4.5), (time(10, 0), 4.0), (time(14, 0), 4.0), (time(18, 0), 3.0)]
 MORNING_TIMES = (time(6, 0), time(7, 0))  # two groups side by side, 30 min unless fixed below
@@ -222,9 +224,11 @@ FIXED_GROUPS = {
 }
 DECK_HERO_SLOT = ("V1", "V1-LAP", 0, time(6, 0))  # deck story: G002, Marina's 06:00-08:00 deck shift
 PRESCHOOL_HERO_SLOT = ("V1", "V1-TEACH", 0, LESSON_AT)  # preschool story: G002 is this slot instead
-# preschool: at 07:15 the 07:00 lesson already runs, so the live-norm group G003 (Level 1, 4 children aged 4-5, mostly
-# Spanish-speaking families, Emma Carter) is at 09:00 instead: same group, same people, later
-PRESCHOOL_MOVES = {("V1", "V1-TEACH", 0, time(7, 0)): ("V1", "V1-TEACH", 0, time(9, 0))}
+# preschool: at the judge's "now" the 07:00 lesson would already run, so the live-norm group G003 (Level 1, 4 children
+# aged 4-5, mostly Spanish-speaking families, Emma Carter) is an hour after the preschool lesson: same group, later
+PRESCHOOL_MOVES = {("V1", "V1-TEACH", 0, time(7, 0)): ("V1", "V1-TEACH", 0, LIVE_NORM_AT)}
+# preschool: Mateo Romero's Monday 10:00-14:00 block at Maplewood would overlap the lesson; it is on Friday 14:00
+PRESCHOOL_BLOCK_MOVES = {("S20", 1, "V2", time(10, 0)): (5, "V2", time(14, 0))}
 PRESCHOOL_GROUPS = {
     PRESCHOOL_HERO_SLOT: FixedGroup("3-5", 8, (3, 5), DEMO_ABSENT, ("ru", "en"), minutes=45, instructors=2,
                                     program="preschool", name=f"Preschool swim, ages 3–5, Mon {LESSON_AT:%H:%M}"),
@@ -270,8 +274,7 @@ def _levels(spec: str) -> list[str]:
 
 # The evening before the week: Gabriela closes Lakeview on Sunday Nov 8 at 21:00, 9 h before the 06:00 hero shift.
 EVE_BLOCKS = {"S24": [("V3", time(18, 0))]}
-# preschool: Gabriela (preschool-trained) closes Lakeview's late swim on Sunday 9.5 h before the lesson (22:30)
-PRESCHOOL_EVE_HOURS = {("S24", "V3", time(18, 0)): 24 - 18 + LESSON_AT.hour + LESSON_AT.minute / 60 - 9.5}
+
 
 
 def block_day(offset: int) -> date:
@@ -314,14 +317,16 @@ def _cleared(staff_id: str, roles: tuple[str, ...], extra: tuple[str, ...], day:
     return not (lesson and staff_id == OVERDUE_PROGRAM[0])
 
 
-def _off(staff_id: str, start: datetime, free_monday: frozenset[str] | set[str] = FREE_MONDAY) -> bool:
+def _off(staff_id: str, start: datetime, free_monday: frozenset[str] | set[str] = FREE_MONDAY,
+         reserve_until: time = time(8, 0)) -> bool:
     """Kept free by the data design: never picked by the greedy fill at this time."""
     if staff_id in FIXED_ONLY:
         return True
     if start.date() == MONDAY and staff_id in free_monday:
         return True
-    # head coaches in reserve stay free before 08:00 every day: plan B's reserve for the early lessons
-    return start.time() < time(8, 0) and staff_id in RESERVE_EARLY
+    # head coaches in reserve stay free for work starting before `reserve_until` every day: plan B's reserve for the
+    # morning lessons (08:00 in the deck story; to the end of the preschool lesson in the preschool story)
+    return start.time() < reserve_until and staff_id in RESERVE_EARLY
 
 
 def _cert(staff_id: str, n: int, i: int, ctype: str, traps: dict | None = None) -> dict:
@@ -370,6 +375,7 @@ def build_school(story: str = STORY) -> School:
     revoked = PRESCHOOL_REVOKED if preschool else REVOKED
     # preschool: Anna is free on Monday morning (she volunteers); her WSI is expired, so she guards, never teaches
     free_monday = FREE_MONDAY | {"S27"} if preschool else FREE_MONDAY
+    reserve_until = max(time(8, 0), LESSON_END) if preschool else time(8, 0)
     fixed_groups = dict(FIXED_GROUPS)
     if preschool:
         fixed_groups.pop(DECK_HERO_SLOT)
@@ -432,6 +438,8 @@ def build_school(story: str = STORY) -> School:
     fixed_blocks = {}
     for sid, blocks in FIXED_BLOCKS.items():
         for offset, vid, start in blocks:
+            if preschool:
+                offset, vid, start = PRESCHOOL_BLOCK_MOVES.get((sid, offset, vid, start), (offset, vid, start))
             key = (block_day(offset), vid, start)
             if key in fixed_blocks:
                 raise RuntimeError(f"seed design error: block {key} given twice")
@@ -446,7 +454,7 @@ def build_school(story: str = STORY) -> School:
             for start in AFTERNOON_TIMES:
                 slots.append((vid, zones[0][0], weekday, start))
     if preschool:
-        # G002 is the 08:00 preschool lesson instead of the 06:00 deck post; the lesson next door is appended (G121)
+        # G002 is the preschool lesson instead of the 06:00 deck post; the lesson next door is appended (G121)
         slots[slots.index(DECK_HERO_SLOT)] = PRESCHOOL_HERO_SLOT
         for old, new in PRESCHOOL_MOVES.items():
             slots[slots.index(old)] = new
@@ -475,7 +483,7 @@ def build_school(story: str = STORY) -> School:
                 for sid, roles in roles_of.items()
                 if "instructor" in roles
                 and str(level) in levels_of[sid]
-                and not _off(sid, lesson_start, free_monday)
+                and not _off(sid, lesson_start, free_monday, reserve_until)
                 and _cleared(sid, ("instructor",), (), lesson_start.date(), True, certs_by, revoked)
                 and not _overlaps(busy[sid], lesson_start, lesson_end)
                 and not _short_rest(busy[sid], lesson_start, lesson_end)
@@ -531,7 +539,7 @@ def build_school(story: str = STORY) -> School:
     eve = WEEK_START - timedelta(days=1)
     for sid, blocks in EVE_BLOCKS.items():
         for vid, start in blocks:
-            length = (PRESCHOOL_EVE_HOURS.get((sid, vid, start)) if preschool else None) or dict(GUARD_BLOCKS)[start]
+            length = dict(GUARD_BLOCKS)[start]
             block_start = _at(eve, start)
             book(sid, block_start, block_start + timedelta(hours=length))
             school.shifts.append({
@@ -551,7 +559,7 @@ def build_school(story: str = STORY) -> School:
                         s
                         for s, roles in roles_of.items()
                         if "lifeguard" in roles
-                        and not _off(s, block_start, free_monday)
+                        and not _off(s, block_start, free_monday, reserve_until)
                         and _cleared(s, ("lifeguard",), (), block_start.date(), False, certs_by, revoked)
                         and hours[s] + length <= GREEDY_HOURS_CAP
                         and not _overlaps(busy[s], block_start, block_end)

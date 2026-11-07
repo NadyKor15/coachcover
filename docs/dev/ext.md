@@ -75,7 +75,7 @@ Scenario (each step is a row of `ext_loan_step`, written by the side that took i
    person; team posts on both channels.
 
 Demo: the judge scenario `network_loan` plays it on the deck story of the training school (Marina's 06:00 deck
-shift; `reset_school(conn, "deck")`). On the preschool morning (08:00, ages 3–5) Northside has nobody with the
+shift; `reset_school(conn, "deck")`). On the preschool morning (09:30, ages 3–5) Northside has nobody with the
 preschool training, so a loan for that lesson is declined.
 
 Two agents, two addresses on one machine: run two servers and point the borrower at the lender:
