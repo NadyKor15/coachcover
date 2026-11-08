@@ -227,5 +227,5 @@
   // fixture mode: what a link to another screen adds so it opens the same scene ("" in live mode)
   const fixtureQuery = () => FIXTURE ? 'fixture=1' + (variant() ? '&mock=' + variant() : '') : '';
 
-  global.CC = { FIXTURE, MOCKS, get, post, errorText, params, fixtureQuery, FOOTER, fillFooter, folderHref };
+  global.CC = { FIXTURE, MOCKS, get, post, errorText, params, fixtureQuery, FOOTER, fillFooter, folderHref, modelMode };
 })(window);

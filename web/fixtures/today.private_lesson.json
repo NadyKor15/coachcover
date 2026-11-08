@@ -480,6 +480,7 @@
   "ratio_alert": null,
   "judge": {
     "running": false,
-    "case_id": "C-1109-01"
+    "case_id": "C-1109-01",
+    "scenario": "private_lesson"
   }
 }

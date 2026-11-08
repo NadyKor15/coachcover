@@ -434,6 +434,7 @@
   "ratio_alert": null,
   "judge": {
     "running": false,
-    "case_id": "C-1108-01"
+    "case_id": "C-1108-01",
+    "scenario": "nightly_check"
   }
 }

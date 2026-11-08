@@ -132,7 +132,7 @@ def test_today_after_dangerous_morning_matches_the_screen_fixture(api):
     assert round(today["model_log"]["usd"] * 100, 4) == money["case_cost_cents"]
     assert money["case_cost_label"] in today["model_log"]["label"]
     assert today["flagged"][0]["staff"] == "Anna Kim"  # her "assign me anyway" message was flagged
-    assert today["judge"] == {"running": False, "case_id": "C-1109-01"}
+    assert today["judge"] == {"running": False, "case_id": "C-1109-01", "scenario": "dangerous_morning"}  # the plaque names a scene
     # the same 12 hours on the phone
     offer_id = zoe_offer = next(o["id"] for o in today["offers"] if o["staff"] == "Zoe Grant")
     phone = client.get(f"/api/offers/{zoe_offer}").json()

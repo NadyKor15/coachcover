@@ -250,4 +250,17 @@ h1{height:79px;padding:16.9px 0 0 0;font-size:36px;line-height:44px;font-weight:
 .load-err{position:absolute;left:270px;top:8px;z-index:5;max-width:900px;padding:10px 16px;border-radius:10px;background:#fbe9e6;border:1px solid #e7b9b1;color:#8f2a20;font-size:17px;white-space:normal}
 .load-err[hidden]{display:none}
 .load-err.calm{background:#f3eee6;border-color:#e2d9cd;color:#1c252a}  /* a judge run resets the school: not an error */
+/* a judge scene playing, or no case yet: one plaque over the left part (timeline to plan B); the side cards stay */
+.scene{position:absolute;left:0;top:79px;width:1329px;height:872px;z-index:3;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:12px;border:1px solid var(--line);border-radius:12px;background:#fbf8f3}
+.scene[hidden]{display:none}
+.scene-dot{width:14px;height:14px;border-radius:50%;background:var(--teal)}
+body[data-scene="running"] .scene-dot{animation:scene-pulse 1.2s ease-in-out infinite}
+body[data-scene="empty"] .scene-dot{opacity:.35}
+@keyframes scene-pulse{0%,100%{opacity:.25}50%{opacity:1}}
+.scene-line{font-size:30px;line-height:38px;font-weight:700;color:#1c252a;white-space:nowrap}
+.scene-sub{font-size:19px;line-height:26px;color:#56585e;white-space:nowrap}
+body[data-scene] .band,body[data-scene] .grid > .card,body[data-scene] .covered,body[data-scene] .planb,
+body[data-scene] #money,body[data-scene] .alert{visibility:hidden}
+body[data-scene="running"] h1,body[data-scene="running"] .foot{visibility:hidden}  /* the model line counts the scene's calls only when it ends */
 body[data-state="loading"] .main,body[data-state="loading"] .foot,body[data-state="loading"] .tagline{visibility:hidden}

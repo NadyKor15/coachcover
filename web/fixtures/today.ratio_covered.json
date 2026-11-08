@@ -505,6 +505,7 @@
   },
   "judge": {
     "running": false,
-    "case_id": "C-1109-01"
+    "case_id": "C-1109-01",
+    "scenario": "dangerous_morning"
   }
 }

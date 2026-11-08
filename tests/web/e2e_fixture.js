@@ -494,6 +494,57 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
       await p.close();
     }
 
+    /* a judge scene playing: one calm plaque, no half-filled cards; the morning comes back when the run answers */
+    p = await newPage(browser, 1920, 1080);
+    let releaseRun;
+    const runHeld = new Promise(r => { releaseRun = r; });
+    await p.route('**/health', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, model_mode: 'live' }) }));
+    await p.route('**/api/today*', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(today) }));
+    await p.route('**/api/judge/run', async r => { await runHeld; r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(mocks.judge_run.dangerous_morning) }); });
+    await p.goto(base + 'index.html');
+    await ready(p);
+    check('scene: no plaque on a morning with a case', await p.evaluate(() => !document.body.dataset.scene && document.getElementById('scene').hidden));
+    await p.click('[data-scenario="dangerous_morning"]');
+    await p.waitForFunction(() => document.body.dataset.scene === 'running' && /Vultr/.test(document.querySelector('[data-slot="scene-sub"]').textContent));
+    const during = await p.evaluate(() => {
+      const seen = sel => { const e = document.querySelector(sel); const st = getComputedStyle(e); return st.visibility !== 'hidden' && st.display !== 'none' && !e.hidden; };
+      return { line: document.querySelector('[data-slot="scene-line"]').textContent, sub: document.querySelector('[data-slot="scene-sub"]').textContent,
+        plaque: seen('#scene'), cards: ['.card.callout', '.card.staff', '.card.shift', '.card.offers', '.band', '.covered', '.planb', 'h1', '.foot'].filter(seen),
+        side: seen('#sideCards'), folder: seen('#folder') };
+    });
+    check('scene: one plaque while the scene plays, the live models named', during.plaque && during.line === 'Playing the scene “Run the call-out”…' &&
+      during.sub.startsWith('Live models on Vultr.'), during);
+    check('scene: no half-filled card while it plays', during.cards.length === 0, during.cards);
+    check('scene: the side cards and the folder stay', during.side && during.folder);
+    if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'C-scene-playing.png') });
+    releaseRun();
+    await p.waitForFunction(() => !document.body.dataset.scene);
+    check('scene: the morning comes back when the run answers', await p.evaluate(() => document.getElementById('scene').hidden &&
+      getComputedStyle(document.querySelector('.card.callout')).visibility === 'visible'));
+    await p.close();
+
+    /* another visitor's scene (the server says it is running), and a morning with no case yet */
+    const quiet = { ...today, callout: null, shift: null, eligibility: null, timeline: [], offers: [], outcome: null, plan_b: null,
+      judge: { running: false, case_id: null, scenario: null } };
+    for (const [label, body, state, line] of [
+      ['remote', { ...today, judge: { running: true, case_id: null, scenario: 'nobody_accepts' } }, 'running', 'Playing the scene “Nobody accepts”…'],
+      ['empty', quiet, 'empty', 'No call-out yet this morning.']]) {
+      p = await newPage(browser, 1920, 1080);
+      await p.route('**/api/today*', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) }));
+      await p.goto(base + 'index.html');
+      await ready(p);
+      const st = await p.evaluate(() => ({ scene: document.body.dataset.scene, line: document.querySelector('[data-slot="scene-line"]').textContent,
+        callout: getComputedStyle(document.querySelector('.card.callout')).visibility }));
+      check('scene: ' + label, st.scene === state && st.line === line && st.callout === 'hidden', st);
+      check('scene: ' + label + ', no label left without its value (· or → or "Needs:" at the end)', await p.evaluate(() => ![...document.querySelectorAll('main *')].some(e => {
+        if (e.children.length || !e.textContent.trim()) return false;
+        let shown = getComputedStyle(e).visibility === 'visible';
+        for (let x = e; x && shown; x = x.parentElement) if (x.hidden || getComputedStyle(x).display === 'none') shown = false;
+        return shown && /(·|→)\s*$|^\s*(·|→)|Needs:\s*$/.test(e.textContent);
+      })));
+      await p.close();
+    }
+
     /* ---------- case page ---------- */
     p = await newPage(browser, 1920, 1080);
     await p.goto(base + 'case.html?id=' + caseId + '&fixture=1');

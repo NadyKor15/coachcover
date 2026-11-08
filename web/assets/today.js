@@ -8,7 +8,7 @@
   const setText = (name, value) => { const el = slot(name); if (el) el.textContent = value == null ? '' : String(value); };
   const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 
-  const ui = { data: null, planNote: null, busy: false, inflight: false };
+  const ui = { data: null, planNote: null, busy: false, inflight: false, scene: null };
 
   /* ---------- icons (fixed markup) ---------- */
   const PERSON = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="4.6" r="3.2"/><path d="M1.8 14.6c.4-3.4 3-5.2 6.2-5.2s5.8 1.8 6.2 5.2z"/></svg>';
@@ -537,8 +537,31 @@
     if (box.scrollWidth > box.clientWidth + 1) box.classList.add('wrap');
   }
 
+  // one calm plaque instead of half-filled cards ("Call-out ·", "staff → eligible", "Needs:"): while a judge scene
+  // plays (this tab's run, or one the server says is running), and when there is no case to show yet
+  function renderScene(d) {
+    const remote = !!(d && d.judge && d.judge.running);
+    const state = ui.scene || remote ? 'running' : d && !d.shift ? 'empty' : '';
+    if (state) document.body.dataset.scene = state; else delete document.body.dataset.scene;
+    $('#scene').hidden = !state;
+    if (!state) return;
+    const name = SCENARIO_NAME[ui.scene || (remote && d.judge.scenario)];
+    setText('scene-line', state === 'running' ? 'Playing the scene' + (name ? ' “' + name + '”' : '') + '…'
+      : 'No call-out yet this morning.');
+    setText('scene-sub', state === 'running' ? 'The morning shows here when the scene ends.'
+      : 'Pick a scene in Judge mode on the left to play a morning.');
+    if (state === 'running') {
+      CC.modelMode().then(mode => {
+        if (document.body.dataset.scene !== 'running' || !mode) return;
+        setText('scene-sub', (mode === 'live' ? 'Live models on Vultr. ' : 'Recorded model answers. ')
+          + 'The morning shows here when the scene ends.');
+      });
+    }
+  }
+
   function render(d) {
     ui.data = d;
+    renderScene(d);
     renderHeader(d);
     renderTimeline(d);
     renderCallout(d);
@@ -569,6 +592,8 @@
         render(r.body);
         err.hidden = true;
         document.body.dataset.state = 'ready';
+      } else if (r.status === 503 && r.body && r.body.resetting && ui.scene) {
+        err.hidden = true;  // this tab's own scene: the plaque already says what is happening
       } else if (r.status === 503 && r.body && r.body.resetting) {
         // a judge run is rebuilding the training school: a calm note, not an error; the next poll shows the new morning
         err.textContent = 'Resetting the training school…';
@@ -601,8 +626,11 @@
     btns.forEach(b => { b.disabled = true; });
     status.classList.remove('err');
     status.textContent = 'Running “' + SCENARIO_NAME[scenario] + '”…';
+    ui.scene = scenario;
+    renderScene(ui.data);
     try {
       const r = await CC.post('/api/judge/run', { scenario });
+      ui.scene = null;
       if (r.status === 200) {
         ui.planNote = null;
         status.textContent = '“' + SCENARIO_NAME[scenario] + '” done' + (r.body && r.body.case_id ? ' · case ' + r.body.case_id : '');
@@ -611,8 +639,10 @@
       } else {
         status.classList.add('err');
         status.textContent = (r.status === 429 ? 'Run limit reached for now. ' : 'Run failed. ') + CC.errorText(r);
+        renderScene(ui.data);
       }
     } finally {
+      if (ui.scene) { ui.scene = null; renderScene(ui.data); }
       btns.forEach(b => { b.disabled = false; });
     }
   }
