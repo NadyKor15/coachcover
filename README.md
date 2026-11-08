@@ -122,7 +122,7 @@ Open http://127.0.0.1:8088. It starts in replay mode and loads the demo school o
 `COACHCOVER_MODEL_MODE=live` and pass `VULTR_INFERENCE_API_KEY` in the environment of the command, never in a file.
 To put it on a Vultr VM with HTTPS, see [deploy/README.md](deploy/README.md).
 
-Tests on this commit: 415 pytest tests (the database tests need a Postgres, `COACHCOVER_TEST_DSN`) and 328 browser
+Tests on this commit: 415 pytest tests (the database tests need a Postgres, `COACHCOVER_TEST_DSN`) and 337 browser
 checks (`tests/web/e2e_fixture.js`).
 
 License: MIT.

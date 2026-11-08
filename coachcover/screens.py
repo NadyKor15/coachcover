@@ -243,8 +243,9 @@ def _model_log(conn, case_id: int, callout_id, live: bool) -> dict:
 
 
 def judge_state(conn: psycopg.Connection) -> dict:
-    row = conn.execute("SELECT running, case_code FROM ops.judge_state").fetchone()
-    return {"running": bool(row[0]), "case_id": row[1]} if row else {"running": False, "case_id": None}
+    row = conn.execute("SELECT running, case_code, scenario FROM ops.judge_state").fetchone()
+    return {"running": bool(row[0]), "case_id": row[1], "scenario": row[2]} if row else \
+        {"running": False, "case_id": None, "scenario": None}
 
 
 def today(conn: psycopg.Connection, policy_id: str, now: datetime, venue_id: str | None, live: bool) -> dict:

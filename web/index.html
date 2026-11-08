@@ -67,6 +67,12 @@
 
 <main class="main">
   <h1 data-slot="title"></h1>
+  <!-- one calm plaque instead of half-filled cards: while a judge scene plays, and when there is no case yet -->
+  <div class="scene" id="scene" data-slot="scene" role="status" aria-live="polite" hidden>
+    <span class="scene-dot" aria-hidden="true"></span>
+    <p class="scene-line" data-slot="scene-line"></p>
+    <p class="scene-sub" data-slot="scene-sub"></p>
+  </div>
   <a class="alert" id="alert" data-slot="alert" hidden>
     <svg class="alert-ico" width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="10.5" fill="currentColor"/><path id="alertMark" d="M11 5.5v7M11 16.2v.3" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>
     <span data-slot="alert-text"></span>
