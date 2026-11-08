@@ -110,7 +110,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('C: voice note original + translation from data', await text(p, '[data-slot="callout-original"]') === '“' + today.callout.transcript_original + '”' &&
       await text(p, '[data-slot="callout-transcript"]') === '“' + today.callout.transcript_en + '”');
     check('C: whisper line from data', await text(p, '[data-slot="callout-asr"]') === today.callout.asr_label);
-    check('C: tagline', await text(p, '.tagline') === "Not who's free — who's allowed. Running on Vultr.");
+    check('C: footer line', await text(p, '.tagline') === 'CoachCover · Running on Vultr.');
     const heroStart = today.shift.time_label.split('–')[0];
     check('C: covered banner names the shift start', await text(p, '[data-slot="covered"]') === heroStart + ' covered by ' + today.outcome.covered_by + ' · ' + today.outcome.lessons_cancelled + ' lessons cancelled' +
       (today.outcome.covered_time !== heroStart ? 'closed ' + today.outcome.covered_time : ''), await text(p, '[data-slot="covered"]'));
@@ -517,7 +517,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
       await p.$eval('#risk p', x => x.innerText) === caseFx.risk.kids + ' kids · refunds $' + caseFx.risk.refunds_usd + ' · $' + caseFx.risk.total_usd + ' at risk', await p.$eval('#risk p', x => x.innerText));
     check('case: price source under the sums', (await text(p, '[data-slot="risk-source"]')).endsWith(lessonSource));
     check('case: no horizontal scroll', await p.evaluate(() => document.documentElement.scrollWidth <= 1920));
-    check('case: tagline', await text(p, '.foot') === 'Not who’s free — who’s allowed. Running on Vultr.');
+    check('case: footer line', await text(p, '.foot') === 'CoachCover · Running on Vultr.');
     const dl = await p.evaluate(async () => { const a = document.getElementById('download'); return { name: a.download, body: await (await fetch(a.href)).text() }; });
     check('case: download = the case JSON', dl.name === 'case-' + caseId + '.json' && JSON.stringify(JSON.parse(dl.body)) === JSON.stringify(caseFx), dl.name);
     const rail = await p.evaluate(() => { const r = document.getElementById('rail').getBoundingClientRect(), d = [...document.querySelectorAll('.s-dot')].map(x => x.getBoundingClientRect()); return [r.top, r.bottom, d[0].top + 10, d[d.length - 1].top + 10]; });

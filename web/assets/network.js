@@ -53,7 +53,7 @@
       a.href = withFx(base === 'case.html' && caseId ? 'case.html?id=' + encodeURIComponent(caseId) : base);
     });
     slot('policy-note').textContent = "Each agent only acts within its own pool's policy. Nothing moves without both managers.";
-    slot('footer-line').textContent = "Not who's free — who's allowed. Running on Vultr.";
+    slot('footer-line').textContent = "CoachCover · Running on Vultr.";
   }
 
   function agentCard(lane, name, facts, status) {

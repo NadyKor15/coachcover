@@ -78,6 +78,24 @@
   "ratio": 4.74
  },
  {
+  "what": "Week: no-shift dash",
+  "kind": "text",
+  "sel": ".cell[data-level=\"none\"] .num",
+  "ratio": 4.99
+ },
+ {
+  "what": "Week: no-shift legend",
+  "kind": "text",
+  "sel": ".legend .sw[data-level=\"none\"]",
+  "ratio": 4.99
+ },
+ {
+  "what": "Case: covered pill (brand gold)",
+  "kind": "text",
+  "sel": "#pill",
+  "ratio": 5.15
+ },
+ {
   "what": "Case: declined bar",
   "kind": "sign",
   "sel": ".offer.declined",
@@ -102,6 +120,12 @@
   "ratio": 5.34
  },
  {
+  "what": "Network: loan approved bar (brand gold)",
+  "kind": "text",
+  "sel": "#result-text",
+  "ratio": 5.39
+ },
+ {
   "what": "Week: at-risk digits (on hatching)",
   "kind": "text",
   "sel": ".cell[data-level=\"risk\"] .num",
@@ -112,6 +136,24 @@
   "kind": "text",
   "sel": ".cell[data-level=\"risk\"] .tag",
   "ratio": 5.68
+ },
+ {
+  "what": "Today: covered banner (brand gold)",
+  "kind": "text",
+  "sel": "#covered .txt",
+  "ratio": 5.91
+ },
+ {
+  "what": "Family: Yes button (brand teal)",
+  "kind": "text",
+  "sel": ".btn-accept",
+  "ratio": 5.96
+ },
+ {
+  "what": "Family: own answer (brand teal)",
+  "kind": "text",
+  "sel": ".bubble.family",
+  "ratio": 5.96
  },
  {
   "what": "Today: red reason chip",
@@ -168,6 +210,18 @@
   "ratio": 6.64
  },
  {
+  "what": "Today: judge button (brand teal)",
+  "kind": "text",
+  "sel": ".jbtn.primary",
+  "ratio": 7.22
+ },
+ {
+  "what": "Week: propose standby button (brand teal)",
+  "kind": "text",
+  "sel": ".tip .btn",
+  "ratio": 7.36
+ },
+ {
   "what": "Today: amber reason chip",
   "kind": "text",
   "sel": ".chip.review",
@@ -198,6 +252,12 @@
   "ratio": 7.4
  },
  {
+  "what": "Week: 1:1 tag (brand teal)",
+  "kind": "text",
+  "sel": ".cell .one",
+  "ratio": 7.51
+ },
+ {
   "what": "Today: ratio banner, covered",
   "kind": "text",
   "sel": "#alert",
@@ -222,9 +282,39 @@
   "ratio": 8.05
  },
  {
+  "what": "Family: covered line",
+  "kind": "text",
+  "sel": "#result",
+  "ratio": 8.05
+ },
+ {
   "what": "Today: plan changed (409) line",
   "kind": "text",
   "sel": ".planb.conflict .txt b",
   "ratio": 8.8
+ },
+ {
+  "what": "Family: school message",
+  "kind": "text",
+  "sel": ".bubble.school",
+  "ratio": 12.93
+ },
+ {
+  "what": "Family: new time note",
+  "kind": "text",
+  "sel": "#notice",
+  "ratio": 13.49
+ },
+ {
+  "what": "Family: credit line",
+  "kind": "text",
+  "sel": "#result",
+  "ratio": 13.49
+ },
+ {
+  "what": "Family: message time",
+  "kind": "text",
+  "sel": ".msg-time",
+  "ratio": 15.45
  }
 ]

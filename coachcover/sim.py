@@ -518,12 +518,13 @@ class State:
         self.booked = _bookings(self.shifts, morning.extra, skip=morning.open_ids)
 
     def context(self) -> Context:
-        # a person who called out is offered nothing that day (as in the core: repo.load_absences)
+        # a person who called out is offered nothing from the call-out to the end of that day (as in the core:
+        # repo.load_absences)
         tz = ZoneInfo(self.world.tz) if isinstance(self.world.tz, str) else self.world.tz
         absences: dict[str, tuple] = {}
         for c in self.morning.callouts:
             first = datetime.combine(c.at.astimezone(tz).date(), time(0), tzinfo=tz)
-            absences[c.staff_id] = ((first, first + timedelta(days=1)),)
+            absences[c.staff_id] = ((max(c.at, first), first + timedelta(days=1)),)
         return Context(self.world.venues, {sid: tuple(items) for sid, items in self.booked.items()}, absences)
 
     def busy(self, staff_id: str, shift: Shift) -> bool:
