@@ -34,8 +34,15 @@ this by hand before the first lesson: checks everyone's certificates and their d
 and weekly hours, phones around, asks the parents of private students, rebuilds plan B when someone else calls out, asks
 a nearby pool for a coach, and pulls together the records an inspector asks for.
 
-What we haven't measured: how families answer (the replay assumes 80% yes, 10% no, 10% no answer), mornings at a real
-school, and a price for CoachCover itself, which is not set.
+RosterElf, staff scheduling for pools and leisure centres, sends certificate expiry reminders but still lets the
+manager roster the coach: "An expired certificate does not block rostering."
+([RosterElf, page for recreation centres](https://www.rosterelf.com/industries/rec-centre))
+
+Pricing: $49 per pool per month, or $490 per year (two months free). This is the launch price; it may go up as we add
+features.
+
+What we haven't measured: how families answer (the replay assumes 80% yes, 10% no, 10% no answer) and mornings at a
+real school.
 
 Video (4:31): https://youtu.be/J93bEwJ2yE8
 
