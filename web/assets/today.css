@@ -37,6 +37,8 @@ body{position:relative;overflow:hidden;background:var(--bg);color:var(--text);
 /* Window smaller than the 1920 x 1080 canvas (laptops): let the page scroll instead of cutting it off.
    At 1920 x 1080 and larger this block does not apply, so that size renders exactly as before. */
 @media (max-width:1919.98px),(max-height:1079.98px){body{overflow:auto}}
+/* Same windows only: a small hint to zoom out so the whole morning screen fits. Never shown at 1920 x 1080. */
+@media (max-width:1919.98px),(max-height:1079.98px){body::after{content:"On a laptop, zoom the browser out (Cmd\00a0− or Ctrl\00a0−) to about 75% to see the whole screen.";position:fixed;top:12px;right:16px;z-index:9999;max-width:340px;padding:9px 13px;border-radius:10px;background:rgba(16,44,44,.93);color:#fff;font:500 14px/1.35 "Inter",system-ui,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.18);pointer-events:none}}
 svg{display:block}
 button{font-family:inherit}
 .nw{white-space:nowrap}
