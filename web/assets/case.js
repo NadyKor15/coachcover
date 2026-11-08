@@ -240,4 +240,5 @@
     location.href = li.dataset.href + (CC.FIXTURE ? '?fixture=1' : '');
   }));
   load();
+  CC.fillFooter(document.querySelector('[data-slot="footer-line"]'));
 })();

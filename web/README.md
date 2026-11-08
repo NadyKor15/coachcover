@@ -125,7 +125,7 @@ The page reads these fields (see `fixtures/cases/C-1109-01.json`); kinds it has 
 ```bash
 python3 -m pytest tests/web                      # fixtures follow the contract and tell one story
 PLAYWRIGHT_MODULE=<…/node_modules/playwright> node tests/web/e2e_fixture.js --shots web/shots   # buttons, 200 and 409 paths
-python3 tests/web/compare_regions.py web/shots/ref-variant-C.png web/shots/C-fixture-1920.png  # region diff against the approved HTML
+python3 tests/web/compare_regions.py <render of the approved variant C> web/shots/C-fixture-1920.png  # region diff against the approved HTML
 ```
 
-Snapshots in `shots/`: `C-fixture-1920.png`, `P2-fixture-430.png`, the states after the buttons (`C-fixture-nobody-accepts.png`, `C-fixture-plan-changed-409.png`, `P2-fixture-accepted.png`, `P2-fixture-not-eligible-409.png`), the case page `case-fixture-1920.png`, renders of the approved HTML (`ref-variant-*.png`) and side-by-side pairs (`compare-*.png`) where they still match the screens (the originals of every approved variant are kept with the design files, outside this repository).
+Snapshots in `shots/`: `C-fixture-1920.png`, `P2-fixture-430.png`, the states after the buttons (`C-fixture-nobody-accepts.png`, `C-fixture-plan-changed-409.png`, `P2-fixture-accepted.png`, `P2-fixture-not-eligible-409.png`), the case page `case-fixture-1920.png` and `case-ratio-1920.png`, Week and Network (`week-fixture-1920.png`, `network-fixture-*.png`, `live-*.png`), all taken from the current screens. The approved design variants are kept with the design files, outside this repository.

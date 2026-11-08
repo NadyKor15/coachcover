@@ -1,6 +1,6 @@
 """Region-by-region diff of screen C: render of the approved variant-C.html vs render of web/index.html?fixture=1.
 
-Usage: python3 tests/web/compare_regions.py web/shots/ref-variant-C.png web/shots/C-fixture-1920.png
+Usage: python3 tests/web/compare_regions.py <render of the approved variant C> web/shots/C-fixture-1920.png
 Blocks below the first card row are compared 55 px lower: the page is 1080 high, the approved one 1024.
 MAE is the mean brightness difference (0 = identical), edgeF1 the match of contours (1 = identical). Needs Pillow."""
 import sys

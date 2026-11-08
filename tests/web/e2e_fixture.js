@@ -10,7 +10,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const WEB = path.resolve(__dirname, '../../web');
 const shotsArg = process.argv.indexOf('--shots');
 const SHOTS = shotsArg > 0 ? path.resolve(process.argv[shotsArg + 1]) : null;
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.pdf': 'application/pdf' };
 
 function serve() {
   const server = http.createServer((req, res) => {
@@ -110,7 +110,16 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('C: voice note original + translation from data', await text(p, '[data-slot="callout-original"]') === '“' + today.callout.transcript_original + '”' &&
       await text(p, '[data-slot="callout-transcript"]') === '“' + today.callout.transcript_en + '”');
     check('C: whisper line from data', await text(p, '[data-slot="callout-asr"]') === today.callout.asr_label);
-    check('C: footer line', await text(p, '.tagline') === 'CoachCover · Running on Vultr.');
+    check('C: footer line says replay in ?fixture=1 (answers captured in replay)', await text(p, '.tagline') === 'CoachCover · Replay mode.');
+    const folderC = await p.$eval('#folder', a => ({ text: a.textContent.trim(), href: a.href, target: a.target, r: a.getBoundingClientRect().toJSON() }));
+    const pdfC = await p.evaluate(async href => { const r = await fetch(href); const b = new Uint8Array(await r.arrayBuffer()); return { status: r.status, type: r.headers.get('content-type'), head: String.fromCharCode(...b.slice(0, 5)) }; }, folderC.href);
+    check('C: inspector folder button opens a 200 PDF', folderC.text === "Inspector's folder (PDF)" && folderC.target === '_blank' &&
+      pdfC.status === 200 && /application\/pdf/.test(pdfC.type) && pdfC.head === '%PDF-', [folderC, pdfC]);
+    check('C: folder button under the side cards, clear of them and of the money card', await p.evaluate(() => {
+      const f = document.getElementById('folder').getBoundingClientRect(), cards = [...document.querySelectorAll('[data-slot="summary-card"]')].map(c => c.getBoundingClientRect());
+      const m = document.getElementById('money'), mr = m && !m.hidden ? m.getBoundingClientRect() : null;
+      return cards.every(c => c.bottom <= f.top) && (!mr || f.bottom <= mr.top) && f.right <= 1920;
+    }));
     const heroStart = today.shift.time_label.split('–')[0];
     check('C: covered banner names the shift start', await text(p, '[data-slot="covered"]') === heroStart + ' covered by ' + today.outcome.covered_by + ' · ' + today.outcome.lessons_cancelled + ' lessons cancelled' +
       (today.outcome.covered_time !== heroStart ? 'closed ' + today.outcome.covered_time : ''), await text(p, '[data-slot="covered"]'));
@@ -186,6 +195,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     /* live wiring: /api/* calls, hash in the approve body, 409 and 429 from the server */
     p = await newPage(browser, 1920, 1080);
     let approveBody = null, todayCalls = 0, judgeBody = null;
+    await p.route('**/health', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, db: 'ok', mode: 'live', model_mode: 'live' }) }));
     await p.route('**/api/today*', r => { todayCalls++; r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(nobody) }); });
     await p.route('**/api/cases/*', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(caseFx) }));
     await p.route('**/api/plans/*/approve', r => { approveBody = r.request().postDataJSON(); r.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify(mocks.plans[nobody.plan_b.id].conflict) }); });
@@ -193,6 +203,10 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await p.goto(base + 'index.html');
     await ready(p);
     check('live: GET /api/today used', todayCalls >= 1);
+    await p.waitForFunction(() => document.querySelector('.tagline').dataset.mode);
+    check('live: footer from /health, live mode', await text(p, '.tagline') === 'CoachCover · Running on Vultr.' &&
+      await p.$eval('.tagline', e => e.dataset.mode) === 'live');
+    check('live: folder button asks the API for the venue on screen', await p.$eval('#folder', a => a.getAttribute('href')) === '/api/binder.pdf?venue=' + nobody.venue.id);
     await p.click('#approve');
     await p.waitForFunction(() => document.getElementById('planb').classList.contains('conflict'));
     check('live: approve sends the plan hash', approveBody && approveBody.hash === nobody.plan_b.hash, approveBody);
@@ -468,6 +482,18 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('family checks can fail (ids and a too-wide box)', !(await noIds(p)) && (await overflow(p)).length > 0, await overflow(p));
     await p.close();
 
+    /* the footer by the server's model mode, outside ?fixture=1: replay, and /health not answering (no claim) */
+    for (const [health, want, mode] of [[{ ok: true, model_mode: 'replay' }, 'CoachCover · Replay mode.', 'replay'], [null, 'CoachCover', 'unknown']]) {
+      p = await newPage(browser, 1920, 1080);
+      await p.route('**/health', r => health ? r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(health) }) : r.fulfill({ status: 503, body: '' }));
+      await p.route('**/api/today*', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(today) }));
+      await p.goto(base + 'index.html');
+      await ready(p);
+      await p.waitForFunction(() => document.querySelector('.tagline').dataset.mode);
+      check('footer by mode: ' + mode, await text(p, '.tagline') === want && await p.$eval('.tagline', e => e.dataset.mode) === mode, await text(p, '.tagline'));
+      await p.close();
+    }
+
     /* ---------- case page ---------- */
     p = await newPage(browser, 1920, 1080);
     await p.goto(base + 'case.html?id=' + caseId + '&fixture=1');
@@ -517,7 +543,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
       await p.$eval('#risk p', x => x.innerText) === caseFx.risk.kids + ' kids · refunds $' + caseFx.risk.refunds_usd + ' · $' + caseFx.risk.total_usd + ' at risk', await p.$eval('#risk p', x => x.innerText));
     check('case: price source under the sums', (await text(p, '[data-slot="risk-source"]')).endsWith(lessonSource));
     check('case: no horizontal scroll', await p.evaluate(() => document.documentElement.scrollWidth <= 1920));
-    check('case: footer line', await text(p, '.foot') === 'CoachCover · Running on Vultr.');
+    check('case: footer line says replay in ?fixture=1', await text(p, '.foot') === 'CoachCover · Replay mode.');
     const dl = await p.evaluate(async () => { const a = document.getElementById('download'); return { name: a.download, body: await (await fetch(a.href)).text() }; });
     check('case: download = the case JSON', dl.name === 'case-' + caseId + '.json' && JSON.stringify(JSON.parse(dl.body)) === JSON.stringify(caseFx), dl.name);
     const rail = await p.evaluate(() => { const r = document.getElementById('rail').getBoundingClientRect(), d = [...document.querySelectorAll('.s-dot')].map(x => x.getBoundingClientRect()); return [r.top, r.bottom, d[0].top + 10, d[d.length - 1].top + 10]; });
@@ -582,6 +608,16 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     const wdots = await p.$$eval('.flist .dot', es => es.map(e => e.dataset.level));
     check('week: diamond for at risk, dot for fragile', wdots.every(l => l === 'risk' || l === 'fragile') && wdots.includes('risk'), wdots);
     check('week: tips from data', JSON.stringify(await texts(p, '[data-slot="tip-text"]')) === JSON.stringify([week.fixes.standby[0].text, week.fixes.training.best.text]));
+    const folderW = await p.$eval('#folder', a => ({ text: a.textContent.trim(), href: a.href }));
+    const pdfW = await p.evaluate(async href => { const r = await fetch(href); const b = new Uint8Array(await r.arrayBuffer()); return { status: r.status, head: String.fromCharCode(...b.slice(0, 5)) }; }, folderW.href);
+    check('week: inspector folder button opens a 200 PDF', folderW.text === "Inspector's folder (PDF)" && pdfW.status === 200 && pdfW.head === '%PDF-', [folderW, pdfW]);
+    check('week: folder button clear of the title and the board', await p.evaluate(() => {
+      // the title's text, not its block (the h1 block runs to the page's right edge)
+      const textBox = sel => { const r = document.createRange(); r.selectNodeContents(document.querySelector(sel)); return r.getBoundingClientRect(); };
+      const f = document.getElementById('folder').getBoundingClientRect(), h = textBox('h1'), sub = textBox('.sub'), b = document.querySelector('.board').getBoundingClientRect();
+      return f.left >= Math.max(h.right, sub.right) + 24 && f.bottom <= b.top && f.right <= 1920;
+    }));
+    check('week: footer line says replay in ?fixture=1', await text(p, '[data-slot="footer-line"]') === 'CoachCover · Replay mode.');
     check('week: tips fit their boxes', await p.$$eval('.tip', es => es.every(t => t.scrollHeight <= t.clientHeight + 1)));
     const wm = fx('week_mocks.json').standby;
     await p.click('[data-slot="tip-action"]');

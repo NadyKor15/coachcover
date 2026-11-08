@@ -202,6 +202,7 @@
   let last = null;
   function render(w, today) {
     last = [w, today];
+    document.getElementById('folder').href = CC.folderHref(w.venue && w.venue.id);
     renderHeader(w, today);
     renderGrid(w);
     renderLegend(w);
@@ -227,4 +228,5 @@
 
   document.fonts.ready.then(() => { if (last) render(last[0], last[1]); });
   load();
+  CC.fillFooter(document.querySelector('[data-slot="footer-line"]'));
 })();

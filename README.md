@@ -1,6 +1,6 @@
 # CoachCover
 
-When a swim coach writes at dawn that they can't come in, CoachCover finds a replacement who is allowed to teach
+When a swim coach writes in the morning that they can't come in, CoachCover finds a replacement who is allowed to teach
 that lesson, asks them, and keeps a record of why each person was or wasn't asked.
 
 ## Judge it in 90 seconds
@@ -21,6 +21,10 @@ model calls in it go to the models on Vultr. A visitor can run 6 scenes an hour.
 
 Click the covered line or the timeline to open the case page. It lists every step, the rule behind each refusal,
 and every model call with its time and cost. "Download case (JSON)" saves the same record.
+
+"Inspector's folder (PDF)", on Today under the cards on the right and on Week next to the title, opens the folder for
+the week that still has shifts ahead: each post with the person on it and their cards valid that day, the replacements
+and the closures, with hashes.
 
 ## The use case
 
@@ -90,8 +94,8 @@ were asked for nothing, so we kept waves of 3.
 
 The live demo calls the models on Vultr. By default a local copy runs in replay mode instead: 91 answers recorded from
 the Vultr models and 31 written by hand, each of those marked `"synthetic": true` (all in `tests/fixtures/models`). The
-model line at the bottom of the morning screen says which mode is on ("running on Vultr" or "replay mode: recorded and
-prepared demo answers"), and the case page marks each model call live, recorded or prepared.
+footer of every screen follows the server's mode: "CoachCover · Running on Vultr." when it calls the models, "CoachCover
+· Replay mode." when it replays them. The case page also marks each model call live, recorded or prepared.
 
 ## What's not here
 
@@ -118,7 +122,7 @@ Open http://127.0.0.1:8088. It starts in replay mode and loads the demo school o
 `COACHCOVER_MODEL_MODE=live` and pass `VULTR_INFERENCE_API_KEY` in the environment of the command, never in a file.
 To put it on a Vultr VM with HTTPS, see [deploy/README.md](deploy/README.md).
 
-Tests on this commit: 415 pytest tests (the database tests need a Postgres, `COACHCOVER_TEST_DSN`) and 319 browser
+Tests on this commit: 415 pytest tests (the database tests need a Postgres, `COACHCOVER_TEST_DSN`) and 328 browser
 checks (`tests/web/e2e_fixture.js`).
 
 License: MIT.
