@@ -199,16 +199,14 @@ CoachCover, on the same school and the same call-outs:
 | Placements of someone not cleared for the shift | 45 | 0 |
 | Shifts closed after they had started | 0 | 0 |
 | Private lessons given to another coach without asking the family | 11 of 11 | 0 |
-| Median minutes from call-out to a closed shift | 13.5 | 10.5 |
-| 90th percentile, minutes | 16.3 | 25.0 |
 
 Of the 11 private lessons, CoachCover booked another coach 8 times after the family said yes, moved 2 to the family's
 own coach and gave 1 credit. How families answer is assumed, not measured (yes 80%, no 10%, no answer 10%).
 
 In a live run on Vultr (Nov 7), the morning case took 5 model calls for 0.113¢, about a tenth of a cent.
 
-In an earlier build we tried growing waves (3, then 5, then everyone): no faster in the slowest mornings, and more people
-were asked for nothing, so we kept waves of 3.
+In an earlier build we tried growing waves (3, then 5, then everyone). More people were asked for nothing, so we kept
+waves of 3.
 
 ## Replay and live
 
