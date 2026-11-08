@@ -1,0 +1,10 @@
+{
+  "note": "Synthetic certificate cards for the judges' sample check: fictional people and issuers, the images the 2026-11-06 model check read. In the order a judge meets them: a clear card first, then h22-photo, a card with glare over the valid-through date that the two readers read differently on 2026-11-06. holder = the name printed on the card (the generator's truth file).",
+  "samples": [
+    {"id": "c3-photo", "file": "c3-photo.jpg", "mime": "image/jpeg", "cert_type": "cpr_aed", "holder": "Anna Petrova", "label": "CPR/AED card, phone photo"},
+    {"id": "h22-photo", "file": "h22-photo.jpg", "mime": "image/jpeg", "cert_type": "cpr_aed", "holder": "Daniel Novak", "label": "CPR/AED card, photo with glare"},
+    {"id": "c1-photo", "file": "c1-photo.jpg", "mime": "image/jpeg", "cert_type": "lifeguarding", "holder": "Maria Lopez", "label": "Lifeguarding card, phone photo"},
+    {"id": "c2-scan", "file": "c2-scan.png", "mime": "image/png", "cert_type": "wsi", "holder": "Jake Turner", "label": "WSI card, scan"},
+    {"id": "c4-photo", "file": "c4-photo.jpg", "mime": "image/jpeg", "cert_type": "lifeguarding", "holder": "Diego Ramirez", "label": "Lifeguarding card, phone photo"}
+  ]
+}

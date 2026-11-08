@@ -1,0 +1,47 @@
+/* "Check a sample certificate" panel (assets/sample-cert.js). Statuses use the shared tokens of status.css;
+   the teal of the button is the app's brand colour, as on the other screens. Scoped under .sc. */
+.sc{
+  --sc-teal:#08665C; --sc-teal-ink:#0B5F57; --sc-line:#E2D9CD; --sc-card:#FEFDFC; --sc-ink:#0E1014; --sc-muted:#3F4147;
+  display:block;background:var(--sc-card);border:1px solid var(--sc-line);border-radius:15px;padding:22px 24px;
+  color:var(--sc-ink);font-family:"Inter",system-ui,sans-serif;letter-spacing:-0.01em;max-width:1240px
+}
+.sc-head{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.sc-btn{flex:none;height:52px;padding:0 24px;border:0;border-radius:11px;background:var(--sc-teal);color:#fff;
+  font:inherit;font-size:20px;font-weight:650;cursor:pointer}
+.sc-btn:hover{background:var(--sc-teal-ink)}
+.sc-btn:focus-visible{outline:3px solid var(--st-safe-line);outline-offset:2px}
+.sc-btn:disabled{opacity:.6;cursor:progress}
+.sc-words{min-width:260px;flex:1}
+.sc-hint{font-size:17px;line-height:24px;color:var(--sc-muted)}
+.sc-runs{font-size:15px;line-height:22px;color:var(--sc-muted);margin-top:2px}
+.sc-runs:empty{display:none}
+.sc-wait{display:flex;align-items:center;gap:12px;margin-top:18px;font-size:18px;color:var(--sc-teal-ink)}
+.sc-wait[hidden]{display:none}
+.sc-spin{width:22px;height:22px;border-radius:50%;border:3px solid var(--st-safe-line);border-top-color:var(--sc-teal);
+  animation:sc-spin 0.9s linear infinite}
+@keyframes sc-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.sc-spin{animation:none}}
+.sc-error{margin-top:16px;padding:12px 16px;border-radius:10px;font-size:18px;line-height:26px;
+  background:var(--st-risk-bg);color:var(--st-risk-ink);border:1px solid var(--st-risk-line)}
+.sc-error[hidden],.sc-result[hidden]{display:none}
+.sc-result{display:grid;grid-template-columns:minmax(220px,340px) 1fr;gap:24px;margin-top:20px;align-items:start}
+.sc-card{margin:0}
+.sc-img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--sc-line);background:#EFEDEA}
+.sc-cap{margin-top:8px;font-size:15px;line-height:21px;color:var(--sc-muted)}
+.sc-table{width:100%;border-collapse:collapse;font-size:18px;line-height:24px}
+.sc-table th,.sc-table td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--sc-line);vertical-align:top}
+.sc-table thead th{font-weight:700;font-size:18px;border-bottom:2px solid var(--sc-line)}
+.sc-table tbody th{font-weight:500;color:var(--sc-muted);width:150px;white-space:nowrap}
+.sc-table td{font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.sc-table td.sc-differs{background:var(--st-fragile-bg);color:var(--st-fragile-ink)}
+.sc-table td.sc-failed{color:var(--st-risk-ink)}
+.sc-failnote{margin-top:8px;font-size:14px;line-height:20px;color:var(--st-risk-ink);overflow-wrap:anywhere}
+.sc-verdict{margin-top:16px;padding:12px 16px;border-radius:10px;font-size:22px;line-height:30px;font-weight:700;border:1px solid}
+.sc-verdict.is-safe{background:var(--st-safe-bg);color:var(--st-safe-ink);border-color:var(--st-safe-line)}
+.sc-verdict.is-fragile{background:var(--st-fragile-bg);color:var(--st-fragile-ink);border-color:var(--st-fragile-line)}
+.sc-verdict.is-risk{background:var(--st-risk-bg);color:var(--st-risk-ink);border-color:var(--st-risk-line)}
+.sc-note{margin-top:10px;font-size:16px;line-height:23px;color:var(--sc-muted)}
+.sc-note:empty{display:none}
+.sc-proof{margin-top:10px;font-size:14px;line-height:20px;color:var(--sc-muted);overflow-wrap:anywhere}
+.sc-proof strong{color:var(--sc-ink);font-weight:650}
+@media (max-width:760px){.sc-result{grid-template-columns:1fr}}

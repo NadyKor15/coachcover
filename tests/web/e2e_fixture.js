@@ -8,15 +8,21 @@ const path = require('path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
 const WEB = path.resolve(__dirname, '../../web');
+// the sample certificate panel: its test harness page and the bundled synthetic cards the API serves
+const ROUTES = [['/harness/', path.resolve(__dirname, 'harness')], ['/media/sample-cards/', path.resolve(__dirname, '../../coachcover/samples/cards')]];
+const SC_SHOTS = process.env.SC_SHOTS ? path.resolve(process.env.SC_SHOTS) : null;
 const shotsArg = process.argv.indexOf('--shots');
 const SHOTS = shotsArg > 0 ? path.resolve(process.argv[shotsArg + 1]) : null;
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.pdf': 'application/pdf' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.pdf': 'application/pdf' };
 
 function serve() {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, 'http://x');
-    const file = path.normalize(path.join(WEB, decodeURIComponent(url.pathname)));
-    if (!file.startsWith(WEB) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); res.end(); return; }
+    const route = ROUTES.find(([prefix]) => url.pathname.startsWith(prefix));
+    const root = route ? route[1] : WEB;
+    const rel = route ? url.pathname.slice(route[0].length) : url.pathname;
+    const file = path.normalize(path.join(root, decodeURIComponent(rel)));
+    if (!file.startsWith(root) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); res.end(); return; }
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' });
     fs.createReadStream(file).pipe(res);
   });
@@ -892,6 +898,32 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await ready(p);
     check('staff: a failed load shows an error line', (await p.evaluate(() => document.body.dataset.state)) === 'error' && (await text(p, '#loadErr')).includes('Could not load /api/staff'));
     await p.close();
+    /* the sample certificate panel on Staff & Certificates: between the summary and the roster, three outcomes */
+    for (const [mock, file] of [['', 'agree'], ['&mock=sample_disagree', 'disagree'], ['&mock=sample_failed', 'failed']]) {
+      const want = fx('sample-cert/' + file + '.json').body;
+      p = await newPage(browser, 1920, 1080);
+      await p.goto(base + 'staff.html?fixture=1' + mock);
+      await ready(p);
+      await p.waitForFunction(() => document.querySelector('#sample-cert [data-slot="sc-runs"]').textContent !== '');
+      if (!mock) {
+        check('staff: sample check panel sits between the summary and the roster', await p.evaluate(() => {
+          const s = document.querySelector('[data-slot="summary"]').getBoundingClientRect(), c = document.getElementById('sample-cert').getBoundingClientRect(),
+            r = document.querySelector('.roster').getBoundingClientRect();
+          return s.bottom <= c.top && c.bottom <= r.top && Math.abs(c.left - r.left) < 1 && Math.abs(c.right - r.right) < 1;
+        }));
+        check('staff: sample check button and hint', await text(p, '#sample-cert [data-slot="sc-button"]') === 'Check a sample certificate' &&
+          (await text(p, '#sample-cert [data-slot="sc-hint"]')).startsWith('Both models'));
+      }
+      await p.click('#sample-cert [data-slot="sc-button"]');
+      await p.waitForFunction(() => document.getElementById('sample-cert').dataset.state === 'result');
+      await p.waitForFunction(() => { const i = document.querySelector('#sample-cert .sc-img'); return i && i.complete && i.naturalWidth > 0; });
+      check('staff: sample check ' + file + ' verdict from data', await text(p, '#sample-cert [data-slot="sc-verdict"]') === want.verdict, await text(p, '#sample-cert [data-slot="sc-verdict"]'));
+      check('staff: sample check ' + file + ' leaves the roster as it was', (await p.$$('[data-slot="person"]')).length === staffFx.staff.length);
+      check('staff: sample check ' + file + ' no horizontal scroll', await p.evaluate(() => document.documentElement.scrollWidth <= 1920));
+      check('staff: sample check ' + file + ' no console errors', p._errors.length === 0, p._errors);
+      if (SC_SHOTS) await p.screenshot({ path: path.join(SC_SHOTS, 'staff-sc-' + file + '.png') });
+      await p.close();
+    }
 
     /* ---------- contrast of every status element, by number ---------- */
     // text 4.5:1 or more against its own background (with hatching: against the darker stripe);
@@ -1060,6 +1092,112 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await ready(p);
     await contrast(p, [T('Family: credit line', '#result')]);
     await p.close();
+
+    /* ---------- sample certificate panel (harness page; answers captured from the API in replay) ---------- */
+    {
+      const scFx = name => fx('sample-cert/' + name + '.json');
+      const scInfo = scFx('info'), scAgree = scFx('agree'), scDis = scFx('disagree'), scFail = scFx('failed');
+      const scLimit = scFx('limit'), scBusy = scFx('busy');
+      const cells = (pg, row) => pg.$$eval('.sc-table tr[data-row="' + row + '"] td', ts => ts.map(t => t.textContent.trim()));
+      const scShot = async (pg, name) => { if (SC_SHOTS) await pg.screenshot({ path: path.join(SC_SHOTS, name), fullPage: true }); };
+      async function press(pg) {
+        await pg.click('[data-slot="sc-button"]');
+        await pg.waitForFunction(() => !['idle', 'waiting'].includes(document.getElementById('sample-cert').dataset.state), null, { timeout: 10000 });
+        await pg.waitForFunction(() => { const i = document.querySelector('.sc-img'); return !i || i.complete; });
+      }
+      p = await newPage(browser, 1320, 900);
+      await p.goto(base + 'harness/sample-cert.html?fixture=1');
+      await p.waitForFunction(() => document.querySelector('[data-slot="sc-runs"]').textContent !== '');
+      await p.evaluate(() => document.fonts.ready);
+      check('SC: button label', await text(p, '[data-slot="sc-button"]') === 'Check a sample certificate');
+      check('SC: hint from the server mode and limit', await text(p, '[data-slot="sc-hint"]') ===
+        'Both models’ recorded readings of a synthetic card (replay mode). Counts as one of ' + scInfo.body.runs_per_hour + ' judge runs an hour.', await text(p, '[data-slot="sc-hint"]'));
+      check('SC: runs left before the first press', await text(p, '[data-slot="sc-runs"]') === scInfo.body.runs_left_this_hour + ' of ' + scInfo.body.runs_per_hour + ' judge runs left this hour');
+      await p.click('[data-slot="sc-button"]');
+      check('SC: waiting indicator while the readers read', await visible(p, '[data-slot="sc-wait"]') &&
+        /reading the card… \d+ s$/.test(await text(p, '[data-slot="sc-wait"]')) && await p.$eval('[data-slot="sc-button"]', b => b.disabled));
+      await p.waitForFunction(() => document.getElementById('sample-cert').dataset.state === 'result');
+      await p.waitForFunction(() => { const i = document.querySelector('.sc-img'); return i && i.complete; });
+      const A = scAgree.body;
+      check('SC agree: verdict from data', await text(p, '[data-slot="sc-verdict"]') === A.verdict && A.verdict === 'Dates agree: accepted');
+      check('SC agree: verdict in the safe colours', await p.$eval('[data-slot="sc-verdict"]', v => v.classList.contains('is-safe')));
+      check('SC agree: two reader columns', JSON.stringify(await texts(p, '[data-slot="sc-reader"]')) === JSON.stringify(['Muse Glimmer', 'Nemotron Omni']));
+      check('SC agree: issued, expires, card number from data', JSON.stringify([await cells(p, 'issued'), await cells(p, 'expires'), await cells(p, 'card-number')]) ===
+        JSON.stringify([A.readings.map(r => r.issued), A.readings.map(r => r.expires), A.readings.map(r => r.card_number)]));
+      check('SC agree: seconds and cost from data', JSON.stringify([await cells(p, 'seconds'), await cells(p, 'cost')]) ===
+        JSON.stringify([A.readings.map(r => r.seconds_label), A.readings.map(r => r.cost_label)]), [await cells(p, 'seconds'), await cells(p, 'cost')]);
+      const proofA = await text(p, '[data-slot="sc-proof"]');
+      check('SC agree: Proof line names both models, the time and the price', A.ledger.every(r => proofA.includes(r.model) && proofA.includes(r.time_label) && proofA.includes(r.cost_label)) &&
+        proofA.includes('total ' + A.total_cost_label), proofA);
+      check('SC agree: card thumbnail loaded', await p.$eval('.sc-img', i => i.naturalWidth > 0 && i.getAttribute('src') === '/media/sample-cards/c3-photo.jpg'));
+      check('SC agree: runs left from the answer', await text(p, '[data-slot="sc-runs"]') === A.runs_left_this_hour + ' of ' + A.runs_per_hour + ' judge runs left this hour');
+      check('SC agree: no dates marked as differing', (await p.$$('.sc-differs')).length === 0);
+      await contrast(p, [T('Sample check: accepted verdict', '[data-slot="sc-verdict"]'), T('Sample check: button (brand teal)', '[data-slot="sc-button"]')]);
+      await scShot(p, 'sc-agree.png');
+      check('SC agree: no console errors', p._errors.length === 0, p._errors);
+
+      await p.goto(base + 'harness/sample-cert.html?fixture=1&mock=sample_disagree');
+      await press(p);
+      const D = scDis.body;
+      check('SC disagree: verdict from data', await text(p, '[data-slot="sc-verdict"]') === D.verdict && D.verdict === 'Dates disagree: sent to a person');
+      check('SC disagree: verdict in the fragile colours', await p.$eval('[data-slot="sc-verdict"]', v => v.classList.contains('is-fragile')));
+      check('SC disagree: the two expiry dates as each reader read them', JSON.stringify(await cells(p, 'expires')) === JSON.stringify(D.readings.map(r => r.expires)) &&
+        D.readings[0].expires !== D.readings[1].expires);
+      const differing = ['issued', 'expires'].filter(k => D.readings[0][k] !== D.readings[1][k]).length * 2;
+      check('SC disagree: only the dates the readers read differently are marked', differing > 0 && (await p.$$('.sc-differs')).length === differing &&
+        JSON.stringify(await p.$$eval('.sc-differs', ts => ts.map(t => t.parentNode.dataset.row))) === JSON.stringify(['expires', 'expires']));
+      check('SC disagree: no price shown where none was recorded', JSON.stringify(await cells(p, 'cost')) === JSON.stringify(['not recorded', 'not recorded']) &&
+        (await text(p, '[data-slot="sc-proof"]')).includes('price not recorded'));
+      await contrast(p, [T('Sample check: sent to a person verdict', '[data-slot="sc-verdict"]'), T('Sample check: differing date', '.sc-differs')]);
+      await scShot(p, 'sc-disagree.png');
+
+      await p.goto(base + 'harness/sample-cert.html?fixture=1&mock=sample_failed');
+      await press(p);
+      const F = scFail.body;
+      check('SC failed: verdict from data', await text(p, '[data-slot="sc-verdict"]') === F.verdict && F.verdict === 'Reader failed: sent to a person');
+      check('SC failed: verdict in the risk colours', await p.$eval('[data-slot="sc-verdict"]', v => v.classList.contains('is-risk')));
+      check('SC failed: the failed reader says so', JSON.stringify(await cells(p, 'issued')) === JSON.stringify([F.readings[0].issued, 'reader failed']));
+      check('SC failed: the error is shown', (await text(p, '[data-slot="sc-failnote"]')).includes(F.readings[1].error));
+      check('SC failed: Proof says the call failed, no price claimed', (await text(p, '[data-slot="sc-proof"]')).includes(F.ledger[1].model + ' · ' + F.ledger[1].time_label + ' · failed, no answer'));
+      await contrast(p, [T('Sample check: reader failed verdict', '[data-slot="sc-verdict"]')]);
+      await scShot(p, 'sc-failed.png');
+
+      await p.goto(base + 'harness/sample-cert.html?fixture=1&mock=sample_limit');
+      await press(p);
+      check('SC 429: limit line with minutes from Retry-After', await text(p, '[data-slot="sc-error"]') ===
+        'Judge run limit reached: try again in ' + Math.ceil(+scLimit.retry_after / 60) + ' min.', await text(p, '[data-slot="sc-error"]'));
+      check('SC 429: no result panel', !(await visible(p, '[data-slot="sc-result"]')));
+      check('SC 429: runs left 0', await text(p, '[data-slot="sc-runs"]') === '0 of ' + scLimit.body.runs_per_hour + ' judge runs left this hour');
+      await contrast(p, [T('Sample check: limit line', '[data-slot="sc-error"]')]);
+      await scShot(p, 'sc-limit.png');
+
+      await p.goto(base + 'harness/sample-cert.html?fixture=1&mock=sample_busy');
+      await press(p);
+      check('SC 503: resetting line from the server', await text(p, '[data-slot="sc-error"]') === scBusy.body.error + ' Try again in ' + scBusy.retry_after + ' s.', await text(p, '[data-slot="sc-error"]'));
+      await p.close();
+
+      // live wiring: GET for the limit, one POST per press, 429 with the server's Retry-After
+      p = await newPage(browser, 1320, 900);
+      const scCalls = [];
+      let scNext = { status: 200, body: scAgree.body };
+      await p.route('**/api/judge/sample-certificate', r => {
+        scCalls.push(r.request().method());
+        if (r.request().method() === 'GET') return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...scInfo.body, mode: 'live' }) });
+        r.fulfill({ status: scNext.status, contentType: 'application/json', headers: scNext.headers || {}, body: JSON.stringify(scNext.body) });
+      });
+      await p.goto(base + 'harness/sample-cert.html');
+      await p.waitForFunction(() => document.querySelector('[data-slot="sc-runs"]').textContent !== '');
+      check('SC live: hint says live on Vultr only when the server says live', await text(p, '[data-slot="sc-hint"]') ===
+        'Both models read a synthetic card live on Vultr. Counts as one of ' + scInfo.body.runs_per_hour + ' judge runs an hour.', await text(p, '[data-slot="sc-hint"]'));
+      await press(p);
+      check('SC live: one GET, then one POST', JSON.stringify(scCalls) === JSON.stringify(['GET', 'POST']), scCalls);
+      check('SC live: result shown', await text(p, '[data-slot="sc-verdict"]') === scAgree.body.verdict);
+      scNext = { status: 429, headers: { 'Retry-After': '120' }, body: scLimit.body };
+      await press(p);
+      check('SC live: 429 shown with minutes', await text(p, '[data-slot="sc-error"]') === 'Judge run limit reached: try again in 2 min.', await text(p, '[data-slot="sc-error"]'));
+      check('SC live: no console errors besides the 429 itself', p._errors.filter(e => !/429/.test(e)).length === 0, p._errors);
+      await p.close();
+    }
 
     // must-light: the same measure on a deliberately pale ink has to fall below 4.5:1
     p = await newPage(browser, 1920, 1080);

@@ -1,0 +1,8 @@
+{
+ "status": 503,
+ "retry_after": "2",
+ "body": {
+  "resetting": true,
+  "error": "Resetting the training school…"
+ }
+}

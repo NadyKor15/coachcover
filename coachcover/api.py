@@ -25,13 +25,13 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from coachcover import a2a, ext_api, screens, views
+from coachcover import a2a, ext_api, sample_cert, screens, views
 from coachcover.db import migrate
 from coachcover.demo import RESET_LOCK, SCENARIOS, clock_now, reset_school, run_scenario
 from coachcover.models import DbLedger, ModelClient, ModelError
 from coachcover.pipeline import Conflict, NotFound, Pipeline
 from coachcover.schedule_import import MAX_IMPORT_BYTES, import_schedule
-from coachcover.seed import POLICY_ID
+from coachcover.seed import POLICY_ID, TZ
 
 MAX_AUDIO_BYTES = 10 * 1024 * 1024
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
@@ -73,6 +73,10 @@ class StandbyBody(BaseModel):
 
 class JudgeBody(BaseModel):
     scenario: str = "dangerous_morning"
+
+
+class SampleCertBody(BaseModel):
+    sample: str | None = Field(default=None, max_length=40)
 
 
 class FamilyAnswerBody(BaseModel):
@@ -132,6 +136,26 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
                 return not free
         except psycopg.Error:
             return False
+
+    def count_judge_run(conn: psycopg.Connection, client: str) -> int | JSONResponse:
+        """Count one judge run (a scene or a sample certificate check) for this client: the runs used before it this
+        hour, or 429 with Retry-After when the hourly limit is reached."""
+        with conn.transaction():
+            conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (f"judge:{client}",))
+            used = conn.execute(
+                "SELECT count(*) FROM ops.judge_run WHERE client = %s AND at > now() - interval '1 hour'", (client,)
+            ).fetchone()[0]
+            if used >= runs_per_hour:
+                retry = conn.execute(
+                    "SELECT ceil(extract(epoch FROM min(at) + interval '1 hour' - now())) FROM ops.judge_run"
+                    " WHERE client = %s AND at > now() - interval '1 hour'",
+                    (client,),
+                ).fetchone()[0]
+                return JSONResponse(status_code=429, headers={"Retry-After": str(int(retry or 60))},
+                                    content={"error": f"limit of {runs_per_hour} judge runs per hour reached",
+                                             "runs_left_this_hour": 0, "runs_per_hour": runs_per_hour})
+            conn.execute("INSERT INTO ops.judge_run (client) VALUES (%s)", (client,))
+        return used
 
     def busy() -> JSONResponse:
         return JSONResponse(status_code=503, headers={"Retry-After": "2"},
@@ -332,22 +356,43 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
             except a2a.AgentStarting as exc:
                 return JSONResponse(status_code=503, headers={"Retry-After": "5"}, content={"error": str(exc), **exc.detail})
         migrate(conn)
-        with conn.transaction():
-            conn.execute("SELECT pg_advisory_xact_lock(hashtext(%s))", (f"judge:{client}",))
-            used = conn.execute(
-                "SELECT count(*) FROM ops.judge_run WHERE client = %s AND at > now() - interval '1 hour'", (client,)
-            ).fetchone()[0]
-            if used >= runs_per_hour:
-                retry = conn.execute(
-                    "SELECT ceil(extract(epoch FROM min(at) + interval '1 hour' - now())) FROM ops.judge_run"
-                    " WHERE client = %s AND at > now() - interval '1 hour'",
-                    (client,),
-                ).fetchone()[0]
-                return JSONResponse(status_code=429, headers={"Retry-After": str(int(retry or 60))},
-                                    content={"error": f"limit of {runs_per_hour} judge runs per hour reached"})
-            conn.execute("INSERT INTO ops.judge_run (client) VALUES (%s)", (client,))
+        used = count_judge_run(conn, client)
+        if isinstance(used, JSONResponse):
+            return used
         result = run_scenario(conn, ModelClient(DbLedger(conn)), scenario, base_url=base_url)
         return {**result, "runs_left_this_hour": runs_per_hour - used - 1}
+
+    @app.post("/api/judge/sample-certificate")
+    def judge_sample_certificate(request: Request, body: SampleCertBody | None = None,
+                                 conn: psycopg.Connection = Depends(get_conn)):
+        """Both card readers read one bundled synthetic card; one judge run under the same hourly limit as the scenes."""
+        sample_id = (body or SampleCertBody()).sample
+        if sample_id is not None and sample_id not in sample_cert.BY_ID:
+            raise ValueError(f"sample must be one of {tuple(sample_cert.BY_ID)}")
+        client = request.client.host if request.client else "unknown"
+        used = count_judge_run(conn, client)
+        if isinstance(used, JSONResponse):
+            return used
+        result = sample_cert.check(conn, ModelClient(DbLedger(conn)), policy_id, clock_now(conn), TZ, sample_id)
+        return {**result, "runs_left_this_hour": runs_per_hour - used - 1, "runs_per_hour": runs_per_hour}
+
+    @app.get("/api/judge/sample-certificate")
+    def judge_sample_certificate_info(request: Request, conn: psycopg.Connection = Depends(get_conn)):
+        """What the sample check button needs before it is pressed; counts nothing."""
+        client = request.client.host if request.client else "unknown"
+        used = conn.execute(
+            "SELECT count(*) FROM ops.judge_run WHERE client = %s AND at > now() - interval '1 hour'", (client,)
+        ).fetchone()[0]
+        return {"mode": mode, "runs_per_hour": runs_per_hour, "runs_left_this_hour": max(runs_per_hour - used, 0),
+                "next_sample": sample_cert.pick(conn, None).id,
+                "samples": [{"id": s.id, "label": s.label, "image_url": s.image_url} for s in sample_cert.SAMPLES]}
+
+    @app.get("/media/sample-cards/{name}")
+    def sample_card_image(name: str):
+        sample = sample_cert.BY_FILE.get(name)
+        if sample is None:
+            raise NotFound(f"no sample card {name}")
+        return FileResponse(sample_cert.CARDS_DIR / sample.file, media_type=sample.mime)
 
     # the extensions (network loans over A2A, MCP, week, what-if, binder, team posts) come before the static
     # mount: a mount on "/" takes every path added after it
