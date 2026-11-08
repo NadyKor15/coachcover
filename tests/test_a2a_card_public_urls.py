@@ -53,5 +53,28 @@ def test_calls_between_agents_keep_the_internal_urls(net, monkeypatch):
     shift_id, _ = exhaust(conn)
     loan = start(client, shift_id)  # the borrower's agent asks the lender's agent
     assert sent and set(sent) == {INTERNAL["N1"]}, sent
+    # what people read shows the public address: the loan, its steps (data and detail line), the members of the network
     request_sent = next(s for s in loan["steps"] if s["kind"] == "request_sent")
-    assert request_sent["data"]["url"] == INTERNAL["N1"]  # the case record keeps the address the call used
+    assert request_sent["data"]["url"] == "http://testserver/a2a/N1" and request_sent["detail"] == "http://testserver/a2a/N1"
+    stored = conn.execute("SELECT data->>'url' FROM ext_loan_step WHERE kind = 'request_sent' LIMIT 1").fetchone()[0]
+    assert stored == INTERNAL["N1"]  # the record keeps the address the call used
+
+
+def test_no_internal_host_in_the_json_people_can_open(net, monkeypatch):
+    client, conn = net
+    monkeypatch.setenv("COACHCOVER_A2A_PEERS", json.dumps(INTERNAL))
+    shift_id, _ = exhaust(conn)
+    loan = start(client, shift_id)
+    members = client.get("/api/network")
+    assert members.status_code == 200
+    assert {m["agent_url"] for m in members.json()["members"]} == {"http://testserver/a2a/V1", "http://testserver/a2a/N1"}
+    pages = {
+        "/api/network": members.text,
+        "/api/network/loans/" + loan["code"]: client.get("/api/network/loans/" + loan["code"]).text,
+        "POST /api/network/loans": json.dumps(loan),
+        "/.well-known/agent-card.json": client.get("/.well-known/agent-card.json").text,
+    }
+    for name, text in pages.items():
+        assert "agent-north" not in text and "api:8000" not in text, name
+    one = client.post(f"/api/network/loans/{loan['code']}/approve", json={"manager": "Natalie Brooks", "venue": "V1"})
+    assert one.status_code == 200 and "agent-north" not in one.text and "api:8000" not in one.text

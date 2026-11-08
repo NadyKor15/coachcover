@@ -108,10 +108,17 @@ def public_agent_url(venue_id: str, base_url: str) -> str:
     name without a dot: `api`, `agent-north`) is shown as this server's own `{base_url}/a2a/{venue}`. Calls between
     the agents keep using `agent_url`, the internal address."""
     url = agent_url(venue_id, base_url)
-    host = urlsplit(url).hostname or ""
+    return url if shown_url(url, base_url) == url else f"{base_url.rstrip('/')}/a2a/{venue_id}"
+
+
+def shown_url(url: str, base_url: str) -> str:
+    """An agent address as people see it: one the compose network alone resolves (a host name without a dot) is
+    shown on this server's own address, with the same path."""
+    parts = urlsplit(url)
+    host = parts.hostname or ""
     if "." in host or ":" in host:  # a public name or an IP address (IPv6 has colons)
         return url
-    return f"{base_url.rstrip('/')}/a2a/{venue_id}"
+    return f"{base_url.rstrip('/')}{parts.path}"
 
 
 def send(url: str, method: str, params: dict) -> dict:
@@ -390,7 +397,7 @@ def network_summary(conn: psycopg.Connection, base_url: str) -> dict:
         "networks": [{"id": nid, "name": name} for nid, name in nets.items()],
         "members": [{"venue_id": m.venue_id, "venue_name": m.venue_name, "network_id": m.network_id,
                      "manager": m.manager_name, "min_guards": m.min_guards, "lends": m.lends,
-                     "agent_url": agent_url(m.venue_id, base_url)} for m in ms.values()],
+                     "agent_url": public_agent_url(m.venue_id, base_url)} for m in ms.values()],
         "agent_card": f"{base_url.rstrip('/')}/.well-known/agent-card.json",
         "protocol_version": A2A_VERSION,
     }
@@ -1089,7 +1096,7 @@ def loan_view(conn: psycopg.Connection, ref: str | int, base_url: str) -> dict:
         m = ms[venue_id]
         at = loan[f"{who}_approved_at"]
         return {"venue_id": venue_id, "venue_name": m.venue_name, "manager": m.manager_name,
-                "agent_url": agent_url(venue_id, base_url),
+                "agent_url": public_agent_url(venue_id, base_url),
                 "approved": {"by": loan[f"{who}_approved_by"], "at": iso_z(at),
                              "at_label": _time_label(conn, at, venue_id)} if at else None}
 
@@ -1097,6 +1104,8 @@ def loan_view(conn: psycopg.Connection, ref: str | int, base_url: str) -> dict:
     for seq, at, venue_id, actor, kind, data in conn.execute(
         "SELECT seq, at, venue_id, actor, kind, data FROM ext_loan_step WHERE loan_id = %s ORDER BY seq", (loan["id"],)
     ):
+        if isinstance(data, dict) and data.get("url"):  # the step keeps the address the call used; people see the public one
+            data = {**data, "url": shown_url(data["url"], base_url)}
         title, detail = _step_text(kind, data, names.get(venue_id, venue_id), names)
         steps.append({"seq": seq, "at": iso_z(at), "at_label": _time_label(conn, at, venue_id), "venue_id": venue_id,
                       "venue": names.get(venue_id, venue_id),
