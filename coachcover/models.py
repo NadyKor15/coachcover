@@ -32,6 +32,9 @@ from typing import Any, Callable, Protocol
 import psycopg
 from psycopg.types.json import Jsonb
 
+HTTP_TRIES = 2  # a hung reply is tried once more
+HTTP_TRY_SECONDS = 45  # per try; HTTP_TRIES * HTTP_TRY_SECONDS = the 90 s budget of one call
+
 ALLOWED_MODELS = (
     "whisper-large-v3-turbo",
     "muse-glimmer-30b",
@@ -346,14 +349,20 @@ class ModelClient:
             body = json.dumps(request["json"]).encode()
             headers["Content-Type"] = "application/json"
         started = time.monotonic()
-        req = urllib.request.Request(url, data=body, headers=headers, method="POST")
-        try:
-            with urllib.request.urlopen(req, timeout=90) as resp:
-                payload = json.loads(resp.read().decode())
-        except urllib.error.HTTPError as exc:
-            raise BadAnswer(f"HTTP {exc.code}: {exc.read().decode(errors='replace')[:300]}") from None
-        except (urllib.error.URLError, TimeoutError) as exc:
-            raise ModelError(f"network error: {exc}") from None
+        # Two tries of HTTP_TRY_SECONDS each, the same 90 s budget as one long try: a reply that hangs gets a second
+        # chance, and the worst wait does not grow. Only a network error or a timeout is tried again; an HTTP error
+        # answer is not.
+        for attempt in range(1, HTTP_TRIES + 1):
+            req = urllib.request.Request(url, data=body, headers=headers, method="POST")
+            try:
+                with urllib.request.urlopen(req, timeout=HTTP_TRY_SECONDS) as resp:
+                    payload = json.loads(resp.read().decode())
+                break
+            except urllib.error.HTTPError as exc:
+                raise BadAnswer(f"HTTP {exc.code}: {exc.read().decode(errors='replace')[:300]}") from None
+            except (urllib.error.URLError, TimeoutError) as exc:
+                if attempt == HTTP_TRIES:
+                    raise ModelError(f"network error after {HTTP_TRIES} tries: {exc}") from None
         return payload, int((time.monotonic() - started) * 1000)
 
     # common path ---------------------------------------------------------------
