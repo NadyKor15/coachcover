@@ -269,3 +269,4 @@ body[data-scene] .band,body[data-scene] .grid > .card,body[data-scene] .covered,
 body[data-scene] #money,body[data-scene] .alert{visibility:hidden}
 body[data-scene="running"] h1,body[data-scene="running"] .foot{visibility:hidden}  /* the model line counts the scene's calls only when it ends */
 body[data-state="loading"] .main,body[data-state="loading"] .foot,body[data-state="loading"] .tagline{visibility:hidden}
+.alert:not([href]){cursor:default}

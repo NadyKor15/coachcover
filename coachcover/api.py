@@ -185,6 +185,11 @@ def create_app(dsn: str | None = None, web_dir: Path | None = None) -> FastAPI:
     def get_today(venue: str | None = None, conn: psycopg.Connection = Depends(get_conn)):
         return screens.today(conn, policy_id, clock_now(conn), venue, live=mode == "live")
 
+    @app.get("/api/staff")
+    def get_staff(conn: psycopg.Connection = Depends(get_conn)):
+        """Everyone in the school with roles, programs and each certificate's state today (read-only)."""
+        return views.staff_directory(conn, policy_id, clock_now(conn))
+
     @app.post("/api/callouts", status_code=201)
     async def post_callout(
         staff_id: str = Form(...),

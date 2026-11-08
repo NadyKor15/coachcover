@@ -24,6 +24,8 @@ COACHCOVER_TEST_DSN=postgresql://postgres@127.0.0.1:<port>/postgres uv run pytes
 | `coachcover/ext_db.py`, `coachcover/ext_migrations/100_ext_network.sql` | the lane's own schema track |
 | `coachcover/presets/network/demo_network.json` | the training network: Northside venue, its rules, people, schedule |
 
+The Agent Card shows `{base_url}/a2a/{venue}` for a peer whose host has no dot (`api`, `agent-north`: names only the compose network resolves); the calls between agents (`a2a.agent_url`) keep the internal address.
+
 Settings: `DATABASE_URL` (or `app.state.dsn`), `COACHCOVER_POLICY_ID`, `COACHCOVER_A2A_PEERS` (JSON
 `{venue_id: agent_url}`; default: this server's `/a2a/{venue}`), `COACHCOVER_PUBLIC_URL` (prefix for case
 links in team posts), `COACHCOVER_MCP_KEY`, `COACHCOVER_MCP_CALLS_PER_HOUR` (default 120). "Now" is the demo

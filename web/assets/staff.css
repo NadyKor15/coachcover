@@ -1,0 +1,40 @@
+/* Staff & Certificates: one read-only roster in the Week ahead shell (week.css). Status colours come from status.css. */
+.sub{white-space:normal;max-width:1500px}
+.sum{display:flex;column-gap:14px;margin:22px 0 0 15.9px}
+.sum .chip{display:flex;align-items:center;column-gap:10px;height:46px;padding:0 20px;border-radius:10px;border:1.5px solid transparent;
+  font-size:21px;font-weight:600;letter-spacing:-0.3px;white-space:nowrap}
+.sum .chip b{font-size:25px;font-weight:780}
+.sum .chip[data-level="safe"]{background:var(--st-safe-bg);color:var(--st-safe-ink);border-color:var(--st-safe-line)}
+.sum .chip[data-level="fragile"]{background:var(--st-fragile-bg);color:var(--st-fragile-ink);border:2px dashed var(--st-fragile-dot)}
+.sum .chip[data-level="risk"]{background-color:var(--st-risk-bg);color:var(--st-risk-ink);border:2px solid var(--st-risk-line);
+  background-image:repeating-linear-gradient(135deg,var(--st-risk-hatch) 0 5px,transparent 5px 12px)}
+
+.roster{margin:22px 24px 0 15.9px;overflow:hidden}
+.r-head,.r-row{display:grid;grid-template-columns:318px 232px 330px 1fr;column-gap:18px;padding:0 24px}
+.r-head{height:52px;align-items:center;border-bottom:1px solid var(--sep);font-size:18px;font-weight:700;letter-spacing:.3px;
+  text-transform:uppercase;color:var(--ink-3)}
+.r-row{padding-top:13px;padding-bottom:13px;border-bottom:1px solid var(--sep);align-items:start}
+.r-row:last-child{border-bottom:0}
+.r-row[data-state="review"],.r-row[data-state="revoked"],.r-row[data-state="expired"]{background:#FFFCF8}
+.who{display:flex;column-gap:12px;min-width:0}
+.who .dot{width:13px;height:13px;border-radius:50%;flex:none;margin-top:10px;background:var(--st-safe-dot)}
+.who .dot[data-level="fragile"]{background:var(--st-fragile-dot)}
+.who .dot[data-level="risk"]{background:var(--st-risk-dot);border-radius:2px;transform:rotate(45deg)}
+.who .nm{font-size:25px;font-weight:700;line-height:32px;letter-spacing:-0.5px;white-space:nowrap}
+.who .id{font-size:17.5px;line-height:24px;color:var(--ink-3);letter-spacing:-0.2px;white-space:nowrap}
+.who .demo{display:block;margin-top:4px;font-size:16.5px;line-height:22px;color:var(--st-fragile-ink);white-space:normal}
+.roles,.progs{font-size:20px;line-height:28px;letter-spacing:-0.3px;color:var(--ink-2)}
+.roles div,.progs div{white-space:normal}
+.progs .od{display:block;font-size:17px;line-height:23px;color:var(--st-fragile-ink);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cert{border-radius:10px;padding:7px 12px 8px;border:1.5px solid transparent;min-width:0}
+.cert .t{font-size:19px;font-weight:700;line-height:25px;letter-spacing:-0.3px;white-space:nowrap}
+.cert .d{font-size:17px;line-height:23px;letter-spacing:-0.2px;white-space:nowrap}
+.cert .s{font-size:16.5px;line-height:22px;font-weight:700;letter-spacing:-0.1px;white-space:normal}
+.cert[data-level="safe"]{background:var(--st-safe-bg);color:var(--st-safe-ink);border-color:var(--st-safe-line)}
+.cert[data-level="fragile"]{background:var(--st-fragile-bg);color:var(--st-fragile-ink);border:2px dashed var(--st-fragile-dot)}
+.cert[data-level="risk"]{background-color:var(--st-risk-bg);color:var(--st-risk-ink);border:2px solid var(--st-risk-line);
+  background-image:repeating-linear-gradient(135deg,var(--st-risk-hatch) 0 5px,transparent 5px 12px)}
+.cert[data-level="past"]{background:var(--st-past-bg);color:var(--st-past-ink);border-color:var(--st-past-line)}
+.none{font-size:19px;color:var(--ink-3)}
+.nav-item.active[data-nav="staff"]{font-size:21.4px;letter-spacing:-1.1px}

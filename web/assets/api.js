@@ -120,6 +120,7 @@
     }
     if (p === '/api/week') return fixtureFile('week.json');
     if (p === '/api/network') return fixtureFile('network.json');
+    if (p === '/api/staff') return fixtureFile('staff.json');
     let m = p.match(/^\/api\/network\/loans\/([^/]+)$/);
     if (m) return fixtureFile((await netMocks()).loan_files[fx.loan || initialLoan()]);
     m = p.match(/^\/api\/offers\/([^/]+)$/);

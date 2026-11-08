@@ -35,7 +35,7 @@
         "venue_id": "V1",
         "venue_name": "Riverside Aquatic Center",
         "manager": "Natalie Brooks",
-        "agent_url": "http://api:8000/a2a/V1",
+        "agent_url": "http://127.0.0.1:18088/a2a/V1",
         "approved": {
           "by": "Natalie Brooks",
           "at": "2026-11-09T13:43:30.228Z",
@@ -46,7 +46,7 @@
         "venue_id": "N1",
         "venue_name": "Northside Aquatic Center",
         "manager": "Omar Haddad",
-        "agent_url": "http://agent-north:8000/a2a/N1",
+        "agent_url": "http://127.0.0.1:18088/a2a/N1",
         "approved": null
       },
       "candidate": {
@@ -98,10 +98,10 @@
           "actor": "agent",
           "kind": "request_sent",
           "title": "Riverside agent → Northside agent: SendMessage (A2A 1.0)",
-          "detail": "http://agent-north:8000/a2a/N1",
+          "detail": "http://127.0.0.1:18088/a2a/N1",
           "data": {
             "to": "N1",
-            "url": "http://agent-north:8000/a2a/N1",
+            "url": "http://127.0.0.1:18088/a2a/N1",
             "method": "SendMessage",
             "exclude": []
           }
@@ -285,7 +285,7 @@
         "venue_id": "V1",
         "venue_name": "Riverside Aquatic Center",
         "manager": "Natalie Brooks",
-        "agent_url": "http://api:8000/a2a/V1",
+        "agent_url": "http://127.0.0.1:18088/a2a/V1",
         "approved": {
           "by": "Natalie Brooks",
           "at": "2026-11-09T13:43:30.228Z",
@@ -296,7 +296,7 @@
         "venue_id": "N1",
         "venue_name": "Northside Aquatic Center",
         "manager": "Omar Haddad",
-        "agent_url": "http://agent-north:8000/a2a/N1",
+        "agent_url": "http://127.0.0.1:18088/a2a/N1",
         "approved": {
           "by": "Omar Haddad",
           "at": "2026-11-09T13:43:30.278Z",
@@ -352,10 +352,10 @@
           "actor": "agent",
           "kind": "request_sent",
           "title": "Riverside agent → Northside agent: SendMessage (A2A 1.0)",
-          "detail": "http://agent-north:8000/a2a/N1",
+          "detail": "http://127.0.0.1:18088/a2a/N1",
           "data": {
             "to": "N1",
-            "url": "http://agent-north:8000/a2a/N1",
+            "url": "http://127.0.0.1:18088/a2a/N1",
             "method": "SendMessage",
             "exclude": []
           }
@@ -558,10 +558,10 @@
           "actor": "agent",
           "kind": "confirm_sent",
           "title": "Riverside agent → Northside agent: confirm",
-          "detail": "http://agent-north:8000/a2a/N1",
+          "detail": "http://127.0.0.1:18088/a2a/N1",
           "data": {
             "to": "N1",
-            "url": "http://agent-north:8000/a2a/N1"
+            "url": "http://127.0.0.1:18088/a2a/N1"
           }
         },
         {
@@ -664,14 +664,14 @@
         "venue_id": "V1",
         "venue_name": "Riverside Aquatic Center",
         "manager": "Natalie Brooks",
-        "agent_url": "http://api:8000/a2a/V1",
+        "agent_url": "http://127.0.0.1:18088/a2a/V1",
         "approved": null
       },
       "lender": {
         "venue_id": "N1",
         "venue_name": "Northside Aquatic Center",
         "manager": "Omar Haddad",
-        "agent_url": "http://agent-north:8000/a2a/N1",
+        "agent_url": "http://127.0.0.1:18088/a2a/N1",
         "approved": null
       },
       "candidate": {
@@ -723,10 +723,10 @@
           "actor": "agent",
           "kind": "request_sent",
           "title": "Riverside agent → Northside agent: SendMessage (A2A 1.0)",
-          "detail": "http://agent-north:8000/a2a/N1",
+          "detail": "http://127.0.0.1:18088/a2a/N1",
           "data": {
             "to": "N1",
-            "url": "http://agent-north:8000/a2a/N1",
+            "url": "http://127.0.0.1:18088/a2a/N1",
             "method": "SendMessage",
             "exclude": []
           }
