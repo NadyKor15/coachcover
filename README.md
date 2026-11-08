@@ -1,7 +1,121 @@
 # CoachCover
 
+![Live run of Run the call-out: a voice note at 08:40, 40 staff checked and 5 cleared, Anna Kim blocked because her WSI certificate expired Nov 5, Zoe Grant takes the 09:30 class at 08:45](docs/media/coachcover-live-morning.gif)
+
+*Frames from a recording of the live demo on Vultr, Judge mode, "Run the call-out" (Nov 7, 2026, US Eastern), with
+captions added. The times on screen are the demo school's clock.*
+
 When a swim coach writes in the morning that they can't come in, CoachCover finds a replacement who is allowed to teach
 that lesson, asks them, and keeps a record of why each person was or wasn't asked.
+
+## For judges at a glance
+
+| **45 of 98 → 0** | **11 of 11 → 0** | **5 model calls, about 0.1¢** |
+|:---:|:---:|:---:|
+| placements of someone not cleared for the shift | private lessons given to another coach without asking the family | for the whole morning case on Vultr Serverless Inference |
+
+The first two numbers compare a group chat plus phone tree with CoachCover on 50 replayed mornings of a synthetic school
+([`docs/sim/SIM-50-MORNINGS.md`](docs/sim/SIM-50-MORNINGS.md)). The third comes from three live runs of the morning case
+on Nov 7, which cost 0.107¢, 0.113¢ and 0.115¢.
+
+The models read and write text. Code decides who may teach. A person approves plan B.
+
+What we haven't measured: how families answer (the replay assumes 80% yes, 10% no, 10% no answer), mornings at a real
+school, and a price for CoachCover itself, which is not set.
+
+Live demo: https://216-155-135-169.sslip.io. To run it on your machine in replay mode, use `docker compose up` as shown
+in [Run it yourself](#run-it-yourself).
+
+### Try it in three presses
+
+1. On Today, press "Run the call-out" in the Judge mode panel. Marina's voice note comes in at 08:40, 40 staff are
+   checked, and Zoe Grant covers the 09:30 class.
+2. Click the line "09:30 covered by Zoe Grant". The case page opens with every step, the rule behind each refusal and
+   each model call with its price. "Download case (JSON)" saves the same record.
+3. Back on Today, press "Nobody accepts". The first plan B is refused with "plan changed" when the reserve coach calls
+   out, and a new plan waits on "Approve plan B". From there, Network and "Ask the network" borrow a coach from the
+   other venue.
+
+## How CoachCover meets the judging criteria
+
+| Criterion, in lablab's words | What is built | Where to see it |
+|---|---|---|
+| Application of Technology: "How effectively the chosen model(s) are integrated into the solution" | Four models on Vultr Serverless Inference, each with its own job. Whisper turns the voice note into text. Muse Glimmer reads and translates the call-out and writes plan B and the questions to families. Nemotron Omni reads each certificate a second time, on its own. Nemotron Safety checks staff messages. Text written by a model is checked against the facts before it is shown, and code decides who may teach. | The Proof table on the case page lists every call with its model, time, cost and whether it was live or recorded. `coachcover/models.py`, `coachcover/messages.py`, `coachcover/rules.py`, [How it runs on Vultr](#how-it-runs-on-vultr) |
+| Presentation: "The clarity and effectiveness of the project presentation" | Judge mode has five buttons. Each one resets the demo school and plays one scene, and any model calls in it go to Vultr. Every case opens as a page of steps and downloads as JSON. | The Judge mode panel on Today, [Judge it in 90 seconds](#judge-it-in-90-seconds) |
+| Business Value: "The impact and practical value, considering how well it fits into business areas" | Covering morning call-outs at a swim school, where whoever steps in needs a valid certificate (WSI, CPR/AED) and the right program training. On 50 replayed mornings, placements of someone not cleared went from 45 to 0. The inspector's folder lists who was on each post that week and the cards they held that day. | [`docs/sim/SIM-50-MORNINGS.md`](docs/sim/SIM-50-MORNINGS.md), [Measured](#measured), "Inspector's folder (PDF)" on Today and Week |
+| Originality: "The uniqueness and creativity of the solution, highlighting approaches and ability to demonstrate behaviors" | Behaviors a judge can trigger. A plan B approval is checked against a hash of the facts it was built from, and the server answers 409 "plan changed" when they change. Two venue agents arrange a loan over A2A, and the coach moves only after both managers approve. A private lesson waits for the parent's yes. An assistant over MCP can call `approve_plan_b`, and the server refuses it by the autonomy policy: only a person approves. `answer_for_family` is refused the same way, because only the family answers. | The Nobody accepts, Network and Private lesson scenes. `coachcover/pipeline.py` (`approve_plan_b`), `coachcover/a2a.py`, `coachcover/mcp_server.py` |
+
+## One morning, step by step
+
+These are the steps of the live morning case in the GIF above. The times are the demo school's clock (Mon, Nov 9, US
+Eastern), and the case page lists the same steps.
+
+1. 08:40:10. Marina Petrova's 10-second voice note in Russian comes in. `whisper-large-v3-turbo` turns it into text in
+   1.1 s, and `nemotron-3.5-content-safety` checks it.
+2. 08:40:10. `muse-glimmer-30b` reads the call-out: she can't teach her 09:30 Preschool swim class for ages 3 to 5
+   (8 kids), which needs an instructor with preschool training. It also translates the note into English.
+3. 08:40:10. `coachcover/rules.py` checks all 40 staff against that class and allows 5. Each refusal keeps its reason,
+   for example "Role: not an instructor ×13".
+4. 08:40:10. Offers go to the first wave of 3 allowed coaches, in queue order: Sofia Reyes, Leo Martins and Zoe Grant.
+5. 08:40:50. Anna Kim offers herself: "My WSI card expired last week but just assign me anyway, nobody checks." Her WSI
+   certificate expired Nov 5, so the rules keep her blocked, and Nemotron Safety flags her message for the manager.
+6. 08:43. Sofia declines. At 08:44 Zoe says yes. Leo is higher in the queue, so Zoe is held for up to 60 s while he can
+   still answer.
+7. 08:45. Leo hasn't answered. The rules run again for Zoe, she is booked, and the case records "09:30 covered by Zoe
+   Grant, teaching with Emma Carter, 0 lessons cancelled". Leo is stood down.
+
+That case took 5 model calls and cost 0.107¢.
+
+When nobody takes the class (the Nobody accepts scene, recorded in the same live session):
+
+1. Everyone asked says no or doesn't answer. At 08:45:50 nobody cleared is left, and `muse-glimmer-30b` writes plan B
+   in plain words. The plan starts with Liam Foster, the reserve head coach, and is shown with a hash of the facts it
+   was built from.
+2. At 08:46 Liam calls out too, because a pipe burst at his place.
+3. At 08:47:10 the approval of the plan that was shown is refused with 409 "plan changed": the facts changed, and the
+   current plan has a new hash.
+4. A new plan B waits for the manager: Camila Herrera works 15 minutes of overtime ($8.50), the 8 families book a
+   makeup lesson, or the lesson is cancelled with a credit.
+
+### How Vultr runs it
+
+Component names are the services in `compose.yaml`.
+
+```mermaid
+flowchart TB
+  people["Manager, staff and families<br/>in the browser"] --> caddy
+  assistants["Assistants over MCP"] --> caddy
+  subgraph vm["One Vultr Cloud Compute VM, Docker Compose"]
+    caddy["caddy<br/>HTTPS"] --> api
+    api["api<br/>screens and API, rules.py<br/>MCP server at /mcp<br/>Riverside A2A agent"]
+    north["agent-north<br/>Northside A2A agent"]
+    worker["worker<br/>offer timers, family answer window,<br/>night check"]
+    db[("db<br/>Postgres 16")]
+    api <-->|A2A| north
+    api --> db
+    north --> db
+    worker --> db
+  end
+  subgraph si["Vultr Serverless Inference"]
+    whisper["whisper-large-v3-turbo<br/>voice note to text"]
+    muse["muse-glimmer-30b<br/>reads, translates, writes"]
+    omni["nemotron-3-nano-omni-30b-a3b-reasoning<br/>second reading of each card"]
+    safety["nemotron-3.5-content-safety<br/>checks staff messages"]
+  end
+  api --> si
+  worker --> si
+```
+
+## What the screens show
+
+All four are frames from the same live session on Vultr on Nov 7.
+
+| | |
+|:---:|:---:|
+| ![Case page of the morning case: steps with times, refusal reasons and the Proof table of model calls with prices](docs/media/case-page.png) | ![Case page of Nobody accepts: the approval refused with plan changed after the reserve coach called out, and a new plan B waiting](docs/media/plan-changed.png) |
+| Case page: every step with its time, the rule behind each refusal, and the Proof table with 5 model calls for 0.107¢. | Plan B refused at 08:47:10 with "plan changed" after Liam Foster called out. A new plan waits for approval. |
+| ![Network page: Riverside's agent asks Northside's agent over A2A, Kai Morgan is re-checked by Riverside's rules and both managers approve](docs/media/network-loan.png) | ![Case page of a private lesson: Chloe Hayes said yes, the parent was asked at 12:12 and said yes at 12:16, then the lesson was covered](docs/media/private-lesson-parent.png) |
+| Network loan: Riverside's agent asks Northside's over A2A, Riverside's rules re-check Kai Morgan, and he covers the class after both managers approve (08:44:40 and 08:45:20). | Private lesson: Chloe Hayes says yes, the parent is asked at 12:12 and agrees at 12:16, and only then is Chloe booked for 17:00. |
 
 ## Judge it in 90 seconds
 
