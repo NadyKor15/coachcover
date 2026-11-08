@@ -387,7 +387,18 @@
       body.appendChild(t); body.appendChild(b); card.appendChild(body);
       side.appendChild(card);
     });
+    // the inspector's folder in one click: the week's posts, people, cards and cases as a PDF
+    const folder = el('a', 'folder');
+    folder.id = 'folder';
+    folder.dataset.slot = 'inspector-folder';
+    folder.href = CC.folderHref(d.venue && d.venue.id);
+    folder.target = '_blank';
+    folder.rel = 'noopener';
+    folder.innerHTML = FOLDER_ICON;
+    folder.appendChild(el('span', null, "Inspector's folder (PDF)"));
+    side.appendChild(folder);
   }
+  const FOLDER_ICON = "<svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/><path d=\"M14 2v6h6\"/><path d=\"M9 13h6M9 17h6\"/></svg>";
 
   const PLAN_HEAD = {
     standby: 'Plan B ready if no one accepts',
@@ -648,6 +659,7 @@
   $('#play').addEventListener('click', togglePlay);
   // chip rows and the plan B text are measured: lay out again once the web font is in
   document.fonts.ready.then(() => { if (ui.data) render(ui.data); });
+  CC.fillFooter(slot('footer-line'));
   ['#covered', '.band'].forEach(sel => {
     const box = $(sel);
     const go = () => { if (ui.caseHref) location.href = ui.caseHref; };

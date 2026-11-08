@@ -48,7 +48,11 @@ svg{display:block}
 .meta .who{margin-left:15.1px}
 
 /* ---------- main ---------- */
-.main{grid-row:2;grid-column:2;padding-left:29px}
+.main{grid-row:2;grid-column:2;padding-left:29px;position:relative}
+.folder{position:absolute;right:24px;top:44px;display:flex;align-items:center;gap:10px;height:52px;padding:0 20px;
+  border:1.5px solid var(--teal);border-radius:10px;background:#fff;color:var(--teal);font-size:20px;font-weight:700;
+  text-decoration:none;white-space:nowrap}
+.folder:hover{background:#eef6f4}
 h1{margin:39.5px 0 0 14.9px;font-weight:760;font-size:49.3px;line-height:60px;letter-spacing:-1.14px;white-space:nowrap}
 .sub{margin:3.3px 0 0 15.9px;font-size:25.2px;line-height:32px;letter-spacing:-0.54px;color:var(--ink-2);white-space:nowrap}
 .board{margin-top:26.2px;display:grid;grid-template-columns:1011px 554px;column-gap:22px;align-items:start}

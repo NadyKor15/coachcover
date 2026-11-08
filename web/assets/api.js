@@ -203,8 +203,29 @@
     return (r.status ? 'HTTP ' + r.status : 'no connection') + (b.error || b.detail || b.reason ? ': ' + (b.error || b.detail || b.reason) : '');
   }
 
+  // the footer says how the models answer: the server's model mode from /health (live: "Running on Vultr", replay: the
+  // recorded and prepared answers); ?fixture=1 shows answers captured in replay. Unknown: the name only, no claim.
+  const FOOTER = { live: 'CoachCover · Running on Vultr.', replay: 'CoachCover · Replay mode.' };
+  let modeAsked = null;
+  function modelMode() {
+    if (!modeAsked) {
+      modeAsked = FIXTURE ? Promise.resolve('replay')
+        : http('GET', '/health').then(r => (r.status === 200 && r.body && (r.body.model_mode || r.body.mode)) || null);
+    }
+    return modeAsked;
+  }
+  async function fillFooter(node) {
+    if (!node) return;
+    const mode = await modelMode();
+    node.textContent = FOOTER[mode] || 'CoachCover';
+    node.dataset.mode = mode || 'unknown';
+  }
+  // the inspector's folder (PDF) of the week the server opens without dates (the one with shifts still ahead)
+  const folderHref = venue => FIXTURE ? FIXTURE_BASE + 'binder.pdf'
+    : '/api/binder.pdf' + (venue ? '?venue=' + encodeURIComponent(venue) : '');
+
   // fixture mode: what a link to another screen adds so it opens the same scene ("" in live mode)
   const fixtureQuery = () => FIXTURE ? 'fixture=1' + (variant() ? '&mock=' + variant() : '') : '';
 
-  global.CC = { FIXTURE, MOCKS, get, post, errorText, params, fixtureQuery };
+  global.CC = { FIXTURE, MOCKS, get, post, errorText, params, fixtureQuery, FOOTER, fillFooter, folderHref };
 })(window);

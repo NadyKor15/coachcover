@@ -49,6 +49,15 @@ def call(base: str, method: str, path: str, body: dict | None = None) -> tuple[i
         return err.code, json.loads(err.read() or b"{}")
 
 
+def pdf(base: str, path: str) -> bytes:
+    """A PDF the API answers (the inspector's folder), as bytes."""
+    with urllib.request.urlopen(urllib.request.Request(base + path, headers={"Accept": "application/pdf"}), timeout=60) as res:
+        body = res.read()
+        if res.status != 200 or res.headers.get_content_type() != "application/pdf" or not body.startswith(b"%PDF-"):
+            raise SystemExit(f"GET {path}: expected a PDF, got {res.status} {res.headers.get_content_type()}")
+        return body
+
+
 def ok(base: str, method: str, path: str, body: dict | None = None, expect: int = 200) -> dict:
     status, answer = call(base, method, path, body)
     if status != expect:
@@ -304,6 +313,9 @@ def main() -> None:
         save(f"offers/{o['id']}.json", ok(base, "GET", f"/api/offers/{o['id']}"))
     case_id = today["callout"]["case_id"]
     save(f"cases/{case_id}.json", ok(base, "GET", f"/api/cases/{case_id}"))
+    # the inspector's folder button (Today, Week) opens this PDF in ?fixture=1: the API's own, for the default week
+    (out / "binder.pdf").write_bytes(pdf(base, f"/api/binder.pdf?venue={today['venue']['id']}"))
+    written.append("binder.pdf")
 
     ok(base, "POST", "/api/groups/G003/enroll", {"add": 2, "by": "front desk"})
     ratio_open = ok(base, "GET", "/api/today")
