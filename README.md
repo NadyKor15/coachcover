@@ -82,9 +82,6 @@ CoachCover, on the same school and the same call-outs:
 Of the 11 private lessons, CoachCover booked another coach 8 times after the family said yes, moved 2 to the family's
 own coach and gave 1 credit. How families answer is assumed, not measured (yes 80%, no 10%, no answer 10%).
 
-The slowest tenth of shifts close later with CoachCover (25.0 vs 16.3 minutes). It asks only people who are allowed,
-three at a time with a 5-minute timer, and plan B waits for the manager; the chat books whoever answers first.
-
 In a live run on Vultr (Nov 7), the morning case took 5 model calls for 0.113¢, about a tenth of a cent.
 
 In an earlier build we tried growing waves (3, then 5, then everyone): no faster in the slowest mornings, and more people
