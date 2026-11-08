@@ -31,6 +31,8 @@ a nearby pool for a coach, and pulls together the records an inspector asks for.
 What we haven't measured: how families answer (the replay assumes 80% yes, 10% no, 10% no answer), mornings at a real
 school, and a price for CoachCover itself, which is not set.
 
+Video (4:31): https://youtu.be/J93bEwJ2yE8
+
 Live demo: https://216-155-135-169.sslip.io. To run it on your machine in replay mode, use `docker compose up` as shown
 in [Run it yourself](#run-it-yourself).
 
@@ -131,6 +133,8 @@ All four are frames from the same live session on Vultr on Nov 7.
 ## Judge it in 90 seconds
 
 Live demo: https://216-155-135-169.sslip.io
+
+Video (4:31): https://youtu.be/J93bEwJ2yE8
 
 The morning screen has a Judge mode panel on the left. Each button resets the demo school and plays one scene; the
 model calls in it go to the models on Vultr. A visitor can run 6 judge runs an hour (scenes and the certificate
