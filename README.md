@@ -47,8 +47,6 @@ in [Run it yourself](#run-it-yourself).
    synthetic card live on Vultr. You see both readings, whether the dates agree, whether the card is accepted or goes
    to a person, and each call's time and price. It counts as one of the 6 judge runs an hour.
 
-On a laptop, zoom the browser out (Cmd − or Ctrl −) to about 75% to see the whole morning screen.
-
 ## How CoachCover meets the judging criteria
 
 | Criterion, in lablab's words | What is built | Where to see it |
@@ -136,7 +134,7 @@ Live demo: https://216-155-135-169.sslip.io
 
 The morning screen has a Judge mode panel on the left. Each button resets the demo school and plays one scene; the
 model calls in it go to the models on Vultr. A visitor can run 6 judge runs an hour (scenes and the certificate
-check together). On a laptop, zoom the browser out (Cmd − or Ctrl −) to about 75% to see the whole morning screen.
+check together). On a laptop window the screens scale down to fit, so the whole morning screen stays in view.
 
 | Press | What you see |
 |---|---|
