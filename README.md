@@ -41,6 +41,17 @@ manager roster the coach: "An expired certificate does not block rostering."
 Pricing: $49 per pool per month, or $490 per year (two months free). This is the launch price; it may go up as we add
 features.
 
+What a senior coach at a swim school told us after watching the video:
+
+> "We have 28 coaches, so it happens regularly, about 20 times a month. Most often it's illness or emergencies we find
+> out about in the morning. We do it by hand: we call and message coaches and check who is free and who has the right
+> qualification. It takes a long time, and a lot of the time we can't find a replacement. If a coach drops out on the
+> same day, we usually have to cancel the class. The school loses $4,000 or more every month on this, plus unhappy
+> parents and extra work for the admin team. Yes, we would use it. Up to $100 a month is fine, if the service really
+> gets the classes covered."
+>
+> Oleg, senior coach, Dom Fizkulturnika (swim school with 28 coaches)
+
 What we haven't measured: how families answer (the replay assumes 80% yes, 10% no, 10% no answer) and mornings at a
 real school.
 
@@ -255,6 +266,18 @@ footer of every screen follows the server's mode: "CoachCover · Running on Vult
 3. Who may teach the 3–5-year-olds is this school's own rule (its preschool training), not an industry standard.
 4. Waves of three and the evening check are product choices, not common practice.
 5. The demo data is made up: one school, one week.
+
+## What's next
+
+After feedback from Oleg, a senior swim coach, we will add:
+
+1. Coach development: find courses, seminars and certifications for coaches (where, when, cost), suggest who to
+   send, and remind each coach before their certificate expires.
+2. A schedule builder that plans the week around qualifications, workload, coaches' preferences and pool lanes.
+3. On-call coaches for peak days and the cold season, suggested by the app.
+4. Make-up booking for parents in one tap, straight from the cancellation message.
+5. A tally of covers and hours for pay and bonuses: who covered, and how many times.
+6. A monthly report for management: lessons cancelled, money lost, and money saved by covers.
 
 ## Prices
 
