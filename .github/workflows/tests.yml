@@ -1,0 +1,40 @@
+name: tests
+
+on:
+  push:
+    branches: [main, "ci/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      COACHCOVER_TEST_DSN: postgresql://postgres@127.0.0.1:55432/postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test Postgres (same image and settings as scripts/test-db-up.sh)
+        run: |
+          docker run -d --name coachcover-pg-test -p 127.0.0.1:55432:5432 \
+            -e POSTGRES_HOST_AUTH_METHOD=trust postgres:16-alpine -c max_connections=300
+          for i in $(seq 1 30); do
+            docker exec coachcover-pg-test pg_isready -U postgres && exit 0
+            sleep 2
+          done
+          docker logs coachcover-pg-test
+          exit 1
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Python and dependencies (locked)
+        run: |
+          uv python install 3.12
+          uv sync --frozen
+
+      - name: pytest
+        run: uv run pytest -q
