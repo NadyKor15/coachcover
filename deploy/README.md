@@ -13,7 +13,7 @@ anything: the VM and the inference calls are paid from the account's credit.
 ## 2. The code
 
 ```bash
-git clone <the private repo> coachcover && cd coachcover
+git clone https://github.com/NadyKor15/coachcover coachcover && cd coachcover
 cp .env.example .env
 ```
 
