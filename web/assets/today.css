@@ -34,6 +34,9 @@
 html,body{width:1920px;height:1080px}
 body{position:relative;overflow:hidden;background:var(--bg);color:var(--text);
   font-family:"Inter",system-ui,sans-serif;font-weight:470;-webkit-font-smoothing:antialiased}
+/* Window smaller than the 1920 x 1080 canvas (laptops): let the page scroll instead of cutting it off.
+   At 1920 x 1080 and larger this block does not apply, so that size renders exactly as before. */
+@media (max-width:1919.98px),(max-height:1079.98px){body{overflow:auto}}
 svg{display:block}
 button{font-family:inherit}
 .nw{white-space:nowrap}
