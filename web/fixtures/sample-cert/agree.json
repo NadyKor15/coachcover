@@ -1,0 +1,113 @@
+{
+ "status": 200,
+ "retry_after": null,
+ "body": {
+  "check_id": "0cec9d24ea1242abba38156f99df256d",
+  "sample": {
+   "id": "c3-photo",
+   "label": "CPR/AED card, phone photo",
+   "image_url": "/media/sample-cards/c3-photo.jpg",
+   "cert_type": "cpr_aed",
+   "synthetic": true
+  },
+  "applicant": {
+   "staff_id": "SAMPLE-C3-PHOTO",
+   "name": "Anna Petrova",
+   "on_roster": false
+  },
+  "readings": [
+   {
+    "model": "muse-glimmer-30b",
+    "reader": "Muse Glimmer",
+    "ok": true,
+    "name": "Anna Petrova",
+    "card_number": "CFAI-PR-90412",
+    "issued": "2025-12-01",
+    "expires": "2027-12-01",
+    "issued_raw": "12/01/2025",
+    "expires_raw": "12/01/2027",
+    "ms": 1480,
+    "seconds_label": "1.5 s",
+    "cost_usd": 0.000754,
+    "cost_label": "0.075¢",
+    "source": "recorded",
+    "error": null
+   },
+   {
+    "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+    "reader": "Nemotron Omni",
+    "ok": true,
+    "name": "Anna Petrova",
+    "card_number": "CFAI-PR-90412",
+    "issued": "2025-12-01",
+    "expires": "2027-12-01",
+    "issued_raw": "12/01/2025",
+    "expires_raw": "12/01/2027",
+    "ms": 8780,
+    "seconds_label": "8.8 s",
+    "cost_usd": 0.000436,
+    "cost_label": "0.044¢",
+    "source": "recorded",
+    "error": null
+   }
+  ],
+  "dates_agree": true,
+  "outcome": "accepted",
+  "verdict": "Dates agree: accepted",
+  "flags": [],
+  "notes": [],
+  "card": {
+   "id": 108,
+   "type": "cpr_aed",
+   "issued_on": "2025-12-01",
+   "expires_on": "2027-12-01",
+   "review": false,
+   "expired": false
+  },
+  "checked_on": "2026-11-09",
+  "mode": "replay",
+  "ledger": [
+   {
+    "model": "muse-glimmer-30b",
+    "model_label": "muse-glimmer-30b",
+    "reader": "Muse Glimmer",
+    "at": "2026-11-09T13:40:00.025306+00:00",
+    "time_label": "08:40:00",
+    "ms": 1480,
+    "seconds_label": "1.5 s",
+    "input_tokens": 1073,
+    "output_tokens": 486,
+    "cost_usd": 0.000754,
+    "cost_label": "0.075¢",
+    "source": "recorded",
+    "source_label": "recorded answer (card-c3-photo-muse.json)",
+    "synthetic": false,
+    "ok": true,
+    "error": null
+   },
+   {
+    "model": "nemotron-3-nano-omni-30b-a3b-reasoning",
+    "model_label": "nemotron-omni",
+    "reader": "Nemotron Omni",
+    "at": "2026-11-09T13:40:00.025306+00:00",
+    "time_label": "08:40:00",
+    "ms": 8780,
+    "seconds_label": "8.8 s",
+    "input_tokens": 835,
+    "output_tokens": 1411,
+    "cost_usd": 0.000436,
+    "cost_label": "0.044¢",
+    "source": "recorded",
+    "source_label": "recorded answer (card-c3-photo-omni.json)",
+    "synthetic": false,
+    "ok": true,
+    "error": null
+   }
+  ],
+  "total_cost_usd": 0.00119,
+  "total_cost_label": "0.119¢",
+  "unpriced_calls": 0,
+  "runs_left_this_hour": 5,
+  "runs_per_hour": 6
+ }
+}

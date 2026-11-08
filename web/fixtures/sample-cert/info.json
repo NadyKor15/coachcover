@@ -1,0 +1,37 @@
+{
+ "status": 200,
+ "retry_after": null,
+ "body": {
+  "mode": "replay",
+  "runs_per_hour": 6,
+  "runs_left_this_hour": 6,
+  "next_sample": "c3-photo",
+  "samples": [
+   {
+    "id": "c3-photo",
+    "label": "CPR/AED card, phone photo",
+    "image_url": "/media/sample-cards/c3-photo.jpg"
+   },
+   {
+    "id": "h22-photo",
+    "label": "CPR/AED card, photo with glare",
+    "image_url": "/media/sample-cards/h22-photo.jpg"
+   },
+   {
+    "id": "c1-photo",
+    "label": "Lifeguarding card, phone photo",
+    "image_url": "/media/sample-cards/c1-photo.jpg"
+   },
+   {
+    "id": "c2-scan",
+    "label": "WSI card, scan",
+    "image_url": "/media/sample-cards/c2-scan.png"
+   },
+   {
+    "id": "c4-photo",
+    "label": "Lifeguarding card, phone photo",
+    "image_url": "/media/sample-cards/c4-photo.jpg"
+   }
+  ]
+ }
+}

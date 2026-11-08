@@ -1691,15 +1691,16 @@ class Pipeline:
 
     # --- certificate cards ------------------------------------------------------
 
-    def read_certificate(self, staff_id: str, image: bytes, mime: str, now: datetime, cert_type: str | None = None) -> dict:
+    def read_certificate(self, staff_id: str, image: bytes, mime: str, now: datetime, cert_type: str | None = None,
+                         ref: dict | None = None) -> dict:
         """Two independent readers. Trusted only when both agree on the dates (the database checks it too);
         a different card number alone is a note ("check_id"), not a block. Another person's name, an unknown
-        type or a failed reader sends the card to a person."""
+        type or a failed reader sends the card to a person. `ref`: extra keys for the ledger rows of both readers."""
         person = self._staff_row(staff_id)
         policy = self._policy()
         if cert_type is not None and cert_type not in policy.preset.cert_types:
             raise ValueError(f"unknown certificate type {cert_type!r}")
-        ref = {"staff_id": staff_id}
+        ref = {**(ref or {}), "staff_id": staff_id}
         readings: dict[str, dict | None] = {}
         flags: list[str] = []
         notes: list[str] = []

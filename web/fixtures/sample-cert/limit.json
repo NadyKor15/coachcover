@@ -1,0 +1,9 @@
+{
+ "status": 429,
+ "retry_after": "3600",
+ "body": {
+  "error": "limit of 6 judge runs per hour reached",
+  "runs_left_this_hour": 0,
+  "runs_per_hour": 6
+ }
+}
