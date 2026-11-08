@@ -29,6 +29,7 @@ from functools import lru_cache
 from pathlib import Path
 from time import monotonic, sleep
 from typing import Any, Callable
+from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
 import httpx
@@ -100,6 +101,17 @@ def agent_url(venue_id: str, base_url: str) -> str:
     """The venue agent's JSON-RPC address: COACHCOVER_A2A_PEERS (JSON {venue: url}) or this server."""
     peers = json.loads(os.environ.get("COACHCOVER_A2A_PEERS") or "{}")
     return peers.get(venue_id) or f"{base_url.rstrip('/')}/a2a/{venue_id}"
+
+
+def public_agent_url(venue_id: str, base_url: str) -> str:
+    """The address the Agent Card shows to the world. A peer address that only the compose network resolves (a host
+    name without a dot: `api`, `agent-north`) is shown as this server's own `{base_url}/a2a/{venue}`. Calls between
+    the agents keep using `agent_url`, the internal address."""
+    url = agent_url(venue_id, base_url)
+    host = urlsplit(url).hostname or ""
+    if "." in host or ":" in host:  # a public name or an IP address (IPv6 has colons)
+        return url
+    return f"{base_url.rstrip('/')}/a2a/{venue_id}"
 
 
 def send(url: str, method: str, params: dict) -> dict:
@@ -403,7 +415,7 @@ def agent_card(conn: psycopg.Connection, base_url: str) -> dict:
                 f"The agent of {m.venue_name} checks its own people by its own rules for another venue's shift, "
                 f"keeps at least {m.min_guards} people of its guard role on site or free and cleared, and offers one "
                 f"person. Both managers approve in CoachCover; an agent cannot approve for a manager. "
-                f"JSON-RPC endpoint: {agent_url(m.venue_id, base_url)}"
+                f"JSON-RPC endpoint: {public_agent_url(m.venue_id, base_url)}"
             ),
             "tags": ["staffing", "staff-loan", "eligibility", m.venue_id],
             "examples": [json.dumps(example)],
@@ -415,7 +427,7 @@ def agent_card(conn: psycopg.Connection, base_url: str) -> dict:
         "description": ("One agent per venue of the network. Each venue keeps its own rules and its own manager. "
                         "Training venues on one machine; no real staff data."),
         "supportedInterfaces": [
-            {"url": agent_url(m.venue_id, base_url), "protocolBinding": "JSONRPC", "protocolVersion": A2A_VERSION}
+            {"url": public_agent_url(m.venue_id, base_url), "protocolBinding": "JSONRPC", "protocolVersion": A2A_VERSION}
             for m in ms.values()
         ],
         "provider": {"organization": "CoachCover (training network)", "url": base_url.rstrip("/")},

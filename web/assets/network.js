@@ -41,6 +41,7 @@
     const t = ui.today, l = ui.loan;
     slot('pool-name').textContent = (l && l.borrower && l.borrower.venue_name) || (t && t.venue && t.venue.name) || '';
     slot('today-date').textContent = t && t.now_label ? String(t.now_label).split(' · ')[0] : '';
+    document.getElementById('navReports').href = CC.folderHref(t && t.venue && t.venue.id);
     slot('user-label').textContent = (t && t.user_label) || '';
     fitUserLabel();
     const net = ui.network && (ui.network.networks || []).find(n => !l || n.id === l.network_id);
@@ -179,7 +180,8 @@
       const start = String((l.shift && l.shift.time_label) || '').split(' ').pop().split('–')[0];
       t.append(el('span', null, l.status_label), ' · ', el('span', null, (l.candidate && l.candidate.name) || ''),
         ' covers ' + short(l.borrower.venue_name) + ' ' + start, ' · case ', el('span', null, (l.case && l.case.ref) || ''));
-      r.href = l.case && l.case.ref ? withFx('case.html?id=' + encodeURIComponent(l.case.ref) + (CC.FIXTURE ? '&mock=network_loan' : '')) : '#';
+      if (l.case && l.case.ref) r.href = withFx('case.html?id=' + encodeURIComponent(l.case.ref) + (CC.FIXTURE ? '&mock=network_loan' : ''));
+      else r.removeAttribute('href');
     } else if (l.status === 'awaiting_approval') {
       tone = 'wait';
       const waiting = [l.borrower, l.lender].filter(x => x && !x.approved);

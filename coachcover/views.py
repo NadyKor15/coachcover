@@ -7,15 +7,15 @@ its data-slot elements without logic.
 from __future__ import annotations
 
 import dataclasses
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from zoneinfo import ZoneInfo
 
 import psycopg
 
 from coachcover.models import MODEL_LABELS
 from coachcover.pipeline import plain
-from coachcover.repo import load_context, load_policy, load_shift, load_staff
-from coachcover.rules import Code, eligible
+from coachcover.repo import load_context, load_policy, load_shift, load_staff, load_venues
+from coachcover.rules import Code, add_months, cert_expiry, eligible
 
 CODE_TEXT = {
     Code.IS_THE_ABSENT_PERSON.value: "the absent person",
@@ -148,3 +148,84 @@ def ledger(conn: psycopg.Connection, limit: int = 200) -> dict:
     return plain({"calls": calls, "per_model": per_model,
                   "total_cost_usd": round(sum(p["cost_usd"] for p in per_model), 6),
                   "total_calls": sum(p["calls"] for p in per_model)})
+
+
+EXPIRING_DAYS = 30  # the same radar as "Expiring in 30 days" on Today
+CERT_WORDS = {
+    "revoked": "Revoked by issuer",
+    "expired": "Expired",
+    "review": "Readers disagree — review",
+    "expiring": "Expires soon",
+    "valid": "Valid",
+    "not_yet_valid": "Not valid yet",
+    "replaced": "Replaced by a newer card",
+}
+
+
+def cert_status(card, cert_type, today: date) -> tuple[str, int]:
+    """The state of one card on `today`, in the order the rules use: a card the issuer revoked stops at its revocation
+    day, then the printed dates, and a card whose two readings disagree is not trusted until a person checks it.
+    Returns (state, days left to the last valid day)."""
+    expires = cert_expiry(card, cert_type)
+    left = (expires - today).days
+    if card.revoked_on is not None and card.revoked_on <= today:
+        return "revoked", left
+    if expires < today:
+        return "expired", left
+    if card.issued_on > today:
+        return "not_yet_valid", left
+    if card.needs_review:
+        return "review", left
+    if left <= EXPIRING_DAYS:
+        return "expiring", left
+    return "valid", left
+
+
+def staff_directory(conn: psycopg.Connection, policy_id: str, now: datetime) -> dict:
+    """GET /api/staff: everyone active in the school with roles, programs and each certificate with its state today.
+    Read-only; the data is the training school's, and the state of a card is computed as the rules compute it."""
+    policy = load_policy(conn, policy_id)
+    preset = policy.preset
+    venues = {vid: name for vid, name in conn.execute("SELECT id, name FROM venue WHERE policy_id = %s", (policy_id,))}
+    zones = [v.tz for v in load_venues(conn, policy_id).values()]
+    today = now.astimezone(ZoneInfo(zones[0]) if zones else UTC).date()
+    people, totals = [], {key: 0 for key in CERT_WORDS}
+    for person in load_staff(conn, policy_id):
+        cards = []
+        for card in person.certs:
+            ctype = preset.cert_types[card.cert_type]
+            state, left = cert_status(card, ctype, today)
+            newer = any(o is not card and o.cert_type == card.cert_type and cert_expiry(o, ctype) > cert_expiry(card, ctype)
+                        for o in person.certs)
+            if newer:
+                state = "replaced"  # as in the night check: only the card that lasts longest counts
+            totals[state] += 1
+            cards.append({
+                "type": card.cert_type, "label": ctype.label, "short": ctype.short or ctype.label,
+                "issued_on": card.issued_on, "expires_on": cert_expiry(card, ctype), "days_left": left,
+                "revoked_on": card.revoked_on, "state": state, "state_label": CERT_WORDS[state],
+            })
+        cards.sort(key=lambda c: (c["label"], c["expires_on"]))
+        programs = []
+        for code, held in person.programs.items():
+            program = preset.programs[code]
+            due = add_months(held.renewed_at, program.renewal_months) if program.renewal_months else None
+            programs.append({
+                "code": code, "label": program.label,
+                # a program with one level is named by the program alone, as on the other screens
+                "levels": [program.levels[lv].label for lv in program.levels if lv in held.levels] if len(program.levels) > 1 else [],
+                "renewal_due": due, "renewal_overdue": due is not None and due < today,
+            })
+        states = {c["state"] for c in cards}
+        worst = next((s for s in ("revoked", "expired", "review", "not_yet_valid", "expiring") if s in states), "valid")
+        people.append({
+            "id": person.id, "name": person.name, "home_venue": venues.get(person.home_venue),
+            "roles": sorted(preset.roles[r].label for r in person.roles),
+            "languages": sorted(person.languages), "programs": programs, "certs": cards, "state": worst,
+            "needs_review": "review" in states,
+        })
+    return plain({
+        "as_of": today, "venue_count": len(venues), "staff": people, "totals": totals,
+        "expiring_days": EXPIRING_DAYS,
+        "note": "Training school: every name and card is invented. The issuer registry is simulated.",
+    })

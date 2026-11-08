@@ -193,6 +193,7 @@
 
   function render(d) {
     setText('facility', d.venue && d.venue.name);
+    $('#navReports').dataset.href = CC.folderHref(d.venue && d.venue.id);
     setText('date', d.date_label);
     setText('user', d.user_label);
     setText('case-id', d.case_id);
@@ -213,14 +214,23 @@
     dl.href = dl.dataset.url;
     dl.download = 'case-' + (d.case_id || caseId) + '.json';
     dl.setAttribute('aria-disabled', 'false');
+    dl.style.display = '';
   }
 
   async function load() {
     const err = $('#loadErr');
     if (!caseId) {
-      err.textContent = 'No case id in the link (case.html?id=…).';
+      // "Cases" in the menu: open the case of Today's call-out; before any call-out there is none to open
+      const today = await CC.get('/api/today');
+      const latest = today.status === 200 && today.body && today.body.callout && today.body.callout.case_id;
+      if (latest) {
+        location.replace('case.html?id=' + encodeURIComponent(latest) + (CC.FIXTURE ? '&' + CC.fixtureQuery() : ''));
+        return;
+      }
+      err.textContent = 'No case yet. Press "Run the call-out" on Today and the case opens here.';
       err.hidden = false;
       document.body.dataset.state = 'error';
+      $('#download').style.display = 'none';  // nothing to download without a case
       return;
     }
     const r = await CC.get('/api/cases/' + encodeURIComponent(caseId));
@@ -232,11 +242,13 @@
       err.textContent = 'Could not load case ' + caseId + ' — ' + CC.errorText(r);
       err.hidden = false;
       document.body.dataset.state = 'error';
+      $('#download').style.display = 'none';  // nothing to download without a case
     }
   }
 
   document.fonts.ready.then(() => { if (document.body.dataset.state === 'ready') { fitTitle(); placeRail(); } });
   document.querySelectorAll('.nav li[data-href]').forEach(li => li.addEventListener('click', () => {
+    if (li.hasAttribute('data-blank')) { window.open(li.dataset.href, '_blank', 'noopener'); return; }  // the PDF opens beside
     location.href = li.dataset.href + (CC.FIXTURE ? '?fixture=1' : '');
   }));
   load();

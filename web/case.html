@@ -17,14 +17,10 @@
     <ul class="nav">
       <li data-href="index.html"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9.5h18"/></svg><span class="lbl">Today</span></li>
       <li data-href="week.html"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9.5h18"/><path d="M7.5 13.5h.01M12 13.5h.01M16.5 13.5h.01M7.5 17h.01M12 17h.01M16.5 17h.01" stroke-width="2.6"/></svg><span class="lbl">Week ahead</span></li>
-      <li class="wide"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M12 2.2v2.3"/><circle cx="12" cy="10.8" r="2.8"/><path d="M7.2 18.5c.6-2.4 2.5-3.6 4.8-3.6s4.2 1.2 4.8 3.6"/></svg><span class="lbl">Staff &amp; Certificates</span></li>
-      <li class="active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M7.5 8h.01M7.5 12h.01M7.5 16h.01" stroke-width="2.8"/><path d="M11 8h6M11 12h6M11 16h6" stroke-width="2.4"/></svg><span class="lbl">Cases</span></li>
+      <li class="wide" data-href="staff.html"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16.5" rx="2"/><path d="M12 2.2v2.3"/><circle cx="12" cy="10.8" r="2.8"/><path d="M7.2 18.5c.6-2.4 2.5-3.6 4.8-3.6s4.2 1.2 4.8 3.6"/></svg><span class="lbl">Staff &amp; Certificates</span></li>
+      <li class="active" data-href="case.html"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M7.5 8h.01M7.5 12h.01M7.5 16h.01" stroke-width="2.8"/><path d="M11 8h6M11 12h6M11 16h6" stroke-width="2.4"/></svg><span class="lbl">Cases</span></li>
       <li data-href="network.html"><svg viewBox="0 0 24 24"><circle cx="16" cy="5" r="3"/><circle cx="5" cy="18.5" r="3"/><circle cx="19" cy="18.5" r="3"/><path d="M14.2 7.4 6.8 16M8 18.5h8"/></svg><span class="lbl">Network</span></li>
-      <li><svg viewBox="0 0 24 24"><circle cx="9" cy="7.5" r="3.8"/><path d="M2.5 21v-1.2A5 5 0 0 1 7.5 15h3a5 5 0 0 1 5 4.8V21"/><path d="M16 3.6a3.9 3.9 0 0 1 0 7.6M18.5 15.2a5 5 0 0 1 3 4.6V21"/></svg><span class="lbl">Groups</span></li>
-      <li><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M5.3 5.3l13.4 13.4"/></svg><span class="lbl">Closures</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M6.5 20.5v-6M12 20.5V10M17.5 20.5V4" stroke-width="3"/></svg><span class="lbl">Reports</span></li>
-      <li><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9.5h18"/></svg><span class="lbl">Schedule</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="lbl">Settings</span></li>
+      <li id="navReports" data-href="/api/binder.pdf" data-blank><svg viewBox="0 0 24 24"><path d="M6.5 20.5v-6M12 20.5V10M17.5 20.5V4" stroke-width="3"/></svg><span class="lbl">Reports</span></li>
     </ul>
   </aside>
 
@@ -50,7 +46,7 @@
     <section class="card head">
       <h1 class="case-title">Case <span data-slot="case-id"></span> · <span data-slot="case-shift"></span></h1>
       <span class="pill" id="pill"><span data-slot="status"></span><span id="pillSep">&nbsp;·&nbsp;</span><span data-slot="covered-time"></span></span>
-      <a class="btn" id="download" href="#" data-slot="download-case" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Download case (JSON)</a>
+      <a class="btn" id="download" data-slot="download-case" aria-disabled="true" style="display:none"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Download case (JSON)</a>
     </section>
 
     <div class="cols">
