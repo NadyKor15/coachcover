@@ -1,7 +1,7 @@
 # CoachCover
 
 [![tests](https://github.com/NadyKor15/coachcover/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/NadyKor15/coachcover/actions/workflows/tests.yml)
-CI runs the 415 pytest tests against Postgres 16 on every push. The 337 browser checks of the screens run locally.
+CI runs the 434 pytest tests against Postgres 16 on every push. The 471 browser checks of the screens run locally.
 
 ![Live run of Run the call-out: a voice note at 08:40, 40 staff checked and 5 cleared, Anna Kim blocked because her WSI certificate expired Nov 5, Zoe Grant takes the 09:30 class at 08:45](docs/media/coachcover-live-morning.gif)
 
@@ -10,6 +10,12 @@ captions added. The times on screen are the demo school's clock.*
 
 When a swim coach writes in the morning that they can't come in, CoachCover finds a replacement who is allowed to teach
 that lesson, asks them, and keeps a record of why each person was or wasn't asked.
+
+Proof it's live on Vultr: [/health](https://216-155-135-169.sslip.io/health) answers `"model_mode": "live"`, and
+[/api/models/ledger](https://216-155-135-169.sslip.io/api/models/ledger) lists every model call with the model asked for,
+the model that answered, the time and the cost. Every call goes through an allowlist in `coachcover/models.py`: a model
+that is not on the list fails before anything is sent, and an answer that comes back from a different model is thrown
+away. The worker on the same VM runs the offer timers, the family's answer window and the night check.
 
 ## For judges at a glance
 
@@ -156,6 +162,9 @@ and every model call with its time and cost. "Download case (JSON)" saves the sa
 "Inspector's folder (PDF)", on Today under the cards on the right and on Week next to the title, opens the folder for
 the week that still has shifts ahead: each post with the person on it and their cards valid that day, the replacements
 and the closures, with hashes.
+
+In the starting state the folder reads "1 violation" on purpose: Javier Morales's CPR/AED card expired on Nov 8, before
+his Monday 16:00 Level 2 class. That is the case the Night check scene catches the night before.
 
 ## The use case
 
