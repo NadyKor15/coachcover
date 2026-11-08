@@ -43,7 +43,7 @@ in [Run it yourself](#run-it-yourself).
 
 | Criterion, in lablab's words | What is built | Where to see it |
 |---|---|---|
-| Application of Technology: "How effectively the chosen model(s) are integrated into the solution" | Four models on Vultr Serverless Inference, each with its own job. Whisper turns the voice note into text. Muse Glimmer reads and translates the call-out and writes plan B and the questions to families. Nemotron Omni reads each certificate a second time, on its own. Nemotron Safety checks staff messages. Text written by a model is checked against the facts before it is shown, and code decides who may teach. | The Proof table on the case page lists every call with its model, time, cost and whether it was live or recorded. `coachcover/models.py`, `coachcover/messages.py`, `coachcover/rules.py`, [How it runs on Vultr](#how-it-runs-on-vultr) |
+| Application of Technology: "How effectively the chosen model(s) are integrated into the solution" | Three models run live in the demo scenes on Vultr Serverless Inference, each with its own job. Whisper turns the voice note into text. Muse Glimmer reads and translates the call-out and writes plan B and the questions to families. Nemotron Safety checks staff messages. A fourth, Nemotron Omni, is the second reader of a certificate card when one is uploaded; the demo has no upload screen, so the scenes don't call it. Text written by a model is checked against the facts before it is shown, and code decides who may teach. | The Proof table on the case page lists every call with its model, time, cost and whether it was live or recorded. `coachcover/models.py`, `coachcover/messages.py`, `coachcover/rules.py`, [How it runs on Vultr](#how-it-runs-on-vultr) |
 | Presentation: "The clarity and effectiveness of the project presentation" | Judge mode has five buttons. Each one resets the demo school and plays one scene, and any model calls in it go to Vultr. Every case opens as a page of steps and downloads as JSON. | The Judge mode panel on Today, [Judge it in 90 seconds](#judge-it-in-90-seconds) |
 | Business Value: "The impact and practical value, considering how well it fits into business areas" | Covering morning call-outs at a swim school, where whoever steps in needs a valid certificate (WSI, CPR/AED) and the right program training. On 50 replayed mornings, placements of someone not cleared went from 45 to 0. The inspector's folder lists who was on each post that week and the cards they held that day. | [`docs/sim/SIM-50-MORNINGS.md`](docs/sim/SIM-50-MORNINGS.md), [Measured](#measured), "Inspector's folder (PDF)" on Today and Week |
 | Originality: "The uniqueness and creativity of the solution, highlighting approaches and ability to demonstrate behaviors" | Behaviors a judge can trigger. A plan B approval is checked against a hash of the facts it was built from, and the server answers 409 "plan changed" when they change. Two venue agents arrange a loan over A2A, and the coach moves only after both managers approve. A private lesson waits for the parent's yes. An assistant over MCP can call `approve_plan_b`, and the server refuses it by the autonomy policy: only a person approves. `answer_for_family` is refused the same way, because only the family answers. | The Nobody accepts, Network and Private lesson scenes. `coachcover/pipeline.py` (`approve_plan_b`), `coachcover/a2a.py`, `coachcover/mcp_server.py` |
@@ -102,7 +102,7 @@ flowchart TB
   subgraph si["Vultr Serverless Inference"]
     whisper["whisper-large-v3-turbo<br/>voice note to text"]
     muse["muse-glimmer-30b<br/>reads, translates, writes"]
-    omni["nemotron-3-nano-omni-30b-a3b-reasoning<br/>second reading of each card"]
+    omni["nemotron-3-nano-omni-30b-a3b-reasoning<br/>second reader on card upload,<br/>not called in the demo scenes"]
     safety["nemotron-3.5-content-safety<br/>checks staff messages"]
   end
   api --> si
@@ -157,14 +157,20 @@ One Vultr Cloud Compute VM runs the whole app in Docker Compose. That covers the
 (offer timers, the family's answer window, the night check), the MCP server for assistants, two A2A agents (Riverside's
 inside the app, Northside's in its own container), Postgres, and Caddy for HTTPS.
 
-Vultr Serverless Inference runs four models:
+Vultr Serverless Inference runs four models. The demo scenes call three of them live. The fourth, Nemotron Omni, runs
+only when a certificate card photo is uploaded (`POST /api/staff/{id}/certificates`), and the demo has no upload screen.
 
 | Model | What it does here |
 |---|---|
 | `whisper-large-v3-turbo` | turns the voice note into text |
-| `muse-glimmer-30b` | reads the call-out (whether they're out, which lessons, why), translates it, writes plan B and the questions to families, and gives the first reading of each certificate card |
-| `nemotron-3-nano-omni-30b-a3b-reasoning` | reads each certificate card a second time, on its own; if the two readings disagree on the dates, a person checks the card |
+| `muse-glimmer-30b` | reads the call-out (whether they're out, which lessons, why), translates it, writes plan B and the questions to families, and gives the first reading of an uploaded certificate card |
 | `nemotron-3.5-content-safety` | checks each message from staff; a flagged message goes to the manager, and the rules still apply |
+| `nemotron-3-nano-omni-30b-a3b-reasoning` | reads an uploaded certificate card a second time, on its own; if the two readings disagree on the dates, a person checks the card. Not called in the demo scenes |
+
+We ran the two card readers on Vultr on Nov 6 with 30 synthetic card photos (tilted, glare, blur, four date formats).
+Of 60 date fields, Muse Glimmer alone got 7 wrong and Omni alone got 3. Read together, they accepted no wrong date and
+sent 8 of the 30 cards to a person. The "Readers disagree" badge on Today comes from the demo data, not from a live
+reading.
 
 Nemotron 3 Nano Omni is NVIDIA's model. Its [model card](https://huggingface.co/nvidia/Nemotron-3-Nano-Omni-30B-A3B-Reasoning-BF16)
 says it was improved using several Qwen models and gpt-oss-120b.
