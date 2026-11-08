@@ -30,6 +30,7 @@
 
   function renderHeader(w, today) {
     slot('venue-name').textContent = (w.venue && w.venue.name) || '';
+    $('#navReports').href = CC.folderHref(w.venue && w.venue.id);
     slot('today-date').textContent = today && today.now_label ? String(today.now_label).split(' · ')[0] : (w.week && w.week.label) || '';
     slot('user').textContent = (today && today.user_label) || '';
     document.querySelectorAll('[data-nav]').forEach(a => {

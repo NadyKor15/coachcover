@@ -76,7 +76,7 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     check('C: state ready', await p.evaluate(() => document.body.dataset.state) === 'ready');
     check('C: title from data', await text(p, 'h1') === today.title);
     const nav = await texts(p, '.nav li');
-    check('C: menu', JSON.stringify(nav) === JSON.stringify(['Today', 'Week ahead', 'Staff & Certificates', 'Cases', 'Network', 'Groups', 'Closures', 'Reports', 'Schedule', 'Settings']), nav);
+    check('C: menu', JSON.stringify(nav) === JSON.stringify(['Today', 'Week ahead', 'Staff & Certificates', 'Cases', 'Network', 'Reports']), nav);  // the four items without a page were removed
     const e = today.eligibility;
     const dots = await p.$$eval('.dot', ds => ds.map(d => ({ cls: d.className, title: d.title })));
     check('C: one dot per person', dots.length === e.staff.length && e.staff.length === e.total, dots.length);
@@ -613,9 +613,16 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await p.goto(base + 'case.html?id=C-0000&fixture=1');
     await p.waitForFunction(() => document.body.dataset.state === 'error');
     check('case: unknown id → error line', (await text(p, '#loadErr')).includes('HTTP 404'));
+    // "Cases" from a page that has no case id in hand: the case of Today's call-out opens
+    await p.goto(base + 'case.html?fixture=1');
+    await p.waitForURL('**/case.html?id=' + caseId + '&fixture=1');
+    await ready(p);
+    check('case: no id → the case of Today\'s call-out', (await text(p, '[data-slot="case-id"]')) === caseId);
+    // before any call-out there is no case: a plain line says so
+    await p.route('**/fixtures/today.json', r => r.fulfill({ contentType: 'application/json', body: JSON.stringify(Object.assign({}, today, { callout: null })) }));
     await p.goto(base + 'case.html?fixture=1');
     await p.waitForFunction(() => document.body.dataset.state === 'error');
-    check('case: no id → error line', (await text(p, '#loadErr')).startsWith('No case id'));
+    check('case: no id and no call-out → "No case yet" line', (await text(p, '#loadErr')).startsWith('No case yet'));
     await p.close();
 
     /* screen C opens the case: covered line, timeline, ratio banner */
@@ -830,6 +837,94 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await Promise.all([p.waitForURL('**/network.html?fixture=1'), p.click('.nav li[data-href="network.html"]')]);
     check('case -> Network', p.url().endsWith('network.html?fixture=1'));
     await p.close();
+    /* ---------- the menu: the same six items on every page, each one a real link ---------- */
+    const MENU = ['Today', 'Week ahead', 'Staff & Certificates', 'Cases', 'Network', 'Reports'];
+    const staffFx = fx('staff.json');
+    for (const page of ['index', 'week', 'staff', 'network', 'case']) {
+      p = await newPage(browser, 1920, 1080);
+      await p.goto(base + page + '.html?' + (page === 'case' ? 'id=' + caseId + '&' : '') + 'fixture=1');
+      await ready(p);
+      const items = await p.$$eval('.nav > li, .nav > a', els => els.map(e => {
+        const a = e.tagName === 'A' ? e : e.querySelector('a');
+        return { text: e.innerText.replace(/\s+/g, ' ').trim(), href: a ? a.getAttribute('href') : e.getAttribute('data-href') };
+      }));
+      check(page + ': menu has the six items', JSON.stringify(items.map(i => i.text)) === JSON.stringify(MENU), items.map(i => i.text));
+      check(page + ': every menu item is a real link (no "#")', items.every(i => i.href !== null && i.href !== undefined && i.href !== '#' && !String(i.href).startsWith('#')), items);
+      check(page + ': Reports opens the inspector\'s folder PDF', items.find(i => i.text === 'Reports').href.endsWith('binder.pdf'), items);
+      if (page !== 'index') {
+        const cases = items.find(i => i.text === 'Cases');
+        check(page + ': Cases leads to the case', page === 'case' || cases.href === 'case.html?id=' + caseId + '&fixture=1', cases);
+      }
+      await p.close();
+    }
+    for (const page of ['offer', 'client']) {
+      p = await newPage(browser, 1920, 1080);
+      await p.goto(base + page + '.html?fixture=1' + (page === 'offer' ? '&id=' + pendingId : ''));
+      check(page + ': the logo is not a dead "#" link', (await p.$eval('.brand', a => a.getAttribute('href'))) === 'index.html');
+      await p.close();
+    }
+
+    /* ---------- Staff & Certificates ---------- */
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'index.html?fixture=1');
+    await ready(p);
+    await Promise.all([p.waitForURL('**/staff.html?fixture=1'), p.click('.nav a[data-nav="staff"]')]);
+    await ready(p);
+    check('staff: state ready', (await p.evaluate(() => document.body.dataset.state)) === 'ready');
+    check('staff: one row per person from the API answer', (await p.$$('[data-slot="person"]')).length === staffFx.staff.length && staffFx.staff.length === 40);
+    check('staff: the menu marks Staff & Certificates', (await text(p, '.nav-item.active')) === 'Staff & Certificates');
+    const sums = await texts(p, '[data-slot="summary"] .chip');
+    check('staff: summary counts from totals', sums[0] === staffFx.totals.valid + ' valid' && sums[1].startsWith(staffFx.totals.expiring + ' expire') &&
+      sums[2] === (staffFx.totals.expired + staffFx.totals.revoked + staffFx.totals.not_yet_valid) + ' expired or revoked' && sums[3].startsWith(staffFx.totals.review + ' to review'), sums);
+    const rowOf = id => '[data-slot="person"][data-staff="' + id + '"]';
+    const disputed = staffFx.staff.find(x => x.needs_review);
+    check('staff: the disputed card says "Readers disagree — review"', (await text(p, rowOf(disputed.id) + ' .cert[data-state="review"]')).includes('Readers disagree — review'));
+    check('staff: the disputed row is labeled as seeded demo data', (await text(p, rowOf(disputed.id) + ' .demo')).startsWith('Seeded demo case'));
+    check('staff: an expired card is marked Expired', (await text(p, rowOf('S27') + ' .cert[data-state="expired"]')).includes('Expired'));
+    check('staff: a revoked card is marked Revoked by issuer', (await text(p, rowOf('S35') + ' .cert[data-state="revoked"]')).includes('Revoked'));
+    check('staff: a card expiring soon says in how many days', /Expires (today|in \d+ days?)/.test(await text(p, rowOf('S20') + ' .cert[data-state="expiring"]')));
+    check('staff: no row without name, role and cards', await p.$$eval('[data-slot="person"]', rs => rs.every(r => r.querySelector('.nm').textContent && r.querySelector('.roles').textContent && r.querySelectorAll('.cert').length)));
+    check('staff: the note says the data is invented', (await text(p, '[data-slot="note"]')).includes('invented'));
+    check('staff: Cases link goes to the case', (await p.$eval('[data-nav="cases"]', a => a.getAttribute('href'))) === 'case.html?id=' + caseId + '&fixture=1');
+    check('staff: no horizontal scroll', await p.evaluate(() => document.documentElement.scrollWidth <= 1920));
+    check('staff: no cert chip cut off', await p.$$eval('.cert', cs => cs.every(c => c.scrollWidth <= c.clientWidth + 1)));
+    check('staff: no console errors', p._errors.length === 0, p._errors);
+    await shot(p, 'staff-1920x1080.png');
+    await p.close();
+    /* a failed load is said out loud */
+    p = await newPage(browser, 1920, 1080);
+    await p.route('**/fixtures/staff.json', r => r.fulfill({ status: 500, body: '{}' }));
+    await p.goto(base + 'staff.html?fixture=1');
+    await ready(p);
+    check('staff: a failed load shows an error line', (await p.evaluate(() => document.body.dataset.state)) === 'error' && (await text(p, '#loadErr')).includes('Could not load /api/staff'));
+    await p.close();
+    /* the sample certificate panel on Staff & Certificates: between the summary and the roster, three outcomes */
+    for (const [mock, file] of [['', 'agree'], ['&mock=sample_disagree', 'disagree'], ['&mock=sample_failed', 'failed']]) {
+      const want = fx('sample-cert/' + file + '.json').body;
+      p = await newPage(browser, 1920, 1080);
+      await p.goto(base + 'staff.html?fixture=1' + mock);
+      await ready(p);
+      await p.waitForFunction(() => document.querySelector('#sample-cert [data-slot="sc-runs"]').textContent !== '');
+      if (!mock) {
+        check('staff: sample check panel sits between the summary and the roster', await p.evaluate(() => {
+          const s = document.querySelector('[data-slot="summary"]').getBoundingClientRect(), c = document.getElementById('sample-cert').getBoundingClientRect(),
+            r = document.querySelector('.roster').getBoundingClientRect();
+          return s.bottom <= c.top && c.bottom <= r.top && Math.abs(c.left - r.left) < 1 && Math.abs(c.right - r.right) < 1;
+        }));
+        check('staff: sample check button and hint', await text(p, '#sample-cert [data-slot="sc-button"]') === 'Check a sample certificate' &&
+          (await text(p, '#sample-cert [data-slot="sc-hint"]')).startsWith('Both models'));
+      }
+      await p.click('#sample-cert [data-slot="sc-button"]');
+      await p.waitForFunction(() => document.getElementById('sample-cert').dataset.state === 'result');
+      await p.waitForFunction(() => { const i = document.querySelector('#sample-cert .sc-img'); return i && i.complete && i.naturalWidth > 0; });
+      check('staff: sample check ' + file + ' verdict from data', await text(p, '#sample-cert [data-slot="sc-verdict"]') === want.verdict, await text(p, '#sample-cert [data-slot="sc-verdict"]'));
+      check('staff: sample check ' + file + ' leaves the roster as it was', (await p.$$('[data-slot="person"]')).length === staffFx.staff.length);
+      check('staff: sample check ' + file + ' no horizontal scroll', await p.evaluate(() => document.documentElement.scrollWidth <= 1920));
+      check('staff: sample check ' + file + ' no console errors', p._errors.length === 0, p._errors);
+      if (SC_SHOTS) await p.screenshot({ path: path.join(SC_SHOTS, 'staff-sc-' + file + '.png') });
+      await p.close();
+    }
+
     /* ---------- contrast of every status element, by number ---------- */
     // text 4.5:1 or more against its own background (with hatching: against the darker stripe);
     // dots, rings and dashed borders 3:1 or more against what they sit on
@@ -930,6 +1025,18 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
       await ready(p);
       await contrast(p, [T('Network: ' + st + ' banner', '#result-text')]);
     }
+    await p.close();
+
+    p = await newPage(browser, 1920, 1080);
+    await p.goto(base + 'staff.html?fixture=1');
+    await ready(p);
+    await contrast(p, [
+      T('Staff: valid card', '.cert[data-level="safe"]'), T('Staff: expiring or disputed card', '.cert[data-level="fragile"]'),
+      T('Staff: expired or revoked card (on hatching)', '.cert[data-level="risk"]', { hatch: '--st-risk-hatch' }),
+      T('Staff: summary chip, valid', '.chip[data-level="safe"]'), T('Staff: summary chip, expiring', '.chip[data-level="fragile"]'),
+      T('Staff: summary chip, expired (on hatching)', '.chip[data-level="risk"]', { hatch: '--st-risk-hatch' }),
+      G('Staff: row marker, at risk', '.who .dot[data-level="risk"]', 'bg', 'parent'), G('Staff: row marker, to check', '.who .dot[data-level="fragile"]', 'bg', 'parent')
+    ]);
     await p.close();
 
     p = await newPage(browser, 1920, 1080);

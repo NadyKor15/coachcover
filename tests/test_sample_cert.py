@@ -163,6 +163,15 @@ def test_the_check_does_not_change_the_scene_on_screen(api):
     assert after["eligibility"] == before["eligibility"] and after["outcome"] == before["outcome"]
 
 
+def test_the_staff_page_does_not_list_the_applicants(api):
+    client, _ = api
+    before = client.get("/api/staff").json()
+    for sample in SAMPLES:
+        assert client.post(URL, json={"sample": sample.id}).status_code == 200
+    after = client.get("/api/staff").json()
+    assert after == before and not any(p["id"].startswith("SAMPLE-") for p in after["staff"])
+
+
 def test_info_counts_nothing_and_names_the_limit_and_mode(api):
     client, _ = api
     info = client.get(URL).json()
