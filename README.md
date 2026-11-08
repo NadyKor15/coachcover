@@ -1,5 +1,8 @@
 # CoachCover
 
+[![tests](https://github.com/NadyKor15/coachcover/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/NadyKor15/coachcover/actions/workflows/tests.yml)
+CI runs the 415 pytest tests against Postgres 16 on every push. The 337 browser checks of the screens run locally.
+
 ![Live run of Run the call-out: a voice note at 08:40, 40 staff checked and 5 cleared, Anna Kim blocked because her WSI certificate expired Nov 5, Zoe Grant takes the 09:30 class at 08:45](docs/media/coachcover-live-morning.gif)
 
 *Frames from a recording of the live demo on Vultr, Judge mode, "Run the call-out" (Nov 7, 2026, US Eastern), with
