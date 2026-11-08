@@ -33,7 +33,8 @@
     const kids = [...bar.children], group = kids.slice(kids.indexOf(slot('today-date')) - 1);
     group.forEach(n => { n.style.transform = ''; });
     chevron.style.left = (label.offsetLeft + label.offsetWidth + 11) + 'px';
-    const over = parseFloat(chevron.style.left) + chevron.getBoundingClientRect().width + 27 - bar.clientWidth;
+    // getBoundingClientRect() is in window pixels: divide by the fit scale (assets/fit.js; 1 at 1920)
+    const over = parseFloat(chevron.style.left) + chevron.getBoundingClientRect().width / (window.CC_SCALE || 1) + 27 - bar.clientWidth;
     if (over > 0) group.forEach(n => { n.style.transform = 'translateX(' + (-Math.ceil(over)) + 'px)'; });
   }
 

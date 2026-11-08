@@ -1093,6 +1093,74 @@ async function shot(page, name) { if (SHOTS) await page.screenshot({ path: path.
     await contrast(p, [T('Family: credit line', '#result')]);
     await p.close();
 
+    /* ---------- laptop windows: the 1920 canvas scales itself to the window width (assets/fit.js) ---------- */
+    {
+      const fitState = pg => pg.evaluate(() => {
+        const b = document.body, r = b.getBoundingClientRect(), root = document.documentElement;
+        window.scrollTo(500, 0); const sx = window.scrollX; window.scrollTo(0, 0);
+        return { scale: window.CC_SCALE, transform: getComputedStyle(b).transform, inlineW: root.style.width, inlineH: root.style.height,
+          fitCss: (document.getElementById('cc-fit') || {}).textContent, bodyW: r.width, scrollW: root.scrollWidth, scrollX: sx,
+          hint: getComputedStyle(b, '::after').content };
+      });
+      const S = 1366 / 1920;
+      for (const pageUrl of ['index.html?fixture=1', 'case.html?id=' + caseId + '&fixture=1', 'network.html?fixture=1', 'week.html?fixture=1', 'staff.html?fixture=1']) {
+        const name = pageUrl.split('.')[0];
+        p = await newPage(browser, 1920, 1080);
+        await p.goto(base + pageUrl);
+        await ready(p);
+        let f = await fitState(p);
+        check('fit ' + name + ' 1920: scale exactly 1, page untouched', f.scale === 1 && f.transform === 'none' && f.inlineW === '' && f.inlineH === '' && f.fitCss === '' && f.bodyW === 1920, f);
+        await p.close();
+        p = await newPage(browser, 1366, 768);
+        await p.goto(base + pageUrl);
+        await ready(p);
+        f = await fitState(p);
+        check('fit ' + name + ' 1366: scale 1366/1920, whole width in the window, no horizontal scroll',
+          f.scale === S && /^matrix\(([\d.]+), 0, 0, \1, 0, 0\)$/.test(f.transform) && Math.abs(parseFloat(f.transform.slice(7)) - S) < 1e-5 && Math.abs(f.bodyW - 1366) < 0.5 && f.scrollW <= 1366 && f.scrollX === 0 && f.hint === 'none', f);
+        // back to a full-size window: the factor returns to exactly 1 and the inline sizes go away
+        await p.setViewportSize({ width: 1920, height: 1080 });
+        await p.waitForFunction(() => window.CC_SCALE === 1);
+        f = await fitState(p);
+        check('fit ' + name + ' 1366 → 1920 resize: back to scale 1, untouched', f.transform === 'none' && f.inlineW === '' && f.inlineH === '' && f.bodyW === 1920, f);
+        if (name === 'index') {
+          await p.setViewportSize({ width: 1366, height: 768 });
+          await p.waitForFunction(s => window.CC_SCALE === s, S);
+          // must-light: without the fit the same window scrolls sideways (the checks above can fail)
+          const off = await p.evaluate(() => { document.getElementById('cc-fit').textContent = ''; document.documentElement.removeAttribute('style'); return document.documentElement.scrollWidth; });
+          check('fit must-light: the unscaled canvas is wider than a 1366 window', off > 1366, off);
+        }
+        await p.close();
+      }
+      // Today at 1366: judge buttons and Approve plan B are inside the window width and reachable by a real click
+      p = await newPage(browser, 1366, 768);
+      await p.goto(base + 'index.html?fixture=1');
+      await ready(p);
+      const reach = await p.evaluate(() => [...document.querySelectorAll('.jbtn'), document.getElementById('approve')].map(b => {
+        b.scrollIntoView({ block: 'nearest' });
+        const r = b.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2, t = document.elementFromPoint(x, y);
+        return { id: b.dataset.scenario || b.id, right: Math.round(r.right), bottom: Math.round(r.bottom), hit: !!t && (t === b || b.contains(t)) };
+      }));
+      check('fit Today 1366: 5 judge buttons + Approve plan B inside the window and hit at their centres', reach.length === 6 && reach.every(r => r.right <= 1366 && r.bottom <= 768 && r.hit), reach);
+      await p.click('[data-scenario="nobody_accepts"]');
+      await p.waitForFunction(() => !document.getElementById('approve').disabled);
+      await p.click('#approve');
+      await p.waitForFunction(() => document.getElementById('planbHead').textContent === 'Plan B approved');
+      check('fit Today 1366: nobody accepts → Approve plan B works by a real click', await text(p, '#approve') === 'Approved');
+      check('fit Today 1366: no console errors', p._errors.length === 0, p._errors);
+      await p.close();
+      // measurements that use getBoundingClientRect (banner room, network chevron) give the same layout at 1366 as at 1920.
+      // (The chip-stretch line in today.js is divided the same way, but its branch does not run with the current CSS:
+      // .chips is a 725-px flex box, so its scrollWidth never falls below 725 and "spare" stays 0.)
+      const measure = async (w, h, url, fn) => { const pg = await newPage(browser, w, h); await pg.goto(base + url); await ready(pg); const v = await pg.evaluate(fn); await pg.close(); return v; };
+      const alertOf = () => document.getElementById('alert').style.maxWidth;
+      const chevOf = () => { const c = document.querySelector('[data-slot="user-label"]').nextElementSibling; return [c.style.left, c.style.transform, ...[...document.querySelector('.topbar').children].map(n => n.style.transform)]; };
+      const a1 = await measure(1920, 1080, 'index.html?fixture=1&mock=ratio_open', alertOf), a2 = await measure(1366, 768, 'index.html?fixture=1&mock=ratio_open', alertOf);
+      // a range's text width is measured to ~0.03 px run to run even at 1920; the unscaled mistake would be > 1 px
+      check('fit Today: banner room at 1366 = at 1920 (±0.25 px)', a1 !== '' && Math.abs(parseFloat(a1) - parseFloat(a2)) <= 0.25, [a1, a2]);
+      const n1 = await measure(1920, 1080, 'network.html?fixture=1', chevOf), n2 = await measure(1366, 768, 'network.html?fixture=1', chevOf);
+      check('fit Network: user-label chevron at 1366 = at 1920', n1[0] !== '' && JSON.stringify(n1) === JSON.stringify(n2), [n1, n2]);
+    }
+
     /* ---------- sample certificate panel (harness page; answers captured from the API in replay) ---------- */
     {
       const scFx = name => fx('sample-cert/' + name + '.json');

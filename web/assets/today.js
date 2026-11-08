@@ -230,7 +230,8 @@
     if (rows === 1) {  // one row spans the card, as in the approved layout
       const spare = 725 - box.scrollWidth;
       const list = [...box.children];
-      if (spare > 0) list.forEach(c => { c.style.width = (c.getBoundingClientRect().width + spare / list.length).toFixed(2) + 'px'; });
+      // getBoundingClientRect() is in window pixels: divide by the fit scale (assets/fit.js; 1 at 1920)
+      if (spare > 0) list.forEach(c => { c.style.width = (c.getBoundingClientRect().width / (window.CC_SCALE || 1) + spare / list.length).toFixed(2) + 'px'; });
     }
     return { fits: rows <= maxRows, rows };
   }
@@ -532,7 +533,7 @@
     // keep the banner clear of the title
     const range = document.createRange();
     range.selectNodeContents(document.querySelector('h1'));
-    const room = 1631 - range.getBoundingClientRect().width - 30;
+    const room = 1631 - range.getBoundingClientRect().width / (window.CC_SCALE || 1) - 30;  // window px → layout px
     box.style.maxWidth = Math.min(1000, room) + 'px';
     // a long banner first gets a smaller font (down to 14 px), then wraps to two lines; never cut off
     box.classList.remove('wrap'); box.style.fontSize = '';
