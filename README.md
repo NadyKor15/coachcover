@@ -11,8 +11,9 @@ captions added. The times on screen are the demo school's clock.*
 When a swim coach writes in the morning that they can't come in, CoachCover finds a replacement who is allowed to teach
 that lesson, asks them, and keeps a record of why each person was or wasn't asked.
 
-Proof it's live on Vultr: [/health](https://216-155-135-169.sslip.io/health) answers `"model_mode": "live"`, and
-[/api/models/ledger](https://216-155-135-169.sslip.io/api/models/ledger) lists every model call with the model asked for,
+The hosted demo ran on one Vultr VM from Nov 7, 2026 and was taken down on Nov 10, 2026. The video shows the live
+run: https://youtu.be/J93bEwJ2yE8. To run it yourself, see [Run it yourself](#run-it-yourself).
+`/api/models/ledger` lists every model call with the model asked for,
 the model that answered, the time and the cost. Every call goes through an allowlist in `coachcover/models.py`: a model
 that is not on the list fails before anything is sent, and an answer that comes back from a different model is thrown
 away. The worker on the same VM runs the offer timers, the family's answer window and the night check.
@@ -57,8 +58,8 @@ real school.
 
 Video (4:31): https://youtu.be/J93bEwJ2yE8
 
-Live demo: https://216-155-135-169.sslip.io. To run it on your machine in replay mode, use `docker compose up` as shown
-in [Run it yourself](#run-it-yourself).
+The hosted demo ran on one Vultr VM from Nov 7, 2026 and was taken down on Nov 10, 2026. The video shows the live
+run: https://youtu.be/J93bEwJ2yE8. To run it yourself, see [Run it yourself](#run-it-yourself).
 
 ### Try it in four presses
 
@@ -156,7 +157,8 @@ All four are frames from the same live session on Vultr on Nov 7.
 
 ## Judge it in 90 seconds
 
-Live demo: https://216-155-135-169.sslip.io
+The hosted demo ran on one Vultr VM from Nov 7, 2026 and was taken down on Nov 10, 2026. The video shows the live
+run: https://youtu.be/J93bEwJ2yE8. To run it yourself, see [Run it yourself](#run-it-yourself).
 
 Video (4:31): https://youtu.be/J93bEwJ2yE8
 
